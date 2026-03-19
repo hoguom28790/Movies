@@ -4,8 +4,10 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build && xcopy /E /I /Y public .next\\standalone\\public && xcopy /E /I /Y .next\\static .next\\standalone\\.next\\static",
-    "start": "node .next/standalone/server.js",
+    "build": "next build",
+    "build:local": "next build && xcopy /E /I /Y public .next\\standalone\\public && xcopy /E /I /Y .next\\static .next\\standalone\\.next\\static",
+    "start": "next start",
+    "start:local": "node .next/standalone/server.js",
     "lint": "eslint",
     "clean": "powershell -Command \"Remove-Item -Path .next, .turbo -Recurse -Force -ErrorAction SilentlyContinue\"",
     "clean:all": "powershell -Command \"Remove-Item -Path .next, .turbo, node_modules -Recurse -Force -ErrorAction SilentlyContinue\""
