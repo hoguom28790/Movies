@@ -25,7 +25,14 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
         
         <div className="flex flex-col gap-4 mt-2">
           <Button 
-            onClick={() => { loginWithGoogle().then(onClose); }} 
+            onClick={() => { 
+              loginWithGoogle()
+                .then(onClose)
+                .catch((err: any) => {
+                  console.error(err);
+                  alert("Lỗi đăng nhập Firebase: " + (err.message || "Unknown error"));
+                }); 
+            }} 
             size="lg" 
             className="w-full h-14 bg-white text-black hover:bg-gray-100 text-lg font-black rounded-full gap-3 shadow-[0_0_40px_rgba(255,255,255,0.4)] hover:shadow-[0_0_60px_rgba(255,255,255,0.7)] hover:scale-105 transition-all duration-300 ring-4 ring-white/20"
           >
