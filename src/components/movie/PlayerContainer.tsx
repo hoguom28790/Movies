@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
@@ -21,6 +21,16 @@ export function PlayerContainer({ url, isHls, rawEmbedUrl, nextEpisodeUrl, movie
   const { theme } = useTheme();
   const router = useRouter();
   const { user } = useAuth();
+  
+  const [isPseudoFS, setIsPseudoFS] = useState(false);
+  const [isPortrait, setIsPortrait] = useState(false);
+
+  useEffect(() => {
+    const handleResize = () => setIsPortrait(window.innerHeight > window.innerWidth);
+    window.addEventListener('resize', handleResize);
+    handleResize(); // Initial check
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   // Load Playhead History
   useEffect(() => {
@@ -65,6 +75,13 @@ export function PlayerContainer({ url, isHls, rawEmbedUrl, nextEpisodeUrl, movie
     const handleMessage = async (event: MessageEvent) => {
       if (typeof event.data !== 'object') return;
 
+      if (event.data.type === 'ENTER_PSEUDO_FULLSCREEN') {
+        setIsPseudoFS(true);
+      }
+      if (event.data.type === 'EXIT_PSEUDO_FULLSCREEN') {
+        setIsPseudoFS(false);
+      }
+
       // Handle continuous progress updates
       if (event.data.type === 'UPDATE_PROGRESS' && user && movieSlug) {
         const currentTime = event.data.time;
@@ -95,9 +112,8 @@ export function PlayerContainer({ url, isHls, rawEmbedUrl, nextEpisodeUrl, movie
             const tokens = await getTraktTokens(user.uid);
             if (tokens && tokens.access_token) {
               await pushSingleMovieToTrakt(tokens.access_token, movieTitle);
-              console.log("Scrobbled to Trakt:", movieTitle);
             }
-          } catch(e) { console.error("Trakt scrobble failed"); }
+          } catch(e) { }
         }
 
         if (nextEpisodeUrl) {
@@ -114,7 +130,12 @@ export function PlayerContainer({ url, isHls, rawEmbedUrl, nextEpisodeUrl, movie
     : rawEmbedUrl || `/player.html?url=${encodeURIComponent(url)}&theme=${theme}`;
 
   return (
-    <div className="w-full aspect-video bg-black relative shadow-2xl">
+    <div className={isPseudoFS 
+      ? (isPortrait 
+          ? "fixed top-0 left-full w-[100vh] h-[100vw] rotate-90 origin-top-left z-[9999] bg-black" 
+          : "fixed inset-0 w-screen h-screen z-[9999] bg-black")
+      : "w-full aspect-video relative shadow-2xl bg-black"
+    }>
       <iframe
         id="main-player"
         key={iframeSrc}

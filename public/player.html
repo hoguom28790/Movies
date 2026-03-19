@@ -168,6 +168,8 @@
 
     const container = document.getElementById('player-container');
 
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+
     container.addEventListener('touchstart', (e) => {
       // Ignore if clicking on controls or buttons
       if (e.target.closest('.plyr__controls') || e.target.closest('button')) return;
@@ -189,7 +191,7 @@
         if (!isSwipeAction && !video.paused) {
           isSpeedingUp = true;
           if(player) player.speed = 2;
-          showOSD(`⚡ 2x`);
+          showOSD(`⚡ 2x Speed`);
         }
       }, 500); // 500ms to trigger long press jump
     }, { passive: false });
@@ -222,6 +224,10 @@
         const deltaRatio = -(deltaY / rect.height) * 1.5; // Up = positive, multiplier for speed
         
         if (activeSwipeMode === 'volume') {
+          if (isIOS) {
+            showOSD(`Vui lòng dùng nút cứng để chỉnh âm lượng trên iPhone`);
+            return;
+          }
           let newVol = Math.max(0, Math.min(1, startVolume + deltaRatio));
           if(player) player.volume = newVol;
           showOSD(`🔊 Âm lượng: ${Math.round(newVol * 100)}%`);
@@ -242,7 +248,7 @@
       if (isSpeedingUp) {
         isSpeedingUp = false;
         if(player) player.speed = originalSpeed;
-        showOSD(`Đã xong`);
+        showOSD(`▶️ 1x Speed`);
         return; 
       }
       
@@ -289,18 +295,26 @@
         speed: { selected: 1, options: [0.5, 0.75, 1, 1.25, 1.5, 2] },
         tooltips: { controls: true, seek: true },
         keyboard: { focused: false, global: false }, // Use our custom pro keyboard listener instead
-        fullscreen: { iosNative: true, fallback: true },
+        fullscreen: { iosNative: false, fallback: true }, // DISABLE IOS NATIVE TO KEEP DOM TOUCH EVENTS
         storage: { enabled: true, key: 'disney-player' }, // Smart memory
       });
 
-      // Export player to window to easily access in our custom listeners above
       window.player = player;
 
-      // Auto-Landscape on Fullscreen (For Android/iPad mostly, iPhone uses native player fullscreen which auto rotates anyway)
+      // Handle Fullscreen natively for Desktop/Android, but fallback Pseudo-Fullscreen for iOS
       player.on('enterfullscreen', () => {
         if (screen.orientation && screen.orientation.lock) {
-          screen.orientation.lock('landscape').catch(()=>{}); // Ignore error on unsupported devices
+          screen.orientation.lock('landscape').catch(()=>{}); 
         }
+        // Force tell the React Parent to go pseudo-fullscreen for iOS just in case
+        window.parent.postMessage({ type: 'ENTER_PSEUDO_FULLSCREEN' }, '*');
+      });
+
+      player.on('exitfullscreen', () => {
+        if (screen.orientation && screen.orientation.unlock) {
+          screen.orientation.unlock();
+        }
+        window.parent.postMessage({ type: 'EXIT_PSEUDO_FULLSCREEN' }, '*');
       });
 
       player.on('ended', () => {
