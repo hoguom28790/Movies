@@ -125,6 +125,7 @@ export default async function WatchPage({
           url={rawM3u8Url} 
           isHls={isHls} 
           rawEmbedUrl={rawEmbedUrl}
+          nextEpisodeUrl={nextEp ? `/watch/${source}/${slug}/${nextEp.slug || nextEp.name}` : undefined}
         />
       </div>
 

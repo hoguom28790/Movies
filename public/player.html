@@ -87,15 +87,63 @@
       video.currentTime = Math.max(0, Math.min(video.duration, video.currentTime + seconds));
     }
 
-    // Keyboard shortcuts
+    // Pro Keyboard Shortcuts
     window.addEventListener('keydown', (e) => {
-      if (e.key === 'ArrowRight') skip(10);
-      if (e.key === 'ArrowLeft') skip(-10);
-      if (e.key === ' ') {
-        e.preventDefault();
-        video.paused ? video.play() : video.pause();
+      if (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA') return;
+
+      const act = () => { if (video.paused) video.play(); else video.pause(); };
+
+      switch(e.key.toLowerCase()) {
+        case ' ': // Space uses empty string or ' ' technically
+        case 'k': e.preventDefault(); act(); break;
+        case 'f': e.preventDefault(); if(player) player.fullscreen.toggle(); break;
+        case 'm': e.preventDefault(); if(player) player.muted = !player.muted; break;
+        case 'j': e.preventDefault(); skip(-10); break;
+        case 'l': e.preventDefault(); skip(10); break;
+        case 'arrowright': e.preventDefault(); skip(e.shiftKey ? 5 : 10); break;
+        case 'arrowleft': e.preventDefault(); skip(e.shiftKey ? -5 : -10); break;
+        case 'arrowup': e.preventDefault(); if(player) player.volume = Math.min(1, player.volume + 0.1); break;
+        case 'arrowdown': e.preventDefault(); if(player) player.volume = Math.max(0, player.volume - 0.1); break;
+        case '>': case '.': e.preventDefault(); if(player) player.speed = Math.min(2, player.speed + 0.25); break;
+        case '<': case ',': e.preventDefault(); if(player) player.speed = Math.max(0.5, player.speed - 0.25); break;
       }
     });
+
+    // Double Tap to Seek for Mobile (Left/Right Sides)
+    let lastTapTime = 0;
+    document.getElementById('player-container').addEventListener('click', (e) => {
+      // Ignore if clicking on controls or buttons
+      if (e.target.closest('.plyr__controls') || e.target.closest('button')) return;
+      
+      const currentTime = new Date().getTime();
+      const tapLength = currentTime - lastTapTime;
+      
+      if (tapLength < 300 && tapLength > 0) {
+        const rect = e.currentTarget.getBoundingClientRect();
+        const clickX = e.clientX - rect.left;
+        if (clickX < rect.width / 2) {
+          skip(-10);
+          showRipple('left');
+        } else {
+          skip(10);
+          showRipple('right');
+        }
+        e.preventDefault();
+      }
+      lastTapTime = currentTime;
+    });
+
+    function showRipple(side) {
+      const btn = side === 'left' ? document.querySelector('.skip-back') : document.querySelector('.skip-forward');
+      if(btn) {
+        btn.style.opacity = '1';
+        btn.style.transform = `translateY(-50%) scale(1.5)`;
+        setTimeout(() => {
+          btn.style.opacity = '0';
+          btn.style.transform = `translateY(-50%) scale(1)`;
+        }, 500);
+      }
+    }
 
     if (source) {
       // Initialize Plyr
@@ -107,8 +155,13 @@
         settings: ['quality', 'speed', 'loop'],
         speed: { selected: 1, options: [0.5, 0.75, 1, 1.25, 1.5, 2] },
         tooltips: { controls: true, seek: true },
-        keyboard: { focused: true, global: true },
+        keyboard: { focused: false, global: false }, // Use our custom pro keyboard listener instead
         fullscreen: { iosNative: true, fallback: true },
+        storage: { enabled: true, key: 'disney-player' }, // Smart memory
+      });
+
+      player.on('ended', () => {
+        window.parent.postMessage({ type: 'VIDEO_ENDED', url: source }, '*');
       });
 
       if (Hls.isSupported()) {

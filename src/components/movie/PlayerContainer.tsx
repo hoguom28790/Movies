@@ -1,15 +1,31 @@
 "use client";
 
+import { useEffect } from "react";
 import { useTheme } from "@/contexts/ThemeContext";
+import { useRouter } from "next/navigation";
 
 interface PlayerContainerProps {
   url: string;
   isHls: boolean;
   rawEmbedUrl: string;
+  nextEpisodeUrl?: string;
 }
 
-export function PlayerContainer({ url, isHls, rawEmbedUrl }: PlayerContainerProps) {
+export function PlayerContainer({ url, isHls, rawEmbedUrl, nextEpisodeUrl }: PlayerContainerProps) {
   const { theme } = useTheme();
+  const router = useRouter();
+
+  useEffect(() => {
+    const handleMessage = (event: MessageEvent) => {
+      if (typeof event.data === 'object' && event.data?.type === 'VIDEO_ENDED') {
+        if (nextEpisodeUrl) {
+          router.push(nextEpisodeUrl);
+        }
+      }
+    };
+    window.addEventListener('message', handleMessage);
+    return () => window.removeEventListener('message', handleMessage);
+  }, [nextEpisodeUrl, router]);
 
   const iframeSrc = isHls 
     ? `/player.html?url=${encodeURIComponent(url)}&theme=${theme}`
