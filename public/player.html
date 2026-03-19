@@ -36,6 +36,34 @@
       z-index: 10;
     }
     
+    #brightness-overlay {
+      position: absolute;
+      inset: 0;
+      background: black;
+      opacity: 0;
+      pointer-events: none;
+      z-index: 2;
+    }
+
+    #osd {
+      position: absolute;
+      top: 15%;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0,0,0,0.6);
+      backdrop-filter: blur(4px);
+      color: white;
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-size: 15px;
+      font-weight: bold;
+      display: none;
+      z-index: 10;
+      pointer-events: none;
+      align-items: center;
+      gap: 10px;
+    }
+    
     /* Seek buttons on overlay */
     .custom-skip {
       position: absolute;
@@ -61,8 +89,10 @@
   <script src="https://cdn.plyr.io/3.7.8/plyr.polyfilled.js"></script>
 </head>
 <body>
-  <div id="player-container" style="width: 100%; height: 100%;">
+  <div id="player-container" style="width: 100%; height: 100%; position: relative;">
     <video id="video" playsinline crossorigin="anonymous"></video>
+    <div id="brightness-overlay"></div>
+    <div id="osd"></div>
     <button class="custom-skip skip-back" onclick="skip(-10)" title="Lùi 10s">
       <svg width="24" height="24" fill="white" viewBox="0 0 24 24"><path d="M11 18V6l-8.5 6 8.5 6zm.5-6l8.5 6V6l-8.5 6z"/></svg>
     </button>
@@ -109,28 +139,131 @@
       }
     });
 
-    // Double Tap to Seek for Mobile (Left/Right Sides)
+    // Smart Touch Interface variables
+    let touchStartX = 0;
+    let touchStartY = 0;
+    let touchStartTime = 0;
+    let isSwipeAction = false;
+    let startVolume = 0;
+    let startBrightness = 0; // 0 is max bright, 0.8 is max dark
+    let activeSwipeMode = null; // 'volume' or 'brightness'
+
+    let longPressTimer = null;
+    let isSpeedingUp = false;
+    let originalSpeed = 1;
+    let currentBrightness = 0; // 0 to 0.8
     let lastTapTime = 0;
-    document.getElementById('player-container').addEventListener('click', (e) => {
+
+    const brightnessOverlay = document.getElementById('brightness-overlay');
+    const osd = document.getElementById('osd');
+    let osdTimer = null;
+
+    function showOSD(text) {
+      if(!osd) return;
+      osd.innerHTML = text;
+      osd.style.display = 'flex';
+      clearTimeout(osdTimer);
+      osdTimer = setTimeout(() => { osd.style.display = 'none'; }, 1500);
+    }
+
+    const container = document.getElementById('player-container');
+
+    container.addEventListener('touchstart', (e) => {
       // Ignore if clicking on controls or buttons
       if (e.target.closest('.plyr__controls') || e.target.closest('button')) return;
+      if (e.touches.length !== 1) return; // Only 1 finger
       
-      const currentTime = new Date().getTime();
-      const tapLength = currentTime - lastTapTime;
+      const touch = e.touches[0];
+      const rect = container.getBoundingClientRect();
+      touchStartX = touch.clientX - rect.left;
+      touchStartY = touch.clientY - rect.top;
+      touchStartTime = Date.now();
+      isSwipeAction = false;
+      activeSwipeMode = null;
+      startVolume = player ? player.volume : 1;
+      startBrightness = currentBrightness;
       
-      if (tapLength < 300 && tapLength > 0) {
-        const rect = e.currentTarget.getBoundingClientRect();
-        const clickX = e.clientX - rect.left;
-        if (clickX < rect.width / 2) {
-          skip(-10);
-          showRipple('left');
-        } else {
-          skip(10);
-          showRipple('right');
+      // Set up Long Press to 2x Speed
+      originalSpeed = player ? player.speed : 1;
+      longPressTimer = setTimeout(() => {
+        if (!isSwipeAction && !video.paused) {
+          isSpeedingUp = true;
+          if(player) player.speed = 2;
+          showOSD(`⚡ 2x`);
         }
-        e.preventDefault();
+      }, 500); // 500ms to trigger long press jump
+    }, { passive: false });
+
+    container.addEventListener('touchmove', (e) => {
+      if (e.touches.length !== 1) return;
+      
+      const touch = e.touches[0];
+      const rect = container.getBoundingClientRect();
+      const currentX = touch.clientX - rect.left;
+      const currentY = touch.clientY - rect.top;
+      
+      const deltaX = currentX - touchStartX;
+      const deltaY = currentY - touchStartY;
+      
+      if (Math.abs(deltaX) > 10 || Math.abs(deltaY) > 10) {
+        isSwipeAction = true;
+        clearTimeout(longPressTimer); // Cancel long press if finger moved
       }
-      lastTapTime = currentTime;
+      
+      if (isSwipeAction && Math.abs(deltaY) > Math.abs(deltaX)) {
+        // Vertical sweep
+        if (e.cancelable) e.preventDefault(); // prevent scrolling
+        
+        if (!activeSwipeMode) {
+          activeSwipeMode = touchStartX < rect.width / 2 ? 'brightness' : 'volume';
+        }
+        
+        // Sensitivity: full screen height = 1.0 change
+        const deltaRatio = -(deltaY / rect.height) * 1.5; // Up = positive, multiplier for speed
+        
+        if (activeSwipeMode === 'volume') {
+          let newVol = Math.max(0, Math.min(1, startVolume + deltaRatio));
+          if(player) player.volume = newVol;
+          showOSD(`🔊 Âm lượng: ${Math.round(newVol * 100)}%`);
+        } else if (activeSwipeMode === 'brightness') {
+          // 0 is bright, 0.8 is dark. Swipe up makes it brighter (meaning opacity goes toward 0)
+          let newBrightness = startBrightness - (deltaRatio * 0.8);
+          currentBrightness = Math.max(0, Math.min(0.8, newBrightness));
+          brightnessOverlay.style.opacity = currentBrightness;
+          let percent = Math.round((1 - (currentBrightness / 0.8)) * 100);
+          showOSD(`☀️ Độ sáng: ${percent}%`);
+        }
+      }
+    }, { passive: false });
+
+    container.addEventListener('touchend', (e) => {
+      clearTimeout(longPressTimer);
+      
+      if (isSpeedingUp) {
+        isSpeedingUp = false;
+        if(player) player.speed = originalSpeed;
+        showOSD(`Đã xong`);
+        return; 
+      }
+      
+      if (!isSwipeAction) {
+        // Treat as Tap
+        const tapLength = Date.now() - touchStartTime;
+        if (tapLength < 300) {
+          // Could be single tap or double tap
+          const timeSinceLastTap = Date.now() - lastTapTime;
+          if (timeSinceLastTap > 0 && timeSinceLastTap < 400) {
+            // Double tap confirmed
+            const rect = container.getBoundingClientRect();
+            if (touchStartX < rect.width / 2) {
+              skip(-10); showRipple('left'); showOSD(`⏪ -10s`);
+            } else {
+              skip(10); showRipple('right'); showOSD(`+10s ⏩`);
+            }
+          }
+          lastTapTime = Date.now();
+        }
+      }
     });
 
     function showRipple(side) {
@@ -158,6 +291,16 @@
         keyboard: { focused: false, global: false }, // Use our custom pro keyboard listener instead
         fullscreen: { iosNative: true, fallback: true },
         storage: { enabled: true, key: 'disney-player' }, // Smart memory
+      });
+
+      // Export player to window to easily access in our custom listeners above
+      window.player = player;
+
+      // Auto-Landscape on Fullscreen (For Android/iPad mostly, iPhone uses native player fullscreen which auto rotates anyway)
+      player.on('enterfullscreen', () => {
+        if (screen.orientation && screen.orientation.lock) {
+          screen.orientation.lock('landscape').catch(()=>{}); // Ignore error on unsupported devices
+        }
       });
 
       player.on('ended', () => {
