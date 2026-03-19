@@ -81,6 +81,10 @@ export async function deletePlaylist(playlistId: string) {
   await deleteDoc(doc(db, "playlists", playlistId));
 }
 
+export async function updatePlaylistName(playlistId: string, newName: string) {
+  await setDoc(doc(db, "playlists", playlistId), { name: newName }, { merge: true });
+}
+
 export async function addMovieToPlaylist(playlistId: string, movie: { movieSlug: string; movieTitle: string; posterUrl: string }) {
   const ref = doc(db, "playlists", playlistId);
   const snap = await getDoc(ref);

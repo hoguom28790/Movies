@@ -2,10 +2,10 @@
 
 import React, { useEffect, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
-import { getUserPlaylists, deletePlaylist, removeMovieFromPlaylist, ensureDefaultPlaylist } from "@/services/db";
+import { getUserPlaylists, deletePlaylist, removeMovieFromPlaylist, ensureDefaultPlaylist, updatePlaylistName } from "@/services/db";
 import { Playlist } from "@/types/database";
 import { MovieCard } from "@/components/movie/MovieCard";
-import { Trash2, Folder, ChevronDown, ChevronRight, Loader2 } from "lucide-react";
+import { Trash2, Folder, ChevronDown, ChevronRight, Loader2, Pencil } from "lucide-react";
 
 export default function WatchlistPage() {
   const { user, loading: authLoading } = useAuth();
@@ -13,6 +13,8 @@ export default function WatchlistPage() {
   const [loading, setLoading] = useState(true);
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editingName, setEditingName] = useState("");
 
   const loadData = async () => {
     if (!user) return;
@@ -40,7 +42,8 @@ export default function WatchlistPage() {
     loadData();
   }, [user, authLoading]);
 
-  const toggleExpand = (id: string) => {
+  const toggleExpand = (id: string, isEditing: boolean = false) => {
+    if (isEditing) return;
     const newExpanded = new Set(expandedIds);
     if (newExpanded.has(id)) {
       newExpanded.delete(id);
@@ -48,6 +51,32 @@ export default function WatchlistPage() {
       newExpanded.add(id);
     }
     setExpandedIds(newExpanded);
+  };
+
+  const handleStartEdit = (playlist: Playlist, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setEditingId(playlist.id);
+    setEditingName(playlist.name);
+  };
+
+  const handleSaveEdit = async (id: string, e: React.MouseEvent | React.FormEvent) => {
+    if (e) e.stopPropagation();
+    e.preventDefault();
+    if (!editingName.trim()) {
+      setEditingId(null);
+      return;
+    }
+    try {
+      if (playlists.find(p => p.id === id)?.name !== editingName.trim()) {
+        await updatePlaylistName(id, editingName.trim());
+        setPlaylists(prev => prev.map(p => p.id === id ? { ...p, name: editingName.trim() } : p));
+      }
+    } catch (err) {
+      console.error("Lỗi đổi tên thư mục:", err);
+      alert("Đã xảy ra lỗi khi đổi tên.");
+    } finally {
+      setEditingId(null);
+    }
   };
 
   const handleDeletePlaylist = async (id: string, name: string, e: React.MouseEvent) => {
@@ -114,7 +143,7 @@ export default function WatchlistPage() {
               <div key={playlist.id} className="bg-surface rounded-2xl border border-white/5 overflow-hidden transition-all duration-300">
                 {/* Playlist Header */}
                 <div 
-                  onClick={() => toggleExpand(playlist.id)}
+                  onClick={() => toggleExpand(playlist.id, editingId === playlist.id)}
                   className="flex items-center justify-between p-5 cursor-pointer hover:bg-white/5 transition-colors select-none"
                 >
                   <div className="flex items-center gap-4">
@@ -122,14 +151,37 @@ export default function WatchlistPage() {
                       <Folder className="w-6 h-6 text-primary" />
                     </div>
                     <div>
-                      <h2 className="text-xl font-bold text-white flex items-center gap-2">
-                        {playlist.name}
-                      </h2>
+                      {editingId === playlist.id ? (
+                        <form 
+                          onSubmit={(e) => handleSaveEdit(playlist.id, e)}
+                          className="flex items-center gap-2"
+                        >
+                          <input 
+                            autoFocus
+                            value={editingName}
+                            onChange={e => setEditingName(e.target.value)}
+                            onBlur={(e) => handleSaveEdit(playlist.id, e as unknown as React.FormEvent)}
+                            className="bg-black/50 border border-white/20 rounded px-2 py-1 text-white font-bold max-w-[200px] outline-none focus:border-primary transition-colors"
+                          />
+                        </form>
+                      ) : (
+                        <h2 className="text-xl font-bold text-white flex items-center gap-2">
+                          {playlist.name}
+                        </h2>
+                      )}
                       <p className="text-sm text-neutral-400 mt-0.5">{playlist.movies.length} phim đã lưu</p>
                     </div>
                   </div>
 
                   <div className="flex items-center gap-4">
+                    <button 
+                      onClick={(e) => handleStartEdit(playlist, e)}
+                      disabled={deletingId === playlist.id || editingId === playlist.id}
+                      className="p-2 text-neutral-400 hover:text-white hover:bg-white/10 rounded-full transition-all"
+                      title="Đổi tên thư mục"
+                    >
+                      <Pencil className="w-5 h-5" />
+                    </button>
                     <button 
                       onClick={(e) => handleDeletePlaylist(playlist.id, playlist.name, e)}
                       disabled={deletingId === playlist.id}
