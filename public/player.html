@@ -307,6 +307,32 @@
         window.parent.postMessage({ type: 'VIDEO_ENDED', url: source }, '*');
       });
 
+      // Cross-window Data Synchronization for Resumable Playback
+      window.addEventListener('message', (e) => {
+        if (e.data && e.data.type === 'SEEK') {
+          const targetTime = e.data.time;
+          if (targetTime > 0) {
+            const doSeek = () => {
+              video.currentTime = targetTime;
+              const mins = Math.floor(targetTime / 60);
+              if(mins > 0) showOSD(`Tiếp tục xem từ phút thứ ${mins} 🎬`);
+            };
+            if (video.readyState >= 1) { // HAVE_METADATA
+              doSeek();
+            } else {
+              video.addEventListener('loadedmetadata', doSeek, { once: true });
+            }
+          }
+        }
+      });
+
+      // Periodically sync progress (React will throttle Firebase writes)
+      setInterval(() => {
+        if (!video.paused && video.currentTime > 0) {
+          window.parent.postMessage({ type: 'UPDATE_PROGRESS', time: video.currentTime }, '*');
+        }
+      }, 5000);
+
       if (Hls.isSupported()) {
         hls = new Hls({ maxBufferLength: 30 });
         hls.loadSource(source);

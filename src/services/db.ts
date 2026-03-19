@@ -50,7 +50,7 @@ export async function saveHistory(userId: string, entry: Omit<HistoryEntry, 'use
     ...entry,
     userId,
     updatedAt: Date.now()
-  });
+  }, { merge: true });
 }
 
 export async function getUserHistory(userId: string): Promise<HistoryEntry[]> {
@@ -58,6 +58,12 @@ export async function getUserHistory(userId: string): Promise<HistoryEntry[]> {
   const snap = await getDocs(q);
   const list = snap.docs.map(d => ({ id: d.id, ...d.data() } as HistoryEntry));
   return list.sort((a,b) => b.updatedAt - a.updatedAt);
+}
+
+export async function getMovieHistory(userId: string, movieSlug: string): Promise<HistoryEntry | null> {
+  const docId = `${userId}_${movieSlug}`;
+  const snap = await getDoc(doc(db, "history", docId));
+  return snap.exists() ? (snap.data() as HistoryEntry) : null;
 }
 
 export async function createPlaylist(userId: string, name: string) {

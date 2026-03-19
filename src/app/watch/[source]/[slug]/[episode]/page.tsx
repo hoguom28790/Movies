@@ -1,7 +1,6 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/Button";
-import { HistoryTracker } from "@/components/movie/HistoryTracker";
 import { ChevronLeft, ChevronRight, ArrowLeft } from "lucide-react";
 import { PlayerContainer } from "@/components/movie/PlayerContainer";
 
@@ -72,14 +71,6 @@ export default async function WatchPage({
 
   return (
     <div className="min-h-screen bg-black pt-16">
-      <HistoryTracker
-        movieSlug={slug}
-        movieTitle={data.name}
-        episodeName={currentEp.name}
-        episodeSlug={currentEp.slug || currentEp.name}
-        posterUrl={resolvedPosterUrl || ""}
-      />
-
       {/* ── Video Player Container ── */}
       <div className="w-full bg-black">
         {/* Top bar above player */}
@@ -127,6 +118,10 @@ export default async function WatchPage({
           rawEmbedUrl={rawEmbedUrl}
           nextEpisodeUrl={nextEp ? `/watch/${source}/${slug}/${nextEp.slug || nextEp.name}` : undefined}
           movieTitle={data.name}
+          movieSlug={slug}
+          episodeName={currentEp.name}
+          episodeSlug={currentEp.slug || currentEp.name}
+          posterUrl={resolvedPosterUrl || ""}
         />
       </div>
 
