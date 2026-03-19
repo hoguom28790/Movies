@@ -24,6 +24,13 @@
       --plyr-color-main: #0063e5; /* Disney Blue */
     }
 
+    #player-container {
+      touch-action: none;
+      -webkit-user-select: none;
+      user-select: none;
+      -webkit-touch-callout: none;
+    }
+
     #error-msg {
       display: none;
       color: white;
@@ -170,15 +177,15 @@
 
     const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
 
-    container.addEventListener('touchstart', (e) => {
+    container.addEventListener('pointerdown', (e) => {
       // Ignore if clicking on controls or buttons
       if (e.target.closest('.plyr__controls') || e.target.closest('button')) return;
-      if (e.touches.length !== 1) return; // Only 1 finger
+      if (!e.isPrimary) return; 
+      if (e.pointerType === 'mouse' && e.button !== 0) return; // Only left-click
       
-      const touch = e.touches[0];
       const rect = container.getBoundingClientRect();
-      touchStartX = touch.clientX - rect.left;
-      touchStartY = touch.clientY - rect.top;
+      touchStartX = e.clientX - rect.left;
+      touchStartY = e.clientY - rect.top;
       touchStartTime = Date.now();
       isSwipeAction = false;
       activeSwipeMode = null;
@@ -194,34 +201,38 @@
           showOSD(`⚡ 2x Speed`);
         }
       }, 500); // 500ms to trigger long press jump
-    }, { passive: false });
+    });
 
-    container.addEventListener('touchmove', (e) => {
-      if (e.touches.length !== 1) return;
+    container.addEventListener('pointermove', (e) => {
+      if (!e.isPrimary) return;
+      // If it's a mouse, ensure left button is held down
+      if (e.pointerType === 'mouse' && e.buttons !== 1) return;
       
-      const touch = e.touches[0];
       const rect = container.getBoundingClientRect();
-      const currentX = touch.clientX - rect.left;
-      const currentY = touch.clientY - rect.top;
+      const currentX = e.clientX - rect.left;
+      const currentY = e.clientY - rect.top;
       
       const deltaX = currentX - touchStartX;
       const deltaY = currentY - touchStartY;
       
       if (Math.abs(deltaX) > 10 || Math.abs(deltaY) > 10) {
-        isSwipeAction = true;
-        clearTimeout(longPressTimer); // Cancel long press if finger moved
+        if (!isSwipeAction) {
+          isSwipeAction = true;
+          clearTimeout(longPressTimer); // Cancel long press if moved
+        }
       }
       
+      // If already speeding up, don't execute swipe logic
+      if (isSpeedingUp) return;
+
       if (isSwipeAction && Math.abs(deltaY) > Math.abs(deltaX)) {
         // Vertical sweep
-        if (e.cancelable) e.preventDefault(); // prevent scrolling
-        
         if (!activeSwipeMode) {
           activeSwipeMode = touchStartX < rect.width / 2 ? 'brightness' : 'volume';
         }
         
         // Sensitivity: full screen height = 1.0 change
-        const deltaRatio = -(deltaY / rect.height) * 1.5; // Up = positive, multiplier for speed
+        const deltaRatio = -(deltaY / rect.height) * 1.5; 
         
         if (activeSwipeMode === 'volume') {
           if (isIOS) {
@@ -232,7 +243,6 @@
           if(player) player.volume = newVol;
           showOSD(`🔊 Âm lượng: ${Math.round(newVol * 100)}%`);
         } else if (activeSwipeMode === 'brightness') {
-          // 0 is bright, 0.8 is dark. Swipe up makes it brighter (meaning opacity goes toward 0)
           let newBrightness = startBrightness - (deltaRatio * 0.8);
           currentBrightness = Math.max(0, Math.min(0.8, newBrightness));
           brightnessOverlay.style.opacity = currentBrightness;
@@ -240,9 +250,10 @@
           showOSD(`☀️ Độ sáng: ${percent}%`);
         }
       }
-    }, { passive: false });
+    });
 
-    container.addEventListener('touchend', (e) => {
+    const handlePointerEnd = (e) => {
+      if (!e.isPrimary) return;
       clearTimeout(longPressTimer);
       
       if (isSpeedingUp) {
@@ -252,11 +263,10 @@
         return; 
       }
       
-      if (!isSwipeAction) {
-        // Treat as Tap
+      // Apply double tap logic only on pointerup (ignore cancel/leave to avoid accidental seeks)
+      if (!isSwipeAction && e.type === 'pointerup') {
         const tapLength = Date.now() - touchStartTime;
         if (tapLength < 300) {
-          // Could be single tap or double tap
           const timeSinceLastTap = Date.now() - lastTapTime;
           if (timeSinceLastTap > 0 && timeSinceLastTap < 400) {
             // Double tap confirmed
@@ -270,7 +280,13 @@
           lastTapTime = Date.now();
         }
       }
-    });
+      isSwipeAction = false;
+      activeSwipeMode = null;
+    };
+
+    container.addEventListener('pointerup', handlePointerEnd);
+    container.addEventListener('pointercancel', handlePointerEnd);
+    container.addEventListener('pointerleave', handlePointerEnd);
 
     function showRipple(side) {
       const btn = side === 'left' ? document.querySelector('.skip-back') : document.querySelector('.skip-forward');
