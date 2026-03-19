@@ -5,7 +5,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { getUserPlaylists, deletePlaylist, removeMovieFromPlaylist, ensureDefaultPlaylist, updatePlaylistName } from "@/services/db";
 import { Playlist } from "@/types/database";
 import { MovieCard } from "@/components/movie/MovieCard";
-import { Trash2, Folder, ChevronDown, ChevronRight, Loader2, Pencil } from "lucide-react";
+import { Trash, Folder, ChevronDown, ChevronRight, Loader2, Pencil, X } from "lucide-react";
 
 export default function WatchlistPage() {
   const { user, loading: authLoading } = useAuth();
@@ -188,7 +188,7 @@ export default function WatchlistPage() {
                       className="p-2 text-neutral-400 hover:text-red-500 hover:bg-red-500/10 rounded-full transition-all"
                       title="Xóa thư mục này"
                     >
-                      {deletingId === playlist.id ? <Loader2 className="w-5 h-5 animate-spin" /> : <Trash2 className="w-5 h-5" />}
+                      {deletingId === playlist.id ? <Loader2 className="w-5 h-5 animate-spin" /> : <Trash className="w-5 h-5" />}
                     </button>
                     <div className="w-10 h-10 flex items-center justify-center rounded-full bg-white/5 text-white/70">
                       {isExpanded ? <ChevronDown className="w-5 h-5" /> : <ChevronRight className="w-5 h-5" />}
@@ -213,10 +213,10 @@ export default function WatchlistPage() {
                               />
                               <button 
                                 onClick={(e) => handleRemoveMovie(playlist.id, movie.movieSlug, e)}
-                                className="absolute top-2 right-2 z-20 bg-red-500/80 hover:bg-red-600 text-white rounded-full p-2 opacity-0 lg:group-hover:opacity-100 transition-opacity shadow-md hover:scale-110 focus:opacity-100"
+                                className="absolute -top-2 -left-2 z-20 bg-black/40 hover:bg-red-500 backdrop-blur-xl text-white rounded-full p-1.5 opacity-0 lg:group-hover:opacity-100 transition-all shadow-sm hover:scale-110 border border-white/20"
                                 title="Xóa phim khỏi thư mục"
                               >
-                                <Trash2 className="w-4 h-4" />
+                                <X className="w-4 h-4" />
                               </button>
                             </div>
                           ))}

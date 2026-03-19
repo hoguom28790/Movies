@@ -5,7 +5,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { getUserHistory, deleteFromHistory } from "@/services/db";
 import { HistoryEntry } from "@/types/database";
 import { MovieCard } from "@/components/movie/MovieCard";
-import { Trash2 } from "lucide-react";
+import { X } from "lucide-react";
 
 export default function HistoryPage() {
   const { user, loading: authLoading } = useAuth();
@@ -69,15 +69,15 @@ export default function HistoryPage() {
                 slug={item.movieSlug}
                 posterUrl={item.posterUrl}
               />
-              <div className="absolute top-2 right-2 bg-black/80 text-white text-xs px-2 py-1 rounded z-10 shadow-sm border border-white/10 pointer-events-none">
-                Đã xem: {item.episodeName}
+              <div className="absolute bottom-2 right-2 bg-black/80 text-white text-[10px] font-bold px-2 py-0.5 rounded backdrop-blur-md border border-white/10 pointer-events-none z-10">
+                Tập {item.episodeName}
               </div>
               <button 
                 onClick={(e) => handleDelete(item.movieSlug, e)}
-                className="absolute top-2 left-2 z-20 bg-red-500/80 hover:bg-red-600 text-white rounded-full p-2 opacity-0 lg:group-hover:opacity-100 transition-opacity shadow-md hover:scale-110 focus:opacity-100"
+                className="absolute -top-2 -left-2 z-20 bg-black/40 hover:bg-red-500 backdrop-blur-xl text-white rounded-full p-1.5 opacity-0 lg:group-hover:opacity-100 transition-all shadow-sm hover:scale-110 border border-white/20"
                 title="Xóa khỏi lịch sử"
               >
-                <Trash2 className="w-4 h-4" />
+                <X className="w-4 h-4" />
               </button>
             </div>
           ))}
