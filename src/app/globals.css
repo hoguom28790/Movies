@@ -8,31 +8,37 @@
   --color-surface: var(--surface);
   --color-surface-hover: var(--surface-hover);
   --radius-theme: var(--radius);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: var(--font-inter);
 }
 
 :root {
-  --background: #1a1d29;
+  --background: #000000;
   --foreground: #ffffff;
-  --primary: #0063e5;
-  --primary-hover: #0483ee;
-  --surface: #262938;
-  --radius: 12px;
+  --primary: #0A84FF; 
+  --primary-hover: #007AFF;
+  --surface: #1C1C1E;
+  --radius: 16px;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: var(--font-geist-sans), sans-serif;
+  font-family: var(--font-inter), -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", sans-serif;
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* Lucide Apple-style (thin stroke & soft edges) */
+.lucide {
+  stroke-width: 1.5 !important;
+  stroke-linecap: round !important;
+  stroke-linejoin: round !important;
+}
+
 /* Custom Utilities */
 .glass {
-  @apply bg-blue-900/20 backdrop-blur-xl border-blue-500/20 shadow-[0_4px_30px_rgba(0,0,0,0.5)] transition-all;
+  @apply bg-white/5 backdrop-blur-[24px] border border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.12)] transition-all;
 }
 
 /* Custom Scrollbar */

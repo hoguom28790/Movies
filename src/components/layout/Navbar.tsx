@@ -28,7 +28,7 @@ export function Navbar() {
 
   return (
     <>
-      <header className="fixed top-0 z-50 w-full border-b border-white/5 bg-black/70 backdrop-blur-xl transition-all duration-300">
+      <header className="fixed top-0 z-50 w-full border-b border-white/5 bg-black/40 backdrop-blur-2xl transition-all duration-300">
         <div className="container mx-auto flex h-16 items-center justify-between px-4 lg:px-8">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2 flex-shrink-0">
@@ -115,7 +115,7 @@ export function Navbar() {
 
         {/* Mobile Menu */}
         {isMobileOpen && (
-          <div className="md:hidden border-t border-white/5 bg-black/95 backdrop-blur-xl">
+          <div className="md:hidden border-t border-white/5 bg-black/70 backdrop-blur-2xl">
             <nav className="flex flex-col px-4 py-4 gap-1">
               {navLinks.map((link) => (
                 <Link

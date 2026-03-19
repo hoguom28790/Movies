@@ -68,11 +68,11 @@ export function HeroSlider({ movies }: HeroSliderProps) {
           className="flex flex-col items-start gap-5 animate-in slide-in-from-bottom-8 fade-in duration-700"
         >
           <div className="flex items-center gap-3">
-            <span className="flex h-7 items-center rounded bg-primary px-2.5 text-xs font-black text-white uppercase tracking-wider shadow-sm ring-1 ring-white/10">
+            <span className="flex h-7 items-center rounded-xl bg-primary px-2.5 text-xs font-semibold text-white uppercase tracking-wider">
               Nổi Bật
             </span>
             {currentMovie.quality && (
-              <span className="flex h-7 items-center rounded-sm bg-white/10 backdrop-blur-md px-2.5 text-xs font-bold text-white ring-1 ring-white/20 uppercase">
+              <span className="flex h-7 items-center rounded-xl bg-white/10 backdrop-blur-xl px-2.5 text-xs font-semibold text-white border border-white/10 uppercase">
                 {currentMovie.quality}
               </span>
             )}
@@ -95,7 +95,7 @@ export function HeroSlider({ movies }: HeroSliderProps) {
             <Link href={`/movie/${currentMovie.slug}`}>
               <Button
                 size="lg"
-                className="h-13 px-8 text-lg font-black rounded-full gap-3 bg-gradient-to-r from-primary to-blue-500 text-white transition-all duration-300 shadow-[0_0_40px_rgba(0,99,229,0.6)] hover:shadow-[0_0_60px_rgba(0,99,229,0.9)] hover:-translate-y-1 hover:scale-105 border border-white/20 ring-4 ring-primary/20"
+                className="h-13 px-8 text-lg font-bold rounded-full gap-3 bg-primary hover:bg-primary-hover text-white transition-all shadow-lg hover:scale-105 hover:-translate-y-1"
               >
                 <Play className="w-6 h-6 fill-current" />
                 XEM NGAY
@@ -105,7 +105,7 @@ export function HeroSlider({ movies }: HeroSliderProps) {
               <Button
                 size="lg"
                 variant="secondary"
-                className="h-13 px-8 text-base font-bold rounded-lg gap-3 bg-white/15 hover:bg-white/25 backdrop-blur-md text-white border border-white/10 transition-all hover:scale-105"
+                className="h-13 px-8 text-base font-bold rounded-full gap-3 bg-black/40 hover:bg-black/60 backdrop-blur-2xl text-white border border-white/10 transition-all hover:scale-105"
               >
                 <Info className="w-5 h-5" />
                 Thông Tin
@@ -118,7 +118,7 @@ export function HeroSlider({ movies }: HeroSliderProps) {
       {/* Navigation Controls */}
       <button 
         onClick={prevSlide}
-        className="absolute left-4 top-1/2 -translate-y-1/2 z-20 p-2 rounded-full bg-black/40 backdrop-blur text-white opacity-0 group-hover:opacity-100 transition-all hover:bg-primary hover:scale-110"
+        className="absolute left-4 top-1/2 -translate-y-1/2 z-20 p-3 rounded-full bg-black/20 backdrop-blur-xl text-white opacity-0 group-hover:opacity-100 transition-all hover:bg-primary hover:scale-110 border border-white/10"
         aria-label="Previous movie"
       >
         <ChevronLeft className="w-8 h-8" />
@@ -126,7 +126,7 @@ export function HeroSlider({ movies }: HeroSliderProps) {
 
       <button 
         onClick={nextSlide}
-        className="absolute right-4 top-1/2 -translate-y-1/2 z-20 p-2 rounded-full bg-black/40 backdrop-blur text-white opacity-0 group-hover:opacity-100 transition-all hover:bg-primary hover:scale-110"
+        className="absolute right-4 top-1/2 -translate-y-1/2 z-20 p-3 rounded-full bg-black/20 backdrop-blur-xl text-white opacity-0 group-hover:opacity-100 transition-all hover:bg-primary hover:scale-110 border border-white/10"
         aria-label="Next movie"
       >
         <ChevronRight className="w-8 h-8" />

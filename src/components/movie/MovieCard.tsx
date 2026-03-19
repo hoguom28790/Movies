@@ -26,20 +26,20 @@ export function MovieCard({ title, slug, posterUrl, year, quality }: MovieCardPr
         <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/20 to-transparent opacity-60 group-hover:opacity-80 transition-opacity duration-300" />
         
         {quality && (
-          <div className="absolute top-3 left-3 rounded-[var(--radius)] bg-primary/95 backdrop-blur-md px-2.5 py-1 text-[11px] font-black tracking-wider text-white shadow-sm ring-1 ring-white/20">
+          <div className="absolute top-3 left-3 rounded-xl bg-black/40 backdrop-blur-xl px-2.5 py-1 text-[11px] font-semibold tracking-wide text-white border border-white/10">
             {quality}
           </div>
         )}
 
         {year && (
-          <div className="absolute top-3 right-3 rounded-[var(--radius)] bg-black/60 backdrop-blur-md px-2 py-1 text-[11px] font-bold text-white shadow-sm ring-1 ring-white/10">
+          <div className="absolute top-3 right-3 rounded-xl bg-black/40 backdrop-blur-xl px-2 py-1 text-[11px] font-semibold text-white border border-white/10">
             {year}
           </div>
         )}
 
         <div className="absolute inset-0 flex items-center justify-center opacity-0 transition-opacity duration-300 group-hover:opacity-100">
-          <div className="bg-primary rounded-full p-4 transform transition-all duration-300 group-hover:scale-110 shadow-xl ring-4 ring-white/10">
-            <Play className="h-8 w-8 text-black fill-current translate-x-0.5" />
+          <div className="bg-white/20 backdrop-blur-lg rounded-full p-4 transform transition-all duration-300 group-hover:scale-110 shadow-lg border border-white/20">
+            <Play className="h-8 w-8 text-white fill-white translate-x-0.5" />
           </div>
         </div>
       </Link>

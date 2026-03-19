@@ -111,7 +111,7 @@ export function TraktConnectBtn() {
   }
 
   return (
-    <Button onClick={handleConnect} className="w-full gap-2 bg-[#ED1C24] hover:bg-[#ED1C24]/80 text-white font-bold tracking-wide">
+    <Button onClick={handleConnect} className="w-full gap-2 bg-primary hover:bg-primary/80 text-white font-bold tracking-wide">
       <Tv className="w-4 h-4" /> Liên Kết Trakt.tv
     </Button>
   );
