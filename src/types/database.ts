@@ -26,3 +26,16 @@ export interface HistoryEntry {
   progressSeconds: number;
   updatedAt: number;
 }
+
+export interface Playlist {
+  id: string;
+  userId: string;
+  name: string;
+  createdAt: number;
+  movies: {
+    movieSlug: string;
+    movieTitle: string;
+    posterUrl: string;
+    addedAt: number;
+  }[];
+}

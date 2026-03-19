@@ -1,6 +1,6 @@
 import { db } from "@/lib/firebase";
-import { collection, doc, setDoc, deleteDoc, getDocs, query, where, getDoc } from "firebase/firestore";
-import { WatchlistEntry, HistoryEntry } from "@/types/database";
+import { collection, doc, setDoc, deleteDoc, getDocs, query, where, getDoc, addDoc } from "firebase/firestore";
+import { WatchlistEntry, HistoryEntry, Playlist } from "@/types/database";
 
 export async function deleteFromWatchlist(userId: string, movieSlug: string) {
   const docId = `${userId}_${movieSlug}`;
@@ -58,4 +58,72 @@ export async function getUserHistory(userId: string): Promise<HistoryEntry[]> {
   const snap = await getDocs(q);
   const list = snap.docs.map(d => ({ id: d.id, ...d.data() } as HistoryEntry));
   return list.sort((a,b) => b.updatedAt - a.updatedAt);
+}
+
+export async function createPlaylist(userId: string, name: string) {
+  const playlistsRef = collection(db, "playlists");
+  const docRef = await addDoc(playlistsRef, {
+    userId,
+    name,
+    createdAt: Date.now(),
+    movies: []
+  });
+  return docRef.id;
+}
+
+export async function getUserPlaylists(userId: string): Promise<Playlist[]> {
+  const q = query(collection(db, "playlists"), where("userId", "==", userId));
+  const snap = await getDocs(q);
+  return snap.docs.map(doc => ({ id: doc.id, ...doc.data() } as Playlist)).sort((a,b) => b.createdAt - a.createdAt);
+}
+
+export async function deletePlaylist(playlistId: string) {
+  await deleteDoc(doc(db, "playlists", playlistId));
+}
+
+export async function addMovieToPlaylist(playlistId: string, movie: { movieSlug: string; movieTitle: string; posterUrl: string }) {
+  const ref = doc(db, "playlists", playlistId);
+  const snap = await getDoc(ref);
+  if (!snap.exists()) return;
+  const data = snap.data() as Playlist;
+  // avoid duplicates
+  if (data.movies.some(m => m.movieSlug === movie.movieSlug)) return;
+  const newMovies = [...data.movies, { ...movie, addedAt: Date.now() }];
+  await setDoc(ref, { movies: newMovies }, { merge: true });
+}
+
+export async function removeMovieFromPlaylist(playlistId: string, movieSlug: string) {
+  const ref = doc(db, "playlists", playlistId);
+  const snap = await getDoc(ref);
+  if (!snap.exists()) return;
+  const data = snap.data() as Playlist;
+  const newMovies = data.movies.filter(m => m.movieSlug !== movieSlug);
+  await setDoc(ref, { movies: newMovies }, { merge: true });
+}
+
+export async function isMovieInAnyPlaylist(userId: string, movieSlug: string): Promise<boolean> {
+  const playlists = await getUserPlaylists(userId);
+  return playlists.some(p => p.movies.some(m => m.movieSlug === movieSlug));
+}
+
+
+export async function ensureDefaultPlaylist(userId: string): Promise<void> {
+  const playlists = await getUserPlaylists(userId);
+  if (playlists.length === 0) {
+    const newId = await createPlaylist(userId, "Yêu Thích");
+    const q = query(collection(db, "watchlist"), where("userId", "==", userId));
+    const snap = await getDocs(q);
+    const oldWatchlist = snap.docs.map(d => ({ id: d.id, ...d.data() } as WatchlistEntry));
+    
+    if (oldWatchlist.length > 0) {
+      const ref = doc(db, "playlists", newId);
+      const mappedMovies = oldWatchlist.map(w => ({
+        movieSlug: w.movieSlug,
+        movieTitle: w.movieTitle,
+        posterUrl: w.posterUrl,
+        addedAt: w.addedAt
+      }));
+      await setDoc(ref, { movies: mappedMovies }, { merge: true });
+    }
+  }
 }

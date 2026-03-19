@@ -4,8 +4,9 @@ import React, { useEffect, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/Button';
 import { Bookmark, BookmarkCheck } from 'lucide-react';
-import { toggleWatchlist, isInWatchlist } from '@/services/db';
+import { isMovieInAnyPlaylist } from '@/services/db';
 import { AuthModal } from '@/components/auth/AuthModal';
+import { PlaylistModal } from '@/components/movie/PlaylistModal';
 
 interface WatchlistBtnProps {
   movieSlug: string;
@@ -18,49 +19,42 @@ export function WatchlistBtn({ movieSlug, movieTitle, posterUrl }: WatchlistBtnP
   const [isSaved, setIsSaved] = useState(false);
   const [loading, setLoading] = useState(true);
   const [showAuth, setShowAuth] = useState(false);
+  const [showPlaylistModal, setShowPlaylistModal] = useState(false);
 
-  useEffect(() => {
-    // Nếu AuthContext đang tải, khoan cập nhật nút lưu phim
-    if (authLoading) return;
-
+  const checkSavedStatus = () => {
     if (!user) {
       setIsSaved(false);
       setLoading(false);
       return;
     }
-    
     setLoading(true);
-    isInWatchlist(user.uid, movieSlug)
+    isMovieInAnyPlaylist(user.uid, movieSlug)
       .then(saved => {
         setIsSaved(saved);
         setLoading(false);
       })
       .catch(err => {
         console.error("Lỗi kiểm tra phim đã lưu:", err);
-        setLoading(false); // Đảm bảo nút không bị kẹt disabled
+        setLoading(false);
       });
+  };
+
+  useEffect(() => {
+    if (authLoading) return;
+    checkSavedStatus();
   }, [user, movieSlug, authLoading]);
 
-  const handleToggle = async () => {
+  const handleToggle = () => {
     if (!user) {
       setShowAuth(true);
       return;
     }
+    setShowPlaylistModal(true);
+  };
 
-    setLoading(true);
-    try {
-      const newStatus = await toggleWatchlist(user.uid, {
-        movieSlug,
-        movieTitle,
-        posterUrl,
-      });
-      setIsSaved(newStatus);
-    } catch (err) {
-      console.error("Lỗi khi lưu phim:", err);
-      alert("Đã xảy ra lỗi khi lưu phim. Vui lòng thử lại sau.");
-    } finally {
-      setLoading(false);
-    }
+  const handleCloseModal = () => {
+    setShowPlaylistModal(false);
+    checkSavedStatus(); // re-verify state when user finishes tweaking playlists
   };
 
   return (
@@ -75,6 +69,13 @@ export function WatchlistBtn({ movieSlug, movieTitle, posterUrl }: WatchlistBtnP
         {loading ? "Đang xử lý..." : (isSaved ? "Đã Thêm" : "Lưu Phim")}
       </Button>
       <AuthModal isOpen={showAuth} onClose={() => setShowAuth(false)} />
+      <PlaylistModal 
+        isOpen={showPlaylistModal} 
+        onClose={handleCloseModal} 
+        movieSlug={movieSlug} 
+        movieTitle={movieTitle} 
+        posterUrl={posterUrl} 
+      />
     </>
   );
 }
