@@ -126,7 +126,7 @@ export default function WatchlistPage() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-7xl">
+    <div className="container mx-auto px-4 py-8 mt-24 max-w-7xl">
       <h1 className="text-3xl font-bold mb-8 border-l-4 border-primary pl-3">Thư Viện Phim Của Bạn</h1>
       
       {playlists.length === 0 ? (

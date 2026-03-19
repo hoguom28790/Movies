@@ -23,7 +23,7 @@ export default async function SearchPage({
   }
 
   return (
-    <div className="container mx-auto px-4 lg:px-8 py-8 mt-16 min-h-screen">
+    <div className="container mx-auto px-4 lg:px-8 py-8 mt-24 min-h-screen">
       <div className="max-w-4xl mx-auto flex flex-col gap-8">
         {/* Search Header */}
         <div className="flex flex-col gap-6">

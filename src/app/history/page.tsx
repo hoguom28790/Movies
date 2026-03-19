@@ -55,7 +55,7 @@ export default function HistoryPage() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="container mx-auto px-4 py-8 mt-24">
       <h1 className="text-3xl font-bold mb-8 border-l-4 border-primary pl-3">Lịch Sử Xem Phim</h1>
       
       {items.length === 0 ? (
