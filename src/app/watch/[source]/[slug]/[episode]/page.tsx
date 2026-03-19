@@ -126,6 +126,7 @@ export default async function WatchPage({
           isHls={isHls} 
           rawEmbedUrl={rawEmbedUrl}
           nextEpisodeUrl={nextEp ? `/watch/${source}/${slug}/${nextEp.slug || nextEp.name}` : undefined}
+          movieTitle={data.name}
         />
       </div>
 

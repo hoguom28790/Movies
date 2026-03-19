@@ -78,6 +78,12 @@ export function Navbar() {
                 >
                   Yêu Thích
                 </Link>
+                <Link
+                  href="/settings"
+                  className="text-sm font-semibold text-white/70 hover:text-white transition-colors"
+                >
+                  Cài Đặt
+                </Link>
                 <button
                   onClick={logout}
                   className="flex items-center gap-1.5 text-sm font-semibold text-white/60 hover:text-primary transition-colors"
@@ -141,6 +147,13 @@ export function Navbar() {
                       className="px-3 py-3 rounded-lg text-sm font-semibold text-white/60 hover:text-white hover:bg-white/5 transition-all"
                     >
                       Phim Yêu Thích
+                    </Link>
+                    <Link
+                      href="/settings"
+                      onClick={() => setIsMobileOpen(false)}
+                      className="px-3 py-3 rounded-lg text-sm font-semibold text-white/60 hover:text-white hover:bg-white/5 transition-all"
+                    >
+                      Cài Đặt (Trakt)
                     </Link>
                     <button
                       onClick={() => { logout(); setIsMobileOpen(false); }}

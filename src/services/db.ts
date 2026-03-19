@@ -131,3 +131,23 @@ export async function ensureDefaultPlaylist(userId: string): Promise<void> {
     }
   }
 }
+
+// ================= TRAKT.TV INTEGRATION =================
+export async function saveTraktTokens(userId: string, tokens: any) {
+  const docRef = doc(db, "users", userId);
+  await setDoc(docRef, { trakt: tokens }, { merge: true });
+}
+
+export async function getTraktTokens(userId: string) {
+  const docRef = doc(db, "users", userId);
+  const snap = await getDoc(docRef);
+  if (snap.exists()) {
+    return snap.data()?.trakt || null;
+  }
+  return null;
+}
+
+export async function disconnectTrakt(userId: string) {
+  const docRef = doc(db, "users", userId);
+  await setDoc(docRef, { trakt: null }, { merge: true });
+}
