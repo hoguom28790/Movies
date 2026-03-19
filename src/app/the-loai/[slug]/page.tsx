@@ -48,9 +48,9 @@ export default async function GenrePage({
     <MovieGrid
       movies={result.items}
       title={`Thể Loại: ${formatGenreName(slug)}`}
+      fetchUrl={`/api/movies?type=genre&slug=${slug}`}
       currentPage={result.pagination.currentPage}
       totalPages={result.pagination.totalPages}
-      basePath={`/the-loai/${slug}`}
     />
   );
 }

@@ -2,6 +2,7 @@ import { MovieListResponse } from "@/types/movie";
 import { getNguonCMovies } from "./nguonc";
 import { getKKPhimMovies, searchMovies as searchKK } from "./kkphim";
 import { getOPhimMovies, searchMovies as searchOP } from "./ophim";
+export * from "./category";
 
 export async function searchMovies(keyword: string, page: number = 1): Promise<MovieListResponse> {
   // Use KKPhim as primary for search as it tends to be faster/more accurate

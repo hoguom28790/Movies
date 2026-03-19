@@ -11,9 +11,9 @@ export default async function PhimBoPage({ searchParams }: { searchParams: Promi
     <MovieGrid
       movies={items}
       title="Phim Bộ"
+      fetchUrl="/api/movies?type=category&category=phim-bo"
       currentPage={pagination.currentPage}
       totalPages={pagination.totalPages}
-      basePath="/phim-bo"
     />
   );
 }

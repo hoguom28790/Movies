@@ -11,9 +11,9 @@ export default async function PhimMoiPage({ searchParams }: { searchParams: Prom
     <MovieGrid
       movies={items}
       title="Phim Mới Cập Nhật"
+      fetchUrl="/api/movies?type=latest"
       currentPage={pagination.currentPage}
       totalPages={pagination.totalPages}
-      basePath="/phim-moi"
     />
   );
 }

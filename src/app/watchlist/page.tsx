@@ -5,7 +5,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { getUserPlaylists, deletePlaylist, removeMovieFromPlaylist, ensureDefaultPlaylist, updatePlaylistName } from "@/services/db";
 import { Playlist } from "@/types/database";
 import { MovieCard } from "@/components/movie/MovieCard";
-import { Trash, Folder, ChevronDown, ChevronRight, Loader2, Pencil, X } from "lucide-react";
+import { Trash, Library, ChevronDown, ChevronRight, Loader2, Pencil, X } from "lucide-react";
 
 export default function WatchlistPage() {
   const { user, loading: authLoading } = useAuth();
@@ -130,9 +130,9 @@ export default function WatchlistPage() {
       <h1 className="text-3xl font-bold mb-8 border-l-4 border-primary pl-3">Thư Viện Phim Của Bạn</h1>
       
       {playlists.length === 0 ? (
-        <div className="text-center py-20 bg-surface rounded-2xl border border-white/5">
-          <Folder className="w-16 h-16 text-white/20 mx-auto mb-4" />
-          <p className="text-neutral-400 text-lg">Bạn chưa có thư mục nào.</p>
+        <div className="text-center py-20 bg-surface rounded-3xl border border-white/5">
+          <Library className="w-16 h-16 text-white/20 mx-auto mb-4 stroke-[1.2]" />
+          <p className="text-neutral-400 text-lg font-medium">Bạn chưa có thư mục nào.</p>
           <p className="text-neutral-500 text-sm mt-2">Hãy lưu một bộ phim để tạo thư mục đầu tiên!</p>
         </div>
       ) : (
@@ -147,8 +147,8 @@ export default function WatchlistPage() {
                   className="flex items-center justify-between p-5 cursor-pointer hover:bg-white/5 transition-colors select-none"
                 >
                   <div className="flex items-center gap-4">
-                    <div className="bg-primary/20 p-3 rounded-xl">
-                      <Folder className="w-6 h-6 text-primary" />
+                    <div className="bg-primary/10 p-3 rounded-2xl border border-primary/20">
+                      <Library className="w-6 h-6 text-primary stroke-[1.5]" />
                     </div>
                     <div>
                       {editingId === playlist.id ? (

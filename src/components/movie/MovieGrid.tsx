@@ -1,18 +1,65 @@
-import Link from "next/link";
+"use client";
+
+import { useState, useEffect, useRef, useCallback } from "react";
 import { MovieCard } from "@/components/movie/MovieCard";
 import type { Movie } from "@/types/movie";
+import { Loader2 } from "lucide-react";
 
 interface MovieGridProps {
   movies: Movie[];
   title: string;
+  fetchUrl: string;
   currentPage: number;
   totalPages: number;
-  basePath: string;
 }
 
-export function MovieGrid({ movies, title, currentPage, totalPages, basePath }: MovieGridProps) {
-  const prevPage = currentPage > 1 ? currentPage - 1 : null;
-  const nextPage = currentPage < totalPages ? currentPage + 1 : null;
+export function MovieGrid({ movies: initialMovies, title, fetchUrl, currentPage: initialPage, totalPages }: MovieGridProps) {
+  const [movies, setMovies] = useState<Movie[]>(initialMovies);
+  const [page, setPage] = useState(initialPage);
+  const [loading, setLoading] = useState(false);
+  const observerTarget = useRef<HTMLDivElement>(null);
+
+  const loadMore = useCallback(async () => {
+    if (loading || page >= totalPages) return;
+    
+    setLoading(true);
+    try {
+      const nextPage = page + 1;
+      const res = await fetch(`${fetchUrl}&page=${nextPage}`);
+      const data = await res.json();
+      
+      if (data.items && data.items.length > 0) {
+        setMovies(prev => {
+          // Prevent duplicates just in case
+          const existingIds = new Set(prev.map(m => m.id));
+          const newMovies = data.items.filter((m: Movie) => !existingIds.has(m.id));
+          return [...prev, ...newMovies];
+        });
+        setPage(nextPage);
+      }
+    } catch (err) {
+      console.error("Failed to load more movies:", err);
+    } finally {
+      setLoading(false);
+    }
+  }, [loading, page, totalPages, fetchUrl]);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && !loading && page < totalPages) {
+          loadMore();
+        }
+      },
+      { threshold: 0.1, rootMargin: '400px' }
+    );
+
+    if (observerTarget.current) {
+      observer.observe(observerTarget.current);
+    }
+
+    return () => observer.disconnect();
+  }, [loadMore, loading, page, totalPages]);
 
   return (
     <div className="container mx-auto px-4 py-8 mt-20">
@@ -28,29 +75,17 @@ export function MovieGrid({ movies, title, currentPage, totalPages, basePath }: 
         </div>
       )}
 
-      {/* Pagination */}
-      {totalPages > 1 && (
-        <div className="flex items-center justify-center gap-4 mt-10">
-          {prevPage ? (
-            <Link href={`${basePath}?page=${prevPage}`} className="px-5 py-2 bg-surface rounded-lg text-sm font-semibold hover:bg-surface/70 transition-colors">
-              ← Trước
-            </Link>
-          ) : (
-            <span className="px-5 py-2 bg-surface/30 rounded-lg text-sm font-semibold text-neutral-500 cursor-not-allowed">← Trước</span>
-          )}
-
-          <span className="text-sm text-neutral-400">
-            Trang <strong className="text-white">{currentPage}</strong> / {totalPages}
-          </span>
-
-          {nextPage ? (
-            <Link href={`${basePath}?page=${nextPage}`} className="px-5 py-2 bg-surface rounded-lg text-sm font-semibold hover:bg-surface/70 transition-colors">
-              Tiếp →
-            </Link>
-          ) : (
-            <span className="px-5 py-2 bg-surface/30 rounded-lg text-sm font-semibold text-neutral-500 cursor-not-allowed">Tiếp →</span>
-          )}
+      {/* Infinite Scroll Loading Trigger */}
+      {page < totalPages && (
+        <div ref={observerTarget} className="w-full py-12 flex items-center justify-center">
+          {loading && <Loader2 className="w-8 h-8 animate-spin text-primary" />}
         </div>
+      )}
+      
+      {page >= totalPages && movies.length > 0 && (
+         <div className="w-full py-12 flex items-center justify-center">
+         <p className="text-neutral-500 text-sm font-medium">Bạn đã xem hết danh sách phim.</p>
+       </div>
       )}
     </div>
   );
