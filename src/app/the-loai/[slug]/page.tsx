@@ -1,0 +1,56 @@
+import { getGenreMovies } from "@/services/api/category";
+import { MovieGrid } from "@/components/movie/MovieGrid";
+import { notFound } from "next/navigation";
+
+export default async function GenrePage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ slug: string }>;
+  searchParams: Promise<{ page?: string }>;
+}) {
+  const { slug } = await params;
+  const { page } = await searchParams;
+  const currentPage = Math.max(1, parseInt(page || "1", 10));
+
+  const genreLabels: Record<string, string> = {
+    "hanh-dong": "Hành Động",
+    "tinh-cam": "Tình Cảm",
+    "hai-huoc": "Hài Hước",
+    "co-trang": "Cổ Trang",
+    "tam-ly": "Tâm Lý",
+    "kinh-di": "Kinh Dị",
+    "vien-tuong": "Viễn Tưởng",
+    "phieu-luu": "Phiêu Lưu",
+    "hoat-hinh": "Hoạt Hình",
+    "tai-lieu": "Tài Liệu",
+    "xa-hoi-den": "Xã Hội Đen",
+    "bi-an": "Bí Ẩn",
+    "chien-tranh": "Chiến Tranh",
+    "the-thao": "Thể Thao",
+    "the-thao-am-nhac": "Âm Nhạc",
+    "gia-dinh": "Gia Đình",
+  };
+
+  const formatGenreName = (s: string) =>
+    genreLabels[s] || s.split("-").map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(" ");
+
+  let result;
+  try {
+    result = await getGenreMovies(slug, currentPage);
+  } catch {
+    return notFound();
+  }
+
+  if (!result.items.length && currentPage === 1) return notFound();
+
+  return (
+    <MovieGrid
+      movies={result.items}
+      title={`Thể Loại: ${formatGenreName(slug)}`}
+      currentPage={result.pagination.currentPage}
+      totalPages={result.pagination.totalPages}
+      basePath={`/the-loai/${slug}`}
+    />
+  );
+}
