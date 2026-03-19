@@ -2,6 +2,16 @@ import { db } from "@/lib/firebase";
 import { collection, doc, setDoc, deleteDoc, getDocs, query, where, getDoc } from "firebase/firestore";
 import { WatchlistEntry, HistoryEntry } from "@/types/database";
 
+export async function deleteFromWatchlist(userId: string, movieSlug: string) {
+  const docId = `${userId}_${movieSlug}`;
+  await deleteDoc(doc(db, "watchlist", docId));
+}
+
+export async function deleteFromHistory(userId: string, movieSlug: string) {
+  const docId = `${userId}_${movieSlug}`;
+  await deleteDoc(doc(db, "history", docId));
+}
+
 export async function toggleWatchlist(userId: string, entry: Omit<WatchlistEntry, 'userId' | 'addedAt'>) {
   const docId = `${userId}_${entry.movieSlug}`;
   const docRef = doc(db, "watchlist", docId);

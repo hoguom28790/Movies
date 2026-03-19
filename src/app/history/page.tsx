@@ -2,14 +2,27 @@
 
 import React, { useEffect, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
-import { getUserHistory } from "@/services/db";
+import { getUserHistory, deleteFromHistory } from "@/services/db";
 import { HistoryEntry } from "@/types/database";
 import { MovieCard } from "@/components/movie/MovieCard";
+import { Trash2 } from "lucide-react";
 
 export default function HistoryPage() {
   const { user, loading: authLoading } = useAuth();
   const [items, setItems] = useState<HistoryEntry[]>([]);
   const [loading, setLoading] = useState(true);
+
+  const handleDelete = async (movieSlug: string, e: React.MouseEvent) => {
+    e.preventDefault();
+    if (!user) return;
+    try {
+      await deleteFromHistory(user.uid, movieSlug);
+      setItems(prev => prev.filter(item => item.movieSlug !== movieSlug));
+    } catch (err) {
+      console.error("Lỗi khi xóa phim:", err);
+      alert("Đã xảy ra lỗi khi xóa phim.");
+    }
+  };
 
   useEffect(() => {
     if (authLoading) return;
@@ -59,6 +72,13 @@ export default function HistoryPage() {
               <div className="absolute top-2 right-2 bg-black/80 text-white text-xs px-2 py-1 rounded z-10 shadow-sm border border-white/10 pointer-events-none">
                 Đã xem: {item.episodeName}
               </div>
+              <button 
+                onClick={(e) => handleDelete(item.movieSlug, e)}
+                className="absolute top-2 left-2 z-20 bg-red-500/80 hover:bg-red-600 text-white rounded-full p-2 opacity-0 lg:group-hover:opacity-100 transition-opacity shadow-md hover:scale-110 focus:opacity-100"
+                title="Xóa khỏi lịch sử"
+              >
+                <Trash2 className="w-4 h-4" />
+              </button>
             </div>
           ))}
         </div>
