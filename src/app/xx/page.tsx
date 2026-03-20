@@ -1,6 +1,8 @@
 import { getTopXXMovies } from "@/services/api/topxx";
 import { XXMovieGrid } from "@/components/movie/XXMovieGrid";
 
+export const dynamic = "force-dynamic";
+
 export const metadata = {
   title: "TopXX - Kho Phim Cao Cấp",
   description: "Trải nghiệm không gian phim giải trí đỉnh cao từ TopXX.",

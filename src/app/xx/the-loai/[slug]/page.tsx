@@ -2,6 +2,8 @@ import { getTopXXMovies } from "@/services/api/topxx";
 import { XXMovieGrid } from "@/components/movie/XXMovieGrid";
 import { notFound } from "next/navigation";
 
+export const dynamic = "force-dynamic";
+
 export default async function XXCategoryPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   

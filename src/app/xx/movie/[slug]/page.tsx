@@ -4,6 +4,8 @@ import Link from "next/link";
 import { Play, Calendar, Globe, Tag } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 
+export const dynamic = "force-dynamic";
+
 export default async function XXMovieDetailsPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const movieData = await getTopXXDetails(slug);
