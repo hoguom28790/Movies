@@ -7,27 +7,37 @@ export async function enrichMovies(movies: Movie[]): Promise<Movie[]> {
   const enriched = await Promise.all(
     movies.map(async (movie) => {
       try {
-        // Search for movie in TMDB
-        const yearMatch = movie.year ? parseInt(movie.year) : undefined;
-        const cleanName = (name: string) => name.replace(/\(Phần\s+\d+\)/gi, "").replace(/\(Season\s+\d+\)/gi, "").trim();
-        const searchName = cleanName(movie.title);
-        const searchOrigin = movie.originalTitle ? cleanName(movie.originalTitle) : "";
+        let tmdbId = movie.tmdbId ? parseInt(movie.tmdbId) : null;
+        let mediaType: "movie" | "tv" = "movie";
 
-        let tmdbSearch = await searchTMDBMovie(searchName, yearMatch);
-        if (!tmdbSearch && searchOrigin) {
-          tmdbSearch = await searchTMDBMovie(searchOrigin, yearMatch);
+        if (!tmdbId) {
+          // Search for movie in TMDB
+          const yearMatch = movie.year ? parseInt(movie.year) : undefined;
+          const cleanName = (name: string) => name.replace(/\(Phần\s+\d+\)/gi, "").replace(/\(Season\s+\d+\)/gi, "").trim();
+          const searchName = cleanName(movie.title);
+          const searchOrigin = movie.originalTitle ? cleanName(movie.originalTitle) : "";
+
+          let tmdbSearch = await searchTMDBMovie(searchName, yearMatch);
+          if (!tmdbSearch && searchOrigin) {
+            tmdbSearch = await searchTMDBMovie(searchOrigin, yearMatch);
+          }
+          if (!tmdbSearch) {
+            tmdbSearch = await searchTMDBMovie(searchName);
+          }
+          
+          if (tmdbSearch) {
+            tmdbId = tmdbSearch.id;
+            mediaType = tmdbSearch.media_type;
+          }
         }
-        if (!tmdbSearch) {
-          tmdbSearch = await searchTMDBMovie(searchName);
-        }
-        
-        if (!tmdbSearch) return movie;
+
+        if (!tmdbId) return movie;
 
         // Get full details for genres and real fields
-        const details = await getTMDBMovieDetails(tmdbSearch.id, tmdbSearch.media_type);
+        const details = await getTMDBMovieDetails(tmdbId, mediaType);
         if (!details) return movie;
 
-        const imdbId = details.external_ids?.imdb_id;
+        const imdbId = details.external_ids?.imdb_id || movie.imdbId;
         const realImdbRating = imdbId ? await getIMDbRating(imdbId).catch(() => null) : null;
 
         return {

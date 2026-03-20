@@ -15,6 +15,8 @@ function normalizeOphim(items: any[], cdnBase: string): Movie[] {
     year: item.year?.toString() || "",
     quality: item.quality || "",
     status: item.status || item.episode_current || "",
+    tmdbId: item.tmdb?.id || item.tmdb_id || "",
+    imdbId: item.imdb?.id || item.imdb_id || "",
     source: "ophim" as const,
   }));
 }
@@ -31,6 +33,8 @@ function normalizeKk(items: any[]): Movie[] {
     year: item.year?.toString() || "",
     quality: item.quality || "",
     status: item.status || item.episode_current || "",
+    tmdbId: item.tmdb?.id || item.tmdb_id || "",
+    imdbId: item.imdb?.id || item.imdb_id || "",
     source: "kkphim" as const,
   }));
 }

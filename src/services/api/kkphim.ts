@@ -19,6 +19,8 @@ export async function getKKPhimMovies(page: number = 1): Promise<MovieListRespon
     thumbUrl: item.thumb_url?.startsWith('http') ? item.thumb_url : `https://phimimg.com/${item.thumb_url}`,
     year: item.year?.toString() || "",
     status: item.status || item.episode_current || "",
+    tmdbId: item.tmdb?.id || item.tmdb_id || "",
+    imdbId: item.imdb?.id || item.imdb_id || "",
     source: 'kkphim'
   })).filter((item: Movie) => 
     item.status?.toLowerCase() !== "trailer" && 
@@ -55,6 +57,8 @@ export async function searchMovies(keyword: string, page: number = 1): Promise<M
     year: item.year?.toString() || "",
     quality: item.quality || "",
     status: item.status || item.episode_current || "",
+    tmdbId: item.tmdb?.id || item.tmdb_id || "",
+    imdbId: item.imdb?.id || item.imdb_id || "",
     source: 'kkphim'
   })).filter((item: Movie) => 
     item.status?.toLowerCase() !== "trailer" && 

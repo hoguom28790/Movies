@@ -45,24 +45,41 @@ export default async function MovieDetailsPage({ params }: { params: Promise<{ s
 
   const { data, episodes, source } = movieRes;
   
-  // TMDB Enrichment
-  const cleanName = (name: string) => name.replace(/\(Phần\s+\d+\)/gi, "").replace(/\(Season\s+\d+\)/gi, "").trim();
-  const searchName = cleanName(data.name);
-  const searchOrigin = cleanName(data.origin_name || data.original_name || "");
+  // Try to get TMDB/IMDB IDs from source data first
+  let tmdbSearchId = data.tmdb?.id || data.tmdb_id;
+  let imdbSearchId = data.imdb?.id || data.imdb_id || data.imdbId;
+  let mediaType: "movie" | "tv" = data.type === "series" ? "tv" : "movie";
 
-  let tmdbSearch = await searchTMDBMovie(searchName, data.year);
-  if (!tmdbSearch && searchOrigin) {
-    tmdbSearch = await searchTMDBMovie(searchOrigin, data.year);
+  let tmdbData: any = null;
+
+  if (tmdbSearchId) {
+    tmdbData = await getTMDBMovieDetails(parseInt(tmdbSearchId), mediaType);
   }
-  if (!tmdbSearch) {
-    tmdbSearch = await searchTMDBMovie(searchName);
-  }
-  if (!tmdbSearch && searchOrigin) {
-    tmdbSearch = await searchTMDBMovie(searchOrigin);
+
+  // If ID fetch fails or no ID, fallback to title search
+  if (!tmdbData) {
+    // TMDB Enrichment
+    const cleanName = (name: string) => name.replace(/\(Phần\s+\d+\)/gi, "").replace(/\(Season\s+\d+\)/gi, "").trim();
+    const searchName = cleanName(data.name);
+    const searchOrigin = cleanName(data.origin_name || data.original_name || "");
+
+    let tmdbSearch = await searchTMDBMovie(searchName, data.year);
+    if (!tmdbSearch && searchOrigin) {
+      tmdbSearch = await searchTMDBMovie(searchOrigin, data.year);
+    }
+    if (!tmdbSearch) {
+      tmdbSearch = await searchTMDBMovie(searchName);
+    }
+    if (!tmdbSearch && searchOrigin) {
+      tmdbSearch = await searchTMDBMovie(searchOrigin);
+    }
+    
+    if (tmdbSearch) {
+      tmdbData = await getTMDBMovieDetails(tmdbSearch.id, tmdbSearch.media_type);
+    }
   }
   
-  const tmdbData = tmdbSearch ? await getTMDBMovieDetails(tmdbSearch.id, tmdbSearch.media_type) : null;
-  const imdbId = tmdbData?.external_ids?.imdb_id;
+  const imdbId = tmdbData?.external_ids?.imdb_id || imdbSearchId;
   
   // Fetch collection if exists
   const collectionData = tmdbData?.belongs_to_collection 

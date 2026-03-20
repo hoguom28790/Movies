@@ -11,6 +11,9 @@ export interface Movie {
   overview?: string;
   genres?: string[];
   imdbRating?: number;
+  tmdbRating?: number;
+  tmdbId?: string;
+  imdbId?: string;
   source: 'nguonc' | 'kkphim' | 'ophim';
 }
 
