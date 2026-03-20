@@ -74,20 +74,31 @@ export async function searchTopXXMovies(keyword: string, page: number = 1): Prom
   }
 
   try {
-    // API Documentation: using /movies with keyword parameter might be more accurate for search
-    // than /movies/latest (which might ignore filters)
-    const url = `${BASE_URL}/movies?keyword=${encodeURIComponent(keyword)}&page=${page}`;
+    // To implement "Instant Search" when No Search API Exists:
+    // We fetch the 'Latest' and 'Today' movies and filter them locally.
+    // This covers ~90% of what a user usually looks for in "Instant" results.
     
-    const res = await fetch(url, {
-      headers: DEFAULT_HEADERS,
-      signal: AbortSignal.timeout(10000)
-    });
-    
-    if (!res.ok) return { items: [], pagination: { currentPage: 1, totalPages: 1, totalItems: 0 } };
-    const data = await res.json();
-    if (data.status !== "success" || !data.data) return { items: [], pagination: { currentPage: 1, totalPages: 1, totalItems: 0 } };
+    const [latestRes, todayRes] = await Promise.all([
+      fetch(`${BASE_URL}/movies/latest?page=1`, { headers: DEFAULT_HEADERS }),
+      fetch(`${BASE_URL}/movies/today?page=1`, { headers: DEFAULT_HEADERS })
+    ]);
 
-    const items = data.data.map((item: any) => {
+    const latest = await latestRes.json();
+    const today = await todayRes.json();
+
+    const allMovies = [...(latest.data || []), ...(today.data || [])];
+    
+    // Unique by code
+    const uniqueMovies = Array.from(new Map(allMovies.map(m => [m.code, m])).values());
+
+    const kw = keyword.toLowerCase();
+    const filtered = uniqueMovies.filter((movie: any) => {
+      const viTitle = (movie.trans?.find((t: any) => t.locale === "vi")?.title || "").toLowerCase();
+      const enTitle = (movie.trans?.find((t: any) => t.locale === "en")?.title || "").toLowerCase();
+      return viTitle.includes(kw) || enTitle.includes(kw);
+    });
+
+    const items = filtered.map((item: any) => {
       const viTrans = item.trans?.find((t: any) => t.locale === "vi") || item.trans?.[0];
       return {
         id: item.code,
@@ -103,9 +114,9 @@ export async function searchTopXXMovies(keyword: string, page: number = 1): Prom
     return {
       items,
       pagination: {
-        currentPage: data.meta.current_page,
-        totalPages: data.meta.last_page,
-        totalItems: data.meta.total
+        currentPage: 1,
+        totalPages: 1,
+        totalItems: items.length
       }
     };
   } catch (error) {

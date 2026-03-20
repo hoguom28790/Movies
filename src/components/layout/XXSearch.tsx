@@ -73,7 +73,7 @@ export function XXSearch() {
       </div>
 
       {isOpen && (query || isLoading) && (
-        <div className="absolute top-full left-0 right-0 mt-2 bg-[#141416] border border-white/10 rounded-2xl shadow-2xl shadow-black overflow-hidden z-[60] animate-in fade-in slide-in-from-top-2 duration-200">
+        <div className="absolute top-full right-0 mt-2 w-80 bg-[#141416] border border-white/10 rounded-2xl shadow-2xl shadow-black overflow-hidden z-[60] animate-in fade-in slide-in-from-top-2 duration-200">
           {isLoading ? (
             <div className="p-8 flex flex-col items-center justify-center gap-3">
               <Loader2 className="w-6 h-6 animate-spin text-yellow-500" />

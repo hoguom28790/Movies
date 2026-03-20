@@ -90,8 +90,6 @@ export function XXNav() {
         </Link>
       ))}
 
-      <XXSearch />
-
       {dropdowns.map((dd) => (
         <div key={dd.id} className="relative">
           <button
@@ -128,6 +126,10 @@ export function XXNav() {
           )}
         </div>
       ))}
+      <div className="flex-1" />
+      <div className="ml-auto">
+        <XXSearch />
+      </div>
     </nav>
   );
 }
