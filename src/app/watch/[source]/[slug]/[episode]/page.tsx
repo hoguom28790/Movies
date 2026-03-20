@@ -70,14 +70,14 @@ export default async function WatchPage({
       : `https://img.ophim.live/uploads/movies/${poster}`;
  
     return (
-      <div className="min-h-screen bg-black pt-14 pb-20 md:pb-0">
-        <div className="w-full bg-black">
-          <div className="container mx-auto px-3 sm:px-4 lg:px-8 py-2 sm:py-3 flex items-center justify-between gap-2">
+      <div className={`min-h-screen bg-black pt-14 pb-safe md:pb-0`}>
+        <div className="w-full bg-black pt-safe">
+          <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-2 sm:py-3 flex items-center justify-between gap-2 overflow-hidden">
             <Link
               href={`/movie/${slug}`}
               className="flex items-center gap-2 text-[13px] font-medium text-white/60 hover:text-white transition-colors min-w-0"
             >
-              <ArrowLeft className="w-4 h-4" />
+              <ArrowLeft className="w-4 h-4 flex-shrink-0" />
               <span className="truncate">{data.name}</span>
             </Link>
  

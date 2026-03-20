@@ -19,7 +19,7 @@ export function Navbar() {
 
   return (
     <>
-      <header className="fixed top-0 z-50 w-full border-b border-white/[0.06] bg-[#0a0a0a]/90 backdrop-blur-xl transition-all duration-300">
+      <header className="fixed top-0 z-50 w-full border-b border-white/[0.06] bg-[#0a0a0a]/90 backdrop-blur-xl transition-all duration-300 pt-safe">
         <div className="container mx-auto flex h-14 items-center justify-between px-4 lg:px-8">
           {/* Mobile Menu Toggle (Left on Mobile) */}
           <div className="md:hidden">

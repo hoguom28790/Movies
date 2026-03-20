@@ -56,8 +56,12 @@ export function MovieCard({ title, slug, posterUrl, year, quality, episodeText, 
         </div>
       </Link>
       
-      <div className="flex flex-col gap-0.5 px-0.5">
-        <Link href={`/movie/${slug}`} className="text-[14px] sm:text-[13px] font-semibold text-white/80 hover:text-white line-clamp-1 transition-colors" title={title}>
+      <div className="flex flex-col gap-0.5 px-0.5 mt-1">
+        <Link 
+          href={`/movie/${slug}`} 
+          className="text-[12px] sm:text-[13px] font-semibold text-white/90 hover:text-white line-clamp-2 transition-colors leading-[1.3]" 
+          title={title}
+        >
           {title}
         </Link>
         {originalTitle && (

@@ -28,6 +28,68 @@ body {
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  /* Fix 100vh on mobile */
+  min-height: calc(var(--vh, 1vh) * 100);
+}
+ 
+/* Safe Area Utilities */
+.pb-safe {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+.pt-safe {
+  padding-top: env(safe-area-inset-top, 0px);
+}
+.pl-safe {
+  padding-left: env(safe-area-inset-left, 0px);
+}
+.pr-safe {
+  padding-right: env(safe-area-inset-right, 0px);
+}
+ 
+/* iOS Specific Tweaks */
+.is-iphone .container {
+  padding-left: max(1rem, env(safe-area-inset-left));
+  padding-right: max(1rem, env(safe-area-inset-right));
+}
+ 
+.is-ios .glass {
+  /* iOS sometimes has issues with combined backdrop-blur and opacity */
+  -webkit-backdrop-filter: blur(24px);
+  backdrop-filter: blur(24px);
+}
+ 
+/* iPhone Grid Optimization */
+.is-iphone .grid-cols-2 {
+  gap: 0.75rem !important; /* gap-3 instead of gap-4 */
+}
+ 
+.is-iphone .container {
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+ 
+/* iPad Optimization */
+.is-ipad .container {
+  max-width: 100% !important;
+  padding-left: 2rem;
+  padding-right: 2rem;
+}
+ 
+/* Touch targets for all iOS devices */
+.is-touch .sidebar-icon {
+  margin-bottom: 0.5rem;
+}
+ 
+.is-touch button, 
+.is-touch a {
+  cursor: default !important; /* Browsers handle this, but ensures no hover-state artifacts on first tap */
+}
+ 
+/* Fix for iOS bottom bar covering content */
+@supports (padding-bottom: env(safe-area-inset-bottom)) {
+  .pb-safe {
+    padding-bottom: max(1rem, env(safe-area-inset-bottom));
+  }
 }
 
 /* Lucide thin stroke */

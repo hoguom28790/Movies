@@ -7,7 +7,8 @@ import { Play, ChevronLeft, ChevronRight, Star, Film } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 
 import type { Movie } from "@/types/movie";
-
+import { useDevice } from "@/contexts/DeviceContext";
+ 
 interface HeroSliderProps {
   movies: Movie[];
 }
@@ -31,9 +32,13 @@ export function HeroSlider({ movies }: HeroSliderProps) {
   if (!movies.length) return null;
 
   const currentMovie = movies[currentIndex];
-
+  // eslint-disable-next-line react-hooks/rules-of-hooks
+  const { isIPhone, isIPad } = useDevice();
+ 
   return (
-    <section className="relative w-full h-[60vh] sm:h-[70vh] lg:h-[75vh] min-h-[400px] flex items-end mt-[-56px] group overflow-hidden">
+    <section className={`relative w-full ${
+      isIPhone ? "h-[50vh] min-h-[350px]" : "h-[60vh] sm:h-[70vh] lg:h-[75vh] min-h-[400px]"
+    } flex items-end mt-[-56px] group overflow-hidden`}>
       {/* Background Images */}
       {movies.map((movie, idx) => (
         <div 
@@ -60,7 +65,9 @@ export function HeroSlider({ movies }: HeroSliderProps) {
           key={currentIndex} 
           className="flex flex-col items-start gap-3 sm:gap-4 animate-in slide-in-from-bottom-8 fade-in duration-700 max-w-3xl"
         >
-          <h1 className="text-xl sm:text-3xl md:text-5xl lg:text-6xl font-bold text-white leading-[1.2] tracking-tight">
+          <h1 className={`${
+            isIPhone ? "text-lg" : "text-xl sm:text-3xl"
+          } md:text-5xl lg:text-6xl font-bold text-white leading-[1.2] tracking-tight line-clamp-2`}>
             {currentMovie.title}
           </h1>
 

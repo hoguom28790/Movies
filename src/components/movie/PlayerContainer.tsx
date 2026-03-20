@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
+import { useDevice } from "@/contexts/DeviceContext";
 
 interface PlayerContainerProps {
   url: string;
@@ -21,6 +22,7 @@ export function PlayerContainer({ url, isHls, rawEmbedUrl, nextEpisodeUrl, movie
   const { theme } = useTheme();
   const router = useRouter();
   const { user } = useAuth();
+  const { isIOS } = useDevice();
   
   const [isPseudoFS, setIsPseudoFS] = useState(false);
   const [isPortrait, setIsPortrait] = useState(false);
@@ -141,9 +143,9 @@ export function PlayerContainer({ url, isHls, rawEmbedUrl, nextEpisodeUrl, movie
   return (
     <div className={isPseudoFS 
       ? (isPortrait 
-          ? "fixed top-0 left-full w-[100vh] h-[100vw] rotate-90 origin-top-left z-[9999] bg-black" 
-          : "fixed inset-0 w-screen h-screen z-[9999] bg-black")
-      : "w-full aspect-video relative shadow-2xl bg-black"
+          ? `fixed top-0 left-full w-[100vh] h-[100vw] rotate-90 origin-top-left z-[9999] bg-black ${isIOS ? 'p-safe' : ''}` 
+          : `fixed inset-0 w-screen h-screen z-[9999] bg-black ${isIOS ? 'p-safe' : ''}`)
+      : "w-full aspect-video relative shadow-2xl bg-black overflow-hidden"
     }>
       <iframe
         id="main-player"
