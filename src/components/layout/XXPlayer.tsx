@@ -3,6 +3,8 @@
 import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { saveXXHistory, getMovieXXHistory } from "@/services/xxDb";
+import { useAuth } from "@/contexts/AuthContext";
+import { saveXXFirestoreHistory, getXXFirestoreHistory } from "@/services/xxFirestore";
 
 interface XXPlayerProps {
   url: string;
@@ -26,37 +28,56 @@ export function XXPlayer({
   episodeName 
 }: XXPlayerProps) {
   const router = useRouter();
+  const { user } = useAuth();
   const [isPseudoFS, setIsPseudoFS] = useState(false);
   const lastSaveTime = useRef(0);
+  const lastCloudSaveTime = useRef(0);
 
   useEffect(() => {
-    const attemptSeek = () => {
+    const attemptSeek = async () => {
+      let progress = 0;
+      
+      // Get local history first
       const history = getMovieXXHistory(movieCode);
-      if (history && history.progressSeconds > 0) {
+      if (history) progress = history.progressSeconds;
+      
+      // If logged in, cloud history takes precedence if it's newer
+      if (user) {
+        try {
+          const cloudHistory = await getXXFirestoreHistory(user.uid);
+          const match = cloudHistory.find(h => h.movieCode === movieCode);
+          if (match && match.updatedAt > (history?.updatedAt || 0)) {
+            progress = match.progressSeconds;
+          }
+        } catch (e) {}
+      }
+
+      if (progress > 0) {
         const iframe = document.getElementById('xx-player') as HTMLIFrameElement;
         if (iframe?.contentWindow) {
-          iframe.contentWindow.postMessage({ type: 'SEEK', time: history.progressSeconds }, '*');
+          iframe.contentWindow.postMessage({ type: 'SEEK', time: progress }, '*');
         }
       }
       
-      // Initial save to establish history entry
-      saveXXHistory({
+      // Initial save
+      const entryData = {
         movieCode,
         movieTitle,
         posterUrl,
-        progressSeconds: history?.progressSeconds || 0,
+        progressSeconds: progress,
         durationSeconds: history?.durationSeconds || 0
-      });
+      };
+      saveXXHistory(entryData);
+      if (user) saveXXFirestoreHistory(user.uid, entryData);
     };
 
-    // Retry seek after a bit to be sure iframe is ready
     const timer1 = setTimeout(attemptSeek, 1000);
-    const timer2 = setTimeout(attemptSeek, 3000); // Second attempt for slower loads
+    const timer2 = setTimeout(attemptSeek, 3000);
     return () => {
       clearTimeout(timer1);
       clearTimeout(timer2);
     };
-  }, [movieCode, movieTitle, posterUrl]);
+  }, [movieCode, movieTitle, posterUrl, user]);
 
   useEffect(() => {
     const handleMessage = (event: MessageEvent) => {
@@ -64,15 +85,24 @@ export function XXPlayer({
 
       if (event.data.type === 'UPDATE_PROGRESS') {
         const now = Date.now();
-        if (now - lastSaveTime.current > 5000) { // Throttle 5s (more frequent for TopXX)
+        const entryData = {
+          movieCode,
+          movieTitle,
+          posterUrl,
+          progressSeconds: event.data.time,
+          durationSeconds: event.data.duration || 0
+        };
+
+        // Local Save (5s throttle)
+        if (now - lastSaveTime.current > 5000) {
           lastSaveTime.current = now;
-          saveXXHistory({
-            movieCode,
-            movieTitle,
-            posterUrl,
-            progressSeconds: event.data.time,
-            durationSeconds: event.data.duration || 0
-          });
+          saveXXHistory(entryData);
+        }
+        
+        // Cloud Save (15s throttle)
+        if (user && now - lastCloudSaveTime.current > 15000) {
+          lastCloudSaveTime.current = now;
+          saveXXFirestoreHistory(user.uid, entryData);
         }
       }
 

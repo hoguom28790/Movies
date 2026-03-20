@@ -2,32 +2,76 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { Play, Trash2, Clock } from "lucide-react";
+import { Play, Trash2, Clock, X } from "lucide-react";
 import { getXXHistory, clearXXHistory, XXHistoryEntry, removeXXHistoryItem } from "@/services/xxDb";
-import { Button } from "@/components/ui/Button";
+import { useAuth } from "@/contexts/AuthContext";
+import { 
+  getXXFirestoreHistory, 
+  deleteXXFirestoreHistoryItem 
+} from "@/services/xxFirestore";
+import { db } from "@/lib/firebase";
+import { doc, deleteDoc, collection, query, where, getDocs } from "firebase/firestore";
 
 import { XXMovieCard } from "@/components/movie/XXMovieCard";
-import { X } from "lucide-react";
+import { Button } from "@/components/ui/Button";
 
 export default function XXHistoryPage() {
+  const { user } = useAuth();
   const [history, setHistory] = useState<XXHistoryEntry[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    setHistory(getXXHistory());
-  }, []);
+    const fetchHistory = async () => {
+      setLoading(true);
+      try {
+        if (user) {
+          const cloudHistory = await getXXFirestoreHistory(user.uid);
+          setHistory(cloudHistory);
+        } else {
+          setHistory(getXXHistory());
+        }
+      } catch (err) {
+        setHistory(getXXHistory());
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchHistory();
+  }, [user]);
 
-  const handleClear = () => {
+  const handleClear = async () => {
     if (confirm("Bạn có chắc chắn muốn xóa toàn bộ lịch sử xem phim?")) {
+      if (user) {
+        try {
+          // Clear Firestore (Query and delete each for TopXX)
+          const q = query(collection(db, "xx_history"), where("userId", "==", user.uid));
+          const snap = await getDocs(q);
+          const deletePromises = snap.docs.map(d => deleteDoc(d.ref));
+          await Promise.all(deletePromises);
+        } catch (err) {
+          console.error("Firestore clear error:", err);
+        }
+      }
       clearXXHistory();
       setHistory([]);
     }
   };
 
-  const handleRemoveItem = (movieCode: string, e: React.MouseEvent) => {
+  const handleRemoveItem = async (movieCode: string, e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
+    
+    if (user) {
+      await deleteXXFirestoreHistoryItem(user.uid, movieCode).catch(console.error);
+    }
     removeXXHistoryItem(movieCode);
-    setHistory(getXXHistory());
+    
+    // Refresh list
+    if (user) {
+       setHistory(prev => prev.filter(h => h.movieCode !== movieCode));
+    } else {
+       setHistory(getXXHistory());
+    }
   };
 
   const formatProgress = (current: number, duration: number) => {

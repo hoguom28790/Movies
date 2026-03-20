@@ -2,16 +2,27 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { Play, Trash2, ListMusic, Plus, ChevronRight, Heart, Search, Settings2, MoreHorizontal, Edit2, Check, X as CloseIcon } from "lucide-react";
-import { getXXPlaylists, deleteXXPlaylist, removeMovieFromXXPlaylist, createXXPlaylist, XXPlaylist, getXXFavorites, toggleXXFavorite, renameXXPlaylist } from "@/services/xxDb";
+import { Play, Trash2, ListMusic, Plus, Heart, Search, Edit2, Check, X as CloseIcon, X } from "lucide-react";
+import { 
+  getXXPlaylists, deleteXXPlaylist, removeMovieFromXXPlaylist, 
+  createXXPlaylist, XXPlaylist, getXXFavorites, toggleXXFavorite, 
+  renameXXPlaylist, XXFavoriteEntry 
+} from "@/services/xxDb";
+import { useAuth } from "@/contexts/AuthContext";
+import { 
+  getXXFirestoreFavorites, 
+  getUserXXFirestorePlaylists,
+  saveXXFirestorePlaylist, 
+  deleteXXFirestorePlaylist,
+  toggleXXFirestoreFavorite
+} from "@/services/xxFirestore";
 import { Button } from "@/components/ui/Button";
-
 import { XXMovieCard } from "@/components/movie/XXMovieCard";
-import { X } from "lucide-react";
 
 export default function XXLibraryPage() {
+  const { user } = useAuth();
   const [playlists, setPlaylists] = useState<XXPlaylist[]>([]);
-  const [favorites, setFavorites] = useState<any[]>([]);
+  const [favorites, setFavorites] = useState<XXFavoriteEntry[]>([]);
   const [activeTab, setActiveTab] = useState<string>("favorites");
   const [activePlaylistId, setActivePlaylistId] = useState<string | null>(null);
   const [isCreating, setIsCreating] = useState(false);
@@ -19,16 +30,51 @@ export default function XXLibraryPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [isEditingName, setIsEditingName] = useState(false);
   const [editNameValue, setEditNameValue] = useState("");
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    setPlaylists(getXXPlaylists());
-    setFavorites(getXXFavorites());
-  }, []);
+    const fetchData = async () => {
+      setLoading(true);
+      try {
+        if (user) {
+          const [cloudPl, cloudFav] = await Promise.all([
+            getUserXXFirestorePlaylists(user.uid),
+            getXXFirestoreFavorites(user.uid)
+          ]);
+          setPlaylists(cloudPl);
+          setFavorites(cloudFav);
+        } else {
+          setPlaylists(getXXPlaylists());
+          setFavorites(getXXFavorites());
+        }
+      } catch (e) {
+        setPlaylists(getXXPlaylists());
+        setFavorites(getXXFavorites());
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, [user]);
 
-  const handleCreate = (e: React.FormEvent) => {
+  const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newName.trim()) return;
+    
+    // Local first
     const newId = createXXPlaylist(newName.trim());
+    
+    // Sync to Cloud
+    if (user) {
+      const newPlaylist: XXPlaylist = {
+        id: newId,
+        name: newName.trim(),
+        createdAt: Date.now(),
+        movies: []
+      };
+      await saveXXFirestorePlaylist(user.uid, newPlaylist);
+    }
+    
     setPlaylists(getXXPlaylists());
     setActivePlaylistId(newId);
     setActiveTab("playlist");
@@ -36,11 +82,15 @@ export default function XXLibraryPage() {
     setIsCreating(false);
   };
 
-  const handleDeletePlaylist = (id: string, e: React.MouseEvent) => {
+  const handleDeletePlaylist = async (id: string, e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
     if (confirm("Bạn có chắc muốn xóa Playlist này?")) {
+      if (user) {
+        await deleteXXFirestorePlaylist(user.uid, id);
+      }
       deleteXXPlaylist(id);
+      
       const remaining = getXXPlaylists();
       setPlaylists(remaining);
       if (activePlaylistId === id) {
@@ -50,10 +100,20 @@ export default function XXLibraryPage() {
     }
   };
 
-  const handleRenamePlaylist = (e: React.FormEvent) => {
+  const handleRenamePlaylist = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!activePlaylistId || !editNameValue.trim()) return;
+    
     renameXXPlaylist(activePlaylistId, editNameValue.trim());
+    
+    if (user) {
+       const pl = playlists.find(p => p.id === activePlaylistId);
+       if (pl) {
+         pl.name = editNameValue.trim();
+         await saveXXFirestorePlaylist(user.uid, pl);
+       }
+    }
+    
     setPlaylists(getXXPlaylists());
     setIsEditingName(false);
   };
@@ -72,6 +132,22 @@ export default function XXLibraryPage() {
   const filteredMovies = displayMovies.filter(m => 
     m.movieTitle.toLowerCase().includes(searchQuery.toLowerCase())
   );
+
+  const handleRemoveMovie = async (movie: XXFavoriteEntry) => {
+    if (activeTab === "favorites") {
+      if (user) await toggleXXFirestoreFavorite(user.uid, movie);
+      toggleXXFavorite(movie);
+      setFavorites(getXXFavorites());
+    } else if (activePlaylistId) {
+      removeMovieFromXXPlaylist(activePlaylistId, movie.movieCode);
+      if (user && activePlaylist) {
+         const updatedPl = { ...activePlaylist };
+         updatedPl.movies = updatedPl.movies.filter(m => m.movieCode !== movie.movieCode);
+         await saveXXFirestorePlaylist(user.uid, updatedPl);
+      }
+      setPlaylists(getXXPlaylists());
+    }
+  };
 
   return (
     <div className="container mx-auto px-4 py-8 md:py-16 animate-in fade-in duration-700">
@@ -244,12 +320,7 @@ export default function XXLibraryPage() {
                           onClick={(e) => {
                             e.preventDefault();
                             e.stopPropagation();
-                            if (activeTab === "favorites") toggleXXFavorite(movie);
-                            else removeMovieFromXXPlaylist(activePlaylistId!, movie.movieCode);
-                            
-                            // Refresh local state
-                            if (activeTab === "favorites") setFavorites(getXXFavorites());
-                            else setPlaylists(getXXPlaylists());
+                            handleRemoveMovie(movie);
                           }}
                           className="w-8 h-8 rounded-xl bg-black/60 backdrop-blur-xl text-white border border-white/10 flex items-center justify-center hover:bg-red-500 hover:scale-110 transition-all shadow-xl"
                           title="Xóa"
