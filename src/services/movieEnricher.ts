@@ -45,9 +45,9 @@ export async function enrichMovies(movies: Movie[]): Promise<Movie[]> {
           originalTitle: details.original_title || details.original_name || movie.originalTitle,
           overview: details.overview || movie.overview,
           genres: details.genres?.map((g: any) => g.name) || [],
-          imdbRating: realImdbRating || 0,
-          tmdbRating: details.vote_average || 0,
-          votes: details.vote_count || 0,
+          imdbRating: realImdbRating || movie.imdbRating || 0,
+          tmdbRating: details.vote_average || movie.tmdbRating || 0,
+          votes: details.vote_count || movie.votes || 0,
           // Optimization: Use TMDB backdrop for hero slider if available
           thumbUrl: details.backdrop_path ? (getTMDBImageUrl(details.backdrop_path) || movie.thumbUrl) : movie.thumbUrl,
           posterUrl: details.poster_path ? (getTMDBImageUrl(details.poster_path) || movie.posterUrl) : movie.posterUrl,
