@@ -10,6 +10,8 @@ export const metadata = {
   description: "Trải nghiệm không gian phim giải trí đỉnh cao từ TopXX.",
 };
 
+import { XXBentoGrid } from "@/components/movie/XXBentoGrid";
+
 export default async function XXHomePage() {
   const [latestData, javData, uncensoredData, avdbData] = await Promise.all([
     getTopXXMovies(1, "danh-sach", "phim-moi-cap-nhat"),
@@ -21,16 +23,22 @@ export default async function XXHomePage() {
   const heroMovie = latestData.items[0];
 
   return (
-    <div className="container mx-auto px-4 pb-20">
+    <div className="flex flex-col gap-16 pb-20 mt-[-20px] max-w-7xl mx-auto">
       {heroMovie && <XXHeroSection movie={heroMovie} />}
       
-      <div className="space-y-4">
+      <div className="flex flex-col gap-20">
         <XXMovieRow 
           title="PHIM MỚI CẬP NHẬT" 
           movies={latestData.items.slice(1, 13)} 
           viewAllLink="/xx/the-loai/phim-moi-cap-nhat"
         />
         
+        <XXBentoGrid 
+          title="AVDB PREMIUM EXCLUSIVE" 
+          movies={avdbData.items || []} 
+          viewAllLink="/xx/nguon/avdb"
+        />
+
         <XXMovieRow 
           title="SIÊU PHẨM JAV (NHẬT)" 
           movies={javData.items || []} 
@@ -41,12 +49,6 @@ export default async function XXHomePage() {
           title="PHIM KHÔNG CHE HOT" 
           movies={uncensoredData.items || []} 
           viewAllLink="/xx/the-loai/vdDkXwQsHi"
-        />
-
-        <XXMovieRow 
-          title="AVDB PREMIUM EXCLUSIVE" 
-          movies={avdbData.items || []} 
-          viewAllLink="/xx/nguon/avdb"
         />
 
         {/* Use grid for the rest or more categories */}
