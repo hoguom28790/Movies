@@ -2,8 +2,8 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { Play, Trash2, ListMusic, Plus, ChevronRight, Heart, Search, Settings2, MoreHorizontal } from "lucide-react";
-import { getXXPlaylists, deleteXXPlaylist, removeMovieFromXXPlaylist, createXXPlaylist, XXPlaylist, getXXFavorites, toggleXXFavorite } from "@/services/xxDb";
+import { Play, Trash2, ListMusic, Plus, ChevronRight, Heart, Search, Settings2, MoreHorizontal, Edit2, Check, X as CloseIcon } from "lucide-react";
+import { getXXPlaylists, deleteXXPlaylist, removeMovieFromXXPlaylist, createXXPlaylist, XXPlaylist, getXXFavorites, toggleXXFavorite, renameXXPlaylist } from "@/services/xxDb";
 import { Button } from "@/components/ui/Button";
 
 export default function XXLibraryPage() {
@@ -14,6 +14,8 @@ export default function XXLibraryPage() {
   const [isCreating, setIsCreating] = useState(false);
   const [newName, setNewName] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
+  const [isEditingName, setIsEditingName] = useState(false);
+  const [editNameValue, setEditNameValue] = useState("");
 
   useEffect(() => {
     setPlaylists(getXXPlaylists());
@@ -23,7 +25,7 @@ export default function XXLibraryPage() {
   const handleCreate = (e: React.FormEvent) => {
     e.preventDefault();
     if (!newName.trim()) return;
-    const newId = createXXPlaylist(newName);
+    const newId = createXXPlaylist(newName.trim());
     setPlaylists(getXXPlaylists());
     setActivePlaylistId(newId);
     setActiveTab("playlist");
@@ -31,7 +33,9 @@ export default function XXLibraryPage() {
     setIsCreating(false);
   };
 
-  const handleDeletePlaylist = (id: string) => {
+  const handleDeletePlaylist = (id: string, e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
     if (confirm("Bạn có chắc muốn xóa Playlist này?")) {
       deleteXXPlaylist(id);
       const remaining = getXXPlaylists();
@@ -40,6 +44,22 @@ export default function XXLibraryPage() {
         setActivePlaylistId(null);
         setActiveTab("favorites");
       }
+    }
+  };
+
+  const handleRenamePlaylist = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!activePlaylistId || !editNameValue.trim()) return;
+    renameXXPlaylist(activePlaylistId, editNameValue.trim());
+    setPlaylists(getXXPlaylists());
+    setIsEditingName(false);
+  };
+
+  const startEditing = () => {
+    const pl = playlists.find(p => p.id === activePlaylistId);
+    if (pl) {
+      setEditNameValue(pl.name);
+      setIsEditingName(true);
     }
   };
 
@@ -60,7 +80,7 @@ export default function XXLibraryPage() {
              
              <div className="space-y-1">
                 <button 
-                  onClick={() => { setActiveTab("favorites"); setActivePlaylistId(null); }}
+                  onClick={() => { setActiveTab("favorites"); setActivePlaylistId(null); setIsEditingName(false); }}
                   className={`w-full flex items-center justify-between p-4 rounded-2xl transition-all border ${
                     activeTab === "favorites" 
                       ? "bg-red-500 text-white border-red-500 shadow-xl shadow-red-500/20" 
@@ -113,7 +133,7 @@ export default function XXLibraryPage() {
                       ? "bg-yellow-500 text-black border-yellow-500 shadow-xl shadow-yellow-500/20" 
                       : "bg-white/5 text-white/40 border-white/5 hover:bg-white/10 hover:text-white"
                   }`}
-                  onClick={() => { setActivePlaylistId(pl.id); setActiveTab("playlist"); }}
+                  onClick={() => { setActivePlaylistId(pl.id); setActiveTab("playlist"); setIsEditingName(false); }}
                 >
                   <div className="flex items-center gap-3 truncate">
                     <ListMusic className={`w-4 h-4 ${activePlaylistId === pl.id ? "text-black" : "text-white/20"}`} />
@@ -122,7 +142,7 @@ export default function XXLibraryPage() {
                   <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                      <span className="text-[10px] font-black uppercase tracking-widest">{pl.movies.length}</span>
                      <button 
-                       onClick={(e) => { e.stopPropagation(); handleDeletePlaylist(pl.id); }}
+                       onClick={(e) => handleDeletePlaylist(pl.id, e)}
                        className={`p-1.5 rounded-md hover:bg-red-500 hover:text-white transition-colors ${activePlaylistId === pl.id ? "text-black/40" : "text-white/20"}`}
                      >
                        <Trash2 className="w-3.5 h-3.5" />
@@ -144,10 +164,40 @@ export default function XXLibraryPage() {
         <main className="flex-1 space-y-10">
            {/* Search & Header */}
            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-              <div className="space-y-1">
-                 <h2 className="text-3xl md:text-5xl font-black text-white tracking-tighter uppercase italic">
-                    {activeTab === "favorites" ? "Phim Đã Lưu" : (activePlaylist?.name || "Chọn Playlist")}
-                 </h2>
+              <div className="space-y-2">
+                 <div className="flex items-center gap-4">
+                    {isEditingName && activeTab === "playlist" ? (
+                      <form onSubmit={handleRenamePlaylist} className="flex items-center gap-2">
+                         <input 
+                           autoFocus
+                           type="text"
+                           value={editNameValue}
+                           onChange={(e) => setEditNameValue(e.target.value)}
+                           className="bg-white/10 border border-white/20 rounded-xl px-4 py-2 text-2xl md:text-4xl font-black text-white uppercase italic tracking-tighter outline-none focus:border-yellow-500/50"
+                         />
+                         <button type="submit" className="p-2 bg-yellow-500 rounded-xl text-black hover:bg-white transition-colors">
+                            <Check className="w-6 h-6" />
+                         </button>
+                         <button type="button" onClick={() => setIsEditingName(false)} className="p-2 bg-white/5 rounded-xl text-white hover:bg-red-500 transition-colors">
+                            <CloseIcon className="w-6 h-6" />
+                         </button>
+                      </form>
+                    ) : (
+                      <>
+                        <h2 className="text-3xl md:text-5xl font-black text-white tracking-tighter uppercase italic">
+                           {activeTab === "favorites" ? "Phim Đã Lưu" : (activePlaylist?.name || "Chọn Playlist")}
+                        </h2>
+                        {activeTab === "playlist" && (
+                          <button 
+                            onClick={startEditing}
+                            className="p-2 rounded-xl bg-white/5 text-white/20 hover:text-yellow-500 hover:bg-white/10 transition-all ml-2"
+                          >
+                             <Edit2 className="w-5 h-5" />
+                          </button>
+                        )}
+                      </>
+                    )}
+                 </div>
                  <p className="text-white/30 text-sm font-bold uppercase tracking-widest">
                     {filteredMovies.length} bộ phim
                  </p>
@@ -179,7 +229,7 @@ export default function XXLibraryPage() {
            ) : (
              <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8">
                 {filteredMovies.map((movie) => (
-                  <div key={movie.movieCode} className="group flex flex-col gap-4">
+                  <div key={`${movie.movieCode}-${movie.addedAt}`} className="group flex flex-col gap-4">
                      <div className="relative aspect-[2/3] rounded-3xl overflow-hidden border border-white/5 shadow-2xl transition-all duration-500 group-hover:border-white/20 group-hover:-translate-y-2">
                         <img 
                           src={movie.posterUrl} 
@@ -188,9 +238,11 @@ export default function XXLibraryPage() {
                         />
                         <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-60" />
                         
-                        <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 translate-y-2 group-hover:translate-y-0 transition-all duration-300">
+                        <div className="absolute top-4 right-4 z-30 opacity-0 group-hover:opacity-100 translate-y-2 group-hover:translate-y-0 transition-all duration-300">
                            <button 
-                             onClick={() => {
+                             onClick={(e) => {
+                               e.preventDefault();
+                               e.stopPropagation();
                                if (activeTab === "favorites") toggleXXFavorite(movie);
                                else removeMovieFromXXPlaylist(activePlaylistId!, movie.movieCode);
                                

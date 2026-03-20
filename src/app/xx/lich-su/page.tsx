@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Play, Trash2, Clock } from "lucide-react";
-import { getXXHistory, clearXXHistory, XXHistoryEntry } from "@/services/xxDb";
+import { getXXHistory, clearXXHistory, XXHistoryEntry, removeXXHistoryItem } from "@/services/xxDb";
 import { Button } from "@/components/ui/Button";
 
 export default function XXHistoryPage() {
@@ -23,10 +23,8 @@ export default function XXHistoryPage() {
   const handleRemoveItem = (movieCode: string, e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    const current = getXXHistory();
-    const updated = current.filter(item => item.movieCode !== movieCode);
-    localStorage.setItem("topxx_history", JSON.stringify(updated));
-    setHistory(updated);
+    removeXXHistoryItem(movieCode);
+    setHistory(getXXHistory());
   };
 
   const formatProgress = (current: number, duration: number) => {

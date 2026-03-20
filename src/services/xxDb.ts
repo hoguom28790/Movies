@@ -154,6 +154,16 @@ export function removeMovieFromXXPlaylist(playlistId: string, movieCode: string)
   }
 }
 
+export function renameXXPlaylist(id: string, newName: string) {
+  if (typeof window === 'undefined') return;
+  const playlists = getXXPlaylists();
+  const playlist = playlists.find(p => p.id === id);
+  if (playlist) {
+    playlist.name = newName;
+    localStorage.setItem(PLAYLISTS_KEY, JSON.stringify(playlists));
+  }
+}
+
 export function isMovieInPlaylist(playlistId: string, movieCode: string): boolean {
   const playlists = getXXPlaylists();
   const playlist = playlists.find(p => p.id === playlistId);
