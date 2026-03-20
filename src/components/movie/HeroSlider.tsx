@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { Play, ChevronLeft, ChevronRight } from "lucide-react";
+import { Play, ChevronLeft, ChevronRight, Star, Film } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 
 import type { Movie } from "@/types/movie";
@@ -70,15 +70,37 @@ export function HeroSlider({ movies }: HeroSliderProps) {
             </p>
           )}
 
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="flex flex-wrap items-center gap-3">
+            {/* TMDB Rating */}
+            {(currentMovie as any).tmdbRating > 0 && (
+              <div className="flex items-center gap-1.5 px-2 py-0.5 rounded bg-blue-500/10 border border-blue-500/20">
+                <span className="text-[10px] font-black text-blue-400 uppercase tracking-wider">TMDB</span>
+                <div className="flex items-center gap-1">
+                  <Star className="w-2.5 h-2.5 text-blue-400 fill-current" />
+                  <span className="text-[12px] font-bold text-white">{(currentMovie as any).tmdbRating?.toFixed(1)}</span>
+                </div>
+              </div>
+            )}
+
+            {/* IMDB Rating */}
+            {(currentMovie as any).imdbRating > 0 && (
+              <div className="flex items-center gap-1.5 px-2 py-0.5 rounded bg-yellow-500/10 border border-yellow-500/20">
+                <span className="text-[10px] font-black text-yellow-500 uppercase tracking-wider">IMDB</span>
+                <div className="flex items-center gap-1">
+                  <Star className="w-2.5 h-2.5 text-yellow-500 fill-current" />
+                  <span className="text-[12px] font-bold text-white">{(currentMovie as any).imdbRating?.toFixed(1)}</span>
+                </div>
+              </div>
+            )}
+
             {currentMovie.genres?.slice(0, 3).map((genre) => (
-              <Link key={genre} href={`/the-loai/${genre}`} className="px-3 py-1 rounded-md bg-white/10 text-[12px] text-white/60 hover:text-white transition-colors">
+              <Link key={genre} href={`/the-loai/${genre}`} className="px-3 py-1 rounded-md bg-white/5 text-[12px] text-white/50 hover:text-white transition-colors">
                 {genre}
               </Link>
             ))}
           </div>
 
-          <p className="text-white/50 text-sm max-w-xl line-clamp-3 leading-relaxed">
+          <p className="text-white/40 text-sm max-w-xl line-clamp-2 sm:line-clamp-3 leading-relaxed">
             {currentMovie.overview || "Đang cập nhật nội dung cho bộ phim này..."}
           </p>
 
