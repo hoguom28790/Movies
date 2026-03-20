@@ -2,7 +2,7 @@
  
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { Menu, X, ChevronDown, Heart, Search } from "lucide-react";
+import { Menu, X, ChevronDown, Heart, Search, History as HistoryIcon } from "lucide-react";
 import { usePathname } from "next/navigation";
  
 const GENRES = [
@@ -175,13 +175,20 @@ export function MobileMenu() {
           </div>
  
           {/* Footer Info */}
-          <div className="pt-8 pb-12 border-t border-white/[0.06]">
+          <div className="pt-8 pb-12 border-t border-white/[0.06] space-y-3">
             <Link 
               href="/watchlist"
               className="flex items-center gap-3 p-4 rounded-xl bg-primary/10 border border-primary/20 text-primary"
             >
               <Heart className="h-5 w-5 fill-current" />
               <span className="font-bold text-[14px]">Danh sách yêu thích</span>
+            </Link>
+            <Link 
+              href="/history"
+              className="flex items-center gap-3 p-4 rounded-xl bg-white/5 border border-white/[0.06] text-white/80"
+            >
+              <HistoryIcon className="h-5 w-5" />
+              <span className="font-bold text-[14px]">Lịch sử xem phim</span>
             </Link>
             <p className="text-[12px] text-white/20 text-center mt-8">
               &copy; 2026 Hồ Phim. All rights reserved.

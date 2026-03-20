@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Search, UserCircle, LogOut, Heart } from "lucide-react";
+import { Search, UserCircle, LogOut, Heart, History as HistoryIcon } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTheme } from "@/contexts/ThemeContext";
 import { AuthModal } from "@/components/auth/AuthModal";
@@ -40,9 +40,31 @@ export function Navbar() {
 
           {/* Right: Search + Actions */}
           <div className="flex items-center gap-2 flex-shrink-0">
-            <div className="hidden md:block w-56 lg:w-72">
+            <div className="hidden md:block w-48 lg:w-64">
               <InstantSearch />
             </div>
+            
+            <div className="flex items-center gap-1 sm:gap-1.5">
+              <Link
+                href="/watchlist"
+                className={`flex items-center gap-1.5 px-2 sm:px-3 py-1.5 rounded-lg transition-all text-[11px] sm:text-[12px] font-medium ${
+                  pathname === "/watchlist" ? "bg-primary text-white shadow-lg shadow-primary/20" : "bg-white/5 text-white/50 hover:bg-white/10 hover:text-white"
+                }`}
+              >
+                <Heart className={`h-3.5 w-3.5 ${pathname === "/watchlist" ? "fill-current" : ""}`} />
+                <span className="hidden xs:inline">Yêu thích</span>
+              </Link>
+              <Link
+                href="/history"
+                className={`flex items-center gap-1.5 px-2 sm:px-3 py-1.5 rounded-lg transition-all text-[11px] sm:text-[12px] font-medium ${
+                  pathname === "/history" ? "bg-primary text-white shadow-lg shadow-primary/20" : "bg-white/5 text-white/50 hover:bg-white/10 hover:text-white"
+                }`}
+              >
+                <HistoryIcon className="h-3.5 w-3.5" />
+                <span className="hidden xs:inline">Lịch sử</span>
+              </Link>
+            </div>
+
             <Link
               href="/search"
               className="md:hidden p-2 text-white/50 hover:text-white transition-colors"
@@ -51,25 +73,16 @@ export function Navbar() {
             </Link>
 
             {user ? (
-              <div className="flex items-center gap-2">
-                <Link
-                  href="/watchlist"
-                  className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-white/60 text-[12px] font-medium transition-all"
-                >
-                  <Heart className="h-3.5 w-3.5" />
-                  Yêu thích
-                </Link>
-                <button
-                  onClick={logout}
-                  className="p-2 text-white/40 hover:text-white transition-colors"
-                >
-                  <LogOut className="h-4 w-4" />
-                </button>
-              </div>
+              <button
+                onClick={logout}
+                className="p-2 text-white/40 hover:text-white transition-colors ml-1"
+              >
+                <LogOut className="h-4 w-4" />
+              </button>
             ) : (
               <button
                 onClick={() => setIsAuthOpen(true)}
-                className="px-4 py-1.5 rounded-lg bg-primary hover:bg-primary-hover text-white text-[12px] font-semibold transition-all"
+                className="ml-1 px-4 py-1.5 rounded-lg bg-primary hover:bg-primary-hover text-white text-[12px] font-semibold transition-all"
               >
                 Đăng nhập
               </button>

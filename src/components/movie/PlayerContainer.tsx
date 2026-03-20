@@ -136,7 +136,9 @@ export function PlayerContainer({ url, isHls, rawEmbedUrl, nextEpisodeUrl, movie
     return () => { document.body.style.overflow = ""; };
   }, [isPseudoFS]);
 
-  const iframeSrc = isHls 
+  const isDirectVideo = url.includes('.m3u8') || url.includes('.mp4') || url.includes('.mkv') || url.includes('.ts') || url.includes('m3u8') || url.includes('mp4');
+
+  const iframeSrc = isDirectVideo 
     ? `/player.html?url=${encodeURIComponent(url)}&theme=${theme}`
     : rawEmbedUrl || `/player.html?url=${encodeURIComponent(url)}&theme=${theme}`;
 

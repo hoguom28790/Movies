@@ -90,7 +90,9 @@ export function XXPlayer({
     return () => window.removeEventListener('message', handleMessage);
   }, [movieCode, movieTitle, posterUrl, nextEpisodeUrl, router]);
 
-  const iframeSrc = isHls 
+  const isDirectVideo = url.includes('.m3u8') || url.includes('.mp4') || url.includes('.mkv') || url.includes('.ts') || url.includes('m3u8') || url.includes('mp4');
+
+  const iframeSrc = isDirectVideo 
     ? `/player.html?url=${encodeURIComponent(url)}`
     : rawEmbedUrl || `/player.html?url=${encodeURIComponent(url)}`;
 

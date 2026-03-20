@@ -62,8 +62,8 @@ export default function XXMovieDetailClient({ item, slug, autoPlay }: XXMovieDet
           <div className="w-full">
              <XXPlayer 
                 url={currentSource.link}
-                isHls={currentSource.link.includes('.m3u8')}
-                rawEmbedUrl={!currentSource.link.includes('.m3u8') ? currentSource.link : ""}
+                isHls={currentSource.link.includes('.m3u8') || currentSource.link.includes('m3u8')}
+                rawEmbedUrl={(!currentSource.link.includes('.m3u8') && !currentSource.link.includes('.mp4') && !currentSource.link.includes('.mkv')) ? currentSource.link : ""}
                 movieTitle={title}
                 movieCode={movieCode}
                 posterUrl={poster}

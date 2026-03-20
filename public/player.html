@@ -375,7 +375,9 @@
         }
       }, 5000);
 
-      if (Hls.isSupported()) {
+      const isM3U8 = source.includes('.m3u8') || source.includes('m3u8');
+      
+      if (isM3U8 && Hls.isSupported()) {
         hls = new Hls({ maxBufferLength: 30 });
         hls.loadSource(source);
         hls.attachMedia(video);
@@ -397,14 +399,19 @@
             }
           }
         });
-      } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+      } else if (video.canPlayType('application/vnd.apple.mpegurl') && isM3U8) {
         video.src = source;
+        video.addEventListener('loadedmetadata', () => video.play().catch(() => {}));
+      } else {
+        // Direct MP4 or other native formats
+        video.src = source;
+        video.addEventListener('loadedmetadata', () => video.play().catch(() => {}));
       }
 
       // Cleanup
       window.addEventListener('beforeunload', () => {
         if (hls) hls.destroy();
-        player.destroy();
+        if (player) player.destroy();
       });
 
     } else {
