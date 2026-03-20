@@ -4,22 +4,23 @@ import React, { useState, useRef, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { ChevronDown } from "lucide-react";
 
+// Correct codes based on TopXX API documentation
 const GENRES = [
   { name: "Việt Sub", slug: "viet-sub" },
   { name: "Không Che", slug: "khong-che" },
-  { name: "Có Che", slug: "co-che" },
-  { name: "Phim Bộ", slug: "phim-bo" },
-  { name: "Phim Lẻ", slug: "phim-le" },
-  { name: "Hoạt Hình", slug: "hoat-hinh" },
+  { name: "Hentai", slug: "hentai" },
+  { name: "Trung Quốc", slug: "trung-quoc" },
+  { name: "Âu Mỹ", slug: "us-uk" },
+  { name: "Xnxx", slug: "xnxx" },
 ];
 
 const COUNTRIES = [
-  { name: "Nhật Bản", slug: "nhat-ban" },
-  { name: "Việt Nam", slug: "viet-nam" },
-  { name: "Trung Quốc", slug: "trung-quoc" },
-  { name: "Mỹ", slug: "my" },
-  { name: "Hàn Quốc", slug: "han-quoc" },
-  { name: "Thái Lan", slug: "thai-lan" },
+  { name: "Nhật Bản", slug: "jp" },
+  { name: "Việt Nam", slug: "vn" },
+  { name: "Trung Quốc", slug: "cn" },
+  { name: "Mỹ", slug: "us" },
+  { name: "Hàn Quốc", slug: "kr" },
+  { name: "Tây Ban Nha", slug: "es" },
 ];
 
 interface DropdownConfig {
@@ -36,7 +37,7 @@ const dropdowns: DropdownConfig[] = [
 
 const directLinks = [
   { label: "Việt Sub", href: "/xx/the-loai/viet-sub" },
-  { label: "Nhật Bản", href: "/xx/quoc-gia/nhat-ban" },
+  { label: "Nhật Bản", href: "/xx/quoc-gia/jp" },
   { label: "Không che", href: "/xx/the-loai/khong-che" },
 ];
 

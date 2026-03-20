@@ -14,11 +14,11 @@ export default async function XXHomePage() {
   return (
     <div className="container mx-auto">
       <XXMovieGrid 
-        initialMovies={initialData.items} 
+        initialMovies={initialData.items || []} 
         title="PHIM MỚI CẬP NHẬT" 
-        fetchUrl="/api/xx?category=phim-moi-cap-nhat"
+        fetchUrl="/api/xx?slug=phim-moi-cap-nhat"
         initialPage={1}
-        totalPages={initialData.pagination.totalPages}
+        totalPages={initialData.pagination?.totalPages || 1}
       />
     </div>
   );
