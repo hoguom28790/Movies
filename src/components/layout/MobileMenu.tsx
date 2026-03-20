@@ -1,0 +1,177 @@
+"use client";
+ 
+import React, { useState, useEffect } from "react";
+import Link from "next/link";
+import { Menu, X, ChevronDown, Heart, Search } from "lucide-react";
+import { usePathname } from "next/navigation";
+ 
+const GENRES = [
+  { name: "Hành Động", slug: "hanh-dong" },
+  { name: "Viễn Tưởng", slug: "vien-tuong" },
+  { name: "Kinh Dị", slug: "kinh-di" },
+  { name: "Tình Cảm", slug: "tinh-cam" },
+  { name: "Tâm Lý", slug: "tam-ly" },
+  { name: "Hài Hước", slug: "hai-huoc" },
+  { name: "Hoạt Hình", slug: "hoat-hinh" },
+  { name: "Cổ Trang", slug: "co-trang" },
+];
+ 
+const COUNTRIES = [
+  { name: "Hàn Quốc", slug: "han-quoc" },
+  { name: "Trung Quốc", slug: "trung-quoc" },
+  { name: "Âu Mỹ", slug: "au-my" },
+  { name: "Nhật Bản", slug: "nhat-ban" },
+  { name: "Việt Nam", slug: "viet-nam" },
+  { name: "Thái Lan", slug: "thai-lan" },
+];
+ 
+const DIRECT_LINKS = [
+  { label: "Phim Lẻ", href: "/phim-le" },
+  { label: "Phim Bộ", href: "/phim-bo" },
+  { label: "Hoạt Hình", href: "/hoat-hinh" },
+  { label: "TV Shows", href: "/tv-shows" },
+];
+ 
+export function MobileMenu() {
+  const [isOpen, setIsOpen] = useState(false);
+  const [openSection, setOpenSection] = useState<string | null>(null);
+  const pathname = usePathname();
+ 
+  // Close menu on navigation
+  useEffect(() => {
+    setIsOpen(false);
+  }, [pathname]);
+ 
+  // Prevent body scroll when menu is open
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "unset";
+    }
+  }, [isOpen]);
+ 
+  return (
+    <div className="md:hidden">
+      {/* Hamburger Button */}
+      <button 
+        onClick={() => setIsOpen(true)}
+        className="p-2 text-white/60 hover:text-white transition-colors"
+        aria-label="Open Menu"
+      >
+        <Menu className="h-6 w-6" />
+      </button>
+ 
+      {/* Overlay Drawer */}
+      <div 
+        className={`fixed inset-0 z-[100] bg-[#0a0a0a] transition-all duration-300 ease-in-out ${
+          isOpen ? "opacity-100 translate-x-0" : "opacity-0 translate-x-full pointer-events-none"
+        }`}
+      >
+        {/* Header */}
+        <div className="flex h-14 items-center justify-between px-4 border-b border-white/[0.06]">
+          <span className="text-xl font-bold text-primary">Hồ Phim</span>
+          <button 
+            onClick={() => setIsOpen(false)}
+            className="p-2 text-white/60"
+          >
+            <X className="h-6 w-6" />
+          </button>
+        </div>
+ 
+        {/* Scrollable Content */}
+        <div className="h-[calc(100vh-56px)] overflow-y-auto px-4 py-6 space-y-6">
+          {/* Quick Search */}
+          <Link 
+            href="/search"
+            className="flex items-center gap-3 w-full p-4 rounded-xl bg-white/5 text-white/60 border border-white/[0.06]"
+          >
+            <Search className="h-5 w-5" />
+            <span className="text-[14px]">Tìm kiếm phim...</span>
+          </Link>
+          
+          {/* Main Links */}
+          <div className="grid grid-cols-2 gap-3">
+            {DIRECT_LINKS.map(link => (
+              <Link 
+                key={link.href}
+                href={link.href}
+                className="flex items-center justify-center p-4 rounded-xl bg-white/5 border border-white/[0.06] text-[13px] font-semibold text-white/80 hover:bg-primary/20 hover:border-primary/30 transition-all"
+              >
+                {link.label}
+              </Link>
+            ))}
+          </div>
+ 
+          {/* Accordion Sections */}
+          <div className="space-y-2">
+            {/* Genres */}
+            <div>
+              <button 
+                onClick={() => setOpenSection(openSection === "genres" ? null : "genres")}
+                className="flex items-center justify-between w-full p-4 rounded-xl bg-white/[0.02] text-white/80 text-[14px] font-semibold"
+              >
+                Thể loại
+                <ChevronDown className={`h-4 w-4 transition-transform ${openSection === "genres" ? "rotate-180" : ""}`} />
+              </button>
+              {openSection === "genres" && (
+                <div className="grid grid-cols-2 gap-2 p-2 mt-1 animate-in fade-in slide-in-from-top-2 duration-200">
+                  {GENRES.map(g => (
+                    <Link 
+                      key={g.slug} 
+                      href={`/the-loai/${g.slug}`}
+                      className="p-3 text-[13px] text-white/50 hover:text-white hover:bg-white/5 rounded-lg transition-colors"
+                    >
+                      {g.name}
+                    </Link>
+                  ))}
+                  <Link href="/the-loai/tat-ca" className="p-3 text-[13px] text-primary font-medium hover:bg-white/5 rounded-lg transition-colors col-span-2 text-center border-t border-white/[0.03]">
+                    Xem tất cả thể loại
+                  </Link>
+                </div>
+              )}
+            </div>
+ 
+            {/* Countries */}
+            <div>
+              <button 
+                onClick={() => setOpenSection(openSection === "countries" ? null : "countries")}
+                className="flex items-center justify-between w-full p-4 rounded-xl bg-white/[0.02] text-white/80 text-[14px] font-semibold"
+              >
+                Quốc gia
+                <ChevronDown className={`h-4 w-4 transition-transform ${openSection === "countries" ? "rotate-180" : ""}`} />
+              </button>
+              {openSection === "countries" && (
+                <div className="grid grid-cols-2 gap-2 p-2 mt-1 animate-in fade-in slide-in-from-top-2 duration-200">
+                  {COUNTRIES.map(c => (
+                    <Link 
+                      key={c.slug} 
+                      href={`/quoc-gia/${c.slug}`}
+                      className="p-3 text-[13px] text-white/50 hover:text-white hover:bg-white/5 rounded-lg transition-colors"
+                    >
+                      {c.name}
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+ 
+          {/* Footer Info */}
+          <div className="pt-8 pb-12 border-t border-white/[0.06]">
+            <Link 
+              href="/watchlist"
+              className="flex items-center gap-3 p-4 rounded-xl bg-primary/10 border border-primary/20 text-primary"
+            >
+              <Heart className="h-5 w-5 fill-current" />
+              <span className="font-bold text-[14px]">Danh sách yêu thích</span>
+            </Link>
+            <p className="text-[12px] text-white/20 text-center mt-8">
+              &copy; 2026 Hồ Phim. All rights reserved.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}

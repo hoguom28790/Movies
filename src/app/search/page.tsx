@@ -26,7 +26,7 @@ export default async function SearchPage({
     <div className="container mx-auto px-4 lg:px-12 py-8 mt-16 min-h-screen">
       <div className="max-w-4xl mx-auto flex flex-col gap-8">
         {/* Search Header */}
-        <div className="flex flex-col gap-5">
+        <div className="flex flex-col gap-4 sm:gap-5">
           <h1 className="text-xl md:text-2xl font-semibold text-white/90 flex items-center gap-2">
             <Search className="w-5 h-5 text-white/40" />
             Tìm Kiếm
@@ -37,28 +37,27 @@ export default async function SearchPage({
               type="text"
               name="q"
               defaultValue={query}
-              placeholder="Nhập tên phim, diễn viên, đạo diễn..."
-              autoFocus
-              className="w-full h-12 rounded-xl bg-white/5 border border-white/[0.08] px-5 pr-20 text-sm text-white focus:outline-none focus:ring-1 focus:ring-primary/40 focus:bg-white/[0.08] transition-all placeholder:text-white/25"
+              placeholder="Tên phim, diễn viên..."
+              className="w-full h-12 rounded-xl bg-white/5 border border-white/[0.08] px-4 pr-16 text-[15px] text-white focus:outline-none focus:ring-1 focus:ring-primary/40 focus:bg-white/[0.08] transition-all placeholder:text-white/25"
             />
             <button
               type="submit"
-              className="absolute right-1.5 top-1.5 bottom-1.5 px-5 rounded-lg bg-primary hover:bg-primary-hover text-white text-[12px] font-semibold transition-all"
+              className="absolute right-1.5 top-1.5 bottom-1.5 px-4 rounded-lg bg-primary hover:bg-primary-hover text-white text-[12px] font-bold transition-all"
             >
               Tìm
             </button>
           </Form>
 
-          {/* Filters */}
-          <div className="flex flex-wrap gap-2">
-            <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/5 border border-white/[0.08] text-[12px] text-white/40 hover:text-white hover:bg-white/10 transition-all">
-              <Filter className="w-3.5 h-3.5" />
+          {/* Filters (Simplified for Mobile) */}
+          <div className="flex flex-wrap gap-1.5 sm:gap-2">
+            <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/5 border border-white/[0.08] text-[11px] sm:text-[12px] text-white/40">
+              <Filter className="w-3 h-3" />
               Bộ lọc
             </button>
-            {["Phim lẻ", "Phim bộ", "Hoạt hình", "Năm 2024", "Năm 2023"].map((tag) => (
+            {["Phim lẻ", "Phim bộ", "Năm 2024"].map((tag) => (
               <button
                 key={tag}
-                className="px-3 py-1.5 rounded-lg bg-white/5 border border-white/[0.08] text-[12px] text-white/40 hover:text-white hover:bg-white/10 transition-all"
+                className="px-3 py-1.5 rounded-lg bg-white/5 border border-white/[0.08] text-[11px] sm:text-[12px] text-white/30 hover:text-white transition-colors"
               >
                 {tag}
               </button>
@@ -110,25 +109,26 @@ export default async function SearchPage({
 
           {/* Pagination */}
           {results.pagination.totalPages > 1 && (
-            <div className="flex items-center justify-center gap-4 mt-8">
+            <div className="flex items-center justify-center gap-2 sm:gap-4 mt-8">
               {currentPage > 1 && (
                 <Link
                   href={`/search?q=${query}&page=${currentPage - 1}`}
-                  className="px-5 py-2.5 rounded-xl bg-white/5 border border-white/10 text-sm font-bold text-white/60 hover:text-white hover:bg-white/10 transition-all"
+                  className="px-4 py-2 rounded-xl bg-white/5 border border-white/10 text-sm font-bold text-white/60 hover:text-white transition-all"
                 >
-                  ← Trang trước
+                  <span className="md:hidden">←</span>
+                  <span className="hidden md:inline">← Trang trước</span>
                 </Link>
               )}
-              <span className="text-sm font-bold text-white/40">
-                Trang <span className="text-white">{currentPage}</span> /{" "}
-                {results.pagination.totalPages}
-              </span>
+              <div className="px-3 py-2 rounded-lg bg-white/5 text-[13px] font-bold text-white/40">
+                <span className="text-white">{currentPage}</span> / {results.pagination.totalPages}
+              </div>
               {currentPage < results.pagination.totalPages && (
                 <Link
                   href={`/search?q=${query}&page=${currentPage + 1}`}
-                  className="px-5 py-2.5 rounded-xl bg-white/5 border border-white/10 text-sm font-bold text-white/60 hover:text-white hover:bg-white/10 transition-all"
+                  className="px-4 py-2 rounded-xl bg-white/5 border border-white/10 text-sm font-bold text-white/60 hover:text-white transition-all"
                 >
-                  Trang tiếp →
+                  <span className="md:hidden">→</span>
+                  <span className="hidden md:inline">Trang tiếp →</span>
                 </Link>
               )}
             </div>

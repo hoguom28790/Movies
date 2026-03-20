@@ -1,5 +1,6 @@
 import { getGenreMovies } from "@/services/api/category";
 import { MovieGrid } from "@/components/movie/MovieGrid";
+import { MovieListResponse } from "@/types/movie";
 import { notFound } from "next/navigation";
 
 export default async function GenrePage({
@@ -41,7 +42,7 @@ export default async function GenrePage({
   const formatGenreName = (s: string) =>
     genreLabels[s] || s.split("-").map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(" ");
 
-  let result;
+  let result: MovieListResponse = { items: [], pagination: { currentPage: 1, totalPages: 1, totalItems: 0 } };
   try {
     if (isCollection) {
       const { getCategoryMovies } = await import("@/services/api/category");
@@ -49,11 +50,11 @@ export default async function GenrePage({
     } else {
       result = await getGenreMovies(slug, currentPage);
     }
-  } catch {
-    return notFound();
+  } catch (error) {
+    console.error("Fetch Genre Movies Error:", error);
   }
-
-  if (!result.items.length && currentPage === 1) return notFound();
+ 
+  if (!result.items.length && currentPage === 1 && !genreLabels[slug] && !collectionSlugs.includes(slug)) return notFound();
 
   return (
     <MovieGrid

@@ -55,12 +55,12 @@ export function HeroSlider({ movies }: HeroSliderProps) {
       <div className="absolute inset-0 z-0 bg-gradient-to-r from-[#0a0a0a]/80 via-transparent to-transparent pointer-events-none" />
 
       {/* Content */}
-      <div className="container relative z-10 mx-auto px-4 lg:px-12 pb-12 sm:pb-16 transition-all duration-700">
+      <div className="container relative z-10 mx-auto px-4 lg:px-12 pb-20 sm:pb-16 transition-all duration-700">
         <div 
           key={currentIndex} 
-          className="flex flex-col items-start gap-4 animate-in slide-in-from-bottom-8 fade-in duration-700 max-w-3xl"
+          className="flex flex-col items-start gap-3 sm:gap-4 animate-in slide-in-from-bottom-8 fade-in duration-700 max-w-3xl"
         >
-          <h1 className="text-2xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-white leading-[1.1] tracking-tight">
+          <h1 className="text-xl sm:text-3xl md:text-5xl lg:text-6xl font-bold text-white leading-[1.2] tracking-tight">
             {currentMovie.title}
           </h1>
 
@@ -70,14 +70,14 @@ export function HeroSlider({ movies }: HeroSliderProps) {
             </p>
           )}
 
-          <div className="flex flex-wrap items-center gap-3">
+          <div className="flex flex-wrap items-center gap-2 sm:gap-3">
             {/* TMDB Rating */}
             {(currentMovie.tmdbRating !== undefined && currentMovie.tmdbRating !== null) && (
-              <div className="flex items-center gap-1.5 px-2 py-0.5 rounded bg-blue-500/10 border border-blue-500/20">
-                <span className="text-[10px] font-black text-blue-400 uppercase tracking-wider">TMDB</span>
+              <div className="flex items-center gap-1.5 px-1.5 sm:px-2 py-0.5 rounded bg-blue-500/10 border border-blue-500/20">
+                <span className="text-[9px] sm:text-[10px] font-black text-blue-400 uppercase tracking-wider">TMDB</span>
                 <div className="flex items-center gap-1">
-                  <Star className="w-2.5 h-2.5 text-blue-400 fill-current" />
-                  <span className="text-[12px] font-bold text-white">
+                  <Star className="w-2 h-2 sm:w-2.5 sm:h-2.5 text-blue-400 fill-current" />
+                  <span className="text-[11px] sm:text-[12px] font-bold text-white">
                     {currentMovie.tmdbRating > 0 ? currentMovie.tmdbRating.toFixed(1) : "0.0"}
                   </span>
                 </div>
@@ -86,19 +86,19 @@ export function HeroSlider({ movies }: HeroSliderProps) {
 
             {/* IMDB Rating */}
             {(currentMovie.imdbRating !== undefined && currentMovie.imdbRating !== null) && (
-              <div className="flex items-center gap-1.5 px-2 py-0.5 rounded bg-yellow-500/10 border border-yellow-500/20">
-                <span className="text-[10px] font-black text-yellow-500 uppercase tracking-wider">IMDB</span>
+              <div className="flex items-center gap-1.5 px-1.5 sm:px-2 py-0.5 rounded bg-yellow-500/10 border border-yellow-500/20">
+                <span className="text-[9px] sm:text-[10px] font-black text-yellow-500 uppercase tracking-wider">IMDB</span>
                 <div className="flex items-center gap-1">
-                  <Star className="w-2.5 h-2.5 text-yellow-500 fill-current" />
-                  <span className="text-[12px] font-bold text-white">
+                  <Star className="w-2 h-2 sm:w-2.5 sm:h-2.5 text-yellow-500 fill-current" />
+                  <span className="text-[11px] sm:text-[12px] font-bold text-white">
                     {currentMovie.imdbRating > 0 ? currentMovie.imdbRating.toFixed(1) : "0.0"}
                   </span>
                 </div>
               </div>
             )}
 
-            {currentMovie.genres?.slice(0, 3).map((genre) => (
-              <Link key={genre} href={`/the-loai/${genre}`} className="px-3 py-1 rounded-md bg-white/5 text-[12px] text-white/50 hover:text-white transition-colors">
+            {currentMovie.genres?.slice(0, 2).map((genre) => (
+              <Link key={genre} href={`/the-loai/${genre}`} className="px-2 py-1 rounded bg-white/5 text-[11px] text-white/50 hover:text-white transition-colors">
                 {genre}
               </Link>
             ))}

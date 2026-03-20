@@ -9,6 +9,7 @@ import { useTheme } from "@/contexts/ThemeContext";
 import { AuthModal } from "@/components/auth/AuthModal";
 import { InstantSearch } from "./InstantSearch";
 import { NavMenu } from "./NavMenu";
+import { MobileMenu } from "./MobileMenu";
 
 export function Navbar() {
   const [isAuthOpen, setIsAuthOpen] = useState(false);
@@ -20,8 +21,13 @@ export function Navbar() {
     <>
       <header className="fixed top-0 z-50 w-full border-b border-white/[0.06] bg-[#0a0a0a]/90 backdrop-blur-xl transition-all duration-300">
         <div className="container mx-auto flex h-14 items-center justify-between px-4 lg:px-8">
+          {/* Mobile Menu Toggle (Left on Mobile) */}
+          <div className="md:hidden">
+            <MobileMenu />
+          </div>
+ 
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-2 group mr-6 flex-shrink-0">
+          <Link href="/" className="flex items-center gap-2 group md:mr-6 flex-shrink-0">
             <span className="text-xl font-bold text-primary tracking-tight transition-transform group-hover:scale-105">
               Hồ Phim
             </span>

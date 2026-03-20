@@ -57,11 +57,11 @@ export function MovieCard({ title, slug, posterUrl, year, quality, episodeText, 
       </Link>
       
       <div className="flex flex-col gap-0.5 px-0.5">
-        <Link href={`/movie/${slug}`} className="text-[13px] font-semibold text-white/80 hover:text-white line-clamp-1 transition-colors" title={title}>
+        <Link href={`/movie/${slug}`} className="text-[14px] sm:text-[13px] font-semibold text-white/80 hover:text-white line-clamp-1 transition-colors" title={title}>
           {title}
         </Link>
         {originalTitle && (
-          <span className="text-[11px] text-white/30 line-clamp-1">{originalTitle}</span>
+          <span className="text-[12px] sm:text-[11px] text-white/30 line-clamp-1">{originalTitle}</span>
         )}
       </div>
     </div>

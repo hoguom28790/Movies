@@ -1,5 +1,6 @@
 import { getYearMovies } from "@/services/api/category";
 import { MovieGrid } from "@/components/movie/MovieGrid";
+import { MovieListResponse } from "@/types/movie";
 import { notFound } from "next/navigation";
 
 export default async function YearPage({
