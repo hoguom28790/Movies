@@ -230,7 +230,7 @@ export default async function MovieDetailsPage({ params }: { params: Promise<{ s
             {/* ID & Ratings Block */}
             <div className="mt-6 grid grid-cols-2 gap-2">
               {/* TMDB Box */}
-              {tmdbData?.id || data.tmdb?.id || data.tmdb_id ? (
+              {(tmdbData?.id || data.tmdb?.id || data.tmdb_id) ? (
                 <a 
                   href={`https://www.themoviedb.org/${tmdbData?.media_type || (data.type === "series" ? "tv" : "movie")}/${tmdbData?.id || data.tmdb?.id || data.tmdb_id}`}
                   target="_blank"
@@ -251,12 +251,28 @@ export default async function MovieDetailsPage({ params }: { params: Promise<{ s
                     </p>
                   </div>
                 </a>
+              ) : (data.tmdb?.vote_average ? (
+                <div className="p-3 rounded-xl bg-white/[0.03] border border-white/[0.06] flex flex-col gap-1.5">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] font-black text-primary uppercase tracking-wider">TMDB</span>
+                    <span className="text-[9px] px-1.5 py-0.5 rounded bg-primary/10 text-primary uppercase font-bold">
+                      RATING
+                    </span>
+                  </div>
+                  <div>
+                    <p className="text-[11px] text-white/30">ID: N/A</p>
+                    <p className="text-[13px] font-bold text-white mt-0.5">
+                      {data.tmdb?.vote_average || "0.0"}{" "}
+                      <span className="text-[10px] text-white/30 font-normal">/ 10 ({data.tmdb?.vote_count || 0})</span>
+                    </p>
+                  </div>
+                </div>
               ) : (
                 <div className="p-3 rounded-xl bg-white/[0.03] border border-white/[0.06] flex flex-col gap-1.5 opacity-50">
                   <span className="text-[10px] font-black text-primary uppercase tracking-wider">TMDB</span>
                   <p className="text-[11px] text-white/30">ID: N/A</p>
                 </div>
-              )}
+              ))}
  
               {/* IMDB Box */}
               {imdbId ? (
@@ -280,12 +296,28 @@ export default async function MovieDetailsPage({ params }: { params: Promise<{ s
                     </p>
                   </div>
                 </a>
+              ) : (data.imdb?.vote_average ? (
+                <div className="p-3 rounded-xl bg-white/[0.03] border border-white/[0.06] flex flex-col gap-1.5">
+                   <div className="flex items-center justify-between">
+                    <span className="text-[10px] font-black text-yellow-500 uppercase tracking-wider">IMDB</span>
+                    <span className="text-[9px] px-1.5 py-0.5 rounded bg-yellow-500/10 text-yellow-500 uppercase font-bold">
+                      RATING
+                    </span>
+                  </div>
+                  <div>
+                    <p className="text-[11px] text-white/30">ID: N/A</p>
+                    <p className="text-[13px] font-bold text-white mt-0.5">
+                      {data.imdb?.vote_average || "0.0"}{" "}
+                      <span className="text-[10px] text-white/30 font-normal">/ 10 ({data.imdb?.vote_count || 0})</span>
+                    </p>
+                  </div>
+                </div>
               ) : (
                 <div className="p-3 rounded-xl bg-white/[0.03] border border-white/[0.06] flex flex-col gap-1.5 opacity-50">
                   <span className="text-[10px] font-black text-yellow-500 uppercase tracking-wider">IMDB</span>
                   <p className="text-[11px] text-white/30">ID: N/A</p>
                 </div>
-              )}
+              ))}
             </div>
  
             {/* Giới thiệu */}
