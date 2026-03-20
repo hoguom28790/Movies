@@ -44,7 +44,13 @@ export default async function MovieDetailsPage({ params }: { params: Promise<{ s
   const { data, episodes, source } = movieRes;
   
   // TMDB Enrichment
-  const tmdbSearch = await searchTMDBMovie(data.name, data.year);
+  let tmdbSearch = await searchTMDBMovie(data.name, data.year);
+  
+  // Fallback to origin name if no results found
+  if (!tmdbSearch && (data.origin_name || data.original_name)) {
+    tmdbSearch = await searchTMDBMovie(data.origin_name || data.original_name, data.year);
+  }
+  
   const tmdbData = tmdbSearch ? await getTMDBMovieDetails(tmdbSearch.id) : null;
   
   // Use TMDB Poster with fallback

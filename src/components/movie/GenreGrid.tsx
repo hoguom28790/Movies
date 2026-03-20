@@ -92,15 +92,12 @@ export function GenreGrid({ genres }: { genres: Genre[] }) {
             <div className="text-center space-y-2">
               <span className="text-5xl">🔞</span>
               <h2 className="text-2xl font-black text-white">Xác Minh Độ Tuổi</h2>
-              <p className="text-sm text-white/40 leading-relaxed">
-                Nội dung này yêu cầu mật khẩu truy cập theo ngày.
-              </p>
             </div>
 
             <div className="space-y-4">
               <input 
-                type="text" 
-                placeholder="Nhập DDMMYYYY"
+                type="password" 
+                placeholder="********"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-center text-xl font-mono tracking-[0.2em] text-white focus:outline-none focus:ring-2 focus:ring-primary/50"
