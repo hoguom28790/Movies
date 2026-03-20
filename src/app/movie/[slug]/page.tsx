@@ -46,15 +46,19 @@ export default async function MovieDetailsPage({ params }: { params: Promise<{ s
   const { data, episodes, source } = movieRes;
   
   // TMDB Enrichment
-  let tmdbSearch = await searchTMDBMovie(data.name, data.year);
-  if (!tmdbSearch && (data.origin_name || data.original_name)) {
-    tmdbSearch = await searchTMDBMovie(data.origin_name || data.original_name, data.year);
+  const cleanName = (name: string) => name.replace(/\(Phần\s+\d+\)/gi, "").replace(/\(Season\s+\d+\)/gi, "").trim();
+  const searchName = cleanName(data.name);
+  const searchOrigin = cleanName(data.origin_name || data.original_name || "");
+
+  let tmdbSearch = await searchTMDBMovie(searchName, data.year);
+  if (!tmdbSearch && searchOrigin) {
+    tmdbSearch = await searchTMDBMovie(searchOrigin, data.year);
   }
   if (!tmdbSearch) {
-    tmdbSearch = await searchTMDBMovie(data.name);
+    tmdbSearch = await searchTMDBMovie(searchName);
   }
-  if (!tmdbSearch && (data.origin_name || data.original_name)) {
-    tmdbSearch = await searchTMDBMovie(data.origin_name || data.original_name);
+  if (!tmdbSearch && searchOrigin) {
+    tmdbSearch = await searchTMDBMovie(searchOrigin);
   }
   
   const tmdbData = tmdbSearch ? await getTMDBMovieDetails(tmdbSearch.id, tmdbSearch.media_type) : null;
@@ -233,31 +237,6 @@ export default async function MovieDetailsPage({ params }: { params: Promise<{ s
               </div>
             </div>
 
-            {/* Giới thiệu */}
-            <div className="mt-5">
-              <h3 className="text-[13px] font-semibold text-white/60 mb-2">Giới thiệu:</h3>
-              <div
-                className="text-[13px] text-white/40 leading-relaxed"
-                dangerouslySetInnerHTML={{ __html: tmdbData?.overview || data.description || data.content || "Đang cập nhật nội dung..." }}
-              />
-            </div>
-
-            {/* Meta info */}
-            <div className="mt-4 space-y-1.5 text-[13px]">
-              <p>
-                <span className="text-white/30 font-medium">Thời lượng: </span>
-                <span className="text-white/60">{data.time || "Đang cập nhật"}</span>
-              </p>
-              <p>
-                <span className="text-white/30 font-medium">Quốc gia: </span>
-                <span className="text-white/60">{countryName}</span>
-              </p>
-              <p>
-                <span className="text-white/30 font-medium">Đạo diễn: </span>
-                <span className="text-white/60">{directorName}</span>
-              </p>
-            </div>
-
             {/* ID & Ratings Block */}
             <div className="mt-6 grid grid-cols-2 gap-2">
               {/* TMDB Box */}
@@ -265,7 +244,7 @@ export default async function MovieDetailsPage({ params }: { params: Promise<{ s
                 <div className="flex items-center justify-between">
                   <span className="text-[10px] font-black text-primary uppercase tracking-wider">TMDB</span>
                   <span className="text-[9px] px-1.5 py-0.5 rounded bg-primary/10 text-primary uppercase font-bold">
-                    {tmdbData?.status === "Returning Series" ? "TV" : "PHIM"}
+                    {tmdbData?.media_type === "tv" || tmdbData?.first_air_date ? "TV" : "PHIM"}
                   </span>
                 </div>
                 <div>
@@ -293,6 +272,31 @@ export default async function MovieDetailsPage({ params }: { params: Promise<{ s
                   </p>
                 </div>
               </div>
+            </div>
+
+            {/* Giới thiệu */}
+            <div className="mt-5">
+              <h3 className="text-[13px] font-semibold text-white/60 mb-2">Giới thiệu:</h3>
+              <div
+                className="text-[13px] text-white/40 leading-relaxed"
+                dangerouslySetInnerHTML={{ __html: tmdbData?.overview || data.description || data.content || "Đang cập nhật nội dung..." }}
+              />
+            </div>
+
+            {/* Meta info */}
+            <div className="mt-4 space-y-1.5 text-[13px]">
+              <p>
+                <span className="text-white/30 font-medium">Thời lượng: </span>
+                <span className="text-white/60">{data.time || "Đang cập nhật"}</span>
+              </p>
+              <p>
+                <span className="text-white/30 font-medium">Quốc gia: </span>
+                <span className="text-white/60">{countryName}</span>
+              </p>
+              <p>
+                <span className="text-white/30 font-medium">Đạo diễn: </span>
+                <span className="text-white/60">{directorName}</span>
+              </p>
             </div>
 
             {/* Diễn viên */}
