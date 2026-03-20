@@ -19,7 +19,8 @@ export async function getTopXXMovies(
   } else if (type === "quoc-gia") {
     url = `${BASE_URL}/countries/${slug}/movies?page=${page}`;
   } else if (type === "dien-vien") {
-    url = `${BASE_URL}/actors/${slug}/movies?page=${page}`;
+    const actorName = slug.replace(/-/g, ' ');
+    return searchTopXXMovies(actorName, page);
   }
 
   try {
@@ -73,10 +74,15 @@ export async function searchTopXXMovies(keyword: string, page: number = 1): Prom
   }
 
   try {
-    const res = await fetch(`${BASE_URL}/movies/latest?keyword=${encodeURIComponent(keyword)}&page=${page}`, {
+    // API Documentation: using /movies with keyword parameter might be more accurate for search
+    // than /movies/latest (which might ignore filters)
+    const url = `${BASE_URL}/movies?keyword=${encodeURIComponent(keyword)}&page=${page}`;
+    
+    const res = await fetch(url, {
       headers: DEFAULT_HEADERS,
       signal: AbortSignal.timeout(10000)
     });
+    
     if (!res.ok) return { items: [], pagination: { currentPage: 1, totalPages: 1, totalItems: 0 } };
     const data = await res.json();
     if (data.status !== "success" || !data.data) return { items: [], pagination: { currentPage: 1, totalPages: 1, totalItems: 0 } };
