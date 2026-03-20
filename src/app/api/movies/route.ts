@@ -17,6 +17,11 @@ export async function GET(request: Request) {
       result = await getLatestMovies(page);
     } else if (type === "genre" && slug) {
       result = await getGenreMovies(slug, page);
+    } else if (type === "search") {
+      const keyword = searchParams.get("keyword");
+      if (!keyword) return NextResponse.json({ error: "Missing keyword" }, { status: 400 });
+      const { searchMovies } = await import("@/services/api");
+      result = await searchMovies(keyword, page);
     } else {
       return NextResponse.json({ error: "Invalid type or missing parameters" }, { status: 400 });
     }
