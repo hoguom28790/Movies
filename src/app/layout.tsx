@@ -24,6 +24,8 @@ export const viewport: Viewport = {
   viewportFit: "cover",
 };
 
+import { LayoutWrapper } from "@/components/layout/LayoutWrapper";
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -35,13 +37,7 @@ export default function RootLayout({
         <DeviceProvider>
           <ThemeProvider>
             <AuthProvider>
-              <div className="min-h-screen flex flex-col">
-                <Navbar />
-                <main className="flex-grow pt-14 pb-safe">
-                  {children}
-                </main>
-                <Footer />
-              </div>
+              <LayoutWrapper>{children}</LayoutWrapper>
             </AuthProvider>
           </ThemeProvider>
         </DeviceProvider>

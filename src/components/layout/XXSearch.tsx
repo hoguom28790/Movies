@@ -14,6 +14,8 @@ export function XXSearch() {
   const debouncedQuery = useDebounce(query, 500);
   const containerRef = useRef<HTMLDivElement>(null);
 
+  const [isExpanded, setIsExpanded] = useState(false);
+
   useEffect(() => {
     const fetchResults = async () => {
       if (!debouncedQuery) {
@@ -40,52 +42,73 @@ export function XXSearch() {
     const handleClickOutside = (event: MouseEvent) => {
       if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
         setIsOpen(false);
+        if (!query) setIsExpanded(false);
       }
     };
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
+  }, [query]);
 
   return (
-    <div ref={containerRef} className="relative w-full max-w-xs ml-4">
-      <div className="relative group">
-        <input
-          type="text"
-          value={query}
-          onChange={(e) => {
-            setQuery(e.target.value);
-            setIsOpen(true);
-          }}
-          onFocus={() => setIsOpen(true)}
-          placeholder="Tìm phim..."
-          className="w-full bg-white/5 border border-white/10 rounded-full py-1.5 pl-9 pr-8 text-sm text-white placeholder:text-white/20 focus:outline-none focus:ring-1 focus:ring-yellow-500/50 focus:bg-white/10 transition-all"
-        />
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
-        
-        {query && (
+    <div ref={containerRef} className={`relative transition-all duration-300 ${isExpanded ? "flex-1 md:max-w-xs" : "w-10"} ml-auto md:ml-4`}>
+      <div className="relative group flex items-center">
+        {!isExpanded ? (
           <button 
-            onClick={() => { setQuery(""); setResults([]); }}
-            className="absolute right-3 top-1/2 -translate-y-1/2 p-0.5 hover:bg-white/10 rounded-full transition-colors"
+            onClick={() => setIsExpanded(true)}
+            className="p-2 text-white/50 hover:text-yellow-500 transition-colors"
           >
-            <X className="w-3.5 h-3.5 text-white/50" />
+            <Search className="w-5 h-5" />
           </button>
+        ) : (
+          <>
+            <input
+              autoFocus
+              type="text"
+              value={query}
+              onChange={(e) => {
+                setQuery(e.target.value);
+                setIsOpen(true);
+              }}
+              onFocus={() => setIsOpen(true)}
+              placeholder="Tìm phim..."
+              className="w-full bg-white/5 border border-white/10 rounded-full py-1.5 pl-9 pr-8 text-sm text-white placeholder:text-white/20 focus:outline-none focus:ring-1 focus:ring-yellow-500/50 focus:bg-white/10 transition-all"
+            />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
+            
+            <button 
+              onClick={() => { 
+                if (query) {
+                  setQuery(""); setResults([]); 
+                } else {
+                  setIsExpanded(false);
+                  setIsOpen(false);
+                }
+              }}
+              className="absolute right-3 top-1/2 -translate-y-1/2 p-0.5 hover:bg-white/10 rounded-full transition-colors"
+            >
+              <X className="w-3.5 h-3.5 text-white/50" />
+            </button>
+          </>
         )}
       </div>
 
-      {isOpen && (query || isLoading) && (
-        <div className="absolute top-full right-0 mt-2 w-80 bg-[#141416] border border-white/10 rounded-2xl shadow-2xl shadow-black overflow-hidden z-[60] animate-in fade-in slide-in-from-top-2 duration-200">
+      {isOpen && (query || isLoading) && isExpanded && (
+        <div className="absolute top-full right-0 mt-2 w-[calc(100vw-2rem)] md:w-80 bg-[#141416]/95 backdrop-blur-2xl border border-white/10 rounded-2xl shadow-2xl shadow-black overflow-hidden z-[100] animate-in fade-in slide-in-from-top-2 duration-200">
           {isLoading ? (
             <div className="p-8 flex flex-col items-center justify-center gap-3">
               <Loader2 className="w-6 h-6 animate-spin text-yellow-500" />
               <span className="text-xs font-medium text-white/30 uppercase tracking-widest">Đang tìm kiếm...</span>
             </div>
           ) : results.length > 0 ? (
-            <div className="max-h-[400px] overflow-y-auto p-2 scrollbar-hide">
+            <div className="max-h-[60vh] md:max-h-[400px] overflow-y-auto p-2 scrollbar-hide">
               {results.map((movie) => (
                 <Link
                   key={movie.id}
                   href={`/xx/movie/${movie.slug}`}
-                  onClick={() => setIsOpen(false)}
+                  onClick={() => {
+                    setIsOpen(false);
+                    setIsExpanded(false);
+                  }}
                   className="flex items-center gap-3 p-2 rounded-xl hover:bg-white/5 transition-colors group"
                 >
                   <div className="relative w-12 aspect-[2/3] flex-shrink-0 rounded-lg overflow-hidden bg-white/5">
@@ -107,8 +130,8 @@ export function XXSearch() {
               ))}
             </div>
           ) : query ? (
-            <div className="p-8 text-center">
-              <p className="text-sm text-white/30">Không tìm thấy kết quả phù hợp</p>
+            <div className="p-8 text-center text-white/30 text-sm">
+               Không tìm thấy kết quả
             </div>
           ) : null}
         </div>

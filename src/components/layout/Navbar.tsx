@@ -17,6 +17,8 @@ export function Navbar() {
   const { theme, setTheme } = useTheme();
   const pathname = usePathname();
 
+  if (pathname.startsWith("/xx")) return null;
+
   return (
     <>
       <header className="fixed top-0 z-50 w-full border-b border-white/[0.06] bg-[#0a0a0a]/90 backdrop-blur-xl transition-all duration-300 pt-safe">
