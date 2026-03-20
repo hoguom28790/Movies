@@ -18,11 +18,14 @@ export function MovieCard({ title, slug, posterUrl, year, quality, episodeText, 
   return (
     <div className="group relative flex flex-col gap-2 transition-all duration-300">
       <Link href={`/movie/${slug}`} className="relative aspect-[2/3] w-full overflow-hidden rounded-xl bg-surface transition-all duration-300 group-hover:-translate-y-1 group-hover:shadow-lg group-hover:shadow-black/40">
-        <img 
+        <Image 
           src={posterUrl} 
           alt={title} 
-          className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-          loading="lazy"
+          fill
+          sizes="(max-width: 640px) 50vw, (max-width: 1024px) 25vw, 15vw"
+          className="object-cover transition-transform duration-500 group-hover:scale-105"
+          unoptimized={!posterUrl?.includes('tmdb.org')}
+          priority={false}
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
         

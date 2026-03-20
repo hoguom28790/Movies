@@ -18,39 +18,62 @@ export interface TMDBActor {
   character?: string;
 }
 
-export async function searchTMDBMovie(title: string, year?: number) {
+export async function searchTMDBMovie(query: string, year?: number): Promise<{ id: number; media_type: "movie" | "tv" } | null> {
   try {
-    const cleanTitle = (t: string) => t.replace(/\(Phần\s+\d+\)/gi, "").replace(/\(Season\s+\d+\)/gi, "").trim();
-    const q = cleanTitle(title);
-    const yearParam = year ? `&year=${year}` : "";
+    const cleanQuery = (q: string) => q.replace(/\(Phần\s+\d+\)/gi, "").replace(/\(Season\s+\d+\)/gi, "").replace(/Part\s+\d+/gi, "").trim();
+    const q = cleanQuery(query);
     
-    // 1. Try TV search first for suspected series (common in current catalog)
-    let response = await fetch(
-      `${BASE_URL}/search/tv?api_key=${TMDB_API_KEY}&query=${encodeURIComponent(q)}${year ? `&first_air_date_year=${year}` : ""}&language=vi-VN`
-    );
-    let data = await response.json();
-    if (data.results?.length) return { ...data.results[0], media_type: "tv" };
+    // Multi-strategy search
+    const strategies = [
+      // 1. Specific Search (Movie) with Year
+      year ? `${BASE_URL}/search/movie?api_key=${TMDB_API_KEY}&query=${encodeURIComponent(q)}&year=${year}&language=vi-VN` : null,
+      // 2. Specific Search (TV) with Year
+      year ? `${BASE_URL}/search/tv?api_key=${TMDB_API_KEY}&query=${encodeURIComponent(q)}&first_air_date_year=${year}&language=vi-VN` : null,
+      // 3. Multi Search (Catch-all)
+      `${BASE_URL}/search/multi?api_key=${TMDB_API_KEY}&query=${encodeURIComponent(q)}&language=vi-VN`,
+      // 4. Multi Search without year as fallback
+      `${BASE_URL}/search/multi?api_key=${TMDB_API_KEY}&query=${encodeURIComponent(q)}`
+    ].filter(Boolean);
 
-    // 2. Try Movie search
-    response = await fetch(
-      `${BASE_URL}/search/movie?api_key=${TMDB_API_KEY}&query=${encodeURIComponent(q)}${yearParam}&language=vi-VN`
-    );
-    data = await response.json();
-    if (data.results?.length) return { ...data.results[0], media_type: "movie" };
-
-    // 3. Try Multi search without year as ultimate fallback
-    response = await fetch(
-      `${BASE_URL}/search/multi?api_key=${TMDB_API_KEY}&query=${encodeURIComponent(q)}&language=vi-VN`
-    );
-    data = await response.json();
-    if (data.results?.length) {
-      const best = data.results.find((r: any) => r.media_type !== "person");
-      if (best) return best;
+    for (const url of strategies) {
+      const res = await fetch(url!, { next: { revalidate: 3600 } });
+      if (!res.ok) continue;
+      const data = await res.json();
+      if (data.results?.length) {
+        const bestMatch = data.results.find((r: any) => {
+          const title = (r.title || r.name || "").toLowerCase();
+          const original = (r.original_title || r.original_name || "").toLowerCase();
+          const target = q.toLowerCase();
+          return title === target || original === target || title.includes(target) || target.includes(title);
+        }) || data.results[0];
+        
+        if (bestMatch.media_type === "person") continue;
+        
+        return { 
+          id: bestMatch.id, 
+          media_type: bestMatch.media_type || (url!.includes("/movie") ? "movie" : "tv") 
+        };
+      }
     }
-
     return null;
   } catch (error) {
     console.error("TMDB Search Error:", error);
+    return null;
+  }
+}
+
+export async function searchTMDBPerson(name: string): Promise<{ profile_path: string | null; id: number } | null> {
+  try {
+    const url = `${BASE_URL}/search/person?api_key=${TMDB_API_KEY}&query=${encodeURIComponent(name)}`;
+    const res = await fetch(url, { next: { revalidate: 86400 } });
+    if (!res.ok) return null;
+    const data = await res.json();
+    const bestMatch = data.results?.[0];
+    if (bestMatch) {
+      return { profile_path: bestMatch.profile_path, id: bestMatch.id };
+    }
+    return null;
+  } catch (e) {
     return null;
   }
 }

@@ -32,16 +32,24 @@ export async function enrichMovies(movies: Movie[]): Promise<Movie[]> {
         if (!tmdbId) {
           // Search for movie in TMDB
           const yearMatch = currentMovie.year ? parseInt(currentMovie.year) : undefined;
-          const cleanName = (name: string) => name.replace(/\(Phần\s+\d+\)/gi, "").replace(/\(Season\s+\d+\)/gi, "").trim();
-          const searchName = cleanName(currentMovie.title);
-          const searchOrigin = currentMovie.originalTitle ? cleanName(currentMovie.originalTitle) : "";
+          const searchName = currentMovie.title;
+          const searchOrigin = currentMovie.originalTitle || "";
 
-          let tmdbSearch = await searchTMDBMovie(searchName, yearMatch);
-          if (!tmdbSearch && searchOrigin) {
-            tmdbSearch = await searchTMDBMovie(searchOrigin, yearMatch);
+          // Exhaustive Search Fallbacks
+          let tmdbSearch = null;
+          
+          if (yearMatch) {
+            tmdbSearch = await searchTMDBMovie(searchName, yearMatch);
+            if (!tmdbSearch && searchOrigin) {
+              tmdbSearch = await searchTMDBMovie(searchOrigin, yearMatch);
+            }
           }
+          
           if (!tmdbSearch) {
             tmdbSearch = await searchTMDBMovie(searchName);
+          }
+          if (!tmdbSearch && searchOrigin) {
+            tmdbSearch = await searchTMDBMovie(searchOrigin);
           }
           
           if (tmdbSearch) {

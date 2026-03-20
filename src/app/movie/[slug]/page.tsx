@@ -150,6 +150,8 @@ export default async function MovieDetailsPage({ params }: { params: Promise<{ s
       ? safeData.thumb_url
       : `https://img.ophim.live/uploads/movies/${safeData.thumb_url}`);
  
+    const { searchTMDBPerson } = await import("@/services/tmdb");
+
     const tmdbCredits = tmdbData?.credits?.cast || [];
     const tmdbDirectorContent = tmdbData?.credits?.crew?.find((c: any) => c.job === "Director")?.name;
  
@@ -172,9 +174,23 @@ export default async function MovieDetailsPage({ params }: { params: Promise<{ s
     const relatedSlug = genreTags[0]?.slug;
     const related = relatedSlug ? await fetchRelated(relatedSlug).catch(() => []) : [];
     const recommendations = tmdbData?.recommendations?.results || [];
-    const displayActors = tmdbCredits.length > 0 
-      ? tmdbCredits.slice(0, 10) 
-      : fallbackActors.slice(0, 10).map((name: string) => ({ name, profile_path: null }));
+
+    // --- Actor Profile Resolution ---
+    let displayActors: any[] = [];
+    if (tmdbCredits.length > 0) {
+      displayActors = tmdbCredits.slice(0, 10);
+    } else if (fallbackActors.length > 0) {
+      // If TMDB cast is missing, try to find profiles for source actors individually
+      const actorNames = fallbackActors.slice(0, 10);
+      const profiles = await Promise.all(
+        actorNames.map(async (name: string) => {
+          const person = await searchTMDBPerson(name).catch(() => null);
+          return { name, profile_path: person?.profile_path || null };
+        })
+      );
+      displayActors = profiles;
+    }
+    // --------------------------------
     const countryName = safeData.country?.[0]?.name || safeData.country?.[0] || "Đang cập nhật";
  
     return (
