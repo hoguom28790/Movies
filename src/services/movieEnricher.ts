@@ -59,21 +59,22 @@ export async function enrichMovies(movies: Movie[]): Promise<Movie[]> {
         const imdbId = details.external_ids?.imdb_id || currentMovie.imdbId;
         const realImdbRating = imdbId ? await getIMDbRating(imdbId).catch(() => null) : null;
 
+        // Final Merge: Prioritize Source API ratings (from v1) over fetched ones
         return {
           ...currentMovie,
-          originalTitle: details.original_title || details.original_name || currentMovie.originalTitle,
-          overview: details.overview || currentMovie.overview,
-          genres: details.genres?.map((g: any) => g.name) || [],
-          imdbRating: realImdbRating || currentMovie.imdbRating || 0,
-          tmdbRating: details.vote_average || currentMovie.tmdbRating || 0,
-          votes: details.vote_count || currentMovie.votes || 0,
-          // Optimization: Use TMDB backdrop for hero slider if available
-          thumbUrl: details.backdrop_path ? (getTMDBImageUrl(details.backdrop_path) || currentMovie.thumbUrl) : currentMovie.thumbUrl,
-          posterUrl: details.poster_path ? (getTMDBImageUrl(details.poster_path) || currentMovie.posterUrl) : currentMovie.posterUrl,
+          tmdbId: currentMovie.tmdbId || details?.id?.toString() || "",
+          imdbId: currentMovie.imdbId || details?.external_ids?.imdb_id || "",
+          tmdbRating: currentMovie.tmdbRating || details?.vote_average || 0,
+          imdbRating: currentMovie.imdbRating || realImdbRating || 0,
+          votes: currentMovie.votes || details?.vote_count || 0,
+          posterUrl: (details?.poster_path ? getTMDBImageUrl(details.poster_path) : (currentMovie.posterUrl || currentMovie.thumbUrl)) || "",
+          thumbUrl: (details?.backdrop_path ? getTMDBImageUrl(details.backdrop_path) : (currentMovie.thumbUrl || currentMovie.posterUrl)) || "",
+          genres: currentMovie.genres || details?.genres?.map((g: any) => g.name) || [],
+          year: currentMovie.year || details?.release_date?.split("-")[0] || details?.first_air_date?.split("-")[0] || "",
         };
       } catch (error) {
-        console.error(`Error enriching movie ${movie.title}:`, error);
-        return currentMovie;
+        console.error(`Error enriching movie ${movie.slug}:`, error);
+        return movie;
       }
     })
   );
