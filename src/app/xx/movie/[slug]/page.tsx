@@ -1,7 +1,8 @@
 import { getTopXXDetails } from "@/services/api/topxx";
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { Play, Calendar, Globe, Tag, Users } from "lucide-react";
+import { Play, Calendar, Globe, Tag, Users, Heart } from "lucide-react";
+import { XXFavoriteBtn } from "@/components/movie/XXFavoriteBtn";
 
 export const dynamic = "force-dynamic";
 
@@ -30,7 +31,7 @@ export default async function XXMovieDetailsPage({ params }: { params: Promise<{
              <h1 className="text-3xl md:text-5xl font-black text-white mb-4 drop-shadow-lg tracking-tight uppercase leading-tight">
                 {viTrans?.title}
              </h1>
-             <div className="flex flex-wrap gap-3">
+             <div className="flex flex-wrap items-center gap-3">
                 <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-yellow-500/10 border border-yellow-500/20 text-yellow-500 text-xs font-bold uppercase tracking-widest leading-none">
                   <Play className="w-3 h-3 fill-current" />
                   {item.quality}
@@ -42,6 +43,12 @@ export default async function XXMovieDetailsPage({ params }: { params: Promise<{
                 <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/5 border border-white/10 text-white/50 text-xs font-semibold leading-none">
                   {item.duration}
                 </div>
+                
+                <XXFavoriteBtn 
+                  movieCode={item.code} 
+                  movieTitle={viTrans?.title} 
+                  posterUrl={item.thumbnail} 
+                />
              </div>
           </div>
         </div>
@@ -52,12 +59,20 @@ export default async function XXMovieDetailsPage({ params }: { params: Promise<{
         <div className="lg:col-span-2 space-y-8">
           <div className="aspect-video w-full rounded-2xl overflow-hidden bg-black/40 border border-white/5 shadow-inner shadow-black/50 relative overflow-hidden group">
             {mainSource ? (
-              <iframe
-                src={mainSource.link}
-                className="w-full h-full"
-                allowFullScreen
-                frameBorder="0"
-              />
+              <div className="relative w-full h-full group">
+                <img src={poster} alt="" className="w-full h-full object-cover opacity-50 blur-sm" />
+                <div className="absolute inset-0 flex items-center justify-center">
+                   <Link 
+                     href={`/xx/watch/${item.code}`}
+                     className="flex flex-col items-center gap-4 group/play"
+                   >
+                      <div className="w-20 h-20 rounded-full bg-yellow-500 text-black flex items-center justify-center shadow-2xl shadow-yellow-500/40 group-hover/play:scale-110 transition-transform duration-500">
+                        <Play className="w-8 h-8 fill-current ml-1" />
+                      </div>
+                      <span className="text-white font-black text-xl tracking-widest uppercase bg-black/50 px-6 py-2 rounded-full backdrop-blur-md border border-white/10">Xem Ngay</span>
+                   </Link>
+                </div>
+              </div>
             ) : (
               <div className="w-full h-full flex flex-col items-center justify-center text-white/20 gap-4">
                  <Play className="w-16 h-16 opacity-10" />

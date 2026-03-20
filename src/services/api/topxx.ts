@@ -19,6 +19,7 @@ export async function getTopXXMovies(
   } else if (type === "quoc-gia") {
     url = `${BASE_URL}/countries/${slug}/movies?page=${page}`;
   } else if (type === "dien-vien") {
+    // For actors, we use the search endpoint with the actor's name
     const actorName = slug.replace(/-/g, ' ');
     return searchTopXXMovies(actorName, page);
   }
@@ -74,26 +75,60 @@ export async function searchTopXXMovies(keyword: string, page: number = 1): Prom
   }
 
   try {
-    const [latestRes, todayRes] = await Promise.all([
-      fetch(`${BASE_URL}/movies/latest?page=1`, { headers: DEFAULT_HEADERS }),
-      fetch(`${BASE_URL}/movies/today?page=1`, { headers: DEFAULT_HEADERS })
-    ]);
-
-    const latest = await latestRes.json();
-    const today = await todayRes.json();
-
-    const allMovies = [...(latest.data || []), ...(today.data || [])];
-    const uniqueMovies = Array.from(new Map(allMovies.map(m => [m.code, m])).values());
-
-    const kw = keyword.toLowerCase();
-    const filtered = uniqueMovies.filter((movie: any) => {
-      const trans = movie.trans || [];
-      const viTitle = (trans.find((t: any) => t.locale === "vi")?.title || "").toLowerCase();
-      const enTitle = (trans.find((t: any) => t.locale === "en")?.title || "").toLowerCase();
-      return viTitle.includes(kw) || enTitle.includes(kw);
+    // Use the search endpoint discovered: /movies/search?keyword=...
+    const url = `${BASE_URL}/movies/search?keyword=${encodeURIComponent(keyword)}&page=${page}`;
+    
+    const res = await fetch(url, {
+      headers: DEFAULT_HEADERS,
+      signal: AbortSignal.timeout(10000)
     });
+    
+    if (!res.ok) return { items: [], pagination: { currentPage: 1, totalPages: 1, totalItems: 0 } };
+    const data = await res.json();
+    
+    // If API search fails or returns error, fallback to filtering Latest/Today (for "Instant" feel)
+    if (data.status !== "success" || !data.data || data.data.length === 0) {
+        // Fallback: This is what we did before, but ONLY if the main search endpoint fails
+        const [latestRes, todayRes] = await Promise.all([
+          fetch(`${BASE_URL}/movies/latest?page=1`, { headers: DEFAULT_HEADERS }),
+          fetch(`${BASE_URL}/movies/today?page=1`, { headers: DEFAULT_HEADERS })
+        ]);
+        const latest = await latestRes.json();
+        const today = await todayRes.json();
+        const allMovies = [...(latest.data || []), ...(today.data || [])];
+        const uniqueMovies = Array.from(new Map(allMovies.map((m: any) => [m.code, m])).values());
+        const kw = keyword.toLowerCase();
+        const filtered = uniqueMovies.filter((movie: any) => {
+          const trans = movie.trans || [];
+          const viTitle = (trans.find((t: any) => t.locale === "vi")?.title || "").toLowerCase();
+          const enTitle = (trans.find((t: any) => t.locale === "en")?.title || "").toLowerCase();
+          return viTitle.includes(kw) || enTitle.includes(kw);
+        });
+        
+        const items: Movie[] = filtered.map((item: any) => {
+          const viTrans = item.trans?.find((t: any) => t.locale === "vi") || item.trans?.[0];
+          const enTrans = item.trans?.find((t: any) => t.locale === "en") || {};
+          return {
+            id: item.code,
+            title: viTrans?.title || "No Title",
+            originalTitle: enTrans?.title || "",
+            slug: item.code,
+            posterUrl: item.thumbnail || "",
+            thumbUrl: item.thumbnail || "",
+            year: item.publish_at ? new Date(item.publish_at).getFullYear().toString() : "",
+            status: item.quality || "",
+            quality: item.quality || "HD",
+            source: 'topxx'
+          };
+        });
+        
+        return {
+          items,
+          pagination: { currentPage: 1, totalPages: 1, totalItems: items.length }
+        };
+    }
 
-    const items: Movie[] = filtered.map((item: any) => {
+    const items: Movie[] = data.data.map((item: any) => {
       const viTrans = item.trans?.find((t: any) => t.locale === "vi") || item.trans?.[0];
       const enTrans = item.trans?.find((t: any) => t.locale === "en") || {};
       return {
@@ -113,9 +148,9 @@ export async function searchTopXXMovies(keyword: string, page: number = 1): Prom
     return {
       items,
       pagination: {
-        currentPage: 1,
-        totalPages: 1,
-        totalItems: items.length
+        currentPage: data.meta?.current_page || 1,
+        totalPages: data.meta?.last_page || 1,
+        totalItems: data.meta?.total || items.length
       }
     };
   } catch (error) {
