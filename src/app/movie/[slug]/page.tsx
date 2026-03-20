@@ -225,70 +225,67 @@ export default async function MovieDetailsPage({ params }: { params: Promise<{ s
                   ))}
                 </div>
               )}
-
-              {/* External Links / API Buttons */}
-              <div className="flex flex-wrap justify-center lg:justify-start items-center gap-2 mt-4">
-                <button className="flex items-center gap-1.5 px-2.5 py-1 rounded bg-white/5 border border-white/[0.08] text-[10px] text-white/40 hover:text-white hover:bg-white/10 transition-all uppercase font-bold tracking-wider">
-                  <span className="w-1 h-1 rounded-full bg-blue-500" /> API
-                </button>
-                {tmdbData && (
-                  <a 
-                    href={`https://www.themoviedb.org/${tmdbData.media_type || "movie"}/${tmdbData.id}`} 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-1.5 px-2.5 py-1 rounded bg-white/5 border border-white/[0.08] text-[10px] text-white/40 hover:text-primary hover:bg-white/10 transition-all uppercase font-bold tracking-wider"
-                  >
-                    <span className="w-1 h-1 rounded-full bg-primary" /> TMDB
-                  </a>
-                )}
-                {imdbId && (
-                  <a 
-                    href={`https://www.imdb.com/title/${imdbId}`} 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-1.5 px-2.5 py-1 rounded bg-white/5 border border-white/[0.08] text-[10px] text-white/40 hover:text-yellow-500 hover:bg-white/10 transition-all uppercase font-bold tracking-wider"
-                  >
-                    <span className="w-1 h-1 rounded-full bg-yellow-500" /> IMDB
-                  </a>
-                )}
-              </div>
             </div>
  
             {/* ID & Ratings Block */}
             <div className="mt-6 grid grid-cols-2 gap-2">
               {/* TMDB Box */}
-              <div className="p-3 rounded-xl bg-white/[0.03] border border-white/[0.06] flex flex-col gap-1.5">
-                <div className="flex items-center justify-between">
+              {tmdbData?.id || data.tmdb?.id || data.tmdb_id ? (
+                <a 
+                  href={`https://www.themoviedb.org/${tmdbData?.media_type || (data.type === "series" ? "tv" : "movie")}/${tmdbData?.id || data.tmdb?.id || data.tmdb_id}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="p-3 rounded-xl bg-white/[0.03] border border-white/[0.06] hover:border-primary/40 hover:bg-white/[0.05] transition-all flex flex-col gap-1.5 group/card"
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] font-black text-primary uppercase tracking-wider">TMDB</span>
+                    <span className="text-[9px] px-1.5 py-0.5 rounded bg-primary/10 text-primary uppercase font-bold">
+                      {tmdbData?.media_type === "tv" || tmdbData?.first_air_date || data.type === "series" ? "TV" : "PHIM"}
+                    </span>
+                  </div>
+                  <div>
+                    <p className="text-[11px] text-white/30 truncate">ID: {tmdbData?.id || data.tmdb?.id || data.tmdb_id || "N/A"}</p>
+                    <p className="text-[13px] font-bold text-white mt-0.5 group-hover/card:text-primary transition-colors">
+                      {tmdbData?.vote_average?.toFixed(1) || data.tmdb?.vote_average || "0.0"}{" "}
+                      <span className="text-[10px] text-white/30 font-normal">/ 10 ({tmdbData?.vote_count || data.tmdb?.vote_count || 0})</span>
+                    </p>
+                  </div>
+                </a>
+              ) : (
+                <div className="p-3 rounded-xl bg-white/[0.03] border border-white/[0.06] flex flex-col gap-1.5 opacity-50">
                   <span className="text-[10px] font-black text-primary uppercase tracking-wider">TMDB</span>
-                  <span className="text-[9px] px-1.5 py-0.5 rounded bg-primary/10 text-primary uppercase font-bold">
-                    {tmdbData?.media_type === "tv" || tmdbData?.first_air_date || data.type === "series" ? "TV" : "PHIM"}
-                  </span>
+                  <p className="text-[11px] text-white/30">ID: N/A</p>
                 </div>
-                <div>
-                  <p className="text-[11px] text-white/30 truncate">ID: {tmdbData?.id || data.tmdb?.id || data.tmdb_id || "N/A"}</p>
-                  <p className="text-[13px] font-bold text-white mt-0.5">
-                    {tmdbData?.vote_average?.toFixed(1) || data.tmdb?.vote_average || "0.0"}{" "}
-                    <span className="text-[10px] text-white/30 font-normal">/ 10 ({tmdbData?.vote_count || data.tmdb?.vote_count || 0})</span>
-                  </p>
-                </div>
-              </div>
+              )}
  
               {/* IMDB Box */}
-              <div className="p-3 rounded-xl bg-white/[0.03] border border-white/[0.06] flex flex-col gap-1.5">
-                <div className="flex items-center justify-between">
+              {imdbId ? (
+                <a 
+                  href={`https://www.imdb.com/title/${imdbId}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="p-3 rounded-xl bg-white/[0.03] border border-white/[0.06] hover:border-yellow-500/40 hover:bg-white/[0.05] transition-all flex flex-col gap-1.5 group/card"
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] font-black text-yellow-500 uppercase tracking-wider">IMDB</span>
+                    <span className="text-[9px] px-1.5 py-0.5 rounded bg-yellow-500/10 text-yellow-500 uppercase font-bold">
+                      RATING
+                    </span>
+                  </div>
+                  <div>
+                    <p className="text-[11px] text-white/30 truncate">ID: {imdbId || "N/A"}</p>
+                    <p className="text-[13px] font-bold text-white mt-0.5 group-hover/card:text-yellow-500 transition-colors">
+                      {realImdbRating || data.imdb?.vote_average || "0.0"}{" "}
+                      <span className="text-[10px] text-white/30 font-normal">/ 10 ({data.imdb?.vote_count || 0})</span>
+                    </p>
+                  </div>
+                </a>
+              ) : (
+                <div className="p-3 rounded-xl bg-white/[0.03] border border-white/[0.06] flex flex-col gap-1.5 opacity-50">
                   <span className="text-[10px] font-black text-yellow-500 uppercase tracking-wider">IMDB</span>
-                  <span className="text-[9px] px-1.5 py-0.5 rounded bg-yellow-500/10 text-yellow-500 uppercase font-bold">
-                    RATING
-                  </span>
+                  <p className="text-[11px] text-white/30">ID: N/A</p>
                 </div>
-                <div>
-                  <p className="text-[11px] text-white/30 truncate">ID: {imdbId || "N/A"}</p>
-                  <p className="text-[13px] font-bold text-white mt-0.5">
-                    {realImdbRating || data.imdb?.vote_average || "0.0"}{" "}
-                    <span className="text-[10px] text-white/30 font-normal">/ 10 ({data.imdb?.vote_count || 0})</span>
-                  </p>
-                </div>
-              </div>
+              )}
             </div>
  
             {/* Giới thiệu */}
