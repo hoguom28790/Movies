@@ -136,10 +136,16 @@ export function NavMenu() {
                     href={`${dd.basePath}/${item.slug}`}
                     onClick={(e) => {
                       if (item.slug === "phim-18") {
-                        const pass = window.prompt("Nhập mật khẩu để truy cập nội dung này:");
-                        if (pass !== "123456") {
+                        const now = new Date();
+                        const dd = String(now.getDate()).padStart(2, "0");
+                        const mm = String(now.getMonth() + 1).padStart(2, "0");
+                        const yyyy = now.getFullYear();
+                        const correctPass = `${dd}${mm}${yyyy}`;
+                        
+                        const pass = window.prompt(`Nhập mật khẩu để truy cập nội dung 18+:\n(Gợi ý: Mật khẩu là ngày hôm nay DDMMYYYY)`);
+                        if (pass !== correctPass) {
                           e.preventDefault();
-                          alert("Mật khẩu không chính xác!");
+                          alert(`Mật khẩu không chính xác!\nBạn đã nhập: ${pass || "không có gì"}\nMật khẩu hôm nay là: ${correctPass}`);
                           return;
                         }
                       }

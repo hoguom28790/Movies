@@ -24,13 +24,14 @@ export default async function Home() {
   const trending = trendingData.status === "fulfilled" ? trendingData.value?.results || [] : [];
 
   const { enrichMovies } = await import("@/services/movieEnricher");
-  // Enrich hero (5) and a decent chunk of the grid (12) to ensure high-res posters
-  const [heroMovies, gridEnriched] = await Promise.all([
-    enrichMovies(latest.items.slice(0, 5)),
-    enrichMovies(latest.items.slice(5, 17))
+  // Enrich first 10 for hero pool and next 20 for grid to ensure high-res coverage
+  const [heroEnriched, gridEnriched] = await Promise.all([
+    enrichMovies(latest.items.slice(0, 10)),
+    enrichMovies(latest.items.slice(10, 30))
   ]);
  
-  const displayGrid = [...gridEnriched, ...latest.items.slice(17, 40)];
+  const heroMovies = heroEnriched.slice(0, 6);
+  const displayGrid = gridEnriched;
 
   return (
     <div className="flex flex-col gap-10 pb-20 min-h-screen">
@@ -51,7 +52,7 @@ export default async function Home() {
           </Link>
         </div>
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
-          {gridEnriched.map((movie) => (
+          {displayGrid.map((movie) => (
             <MovieCard 
               key={movie.slug} 
               title={movie.title} 

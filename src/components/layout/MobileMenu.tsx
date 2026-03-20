@@ -14,6 +14,7 @@ const GENRES = [
   { name: "Hài Hước", slug: "hai-huoc" },
   { name: "Hoạt Hình", slug: "hoat-hinh" },
   { name: "Cổ Trang", slug: "co-trang" },
+  { name: "Phim 18+", slug: "phim-18" },
 ];
  
 const COUNTRIES = [
@@ -120,6 +121,22 @@ export function MobileMenu() {
                     <Link 
                       key={g.slug} 
                       href={`/the-loai/${g.slug}`}
+                      onClick={(e) => {
+                        if (g.slug === "phim-18") {
+                          const now = new Date();
+                          const dd = String(now.getDate()).padStart(2, "0");
+                          const mm = String(now.getMonth() + 1).padStart(2, "0");
+                          const yyyy = now.getFullYear();
+                          const correctPass = `${dd}${mm}${yyyy}`;
+                          
+                          const pass = window.prompt(`Nhập mật khẩu để truy cập nội dung 18+:\n(Gợi ý: Mật khẩu là ngày hôm nay DDMMYYYY)`);
+                          if (pass !== correctPass) {
+                            e.preventDefault();
+                            alert(`Mật khẩu không chính xác!\nBạn đã nhập: ${pass || "không có gì"}\nMật khẩu hôm nay là: ${correctPass}`);
+                            return;
+                          }
+                        }
+                      }}
                       className="p-3 text-[13px] text-white/50 hover:text-white hover:bg-white/5 rounded-lg transition-colors"
                     >
                       {g.name}
