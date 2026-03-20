@@ -38,11 +38,11 @@ export function Navbar() {
           </Link>
 
           {/* Search Bar - Center (Phimleak style) */}
-          <div className="flex-1 max-w-md hidden md:block">
+          <div className="flex-1 max-w-md hidden md:block mx-auto">
             <Link href="/search" className="group">
-              <div className="relative flex items-center bg-white/5 border border-white/10 rounded-full px-4 py-2 hover:bg-white/10 hover:border-primary/50 transition-all">
-                <Search className="h-4 w-4 text-white/40 group-hover:text-primary transition-colors" />
-                <span className="ml-3 text-sm text-white/20 group-hover:text-white/40">Tìm kiếm phim, diễn viên...</span>
+              <div className="relative flex items-center bg-[#111]/60 border border-white/5 rounded-lg px-4 py-2 hover:bg-[#1a1a1a] hover:border-[#00a3ff]/30 transition-all">
+                <Search className="h-4 w-4 text-white/20 group-hover:text-[#00a3ff] transition-colors" />
+                <span className="ml-3 text-[13px] text-white/10 group-hover:text-white/20 font-medium tracking-tight">Tìm kiếm phim, diễn viên...</span>
               </div>
             </Link>
           </div>

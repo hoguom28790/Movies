@@ -62,49 +62,56 @@ export function HeroSlider({ movies }: HeroSliderProps) {
       <div className="absolute inset-0 z-0 bg-gradient-to-r from-black via-black/40 to-transparent pointer-events-none" />
 
       {/* Content Container */}
-      <div className="container relative z-10 mx-auto px-4 lg:px-8 flex flex-col items-start gap-8 pt-32 transition-all duration-700">
+      <div className="container relative z-10 mx-auto px-4 lg:px-8 flex flex-col items-start gap-8 pt-44 transition-all duration-700">
         <div 
           key={currentIndex} 
-          className="flex flex-col items-start gap-6 animate-in slide-in-from-bottom-8 fade-in duration-700"
+          className="flex flex-col items-start gap-6 animate-in slide-in-from-bottom-12 fade-in duration-1000"
         >
-          <div className="flex items-center gap-3">
-            <span className="flex h-7 items-center rounded-lg bg-primary px-3 text-[10px] font-black text-white uppercase tracking-widest shadow-lg shadow-primary/20">
-              Phim Hot
-            </span>
-            {currentMovie.quality && (
-              <span className="flex h-7 items-center rounded-lg bg-white/10 backdrop-blur-xl px-3 text-[10px] font-black text-white border border-white/10 uppercase tracking-widest">
-                {currentMovie.quality}
-              </span>
-            )}
-            {currentMovie.year && (
-              <span className="bg-white/5 border border-white/10 rounded-lg px-3 py-1 text-[10px] font-black text-white/50 tracking-widest uppercase animate-pulse">
-                {currentMovie.year}
-              </span>
-            )}
-          </div>
-
-          <h1 className="text-5xl lg:text-7xl font-black text-white max-w-4xl leading-[1.1] tracking-tighter drop-shadow-2xl">
+          <h1 className="text-6xl md:text-8xl font-black text-white max-w-4xl leading-[1] tracking-tighter drop-shadow-2xl">
             {currentMovie.title}
           </h1>
 
           {currentMovie.originalTitle && currentMovie.originalTitle !== currentMovie.title && (
-            <h2 className="text-xl lg:text-2xl text-primary font-bold drop-shadow-md max-w-2xl mt-[-15px] italic opacity-80">
+            <h2 className="text-xl lg:text-2xl text-white/40 font-bold drop-shadow-md max-w-2xl mt-[-20px] italic">
               {currentMovie.originalTitle}
             </h2>
           )}
 
-          <p className="text-white/40 text-sm font-medium max-w-xl line-clamp-2 italic">
-            Trải nghiệm điện ảnh đỉnh cao với chất lượng {currentMovie.quality || "HD"} tại Hồ Phim.
+          <div className="flex flex-wrap items-center gap-2.5">
+            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-black/60 backdrop-blur-md border border-white/5 text-[11px] font-bold tracking-tight">
+               <span className="text-[#00a3ff]">IMDb</span>
+               <span className="text-white">8.9</span>
+            </div>
+            {currentMovie.year && (
+              <span className="px-3 py-1.5 rounded-lg bg-black/60 backdrop-blur-md border border-white/5 text-[11px] font-bold text-white tracking-tight">
+                {currentMovie.year}
+              </span>
+            )}
+            <span className="px-3 py-1.5 rounded-lg bg-black/60 backdrop-blur-md border border-white/5 text-[11px] font-bold text-white tracking-tight">
+              Hoàn Tất (37/37)
+            </span>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2 mt-[-5px]">
+            {["Chính Kịch", "Cổ Trang", "Tâm Lý"].map((genre) => (
+               <span key={genre} className="px-3 py-1.5 rounded-lg bg-white/5 border border-white/5 text-[11px] font-medium text-white/50">
+                 {genre}
+               </span>
+            ))}
+          </div>
+
+          <p className="text-white/40 text-sm font-medium max-w-lg line-clamp-2 leading-relaxed opacity-80">
+            Vương Thủy Hoa xuyên không vào thế giới tiểu thuyết, nơi cô phải đối mặt với những âm mưu hoàng tộc thâm hiểm và tìm lại chính mình...
           </p>
 
-          <div className="flex flex-wrap gap-4 mt-4">
+          <div className="flex flex-wrap gap-4 mt-2">
             <Link href={`/movie/${currentMovie.slug}`}>
               <Button
                 size="lg"
-                className="h-14 px-10 text-lg font-black rounded-full gap-3 bg-primary hover:bg-primary-hover text-white transition-all shadow-xl shadow-primary/20 hover:scale-110 active:scale-95 group/btn"
+                className="h-12 px-10 text-base font-bold rounded-full gap-2 bg-[#00a3ff] hover:bg-[#0095e6] text-white transition-all shadow-lg shadow-[#00a3ff]/20 hover:scale-105 active:scale-95 group/btn"
               >
-                <Play className="w-6 h-6 fill-current group-hover/btn:scale-125 transition-transform" />
-                XEM NGAY
+                <Play className="w-5 h-5 fill-current" />
+                Xem Ngay
               </Button>
             </Link>
           </div>
@@ -112,13 +119,15 @@ export function HeroSlider({ movies }: HeroSliderProps) {
       </div>
 
       {/* Thumbnail Navigation (Phimleak style) */}
-      <div className="absolute right-8 bottom-12 z-30 hidden lg:flex items-center gap-3">
+      <div className="absolute right-8 bottom-16 z-30 hidden lg:flex items-center gap-4">
         {movies.map((movie, idx) => (
           <button
             key={idx}
             onClick={() => setCurrentIndex(idx)}
-            className={`relative w-16 h-10 rounded-lg overflow-hidden border-2 transition-all duration-300 hover:scale-110 active:scale-95 ${
-              idx === currentIndex ? "border-primary w-24 scale-110 shadow-lg shadow-primary/40" : "border-white/10 grayscale opacity-40 hover:grayscale-0 hover:opacity-100"
+            className={`relative w-18 h-12 rounded-lg overflow-hidden border-2 transition-all duration-500 hover:scale-110 ${
+              idx === currentIndex 
+                ? "border-[#00a3ff] w-24 shadow-xl shadow-[#00a3ff]/20" 
+                : "border-white/10 opacity-40 hover:opacity-100 grayscale hover:grayscale-0"
             }`}
           >
             <Image

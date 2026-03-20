@@ -42,25 +42,27 @@ export function Sidebar() {
                 href={item.href}
                 className="group relative flex flex-col items-center gap-1 transition-all"
               >
-                <div className={`flex h-12 w-12 items-center justify-center rounded-2xl transition-all duration-300 ${
-                  Active 
-                    ? "bg-primary text-white shadow-lg shadow-primary/20 scale-110" 
-                    : "text-white/40 group-hover:bg-white/5 group-hover:text-white"
+                <div className={`flex h-11 w-11 items-center justify-center rounded-xl transition-all duration-300 ${
+                  Active
+                    ? "bg-[#00a3ff]/10 text-[#00a3ff] scale-105 shadow-sm shadow-[#00a3ff]/10"
+                    : "text-white/30 group-hover:bg-white/5 group-hover:text-white/60"
                 }`}>
-                  <item.icon className="h-6 w-6" />
+                  <item.icon className="h-5 w-5" strokeWidth={Active ? 2 : 1.5} />
                 </div>
-                <span className={`text-[10px] font-bold uppercase tracking-tighter transition-opacity duration-300 ${
-                  Active ? "text-primary opacity-100" : "text-white/20 opacity-0 group-hover:opacity-100"
+                <span className={`text-[9px] font-black uppercase tracking-widest transition-opacity duration-300 ${
+                  Active ? "text-[#00a3ff] opacity-100" : "text-white/20 opacity-0 group-hover:opacity-100"
                 }`}>
                   {item.label}
                 </span>
                 {Active && (
-                  <div className="absolute -left-4 top-1/2 h-8 w-1 -translate-y-1/2 rounded-r-full bg-primary shadow-[0_0_10px_#ff4d4d]" />
+                  <div className="absolute -left-3 top-1/2 h-6 w-1 -translate-y-1/2 rounded-r-full bg-[#00a3ff] shadow-[0_0_8px_rgba(0,163,255,0.6)]" />
                 )}
               </Link>
             );
           })}
         </nav>
+
+        <div className="mb-8 flex-grow" />
 
         <div className="mb-8 flex flex-col items-center gap-4">
           <Link href="/top-trending" className="group">
