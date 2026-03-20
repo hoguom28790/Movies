@@ -30,14 +30,25 @@ export default async function GenrePage({
     "the-thao": "Thể Thao",
     "the-thao-am-nhac": "Âm Nhạc",
     "gia-dinh": "Gia Đình",
+    "chieu-rap": "Phim Chiếu Rạp",
+    "long-tieng": "Phim Lồng Tiếng",
+    "thuyet-minh": "Phim Thuyết Minh",
   };
+
+  const collectionSlugs = ["chieu-rap", "long-tieng", "thuyet-minh"];
+  const isCollection = collectionSlugs.includes(slug);
 
   const formatGenreName = (s: string) =>
     genreLabels[s] || s.split("-").map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(" ");
 
   let result;
   try {
-    result = await getGenreMovies(slug, currentPage);
+    if (isCollection) {
+      const { getCategoryMovies } = await import("@/services/api/category");
+      result = await getCategoryMovies(slug, currentPage);
+    } else {
+      result = await getGenreMovies(slug, currentPage);
+    }
   } catch {
     return notFound();
   }

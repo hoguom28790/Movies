@@ -36,10 +36,22 @@ function normalizeKk(items: any[]): Movie[] {
 }
 
 /** Fetch movies for a list-type endpoint: phim-le, phim-bo, hoat-hinh, tv-shows, etc. */
-export async function getCategoryMovies(type: "phim-le" | "phim-bo" | "hoat-hinh" | "tv-shows", page = 1): Promise<MovieListResponse> {
+export async function getCategoryMovies(type: string, page = 1): Promise<MovieListResponse> {
+  // Map some shorthand slugs to OPhim/KKPhim expected slugs
+  const typeMap: Record<string, string> = {
+    "chieu-rap": "phim-chieu-rap",
+    "long-tieng": "phim-long-tieng",
+    "thuyet-minh": "phim-thuyet-minh",
+    "movies": "phim-le",
+    "series": "phim-bo",
+    "anime": "hoat-hinh",
+  };
+
+  const actualType = typeMap[type] || type;
+
   // Priority 1: OPhim
   try {
-    const res = await fetch(`${OPHIM}/danh-sach/${type}?page=${page}`, { 
+    const res = await fetch(`${OPHIM}/danh-sach/${actualType}?page=${page}`, { 
       next: { revalidate: 3600 },
       signal: AbortSignal.timeout(5000)
     });
@@ -57,7 +69,7 @@ export async function getCategoryMovies(type: "phim-le" | "phim-bo" | "hoat-hinh
   } catch { /* fall through */ }
 
   // Priority 2: KKPhim
-  const res2 = await fetch(`${KKPHIM}/danh-sach/${type}?page=${page}`, { 
+  const res2 = await fetch(`${KKPHIM}/danh-sach/${actualType}?page=${page}`, { 
     next: { revalidate: 3600 },
     signal: AbortSignal.timeout(5000)
   });
