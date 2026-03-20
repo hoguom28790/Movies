@@ -1,72 +1,63 @@
 "use client";
 
-import React from "react";
+import React, { useRef } from "react";
 import Link from "next/link";
-import { Flame, Monitor, Volume2, MessageSquare, History, Sparkles } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
 const shortcuts = [
-  {
-    title: "Hot Rần Rần",
-    subtitle: "Xem chủ đề >",
-    href: "/phim-moi",
-    icon: Flame,
-    gradient: "from-orange-600 to-red-900",
-  },
-  {
-    title: "Chiếu rạp",
-    subtitle: "Xem chủ đề >",
-    href: "/the-loai/chieu-rap",
-    icon: Monitor,
-    gradient: "from-blue-600 to-indigo-900",
-  },
-  {
-    title: "Lồng tiếng",
-    subtitle: "Xem chủ đề >",
-    href: "/the-loai/long-tieng",
-    icon: Volume2,
-    gradient: "from-purple-600 to-fuchsia-900",
-  },
-  {
-    title: "Thuyết Minh",
-    subtitle: "Xem chủ đề >",
-    href: "/the-loai/thuyet-minh",
-    icon: MessageSquare,
-    gradient: "from-emerald-600 to-teal-900",
-  },
-  {
-    title: "Cổ trang",
-    subtitle: "Xem chủ đề >",
-    href: "/the-loai/co-trang",
-    icon: Sparkles,
-    gradient: "from-indigo-600 to-blue-900",
-  },
+  { title: "Hot Rần Rần", href: "/phim-moi", gradient: "from-orange-500/80 to-red-800/80" },
+  { title: "Chiếu rạp", href: "/the-loai/chieu-rap", gradient: "from-blue-500/80 to-indigo-800/80" },
+  { title: "Lồng tiếng", href: "/the-loai/long-tieng", gradient: "from-emerald-500/80 to-teal-800/80" },
+  { title: "Thuyết Minh", href: "/the-loai/thuyet-minh", gradient: "from-amber-500/80 to-orange-800/80" },
+  { title: "Cổ trang", href: "/the-loai/co-trang", gradient: "from-pink-500/80 to-rose-800/80" },
+  { title: "Kinh dị", href: "/the-loai/kinh-di", gradient: "from-red-600/80 to-red-950/80" },
+  { title: "Hình sự", href: "/the-loai/hinh-su", gradient: "from-slate-500/80 to-slate-800/80" },
+  { title: "Điện ảnh Âu Mỹ", href: "/quoc-gia/au-my", gradient: "from-cyan-500/80 to-sky-800/80" },
+  { title: "Hoạt hình", href: "/hoat-hinh", gradient: "from-violet-500/80 to-purple-800/80" },
 ];
 
 export function CategoryShortcuts() {
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  const scroll = (dir: "left" | "right") => {
+    if (!scrollRef.current) return;
+    scrollRef.current.scrollBy({ left: dir === "left" ? -300 : 300, behavior: "smooth" });
+  };
+
   return (
-    <section className="container mx-auto px-4 lg:px-8 mt-12 mb-16">
-      <h3 className="text-xl font-black text-white mb-6">Bạn đang quan tâm gì?</h3>
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
+    <section className="container mx-auto px-4 lg:px-12 mt-8 mb-12">
+      <div className="flex items-center justify-between mb-4">
+        <h3 className="text-base font-semibold text-white/80">Bạn đang quan tâm gì?</h3>
+        <div className="hidden sm:flex items-center gap-1.5">
+          <button
+            onClick={() => scroll("left")}
+            className="p-1.5 rounded-lg bg-white/5 text-white/30 hover:text-white hover:bg-white/10 transition-all"
+          >
+            <ChevronLeft className="w-4 h-4" />
+          </button>
+          <button
+            onClick={() => scroll("right")}
+            className="p-1.5 rounded-lg bg-white/5 text-white/30 hover:text-white hover:bg-white/10 transition-all"
+          >
+            <ChevronRight className="w-4 h-4" />
+          </button>
+        </div>
+      </div>
+
+      <div
+        ref={scrollRef}
+        className="flex gap-3 overflow-x-auto scrollbar-hide scroll-smooth pb-2"
+      >
         {shortcuts.map((item, idx) => (
           <Link
             key={idx}
             href={item.href}
-            className={`group relative overflow-hidden rounded-2xl p-4 transition-all hover:scale-105 active:scale-95 bg-gradient-to-br ${item.gradient} shadow-lg hover:shadow-primary/20`}
+            className={`group flex-shrink-0 relative overflow-hidden rounded-xl px-5 py-4 min-w-[140px] transition-all hover:scale-[1.03] active:scale-[0.98] bg-gradient-to-br ${item.gradient}`}
           >
-            <div className="flex flex-col h-full justify-between relative z-10">
-              <div className="flex justify-between items-start">
-                <item.icon className="h-6 w-6 text-white/40 group-hover:text-white transition-colors" />
-              </div>
-              <div className="mt-8">
-                <h4 className="text-sm font-black text-white">{item.title}</h4>
-                <p className="text-[10px] font-bold text-white/50 group-hover:text-white transition-colors">{item.subtitle}</p>
-              </div>
-            </div>
-            
-            {/* Subtle background decoration */}
-            <div className="absolute -right-4 -bottom-4 opacity-10 group-hover:scale-150 transition-transform duration-700">
-               <item.icon className="h-24 w-24 text-white" />
-            </div>
+            <span className="text-[13px] font-semibold text-white">{item.title}</span>
+            <p className="text-[10px] text-white/50 mt-0.5 group-hover:text-white/80 transition-colors">
+              Xem chủ đề
+            </p>
           </Link>
         ))}
       </div>

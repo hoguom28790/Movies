@@ -23,12 +23,12 @@ export default async function SearchPage({
   }
 
   return (
-    <div className="container mx-auto px-4 lg:px-12 py-8 mt-20">
+    <div className="container mx-auto px-4 lg:px-12 py-8 mt-16 min-h-screen">
       <div className="max-w-4xl mx-auto flex flex-col gap-8">
         {/* Search Header */}
-        <div className="flex flex-col gap-6">
-          <h1 className="text-3xl md:text-4xl font-black text-white flex items-center gap-3">
-            <Search className="w-8 h-8 text-primary" />
+        <div className="flex flex-col gap-5">
+          <h1 className="text-xl md:text-2xl font-semibold text-white/90 flex items-center gap-2">
+            <Search className="w-5 h-5 text-white/40" />
             Tìm Kiếm
           </h1>
 
@@ -39,26 +39,26 @@ export default async function SearchPage({
               defaultValue={query}
               placeholder="Nhập tên phim, diễn viên, đạo diễn..."
               autoFocus
-              className="w-full h-14 md:h-16 rounded-full bg-white/5 border border-white/10 px-8 pr-16 text-lg text-white focus:outline-none focus:ring-2 focus:ring-primary/50 focus:bg-white/10 transition-all placeholder:text-white/20 font-medium"
+              className="w-full h-12 rounded-xl bg-white/5 border border-white/[0.08] px-5 pr-20 text-sm text-white focus:outline-none focus:ring-1 focus:ring-primary/40 focus:bg-white/[0.08] transition-all placeholder:text-white/25"
             />
             <button
               type="submit"
-              className="absolute right-2 top-2 bottom-2 px-8 rounded-full bg-primary hover:bg-primary-hover text-white font-black uppercase tracking-widest text-[13px] transition-all hover:scale-105 active:scale-95 shadow-xl shadow-primary/30"
+              className="absolute right-1.5 top-1.5 bottom-1.5 px-5 rounded-lg bg-primary hover:bg-primary-hover text-white text-[12px] font-semibold transition-all"
             >
               Tìm
             </button>
           </Form>
 
-          {/* Filters Placeholder */}
+          {/* Filters */}
           <div className="flex flex-wrap gap-2">
-            <button className="flex items-center gap-2 px-6 py-2 rounded-full bg-white/5 border border-white/10 text-[13px] font-black uppercase tracking-wider text-white/40 hover:text-white hover:bg-primary hover:border-primary transition-all">
-              <Filter className="w-4 h-4" />
+            <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/5 border border-white/[0.08] text-[12px] text-white/40 hover:text-white hover:bg-white/10 transition-all">
+              <Filter className="w-3.5 h-3.5" />
               Bộ lọc
             </button>
             {["Phim lẻ", "Phim bộ", "Hoạt hình", "Năm 2024", "Năm 2023"].map((tag) => (
               <button
                 key={tag}
-                className="px-6 py-2 rounded-full bg-white/5 border border-white/10 text-[13px] font-black uppercase tracking-wider text-white/40 hover:text-white hover:bg-primary hover:border-primary transition-all"
+                className="px-3 py-1.5 rounded-lg bg-white/5 border border-white/[0.08] text-[12px] text-white/40 hover:text-white hover:bg-white/10 transition-all"
               >
                 {tag}
               </button>

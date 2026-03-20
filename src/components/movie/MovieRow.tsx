@@ -21,36 +21,35 @@ export function MovieRow({ title, movies, viewAllHref }: MovieRowProps) {
   };
 
   return (
-    <section className="relative px-4 lg:px-12">
+    <section className="relative">
       {/* Header */}
-      <div className="flex items-center justify-between mb-8">
-        <h3 className="text-xl md:text-2xl font-black text-white flex items-center gap-3 uppercase tracking-tight">
-          <span className="w-1.5 h-8 bg-primary rounded-full inline-block shadow-[0_0_15px_rgba(0,163,255,0.4)]" />
+      <div className="flex items-center justify-between mb-5 px-4 lg:px-12">
+        <h3 className="text-base font-semibold text-white/90">
           {title}
         </h3>
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3">
           {viewAllHref && (
             <Link
               href={viewAllHref}
-              className="text-[13px] font-black text-white/40 hover:text-primary transition-all uppercase tracking-[0.2em]"
+              className="text-[12px] text-white/40 hover:text-white transition-colors"
             >
-              Xem tất cả
+              Xem toàn bộ
             </Link>
           )}
-          <div className="hidden sm:flex items-center gap-2">
+          <div className="hidden sm:flex items-center gap-1">
             <button
               onClick={() => scroll("left")}
-              className="p-2.5 rounded-full bg-white/5 hover:bg-primary border border-white/5 text-white/40 hover:text-white transition-all shadow-lg active:scale-95"
+              className="p-1.5 rounded-lg bg-white/5 text-white/30 hover:text-white hover:bg-white/10 transition-all"
               aria-label="Cuộn trái"
             >
-              <ChevronLeft className="w-5 h-5" />
+              <ChevronLeft className="w-4 h-4" />
             </button>
             <button
               onClick={() => scroll("right")}
-              className="p-2.5 rounded-full bg-white/5 hover:bg-primary border border-white/5 text-white/40 hover:text-white transition-all shadow-lg active:scale-95"
+              className="p-1.5 rounded-lg bg-white/5 text-white/30 hover:text-white hover:bg-white/10 transition-all"
               aria-label="Cuộn phải"
             >
-              <ChevronRight className="w-5 h-5" />
+              <ChevronRight className="w-4 h-4" />
             </button>
           </div>
         </div>
@@ -59,17 +58,17 @@ export function MovieRow({ title, movies, viewAllHref }: MovieRowProps) {
       {/* Scrollable Row */}
       <div
         ref={rowRef}
-        className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide scroll-smooth"
-        style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
+        className="flex gap-3 overflow-x-auto pb-4 scrollbar-hide scroll-smooth px-4 lg:px-12"
       >
         {movies.map((movie, idx) => (
-          <div key={`${movie.id}-${idx}`} className="flex-shrink-0 w-[160px] sm:w-[180px]">
+          <div key={`${movie.id}-${idx}`} className="flex-shrink-0 w-[145px] sm:w-[160px]">
             <MovieCard
               title={movie.title}
               slug={movie.slug}
               posterUrl={movie.thumbUrl || movie.posterUrl}
               year={movie.year}
               quality={movie.quality}
+              originalTitle={movie.originalTitle}
             />
           </div>
         ))}

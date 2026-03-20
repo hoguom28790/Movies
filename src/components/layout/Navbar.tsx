@@ -3,69 +3,59 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Search, UserCircle, LogOut, Menu, X, Heart } from "lucide-react";
+import { Search, UserCircle, LogOut, Heart } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTheme } from "@/contexts/ThemeContext";
 import { AuthModal } from "@/components/auth/AuthModal";
 import { InstantSearch } from "./InstantSearch";
 import { NavMenu } from "./NavMenu";
 
-const navLinks = [
-  { href: "/", label: "Trang chủ" },
-  { href: "/phim-le", label: "Phim Lẻ" },
-  { href: "/phim-bo", label: "Phim Bộ" },
-  { href: "/the-loai", label: "Thể Loại" },
-  { href: "/phim-moi", label: "Phim Mới" },
-];
-
 export function Navbar() {
   const [isAuthOpen, setIsAuthOpen] = useState(false);
-  const [isMobileOpen, setIsMobileOpen] = useState(false);
   const { user, logout } = useAuth();
   const { theme, setTheme } = useTheme();
   const pathname = usePathname();
 
-  const isActive = (href: string) =>
-    href === "/" ? pathname === "/" : pathname.startsWith(href);
-
   return (
     <>
-      <header className="fixed top-0 z-50 w-full border-b border-white/5 bg-black/40 backdrop-blur-2xl transition-all duration-300">
-        <div className="container mx-auto flex h-16 items-center justify-between px-4 lg:px-8">
+      <header className="fixed top-0 z-50 w-full border-b border-white/[0.06] bg-[#0a0a0a]/90 backdrop-blur-xl transition-all duration-300">
+        <div className="container mx-auto flex h-14 items-center justify-between px-4 lg:px-8">
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-2 group mr-8">
-            <span className="text-2xl font-black text-primary uppercase tracking-tighter transition-transform group-hover:scale-105">
+          <Link href="/" className="flex items-center gap-2 group mr-6 flex-shrink-0">
+            <span className="text-xl font-bold text-primary tracking-tight transition-transform group-hover:scale-105">
               Hồ Phim
             </span>
           </Link>
 
-          {/* Center Area: Search + Nav */}
-          <div className="flex-1 flex items-center justify-center gap-6 max-w-4xl mx-auto px-12">
-            <InstantSearch />
+          {/* Center: NavMenu (dropdowns + direct links) */}
+          <div className="hidden md:flex items-center gap-1 flex-1 justify-center">
             <NavMenu />
           </div>
 
-          {/* Right Actions */}
-          <div className="flex items-center gap-3">
+          {/* Right: Search + Actions */}
+          <div className="flex items-center gap-2 flex-shrink-0">
+            <div className="hidden md:block w-56 lg:w-72">
+              <InstantSearch />
+            </div>
             <Link
               href="/search"
-              className="md:hidden p-2 transition-colors text-white/70 hover:text-white"
+              className="md:hidden p-2 text-white/50 hover:text-white transition-colors"
             >
               <Search className="h-5 w-5" />
             </Link>
 
             {user ? (
-              <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2">
                 <Link
                   href="/watchlist"
-                  className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-white text-xs font-bold transition-all"
+                  className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-white/60 text-[12px] font-medium transition-all"
                 >
-                  <Heart className="h-4 w-4 text-primary" />
+                  <Heart className="h-3.5 w-3.5" />
                   Yêu thích
                 </Link>
                 <button
                   onClick={logout}
-                  className="flex items-center gap-1.5 text-sm font-semibold text-white/60 hover:text-primary transition-colors"
+                  className="p-2 text-white/40 hover:text-white transition-colors"
                 >
                   <LogOut className="h-4 w-4" />
                 </button>
@@ -73,7 +63,7 @@ export function Navbar() {
             ) : (
               <button
                 onClick={() => setIsAuthOpen(true)}
-                className="flex items-center gap-2 px-4 py-2 rounded-full bg-primary hover:bg-primary-hover text-white text-xs font-black uppercase tracking-widest transition-all hover:scale-105"
+                className="px-4 py-1.5 rounded-lg bg-primary hover:bg-primary-hover text-white text-[12px] font-semibold transition-all"
               >
                 Đăng nhập
               </button>
@@ -86,4 +76,3 @@ export function Navbar() {
     </>
   );
 }
-

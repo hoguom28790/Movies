@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Inter, Outfit } from "next/font/google";
+import { Inter } from "next/font/google";
 import "./globals.css";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
@@ -13,16 +13,9 @@ const inter = Inter({
   display: "swap",
 });
 
-const outfit = Outfit({
-  variable: "--font-outfit",
-  subsets: ["latin"],
-  display: "swap",
-});
-
-
 export const metadata: Metadata = {
   title: "Hồ Phim - Xem Phim Miễn Phí",
-  description: "Trang web xem phim trực tuyến chất lượng cao",
+  description: "Trang web xem phim trực tuyến chất lượng cao, cập nhật liên tục. Phim bộ, phim lẻ, hoạt hình, TV Shows từ nhiều quốc gia.",
 };
 
 export default function RootLayout({
@@ -31,15 +24,15 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="vi" className={`${inter.variable} ${outfit.variable}`}>
-      <body className="bg-black text-white selection:bg-primary/30 antialiased font-sans">
+    <html lang="vi" className={inter.variable}>
+      <body className="bg-[#0a0a0a] text-white selection:bg-primary/30 antialiased font-sans">
         <ThemeProvider>
           <AuthProvider>
             <div className="flex min-h-screen">
               <Sidebar />
-              <div className="flex-1 flex flex-col md:pl-20">
+              <div className="flex-1 flex flex-col md:pl-[72px]">
                 <Navbar />
-                <main className="flex-grow pt-16">
+                <main className="flex-grow pt-14">
                   {children}
                 </main>
                 <Footer />

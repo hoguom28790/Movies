@@ -6,12 +6,10 @@ import { usePathname } from "next/navigation";
 import { 
   Home, 
   Film, 
-  Tv, 
   LayoutGrid, 
   Heart, 
   History, 
-  TrendingUp, 
-  Flame
+  Sparkles
 } from "lucide-react";
 
 const menuItems = [
@@ -19,8 +17,16 @@ const menuItems = [
   { icon: Film, label: "Phim Hàn", href: "/quoc-gia/han-quoc" },
   { icon: Film, label: "Phim Trung", href: "/quoc-gia/trung-quoc" },
   { icon: LayoutGrid, label: "Duyệt Tìm", href: "/the-loai" },
-  { icon: TrendingUp, label: "Chủ đề", href: "/top-trending" },
-  { icon: History, label: "Lịch Sử", href: "/history" },
+  { icon: Sparkles, label: "Chủ đề", href: "/top-trending" },
+  { icon: History, label: "Lịch sử", href: "/history" },
+  { icon: Heart, label: "Yêu thích", href: "/watchlist" },
+];
+
+const mobileItems = [
+  { icon: Home, label: "Trang chủ", href: "/" },
+  { icon: LayoutGrid, label: "Duyệt Tìm", href: "/the-loai" },
+  { icon: History, label: "Lịch sử", href: "/history" },
+  { icon: Heart, label: "Yêu thích", href: "/watchlist" },
 ];
 
 export function Sidebar() {
@@ -32,61 +38,51 @@ export function Sidebar() {
   return (
     <>
       {/* Desktop Sidebar */}
-      <aside className="fixed left-0 top-0 z-40 hidden h-screen w-20 flex-col items-center border-r border-white/5 bg-black/60 pt-20 backdrop-blur-3xl md:flex">
-        <nav className="flex flex-1 flex-col items-center gap-8 px-2">
+      <aside className="fixed left-0 top-0 z-40 hidden h-screen w-[72px] flex-col items-center border-r border-white/[0.06] bg-[#0a0a0a] pt-20 md:flex">
+        <nav className="flex flex-1 flex-col items-center gap-6 pt-4">
           {menuItems.map((item) => {
-            const Active = isActive(item.href);
+            const active = isActive(item.href);
             return (
               <Link
                 key={item.href}
                 href={item.href}
-                className="group relative flex flex-col items-center gap-1 transition-all"
+                className="group relative flex flex-col items-center gap-1.5 transition-all"
               >
-                <div className={`flex h-11 w-11 items-center justify-center rounded-xl transition-all duration-300 ${
-                  Active
-                    ? "bg-primary text-white scale-105 shadow-lg shadow-primary/20"
-                    : "text-white/40 group-hover:bg-white/5 group-hover:text-white/80"
-                }`}>
-                  <item.icon className={`h-5 w-5 ${Active ? "fill-white" : ""}`} strokeWidth={Active ? 2.5 : 2} />
-                </div>
-                <span className={`text-[10px] font-bold transition-all duration-300 ${
-                  Active ? "text-primary opacity-100" : "text-white/40 opacity-100 group-hover:text-white/80"
+                {/* Left active indicator */}
+                {active && (
+                  <div className="absolute -left-[14px] top-1/2 h-7 w-[3px] -translate-y-1/2 rounded-r-full bg-primary" />
+                )}
+                <item.icon 
+                  className={`h-[20px] w-[20px] transition-colors ${
+                    active ? "text-primary" : "text-white/50 group-hover:text-white/80"
+                  }`} 
+                  strokeWidth={active ? 2.2 : 1.8}
+                />
+                <span className={`text-[10px] font-medium leading-tight transition-colors ${
+                  active ? "text-primary" : "text-white/50 group-hover:text-white/80"
                 }`}>
                   {item.label}
                 </span>
-                {Active && (
-                  <div className="absolute -left-2 top-1/2 h-8 w-1 -translate-y-1/2 rounded-r-full bg-primary shadow-[0_0_12px_rgba(0,163,255,0.8)]" />
-                )}
               </Link>
             );
           })}
         </nav>
-
-        <div className="mb-8 flex-grow" />
-
-        <div className="mb-8 flex flex-col items-center gap-4">
-          <Link href="/top-trending" className="group">
-             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/5 text-white/40 transition-all hover:bg-orange-500/10 hover:text-orange-500">
-               <Flame className="h-5 w-5" />
-             </div>
-          </Link>
-        </div>
       </aside>
 
       {/* Mobile Bottom Bar */}
-      <div className="fixed bottom-0 left-0 right-0 z-50 flex h-16 items-center justify-around border-t border-white/5 bg-black/80 px-4 backdrop-blur-2xl md:hidden">
-        {menuItems.slice(0, 5).map((item) => {
-          const Active = isActive(item.href);
+      <div className="fixed bottom-0 left-0 right-0 z-50 flex h-14 items-center justify-around border-t border-white/[0.06] bg-[#0a0a0a]/95 backdrop-blur-xl md:hidden">
+        {mobileItems.map((item) => {
+          const active = isActive(item.href);
           return (
             <Link
               key={item.href}
               href={item.href}
-              className={`flex flex-col items-center gap-1 ${
-                Active ? "text-primary" : "text-white/40"
+              className={`flex flex-col items-center gap-0.5 transition-colors ${
+                active ? "text-primary" : "text-white/40"
               }`}
             >
-              <item.icon className="h-5 w-5" />
-              <span className="text-[10px] font-bold uppercase tracking-widest">{item.label.split(' ')[0]}</span>
+              <item.icon className="h-5 w-5" strokeWidth={1.8} />
+              <span className="text-[9px] font-medium">{item.label}</span>
             </Link>
           );
         })}

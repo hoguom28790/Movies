@@ -116,13 +116,13 @@ export default async function MovieDetailsPage({ params }: { params: Promise<{ s
   return (
     <div className="min-h-screen">
       {/* ── Backdrop Hero ── */}
-      <div className="relative w-full h-[60vh] min-h-[400px] overflow-hidden">
+      <div className="relative w-full h-[55vh] min-h-[380px] overflow-hidden">
         <img
           src={thumb || poster}
           alt={data.name}
-          className="w-full h-full object-cover object-top opacity-50 blur-sm scale-110"
+          className="w-full h-full object-cover object-top opacity-40 blur-sm scale-105"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/80 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0a] via-[#0a0a0a]/70 to-transparent" />
       </div>
 
       {/* ── Content ── */}
@@ -157,24 +157,24 @@ export default async function MovieDetailsPage({ params }: { params: Promise<{ s
               </div>
             </div>
 
-            <h1 className="text-4xl md:text-6xl font-black text-white leading-tight drop-shadow-xl">{tmdbData?.title || data.name}</h1>
-            <h2 className="text-xl text-white/40 font-medium -mt-3 italic">
+            <h1 className="text-3xl md:text-4xl font-bold text-white leading-tight">{tmdbData?.title || data.name}</h1>
+            <p className="text-sm text-white/40 -mt-2">
               {tmdbData?.original_title || data.origin_name || data.original_name}
-            </h2>
+            </p>
 
             {/* Meta row */}
-            <div className="flex flex-wrap justify-center md:justify-start items-center gap-6 text-sm text-neutral-400 font-bold uppercase tracking-widest">
-              <span className="flex items-center gap-2">
-                <CalendarDays className="w-4 h-4 text-primary" />
+            <div className="flex flex-wrap justify-center md:justify-start items-center gap-4 text-[12px] text-white/40">
+              <span className="flex items-center gap-1.5">
+                <CalendarDays className="w-3.5 h-3.5 text-white/30" />
                 {tmdbData?.release_date?.split("-")[0] || data.year}
               </span>
-              <span className="flex items-center gap-2">
-                <Clock className="w-4 h-4 text-primary" />
+              <span className="flex items-center gap-1.5">
+                <Clock className="w-3.5 h-3.5 text-white/30" />
                 {data.time || "Đang cập nhật"}
               </span>
-              <span className="flex items-center gap-2">
-                <Star className="w-4 h-4 text-primary" />
-                {Number(data.view || 0).toLocaleString()} Views
+              <span className="flex items-center gap-1.5">
+                <Star className="w-3.5 h-3.5 text-white/30" />
+                {Number(data.view || 0).toLocaleString()} views
               </span>
             </div>
 
@@ -205,7 +205,7 @@ export default async function MovieDetailsPage({ params }: { params: Promise<{ s
                   <Link
                     key={g.slug}
                     href={`/the-loai/${g.slug}`}
-                    className="px-4 py-2 rounded-xl text-xs font-black bg-white/5 hover:bg-primary/20 border border-white/10 hover:border-primary/40 text-white/40 hover:text-white transition-all uppercase tracking-widest"
+                    className="px-3 py-1.5 rounded-lg text-[12px] bg-white/5 hover:bg-white/10 text-white/40 hover:text-white transition-all"
                   >
                     {g.name}
                   </Link>
@@ -214,16 +214,16 @@ export default async function MovieDetailsPage({ params }: { params: Promise<{ s
             )}
 
             {/* Actions */}
-            <div className="flex flex-wrap justify-center md:justify-start gap-4 mt-6">
+            <div className="flex flex-wrap justify-center md:justify-start gap-3 mt-4">
               {firstEp ? (
                 <Link href={`/watch/${source}/${slug}/${firstEp.slug || firstEp.name}`}>
-                  <Button size="lg" className="rounded-full px-12 h-14 gap-2 font-black text-lg bg-primary hover:bg-primary-hover shadow-xl shadow-primary/30 transition-all hover:scale-105 active:scale-95">
-                    <Play className="w-6 h-6 fill-current" />
+                  <Button size="lg" className="rounded-lg px-8 h-11 gap-2 font-semibold text-[14px] bg-primary hover:bg-primary-hover transition-all hover:scale-[1.03] active:scale-[0.97]">
+                    <Play className="w-5 h-5 fill-current" />
                     Xem Ngay
                   </Button>
                 </Link>
               ) : (
-                <Button size="lg" disabled className="rounded-full px-12 h-14 bg-white/5 text-white/20 border border-white/10">
+                <Button size="lg" disabled className="rounded-lg px-8 h-11 bg-white/5 text-white/30">
                   Phim Sắp Chiếu
                 </Button>
               )}

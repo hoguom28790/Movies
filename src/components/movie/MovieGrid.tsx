@@ -62,8 +62,8 @@ export function MovieGrid({ movies: initialMovies, title, fetchUrl, currentPage:
   }, [loadMore, loading, page, totalPages]);
 
   return (
-    <div className="container mx-auto px-4 lg:px-12 py-8 mt-20">
-      <h1 className="text-2xl md:text-3xl font-black mb-10 border-l-4 border-primary pl-4 text-white uppercase tracking-tight">{title}</h1>
+    <div className="container mx-auto px-4 lg:px-12 py-8 mt-16">
+      <h1 className="text-xl md:text-2xl font-semibold mb-8 text-white/90">{title}</h1>
 
       {movies.length === 0 ? (
         <p className="text-neutral-400 text-center py-20">Không tìm thấy phim nào.</p>
