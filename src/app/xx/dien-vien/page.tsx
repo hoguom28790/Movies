@@ -66,15 +66,10 @@ export default async function XXActorsPage() {
                         </div>
                         <div className="space-y-1">
                            <h3 className="text-sm md:text-base font-black text-white/80 group-hover:text-yellow-500 transition-colors uppercase italic tracking-tighter leading-tight">{actor.name}</h3>
-                           <p className="text-[10px] font-black text-white/10 uppercase tracking-widest">{actor.movieCount || 0} PHIM</p>
                         </div>
                     </Link>
                 ))}
             </div>
-
-            <style jsx global>{`
-                .bg-surface { background-color: #0d0d0d; }
-            `}</style>
         </div>
     );
 }
