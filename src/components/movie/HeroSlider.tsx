@@ -139,11 +139,10 @@ export function HeroSlider({ movies }: HeroSliderProps) {
                 : "border-white/10 opacity-40 hover:opacity-80 grayscale hover:grayscale-0"
             }`}
           >
-            <Image
-              src={movie.posterUrl}
+            <img
+              src={movie.thumbUrl || movie.posterUrl}
               alt={movie.title}
-              fill
-              className="object-cover"
+              className="absolute inset-0 w-full h-full object-cover object-top opacity-60 scale-105"
             />
           </button>
         ))}

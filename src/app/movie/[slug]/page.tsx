@@ -139,8 +139,8 @@ export default async function MovieDetailsPage({ params }: { params: Promise<{ s
       imdbId ? getIMDbRating(imdbId).catch(() => null) : Promise.resolve(null),
     ]);
     
-    const tmdbPoster = tmdbData?.poster_path ? getTMDBImageUrl(tmdbData.poster_path) : null;
-    const tmdbThumb = tmdbData?.backdrop_path ? getTMDBImageUrl(tmdbData.backdrop_path) : null;
+    const tmdbPoster = tmdbData?.poster_path ? getTMDBImageUrl(tmdbData.poster_path, 'w780') : null;
+    const tmdbThumb = tmdbData?.backdrop_path ? getTMDBImageUrl(tmdbData.backdrop_path, 'w1280') : null;
  
     const poster = tmdbPoster || (safeData.poster_url?.startsWith("http")
       ? safeData.poster_url
@@ -173,12 +173,12 @@ export default async function MovieDetailsPage({ params }: { params: Promise<{ s
     const related = relatedSlug ? await fetchRelated(relatedSlug).catch(() => []) : [];
     const recommendations = tmdbData?.recommendations?.results || [];
     const displayActors = tmdbCredits.length > 0 
-      ? tmdbCredits.slice(0, 8) 
-      : fallbackActors.slice(0, 8).map((name: string) => ({ name, profile_path: null }));
+      ? tmdbCredits.slice(0, 10) 
+      : fallbackActors.slice(0, 10).map((name: string) => ({ name, profile_path: null }));
     const countryName = safeData.country?.[0]?.name || safeData.country?.[0] || "Đang cập nhật";
  
     return (
-      <div className="min-h-screen">
+      <div className="min-h-screen pb-safe">
         <div className="relative w-full h-[35vh] sm:h-[40vh] lg:h-[45vh] min-h-[250px] overflow-hidden">
           <img
             src={thumb || poster}
@@ -188,7 +188,7 @@ export default async function MovieDetailsPage({ params }: { params: Promise<{ s
           <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0a] via-[#0a0a0a]/60 to-[#0a0a0a]/30" />
         </div>
  
-        <div className="container mx-auto px-4 lg:px-12 relative z-10 -mt-44 sm:-mt-52 lg:-mt-64 pb-20 md:pb-16">
+        <div className="container mx-auto px-4 lg:px-12 relative z-10 -mt-44 sm:-mt-52 lg:-mt-64 pb-20 md:pb-16 px-safe">
           <div className="flex flex-col lg:flex-row gap-8">
             <div className="w-full lg:w-[280px] flex-shrink-0">
               <div className="relative w-[160px] sm:w-[200px] lg:w-full mx-auto lg:mx-0">
@@ -237,7 +237,7 @@ export default async function MovieDetailsPage({ params }: { params: Promise<{ s
                     {safeData.quality}
                   </span>
                   <span className="px-2.5 py-1 rounded-md bg-white/5 text-white/50 text-[11px] font-medium">
-                    {tmdbData?.release_date?.split("-")[0] || safeData.year}
+                    {tmdbData?.release_date?.split("-")[0] || tmdbData?.first_air_date?.split("-")[0] || safeData.year}
                   </span>
                   <span className="px-2.5 py-1 rounded-md bg-white/5 text-white/50 text-[11px] font-medium">
                     {safeData.episode_current}
@@ -274,14 +274,12 @@ export default async function MovieDetailsPage({ params }: { params: Promise<{ s
                     </p>
                   </a>
                 )}
-                {tmdbData?.id && (
-                  <div className="p-3 rounded-xl bg-white/[0.03] border border-white/[0.06] flex flex-col gap-1.5">
-                    <span className="text-[10px] font-black text-primary uppercase tracking-wider">TMDB</span>
-                    <p className="text-[13px] font-bold text-white mt-0.5">
-                      {tmdbData?.vote_average?.toFixed(1) || "0.0"} <span className="text-[10px] text-white/30 font-normal">/ 10</span>
-                    </p>
-                  </div>
-                )}
+                <div className="p-3 rounded-xl bg-white/[0.03] border border-white/[0.06] flex flex-col gap-1.5">
+                  <span className="text-[10px] font-black text-primary uppercase tracking-wider">TMDB</span>
+                  <p className="text-[13px] font-bold text-white mt-0.5">
+                    {tmdbData?.vote_average?.toFixed(1) || safeData.tmdb?.vote_average || "0.0"} <span className="text-[10px] text-white/30 font-normal">/ 10</span>
+                  </p>
+                </div>
               </div>
  
               <div className="mt-5">
@@ -304,28 +302,33 @@ export default async function MovieDetailsPage({ params }: { params: Promise<{ s
  
               {displayActors.length > 0 && (
                 <section className="mt-10">
-                  <div className="flex items-center gap-2 mb-5">
+                  <div className="flex items-center gap-2 mb-6">
                     <div className="w-1 h-5 bg-primary rounded-full" />
-                    <h3 className="text-base font-semibold text-white/90">Diễn viên</h3>
+                    <h3 className="text-lg font-bold text-white/90">Diễn viên</h3>
                   </div>
-                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
                     {displayActors.map((actor: any, idx: number) => (
-                      <div key={idx} className="group flex flex-col items-center text-center gap-2">
-                        <div className="relative w-full aspect-square rounded-2xl overflow-hidden bg-white/5 border border-white/[0.06]">
+                      <div key={idx} className="group flex flex-col items-center text-center gap-3">
+                        <div className="relative w-24 h-24 sm:w-28 sm:h-28 rounded-full overflow-hidden bg-white/5 border-2 border-white/[0.06] group-hover:border-primary/50 transition-all duration-300">
                           {actor.profile_path ? (
                             <img
-                              src={getTMDBImageUrl(actor.profile_path) || ""}
+                              src={getTMDBImageUrl(actor.profile_path, 'w185') || ""}
                               alt={actor.name}
                               className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                               loading="lazy"
                             />
                           ) : (
-                            <div className="w-full h-full flex items-center justify-center text-white/10 uppercase bg-white/5">
+                            <div className="w-full h-full flex items-center justify-center text-white/10 text-2xl uppercase bg-white/5">
                               {actor.name?.charAt(0)}
                             </div>
                           )}
                         </div>
-                        <p className="text-[12px] font-bold text-white/80 line-clamp-1">{actor.name}</p>
+                        <div className="space-y-0.5">
+                          <p className="text-[13px] font-bold text-white/90 group-hover:text-primary transition-colors line-clamp-1">{actor.name}</p>
+                          {actor.character && (
+                            <p className="text-[11px] text-white/30 line-clamp-1 italic">{actor.character}</p>
+                          )}
+                        </div>
                       </div>
                     ))}
                   </div>

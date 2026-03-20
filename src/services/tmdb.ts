@@ -20,20 +20,33 @@ export interface TMDBActor {
 
 export async function searchTMDBMovie(title: string, year?: number) {
   try {
+    const cleanTitle = (t: string) => t.replace(/\(Phần\s+\d+\)/gi, "").replace(/\(Season\s+\d+\)/gi, "").trim();
+    const q = cleanTitle(title);
     const yearParam = year ? `&year=${year}` : "";
-    // Try movie first
+    
+    // 1. Try TV search first for suspected series (common in current catalog)
     let response = await fetch(
-      `${BASE_URL}/search/movie?api_key=${TMDB_API_KEY}&query=${encodeURIComponent(title)}${yearParam}&language=vi-VN`
+      `${BASE_URL}/search/tv?api_key=${TMDB_API_KEY}&query=${encodeURIComponent(q)}${year ? `&first_air_date_year=${year}` : ""}&language=vi-VN`
     );
     let data = await response.json();
-    if (data.results?.length) return { ...data.results[0], media_type: "movie" };
+    if (data.results?.length) return { ...data.results[0], media_type: "tv" };
 
-    // Try TV if movie fails
+    // 2. Try Movie search
     response = await fetch(
-      `${BASE_URL}/search/tv?api_key=${TMDB_API_KEY}&query=${encodeURIComponent(title)}${year ? `&first_air_date_year=${year}` : ""}&language=vi-VN`
+      `${BASE_URL}/search/movie?api_key=${TMDB_API_KEY}&query=${encodeURIComponent(q)}${yearParam}&language=vi-VN`
     );
     data = await response.json();
-    if (data.results?.length) return { ...data.results[0], media_type: "tv" };
+    if (data.results?.length) return { ...data.results[0], media_type: "movie" };
+
+    // 3. Try Multi search without year as ultimate fallback
+    response = await fetch(
+      `${BASE_URL}/search/multi?api_key=${TMDB_API_KEY}&query=${encodeURIComponent(q)}&language=vi-VN`
+    );
+    data = await response.json();
+    if (data.results?.length) {
+      const best = data.results.find((r: any) => r.media_type !== "person");
+      if (best) return best;
+    }
 
     return null;
   } catch (error) {
@@ -90,8 +103,11 @@ export async function getTrendingMovies(page: number = 1) {
   }
 }
 
-export function getTMDBImageUrl(path: string | null) {
+export type TMDBImageSize = 'w92' | 'w154' | 'w185' | 'w342' | 'w500' | 'w780' | 'w1280' | 'original';
+
+export function getTMDBImageUrl(path: string | null, size: TMDBImageSize = 'w500') {
   if (!path) return null;
-  return `${IMAGE_BASE_URL}${path}`;
+  const baseUrl = "https://image.tmdb.org/t/p/";
+  return `${baseUrl}${size}${path}`;
 }
 

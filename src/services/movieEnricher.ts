@@ -55,10 +55,10 @@ export async function enrichMovies(movies: Movie[]): Promise<Movie[]> {
         // Get full details for genres and real fields
         const details = await getTMDBMovieDetails(tmdbId, mediaType);
         if (!details) return currentMovie;
-
+ 
         const imdbId = details.external_ids?.imdb_id || currentMovie.imdbId;
         const realImdbRating = imdbId ? await getIMDbRating(imdbId).catch(() => null) : null;
-
+ 
         // Final Merge: Prioritize Source API ratings (from v1) over fetched ones
         return {
           ...currentMovie,
@@ -67,10 +67,11 @@ export async function enrichMovies(movies: Movie[]): Promise<Movie[]> {
           tmdbRating: currentMovie.tmdbRating || details?.vote_average || 0,
           imdbRating: currentMovie.imdbRating || realImdbRating || 0,
           votes: currentMovie.votes || details?.vote_count || 0,
-          posterUrl: (details?.poster_path ? getTMDBImageUrl(details.poster_path) : (currentMovie.posterUrl || currentMovie.thumbUrl)) || "",
-          thumbUrl: (details?.backdrop_path ? getTMDBImageUrl(details.backdrop_path) : (currentMovie.thumbUrl || currentMovie.posterUrl)) || "",
+          posterUrl: (details?.poster_path ? getTMDBImageUrl(details.poster_path, 'w780') : (currentMovie.posterUrl || currentMovie.thumbUrl)) || "",
+          thumbUrl: (details?.backdrop_path ? getTMDBImageUrl(details.backdrop_path, 'w1280') : (currentMovie.thumbUrl || currentMovie.posterUrl)) || "",
           genres: currentMovie.genres || details?.genres?.map((g: any) => g.name) || [],
           year: currentMovie.year || details?.release_date?.split("-")[0] || details?.first_air_date?.split("-")[0] || "",
+          title: currentMovie.title || details?.title || details?.name || "",
         };
       } catch (error) {
         console.error(`Error enriching movie ${movie.slug}:`, error);

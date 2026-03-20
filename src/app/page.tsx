@@ -24,7 +24,13 @@ export default async function Home() {
   const trending = trendingData.status === "fulfilled" ? trendingData.value?.results || [] : [];
 
   const { enrichMovies } = await import("@/services/movieEnricher");
-  const heroMovies = await enrichMovies(latest.items.slice(0, 5));
+  // Enrich hero (5) and a decent chunk of the grid (12) to ensure high-res posters
+  const [heroMovies, gridEnriched] = await Promise.all([
+    enrichMovies(latest.items.slice(0, 5)),
+    enrichMovies(latest.items.slice(5, 17))
+  ]);
+ 
+  const displayGrid = [...gridEnriched, ...latest.items.slice(17, 40)];
 
   return (
     <div className="flex flex-col gap-10 pb-20 min-h-screen">

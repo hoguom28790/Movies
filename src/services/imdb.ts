@@ -29,10 +29,27 @@ export async function getIMDbRating(imdbId: string): Promise<number | null> {
     
     const data = JSON.parse(jsonLdMatch[1]);
     
-    // Handle both single objects and arrays
-    const movieData = Array.isArray(data) ? data.find(item => item.aggregateRating) : data;
+    // Find aggregateRating in a more robust way (can be nested or in an array)
+    const findRating = (obj: any): any => {
+      if (!obj || typeof obj !== 'object') return null;
+      if (obj.aggregateRating) return obj.aggregateRating;
+      if (Array.isArray(obj)) {
+        for (const item of obj) {
+          const r = findRating(item);
+          if (r) return r;
+        }
+      }
+      for (const key in obj) {
+        if (typeof obj[key] === 'object') {
+          const r = findRating(obj[key]);
+          if (r) return r;
+        }
+      }
+      return null;
+    };
     
-    return movieData?.aggregateRating?.ratingValue || null;
+    const ratingData = findRating(data);
+    return ratingData?.ratingValue || null;
   } catch (error) {
     console.error("IMDb Scraping Error:", error);
     return null;
