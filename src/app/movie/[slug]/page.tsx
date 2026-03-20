@@ -51,6 +51,14 @@ export default async function MovieDetailsPage({ params }: { params: Promise<{ s
   if (!tmdbSearch && (data.origin_name || data.original_name)) {
     tmdbSearch = await searchTMDBMovie(data.origin_name || data.original_name, data.year);
   }
+
+  // Final fallback: search without year if still no results
+  if (!tmdbSearch) {
+    tmdbSearch = await searchTMDBMovie(data.name);
+  }
+  if (!tmdbSearch && (data.origin_name || data.original_name)) {
+    tmdbSearch = await searchTMDBMovie(data.origin_name || data.original_name);
+  }
   
   const tmdbData = tmdbSearch ? await getTMDBMovieDetails(tmdbSearch.id) : null;
   
@@ -67,6 +75,12 @@ export default async function MovieDetailsPage({ params }: { params: Promise<{ s
     : `https://img.ophim.live/uploads/movies/${data.thumb_url}`);
 
   const tmdbCredits = tmdbData?.credits?.cast || [];
+  const tmdbDirector = tmdbData?.credits?.crew?.find((c: any) => c.job === "Director")?.name;
+
+  // Fallbacks from API data
+  const fallbackActors = data.actor || [];
+  const fallbackDirector = data.director?.[0] || data.director || "Đang cập nhật";
+  const directorName = tmdbDirector || fallbackDirector;
 
   // All servers
   const allServers: { name: string; items: any[] }[] = episodes.map((srv: any, idx: number) => ({
@@ -149,6 +163,20 @@ export default async function MovieDetailsPage({ params }: { params: Promise<{ s
                 <Star className="w-4 h-4 text-primary" />
                 {Number(data.view || 0).toLocaleString()} Views
               </span>
+            </div>
+
+            {/* Director & Actors text fallback if needed */}
+            <div className="flex flex-col gap-2 text-sm">
+              <p className="text-white/60">
+                <span className="text-primary font-bold uppercase tracking-wider mr-2">Đạo diễn:</span>
+                <span className="text-white font-medium">{directorName}</span>
+              </p>
+              {tmdbCredits.length === 0 && fallbackActors.length > 0 && (
+                <p className="text-white/60">
+                  <span className="text-primary font-bold uppercase tracking-wider mr-2">Diễn viên:</span>
+                  <span className="text-white font-medium italic">{fallbackActors.join(", ")}</span>
+                </p>
+              )}
             </div>
 
             {/* Description */}
