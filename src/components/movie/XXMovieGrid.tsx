@@ -61,13 +61,20 @@ export function XXMovieGrid({ initialMovies, title, fetchUrl, initialPage, total
   }, [loadMore, loading, page, totalPages]);
 
   return (
-    <div className="py-8">
-      <h1 className="text-xl md:text-2xl font-bold mb-8 text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-orange-500 uppercase tracking-wider">{title}</h1>
+    <div className="py-12 md:py-20 animate-in fade-in duration-1000">
+      <div className="flex flex-col gap-2 mb-12 px-2">
+        <div className="h-1 w-12 bg-yellow-500 rounded-full animate-pulse" />
+        <h1 className="text-3xl md:text-6xl font-black text-white uppercase italic tracking-tighter leading-none">
+          {title}
+        </h1>
+      </div>
 
       {movies.length === 0 ? (
-        <p className="text-neutral-500 text-center py-20">Không tìm thấy phim nào.</p>
+        <div className="flex flex-col items-center justify-center py-32 bg-white/[0.02] border border-white/5 rounded-[40px] border-dashed">
+          <p className="text-white/20 text-sm font-black uppercase tracking-[0.4em] italic">No content found</p>
+        </div>
       ) : (
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-x-6 gap-y-12">
           {movies.map((movie) => (
             <XXMovieCard key={movie.id} title={movie.title} slug={movie.slug} posterUrl={movie.posterUrl} year={movie.year} quality={movie.quality} />
           ))}
@@ -75,14 +82,19 @@ export function XXMovieGrid({ initialMovies, title, fetchUrl, initialPage, total
       )}
 
       {page < totalPages && (
-        <div ref={observerTarget} className="w-full py-12 flex items-center justify-center">
-          {loading && <Loader2 className="w-8 h-8 animate-spin text-yellow-500" />}
+        <div ref={observerTarget} className="w-full py-24 flex items-center justify-center">
+          {loading && (
+            <div className="flex flex-col items-center gap-4">
+              <Loader2 className="w-10 h-10 animate-spin text-yellow-500/50" />
+              <span className="text-[10px] font-black text-white/10 uppercase tracking-[0.5em] animate-pulse">Loading more</span>
+            </div>
+          )}
         </div>
       )}
       
       {page >= totalPages && movies.length > 0 && (
-         <div className="w-full py-12 flex items-center justify-center">
-          <p className="text-neutral-600 text-sm font-medium">Bạn đã khám phá hết kho báu phim.</p>
+         <div className="w-full py-24 flex items-center justify-center border-t border-white/5 mt-20">
+          <p className="text-white/10 text-[10px] font-black uppercase tracking-[0.5em] italic">End of the collection</p>
         </div>
       )}
     </div>

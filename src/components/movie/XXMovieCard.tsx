@@ -13,42 +13,49 @@ interface XXMovieCardProps {
 
 export function XXMovieCard({ title, slug, posterUrl, year, quality }: XXMovieCardProps) {
   return (
-    <div className="group relative flex flex-col gap-2 transition-all duration-300">
-      <Link href={`/xx/movie/${slug}`} className="relative aspect-[2/3] w-full overflow-hidden rounded-xl bg-surface transition-all duration-300 group-hover:-translate-y-1 group-hover:shadow-lg group-hover:shadow-black/40">
+    <div className="group relative flex flex-col gap-3 transition-all duration-500 hover:z-10">
+      <Link 
+        href={`/xx/movie/${slug}`} 
+        className="relative aspect-[7/10] w-full overflow-hidden rounded-[32px] bg-surface transition-all duration-700 group-hover:-translate-y-2 group-hover:shadow-[0_20px_40px_-10px_rgba(0,0,0,0.8)] border border-white/5 active:scale-95"
+      >
         <Image 
           src={posterUrl} 
           alt={title} 
           fill
           sizes="(max-width: 640px) 50vw, (max-width: 1024px) 25vw, 15vw"
-          className="object-cover transition-transform duration-500 group-hover:scale-105"
+          className="object-cover transition-transform duration-[2000ms] group-hover:scale-110 opacity-90 group-hover:opacity-100"
           unoptimized
           priority={false}
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
         
+        {/* Quality Badge */}
         {quality && (
-          <div className="absolute top-2 right-2 rounded-md bg-yellow-500/90 backdrop-blur-sm px-2 py-0.5 text-[10px] font-bold text-black uppercase">
+          <div className="absolute top-4 right-4 rounded-xl bg-yellow-500 text-black px-3 py-1 text-[9px] font-black uppercase italic shadow-xl shadow-yellow-500/20 backdrop-blur-md z-10 transition-transform group-hover:scale-110">
             {quality}
           </div>
         )}
 
-        <Link href={`/xx/movie/${slug}?play=true`} className="absolute inset-0 flex items-center justify-center opacity-0 transition-opacity duration-300 group-hover:opacity-100">
-          <div className="bg-yellow-500/20 backdrop-blur-sm rounded-full p-3.5 border border-yellow-500/30">
-            <Play className="h-6 w-6 text-yellow-500 fill-yellow-500 translate-x-0.5" />
+        {/* Play Overlay */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex items-center justify-center">
+          <div className="bg-yellow-500/10 backdrop-blur-2xl rounded-full p-6 border border-yellow-500/40 shadow-2xl transition-transform duration-500 group-hover:scale-110 group-active:scale-90">
+            <Play className="h-8 w-8 text-yellow-500 fill-yellow-500 translate-x-0.5" />
           </div>
-        </Link>
+        </div>
       </Link>
       
-      <div className="flex flex-col gap-0.5 px-0.5 mt-1">
+      <div className="flex flex-col gap-1.5 px-2 mt-1">
         <Link 
           href={`/xx/movie/${slug}`} 
-          className="text-[12px] sm:text-[13px] font-semibold text-white/90 hover:text-yellow-400 line-clamp-2 transition-colors leading-[1.3]" 
+          className="text-[12px] font-black text-white/60 group-hover:text-yellow-500 uppercase italic tracking-tighter line-clamp-2 transition-all duration-300 leading-[1.2] drop-shadow-sm" 
           title={title}
         >
           {title}
         </Link>
         {year && (
-          <span className="text-[12px] sm:text-[11px] text-white/30">{year}</span>
+          <div className="flex items-center justify-between">
+            <span className="text-[9px] font-black text-white/20 uppercase italic tracking-[0.2em]">{year}</span>
+            <div className="h-0.5 w-4 bg-white/5 rounded-full" />
+          </div>
         )}
       </div>
     </div>

@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { saveXXHistory, getMovieXXHistory } from "@/services/xxDb";
 import { useAuth } from "@/contexts/AuthContext";
 import { saveXXFirestoreHistory, getXXFirestoreHistory } from "@/services/xxFirestore";
+import { useDevice } from "@/contexts/DeviceContext";
 
 interface XXPlayerProps {
   url: string;
@@ -29,19 +30,26 @@ export function XXPlayer({
 }: XXPlayerProps) {
   const router = useRouter();
   const { user } = useAuth();
+  const { isIOS } = useDevice();
   const [isPseudoFS, setIsPseudoFS] = useState(false);
+  const [isPortrait, setIsPortrait] = useState(false);
   const lastSaveTime = useRef(0);
   const lastCloudSaveTime = useRef(0);
+
+  useEffect(() => {
+    const handleResize = () => setIsPortrait(window.innerHeight > window.innerWidth);
+    window.addEventListener('resize', handleResize);
+    handleResize();
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   useEffect(() => {
     const attemptSeek = async () => {
       let progress = 0;
       
-      // Get local history first
       const history = getMovieXXHistory(movieCode);
       if (history) progress = history.progressSeconds;
       
-      // If logged in, cloud history takes precedence if it's newer
       if (user) {
         try {
           const cloudHistory = await getXXFirestoreHistory(user.uid);
@@ -59,7 +67,6 @@ export function XXPlayer({
         }
       }
       
-      // Initial save
       const entryData = {
         movieCode,
         movieTitle,
@@ -93,13 +100,11 @@ export function XXPlayer({
           durationSeconds: event.data.duration || 0
         };
 
-        // Local Save (5s throttle)
         if (now - lastSaveTime.current > 5000) {
           lastSaveTime.current = now;
           saveXXHistory(entryData);
         }
         
-        // Cloud Save (15s throttle)
         if (user && now - lastCloudSaveTime.current > 15000) {
           lastCloudSaveTime.current = now;
           saveXXFirestoreHistory(user.uid, entryData);
@@ -118,18 +123,20 @@ export function XXPlayer({
 
     window.addEventListener('message', handleMessage);
     return () => window.removeEventListener('message', handleMessage);
-  }, [movieCode, movieTitle, posterUrl, nextEpisodeUrl, router]);
+  }, [movieCode, movieTitle, posterUrl, nextEpisodeUrl, router, user]);
 
   const isDirectVideo = url.includes('.m3u8') || url.includes('.mp4') || url.includes('.mkv') || url.includes('.ts') || url.includes('m3u8') || url.includes('mp4');
 
   const iframeSrc = isDirectVideo 
-    ? `/player.html?url=${encodeURIComponent(url)}`
-    : rawEmbedUrl || `/player.html?url=${encodeURIComponent(url)}`;
+    ? `/player.html?url=${encodeURIComponent(url)}&theme=topxx`
+    : rawEmbedUrl || `/player.html?url=${encodeURIComponent(url)}&theme=topxx`;
 
   return (
     <div className={isPseudoFS 
-      ? "fixed inset-0 w-screen h-screen z-[9999] bg-black"
-      : "w-full aspect-video relative shadow-2xl bg-black overflow-hidden rounded-xl border border-white/5"
+      ? (isPortrait 
+          ? `fixed top-0 left-full w-[100vh] h-[100vw] rotate-90 origin-top-left z-[9999] bg-black ${isIOS ? 'p-safe' : ''}` 
+          : `fixed inset-0 w-screen h-screen z-[9999] bg-black ${isIOS ? 'p-safe' : ''}`)
+      : "w-full aspect-video relative shadow-2xl bg-black overflow-hidden rounded-3xl border border-white/5"
     }>
       <iframe
         id="xx-player"
