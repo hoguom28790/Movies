@@ -62,84 +62,100 @@ export function HeroSlider({ movies }: HeroSliderProps) {
       <div className="absolute inset-0 z-0 bg-gradient-to-r from-black via-black/40 to-transparent pointer-events-none" />
 
       {/* Content Container */}
-      <div className="container relative z-10 mx-auto px-4 lg:px-8 flex flex-col items-start gap-5 pt-32 transition-all duration-700">
+      <div className="container relative z-10 mx-auto px-4 lg:px-8 flex flex-col items-start gap-8 pt-32 transition-all duration-700">
         <div 
           key={currentIndex} 
-          className="flex flex-col items-start gap-5 animate-in slide-in-from-bottom-8 fade-in duration-700"
+          className="flex flex-col items-start gap-6 animate-in slide-in-from-bottom-8 fade-in duration-700"
         >
           <div className="flex items-center gap-3">
-            <span className="flex h-7 items-center rounded-xl bg-primary px-2.5 text-xs font-semibold text-white uppercase tracking-wider">
-              Nổi Bật
+            <span className="flex h-7 items-center rounded-lg bg-primary px-3 text-[10px] font-black text-white uppercase tracking-widest shadow-lg shadow-primary/20">
+              Phim Hot
             </span>
             {currentMovie.quality && (
-              <span className="flex h-7 items-center rounded-xl bg-white/10 backdrop-blur-xl px-2.5 text-xs font-semibold text-white border border-white/10 uppercase">
+              <span className="flex h-7 items-center rounded-lg bg-white/10 backdrop-blur-xl px-3 text-[10px] font-black text-white border border-white/10 uppercase tracking-widest">
                 {currentMovie.quality}
               </span>
             )}
             {currentMovie.year && (
-              <span className="text-sm font-bold text-white/70">{currentMovie.year}</span>
+              <span className="bg-white/5 border border-white/10 rounded-lg px-3 py-1 text-[10px] font-black text-white/50 tracking-widest uppercase animate-pulse">
+                {currentMovie.year}
+              </span>
             )}
           </div>
 
-          <h1 className="text-5xl lg:text-7xl font-black text-white max-w-4xl leading-[1.1] tracking-tight drop-shadow-[0_4px_4px_rgba(0,0,0,0.5)]">
+          <h1 className="text-5xl lg:text-7xl font-black text-white max-w-4xl leading-[1.1] tracking-tighter drop-shadow-2xl">
             {currentMovie.title}
           </h1>
 
           {currentMovie.originalTitle && currentMovie.originalTitle !== currentMovie.title && (
-            <h2 className="text-xl lg:text-2xl text-white/60 font-medium drop-shadow-md max-w-2xl mt-[-8px]">
+            <h2 className="text-xl lg:text-2xl text-primary font-bold drop-shadow-md max-w-2xl mt-[-15px] italic opacity-80">
               {currentMovie.originalTitle}
             </h2>
           )}
 
-          <div className="flex flex-wrap gap-4 mt-6">
+          <p className="text-white/40 text-sm font-medium max-w-xl line-clamp-2 italic">
+            Trải nghiệm điện ảnh đỉnh cao với chất lượng {currentMovie.quality || "HD"} tại Hồ Phim.
+          </p>
+
+          <div className="flex flex-wrap gap-4 mt-4">
             <Link href={`/movie/${currentMovie.slug}`}>
               <Button
                 size="lg"
-                className="h-13 px-8 text-lg font-bold rounded-full gap-3 bg-primary hover:bg-primary-hover text-white transition-all shadow-lg hover:scale-105 hover:-translate-y-1"
+                className="h-14 px-10 text-lg font-black rounded-full gap-3 bg-primary hover:bg-primary-hover text-white transition-all shadow-xl shadow-primary/20 hover:scale-110 active:scale-95 group/btn"
               >
-                <Play className="w-6 h-6 fill-current" />
+                <Play className="w-6 h-6 fill-current group-hover/btn:scale-125 transition-transform" />
                 XEM NGAY
-              </Button>
-            </Link>
-            <Link href={`/movie/${currentMovie.slug}`}>
-              <Button
-                size="lg"
-                variant="secondary"
-                className="h-13 px-8 text-base font-bold rounded-full gap-3 bg-black/40 hover:bg-black/60 backdrop-blur-2xl text-white border border-white/10 transition-all hover:scale-105"
-              >
-                <Info className="w-5 h-5" />
-                Thông Tin
               </Button>
             </Link>
           </div>
         </div>
       </div>
 
+      {/* Thumbnail Navigation (Phimleak style) */}
+      <div className="absolute right-8 bottom-12 z-30 hidden lg:flex items-center gap-3">
+        {movies.map((movie, idx) => (
+          <button
+            key={idx}
+            onClick={() => setCurrentIndex(idx)}
+            className={`relative w-16 h-10 rounded-lg overflow-hidden border-2 transition-all duration-300 hover:scale-110 active:scale-95 ${
+              idx === currentIndex ? "border-primary w-24 scale-110 shadow-lg shadow-primary/40" : "border-white/10 grayscale opacity-40 hover:grayscale-0 hover:opacity-100"
+            }`}
+          >
+            <Image
+              src={movie.posterUrl}
+              alt={movie.title}
+              fill
+              className="object-cover"
+            />
+          </button>
+        ))}
+      </div>
+
       {/* Navigation Controls */}
       <button 
         onClick={prevSlide}
-        className="absolute left-4 top-1/2 -translate-y-1/2 z-20 p-3 rounded-full bg-black/20 backdrop-blur-xl text-white opacity-0 group-hover:opacity-100 transition-all hover:bg-primary hover:scale-110 border border-white/10"
+        className="absolute left-4 top-1/2 -translate-y-1/2 z-20 p-4 rounded-full bg-black/20 backdrop-blur-3xl text-white opacity-0 group-hover:opacity-100 transition-all hover:bg-primary hover:scale-110 border border-white/5 active:scale-90"
         aria-label="Previous movie"
       >
-        <ChevronLeft className="w-8 h-8" />
+        <ChevronLeft className="w-6 h-6" />
       </button>
 
       <button 
         onClick={nextSlide}
-        className="absolute right-4 top-1/2 -translate-y-1/2 z-20 p-3 rounded-full bg-black/20 backdrop-blur-xl text-white opacity-0 group-hover:opacity-100 transition-all hover:bg-primary hover:scale-110 border border-white/10"
+        className="absolute right-4 top-1/2 -translate-y-1/2 z-20 p-4 rounded-full bg-black/20 backdrop-blur-3xl text-white opacity-0 group-hover:opacity-100 transition-all hover:bg-primary hover:scale-110 border border-white/5 active:scale-90"
         aria-label="Next movie"
       >
-        <ChevronRight className="w-8 h-8" />
+        <ChevronRight className="w-6 h-6" />
       </button>
 
-      {/* Pagination Indicators */}
-      <div className="absolute bottom-6 left-0 right-0 z-20 flex justify-center gap-2 pb-6">
+      {/* Pagination Indicators - Mobile only */}
+      <div className="absolute bottom-6 left-0 right-0 z-20 flex lg:hidden justify-center gap-2 pb-6">
         {movies.map((_, idx) => (
           <button
             key={idx}
             onClick={() => setCurrentIndex(idx)}
-            className={`transition-all duration-300 rounded-full h-1.5 ${
-              idx === currentIndex ? "w-8 bg-primary" : "w-2 bg-white/40 hover:bg-white/70 hover:w-4"
+            className={`transition-all duration-300 rounded-full h-1 ${
+              idx === currentIndex ? "w-8 bg-primary" : "w-2 bg-white/20"
             }`}
             aria-label={`Go to slide ${idx + 1}`}
           />
@@ -148,3 +164,4 @@ export function HeroSlider({ movies }: HeroSliderProps) {
     </section>
   );
 }
+

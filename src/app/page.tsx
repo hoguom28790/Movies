@@ -7,6 +7,7 @@ import { Play, Info } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import { HeroSlider } from "@/components/movie/HeroSlider";
+import { CategoryShortcuts } from "@/components/movie/CategoryShortcuts";
 
 
 export default async function Home() {
@@ -26,12 +27,15 @@ export default async function Home() {
   const heroMovie = latest.items[0];
 
   return (
-    <div className="flex flex-col gap-14 pb-20 bg-black min-h-screen">
+    <div className="flex flex-col gap-8 pb-20 bg-black min-h-screen">
       {/* ── Hero Section ── */}
       <HeroSlider movies={latest.items.slice(0, 5)} />
 
+      {/* ── Category Shortcuts (Bạn đang quan tâm gì?) ── */}
+      <CategoryShortcuts />
+
       {/* ── Phim Mới Cập Nhật (Featured Grid) ── */}
-      <section className="container mx-auto px-4 lg:px-8 relative z-10 mt-[-80px] md:mt-[-120px]">
+      <section className="container mx-auto px-4 lg:px-8 relative z-10">
         <div className="flex items-center justify-between mb-6">
           <h3 className="text-2xl font-black text-white flex items-center gap-2">
             <span className="w-1 h-7 bg-primary rounded-full inline-block" />
