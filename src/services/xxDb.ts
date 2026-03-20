@@ -54,6 +54,17 @@ export function getMovieXXHistory(movieCode: string): XXHistoryEntry | null {
   return history.find(h => h.movieCode === movieCode) || null;
 }
 
+export function removeXXHistoryItem(movieCode: string) {
+  if (typeof window === 'undefined') return;
+  const history = getXXHistory().filter(h => h.movieCode !== movieCode);
+  localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
+}
+
+export function clearXXHistory() {
+  if (typeof window === 'undefined') return;
+  localStorage.removeItem(HISTORY_KEY);
+}
+
 export function toggleXXFavorite(movie: { movieCode: string; movieTitle: string; posterUrl: string }): boolean {
   if (typeof window === 'undefined') return false;
   
@@ -86,7 +97,65 @@ export function isXXFavorite(movieCode: string): boolean {
   return favorites.some(f => f.movieCode === movieCode);
 }
 
-export function clearXXHistory() {
+const PLAYLISTS_KEY = "topxx-playlists";
+
+export interface XXPlaylist {
+  id: string;
+  name: string;
+  createdAt: number;
+  movies: XXFavoriteEntry[];
+}
+
+export function createXXPlaylist(name: string): string {
+  if (typeof window === 'undefined') return "";
+  const playlists = getXXPlaylists();
+  const id = Math.random().toString(36).substring(2, 11);
+  const newPlaylist: XXPlaylist = {
+    id,
+    name,
+    createdAt: Date.now(),
+    movies: []
+  };
+  playlists.unshift(newPlaylist);
+  localStorage.setItem(PLAYLISTS_KEY, JSON.stringify(playlists));
+  return id;
+}
+
+export function getXXPlaylists(): XXPlaylist[] {
+  if (typeof window === 'undefined') return [];
+  const stored = localStorage.getItem(PLAYLISTS_KEY);
+  return stored ? JSON.parse(stored) : [];
+}
+
+export function deleteXXPlaylist(id: string) {
   if (typeof window === 'undefined') return;
-  localStorage.removeItem(HISTORY_KEY);
+  const playlists = getXXPlaylists().filter(p => p.id !== id);
+  localStorage.setItem(PLAYLISTS_KEY, JSON.stringify(playlists));
+}
+
+export function addMovieToXXPlaylist(playlistId: string, movie: Omit<XXFavoriteEntry, 'addedAt'>) {
+  if (typeof window === 'undefined') return;
+  const playlists = getXXPlaylists();
+  const playlist = playlists.find(p => p.id === playlistId);
+  if (playlist) {
+    if (playlist.movies.some(m => m.movieCode === movie.movieCode)) return;
+    playlist.movies.unshift({ ...movie, addedAt: Date.now() });
+    localStorage.setItem(PLAYLISTS_KEY, JSON.stringify(playlists));
+  }
+}
+
+export function removeMovieFromXXPlaylist(playlistId: string, movieCode: string) {
+  if (typeof window === 'undefined') return;
+  const playlists = getXXPlaylists();
+  const playlist = playlists.find(p => p.id === playlistId);
+  if (playlist) {
+    playlist.movies = playlist.movies.filter(m => m.movieCode !== movieCode);
+    localStorage.setItem(PLAYLISTS_KEY, JSON.stringify(playlists));
+  }
+}
+
+export function isMovieInPlaylist(playlistId: string, movieCode: string): boolean {
+  const playlists = getXXPlaylists();
+  const playlist = playlists.find(p => p.id === playlistId);
+  return playlist?.movies.some(m => m.movieCode === movieCode) || false;
 }

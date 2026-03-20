@@ -364,10 +364,14 @@
         }
       });
 
-      // Periodically sync progress (React will throttle Firebase writes)
+      // Periodically sync progress (React will throttle writes)
       setInterval(() => {
         if (!video.paused && video.currentTime > 0) {
-          window.parent.postMessage({ type: 'UPDATE_PROGRESS', time: video.currentTime }, '*');
+          window.parent.postMessage({ 
+            type: 'UPDATE_PROGRESS', 
+            time: video.currentTime,
+            duration: video.duration 
+          }, '*');
         }
       }, 5000);
 

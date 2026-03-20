@@ -32,11 +32,11 @@ export function XXMovieCard({ title, slug, posterUrl, year, quality }: XXMovieCa
           </div>
         )}
 
-        <div className="absolute inset-0 flex items-center justify-center opacity-0 transition-opacity duration-300 group-hover:opacity-100">
+        <Link href={`/xx/movie/${slug}?play=true`} className="absolute inset-0 flex items-center justify-center opacity-0 transition-opacity duration-300 group-hover:opacity-100">
           <div className="bg-yellow-500/20 backdrop-blur-sm rounded-full p-3.5 border border-yellow-500/30">
             <Play className="h-6 w-6 text-yellow-500 fill-yellow-500 translate-x-0.5" />
           </div>
-        </div>
+        </Link>
       </Link>
       
       <div className="flex flex-col gap-0.5 px-0.5 mt-1">

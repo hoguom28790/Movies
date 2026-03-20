@@ -42,7 +42,10 @@ const directLinks = [
   { label: "Việt Sub", href: "/xx/the-loai/NMf5df5FMg" },
   { label: "Nhật Bản", href: "/xx/quoc-gia/jp" },
   { label: "Không che", href: "/xx/the-loai/vdDkXwQsHi" },
-  { label: "Yêu thích", href: "/xx/yeu-thich" },
+  { label: "Nguồn TopXX", href: "/xx/nguon/topxx" },
+  { label: "Nguồn AVDB", href: "/xx/nguon/avdb" },
+  { label: "Diễn viên", href: "/xx/dien-vien" },
+  { label: "Thư viện", href: "/xx/yeu-thich" },
   { label: "Lịch sử", href: "/xx/lich-su" },
 ];
 

@@ -39,7 +39,7 @@ export function XXPlayer({
         }
       }
       
-      // Register visit
+      // Initial save to establish history entry
       saveXXHistory({
         movieCode,
         movieTitle,
@@ -49,8 +49,13 @@ export function XXPlayer({
       });
     };
 
-    const timer = setTimeout(attemptSeek, 1500);
-    return () => clearTimeout(timer);
+    // Retry seek after a bit to be sure iframe is ready
+    const timer1 = setTimeout(attemptSeek, 1000);
+    const timer2 = setTimeout(attemptSeek, 3000); // Second attempt for slower loads
+    return () => {
+      clearTimeout(timer1);
+      clearTimeout(timer2);
+    };
   }, [movieCode, movieTitle, posterUrl]);
 
   useEffect(() => {
@@ -59,7 +64,7 @@ export function XXPlayer({
 
       if (event.data.type === 'UPDATE_PROGRESS') {
         const now = Date.now();
-        if (now - lastSaveTime.current > 10000) { // Throttle 10s
+        if (now - lastSaveTime.current > 5000) { // Throttle 5s (more frequent for TopXX)
           lastSaveTime.current = now;
           saveXXHistory({
             movieCode,

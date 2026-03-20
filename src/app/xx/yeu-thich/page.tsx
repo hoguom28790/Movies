@@ -2,56 +2,230 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { Play, Heart } from "lucide-react";
-import { getXXFavorites, XXFavoriteEntry } from "@/services/xxDb";
+import { Play, Trash2, ListMusic, Plus, ChevronRight, Heart, Search, Settings2, MoreHorizontal } from "lucide-react";
+import { getXXPlaylists, deleteXXPlaylist, removeMovieFromXXPlaylist, createXXPlaylist, XXPlaylist, getXXFavorites, toggleXXFavorite } from "@/services/xxDb";
 import { Button } from "@/components/ui/Button";
 
-export default function XXFavoritesPage() {
-  const [favorites, setFavorites] = useState<XXFavoriteEntry[]>([]);
+export default function XXLibraryPage() {
+  const [playlists, setPlaylists] = useState<XXPlaylist[]>([]);
+  const [favorites, setFavorites] = useState<any[]>([]);
+  const [activeTab, setActiveTab] = useState<string>("favorites");
+  const [activePlaylistId, setActivePlaylistId] = useState<string | null>(null);
+  const [isCreating, setIsCreating] = useState(false);
+  const [newName, setNewName] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
+    setPlaylists(getXXPlaylists());
     setFavorites(getXXFavorites());
   }, []);
 
+  const handleCreate = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newName.trim()) return;
+    const newId = createXXPlaylist(newName);
+    setPlaylists(getXXPlaylists());
+    setActivePlaylistId(newId);
+    setActiveTab("playlist");
+    setNewName("");
+    setIsCreating(false);
+  };
+
+  const handleDeletePlaylist = (id: string) => {
+    if (confirm("Bạn có chắc muốn xóa Playlist này?")) {
+      deleteXXPlaylist(id);
+      const remaining = getXXPlaylists();
+      setPlaylists(remaining);
+      if (activePlaylistId === id) {
+        setActivePlaylistId(null);
+        setActiveTab("favorites");
+      }
+    }
+  };
+
+  const activePlaylist = playlists.find(p => p.id === activePlaylistId);
+  const displayMovies = activeTab === "favorites" ? favorites : (activePlaylist?.movies || []);
+  
+  const filteredMovies = displayMovies.filter(m => 
+    m.movieTitle.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
   return (
-    <div className="container mx-auto px-4 py-12">
-      <div className="flex items-center gap-4 mb-12">
-        <div className="w-12 h-12 rounded-2xl bg-red-500/10 flex items-center justify-center border border-red-500/20">
-          <Heart className="w-6 h-6 text-red-500 fill-current" />
-        </div>
-        <div>
-          <h1 className="text-3xl font-black text-white uppercase tracking-tight">Phim Đã Lưu</h1>
-          <p className="text-white/40 text-sm mt-1">Danh sách phim TopXX yêu thích của bạn</p>
-        </div>
-      </div>
+    <div className="container mx-auto px-4 py-8 md:py-16 animate-in fade-in duration-700">
+      <div className="flex flex-col lg:flex-row gap-12">
+        {/* Sidebar - Navigation & Playlist Manager */}
+        <aside className="w-full lg:w-80 space-y-10">
+          <div className="space-y-6">
+             <h1 className="text-4xl font-black text-white uppercase italic tracking-tighter select-none">Thư Viện</h1>
+             
+             <div className="space-y-1">
+                <button 
+                  onClick={() => { setActiveTab("favorites"); setActivePlaylistId(null); }}
+                  className={`w-full flex items-center justify-between p-4 rounded-2xl transition-all border ${
+                    activeTab === "favorites" 
+                      ? "bg-red-500 text-white border-red-500 shadow-xl shadow-red-500/20" 
+                      : "bg-white/5 text-white/50 border-white/5 hover:bg-white/10 hover:text-white"
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    <Heart className={`w-5 h-5 ${activeTab === "favorites" ? "fill-current" : ""}`} />
+                    <span className="font-black uppercase text-sm tracking-widest text-[11px]">Phim Đã Lưu</span>
+                  </div>
+                  <span className="text-[10px] font-black opacity-40">{favorites.length}</span>
+                </button>
+             </div>
+          </div>
 
-      {favorites.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-32 text-center bg-white/[0.02] rounded-[40px] border border-dashed border-white/10">
-          <Heart className="w-16 h-16 text-white/5 mb-6" />
-          <p className="text-white/30 font-bold uppercase tracking-widest">Chưa có phim yêu thích nào</p>
-          <Link href="/xx" className="mt-8">
-            <Button className="rounded-2xl px-8 h-12 font-black uppercase tracking-widest text-sm">Khám phá ngay</Button>
-          </Link>
-        </div>
-      ) : (
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6">
-          {favorites.map((item) => (
-            <Link key={item.movieCode} href={`/xx/movie/${item.movieCode}`} className="group space-y-3">
-              <div className="relative aspect-[2/3] rounded-2xl overflow-hidden border border-white/10 shadow-2xl group-hover:border-red-500/50 transition-all duration-500">
-                <img src={item.posterUrl} alt={item.movieTitle} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
-                <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-60" />
+          <div className="space-y-6">
+            <div className="flex items-center justify-between px-1">
+               <h3 className="text-[10px] font-black text-white/20 uppercase tracking-[0.3em]">Playlists Của Bạn</h3>
+               <button 
+                 onClick={() => setIsCreating(true)}
+                 className="p-1.5 rounded-lg bg-white/5 hover:bg-yellow-500 hover:text-black transition-all"
+               >
+                 <Plus className="w-4 h-4" />
+               </button>
+            </div>
 
-                <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                   <div className="w-12 h-12 rounded-full bg-red-500 text-white flex items-center justify-center shadow-2xl scale-75 group-hover:scale-100 transition-transform duration-500">
-                      <Play className="w-6 h-6 fill-current ml-1" />
-                   </div>
+            {isCreating && (
+              <form onSubmit={handleCreate} className="bg-white/[0.03] p-4 rounded-2xl border border-white/10 animate-in slide-in-from-top-2">
+                 <input 
+                   autoFocus
+                   type="text" 
+                   placeholder="Tên playlist..." 
+                   value={newName}
+                   onChange={(e) => setNewName(e.target.value)}
+                   className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:border-yellow-500/50 outline-none mb-3"
+                 />
+                 <div className="flex gap-2">
+                    <Button type="submit" size="sm" className="flex-1 rounded-lg">Tạo</Button>
+                    <Button type="button" variant="secondary" size="sm" onClick={() => setIsCreating(false)} className="rounded-lg">Hủy</Button>
+                 </div>
+              </form>
+            )}
+
+            <div className="space-y-2">
+              {playlists.map(pl => (
+                <div 
+                  key={pl.id}
+                  className={`group flex items-center justify-between p-4 rounded-2xl transition-all cursor-pointer border ${
+                    activePlaylistId === pl.id 
+                      ? "bg-yellow-500 text-black border-yellow-500 shadow-xl shadow-yellow-500/20" 
+                      : "bg-white/5 text-white/40 border-white/5 hover:bg-white/10 hover:text-white"
+                  }`}
+                  onClick={() => { setActivePlaylistId(pl.id); setActiveTab("playlist"); }}
+                >
+                  <div className="flex items-center gap-3 truncate">
+                    <ListMusic className={`w-4 h-4 ${activePlaylistId === pl.id ? "text-black" : "text-white/20"}`} />
+                    <span className="text-sm font-bold truncate">{pl.name}</span>
+                  </div>
+                  <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                     <span className="text-[10px] font-black uppercase tracking-widest">{pl.movies.length}</span>
+                     <button 
+                       onClick={(e) => { e.stopPropagation(); handleDeletePlaylist(pl.id); }}
+                       className={`p-1.5 rounded-md hover:bg-red-500 hover:text-white transition-colors ${activePlaylistId === pl.id ? "text-black/40" : "text-white/20"}`}
+                     >
+                       <Trash2 className="w-3.5 h-3.5" />
+                     </button>
+                  </div>
                 </div>
+              ))}
+              
+              {playlists.length === 0 && !isCreating && (
+                <div className="py-8 text-center bg-white/[0.01] rounded-3xl border border-dashed border-white/5">
+                   <p className="text-[10px] text-white/20 font-black uppercase tracking-widest leading-loose">Chưa có<br/>Playlist cá nhân</p>
+                </div>
+              )}
+            </div>
+          </div>
+        </aside>
+
+        {/* Main Content */}
+        <main className="flex-1 space-y-10">
+           {/* Search & Header */}
+           <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+              <div className="space-y-1">
+                 <h2 className="text-3xl md:text-5xl font-black text-white tracking-tighter uppercase italic">
+                    {activeTab === "favorites" ? "Phim Đã Lưu" : (activePlaylist?.name || "Chọn Playlist")}
+                 </h2>
+                 <p className="text-white/30 text-sm font-bold uppercase tracking-widest">
+                    {filteredMovies.length} bộ phim
+                 </p>
               </div>
-              <h3 className="text-[13px] font-bold text-white group-hover:text-red-500 transition-colors line-clamp-2 uppercase leading-snug">{item.movieTitle}</h3>
-            </Link>
-          ))}
-        </div>
-      )}
+
+              <div className="relative group max-w-sm w-full">
+                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/20 group-focus-within:text-yellow-500 transition-colors" />
+                 <input 
+                   type="text" 
+                   placeholder="Tìm trong danh sách..." 
+                   value={searchQuery}
+                   onChange={(e) => setSearchQuery(e.target.value)}
+                   className="w-full bg-white/5 border border-white/10 rounded-2xl pl-12 pr-6 py-4 text-sm text-white focus:outline-none focus:border-yellow-500/50 focus:bg-white/10 transition-all font-medium"
+                 />
+              </div>
+           </div>
+
+           {/* Movie Grid */}
+           {filteredMovies.length === 0 ? (
+             <div className="py-32 flex flex-col items-center justify-center text-center bg-white/[0.02] rounded-[40px] border border-dashed border-white/5">
+                <div className="w-20 h-20 rounded-full bg-white/5 flex items-center justify-center mb-6">
+                   <Play className="w-8 h-8 text-white/10" />
+                </div>
+                <p className="text-white/20 font-black uppercase tracking-[0.2em]">Danh sách này còn trống</p>
+                <Link href="/xx" className="mt-8">
+                   <Button variant="secondary" className="rounded-2xl border-white/10 px-8 py-6 h-auto font-black uppercase tracking-widest text-[11px]">Khám phá kho phim</Button>
+                </Link>
+             </div>
+           ) : (
+             <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8">
+                {filteredMovies.map((movie) => (
+                  <div key={movie.movieCode} className="group flex flex-col gap-4">
+                     <div className="relative aspect-[2/3] rounded-3xl overflow-hidden border border-white/5 shadow-2xl transition-all duration-500 group-hover:border-white/20 group-hover:-translate-y-2">
+                        <img 
+                          src={movie.posterUrl} 
+                          alt={movie.movieTitle} 
+                          className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110" 
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-60" />
+                        
+                        <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 translate-y-2 group-hover:translate-y-0 transition-all duration-300">
+                           <button 
+                             onClick={() => {
+                               if (activeTab === "favorites") toggleXXFavorite(movie);
+                               else removeMovieFromXXPlaylist(activePlaylistId!, movie.movieCode);
+                               
+                               // Refresh local state
+                               if (activeTab === "favorites") setFavorites(getXXFavorites());
+                               else setPlaylists(getXXPlaylists());
+                             }}
+                             className="w-10 h-10 rounded-xl bg-black/60 backdrop-blur-xl text-red-500 border border-white/10 flex items-center justify-center hover:bg-red-500 hover:text-white transition-all shadow-2xl"
+                           >
+                              <Trash2 className="w-5 h-5" />
+                           </button>
+                        </div>
+
+                        <Link href={`/xx/movie/${movie.movieCode}`} className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+                           <div className="w-16 h-16 rounded-full bg-white text-black flex items-center justify-center shadow-2xl scale-75 group-hover:scale-100 transition-transform duration-500">
+                              <Play className="w-8 h-8 fill-current ml-1" />
+                           </div>
+                        </Link>
+                     </div>
+                     <div className="space-y-1.5 px-1">
+                        <Link href={`/xx/movie/${movie.movieCode}`}>
+                           <h3 className="text-sm font-black text-white group-hover:text-yellow-500 transition-colors line-clamp-2 uppercase leading-snug tracking-tight">{movie.movieTitle}</h3>
+                        </Link>
+                        <div className="flex items-center gap-2 text-[10px] font-black text-white/20 uppercase tracking-widest">
+                           <span>TopXX Member</span>
+                           <span>•</span>
+                           <span>Added {new Date(movie.addedAt).toLocaleDateString()}</span>
+                        </div>
+                     </div>
+                  </div>
+                ))}
+             </div>
+           )}
+        </main>
+      </div>
     </div>
   );
 }
