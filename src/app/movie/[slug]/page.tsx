@@ -11,17 +11,28 @@ import { MovieRatings } from "@/components/movie/MovieRatings";
 async function fetchMovieData(slug: string) {
   const [ng, kk, op] = await Promise.allSettled([
     fetch(`https://phim.nguonc.com/api/film/${slug}`, { cache: "no-store", signal: AbortSignal.timeout(5000) }).then((r) => r.json()),
-    fetch(`https://phimapi.com/phim/${slug}`, { cache: "no-store", signal: AbortSignal.timeout(5000) }).then((r) => r.json()),
-    fetch(`https://ophim1.com/phim/${slug}`, { cache: "no-store", signal: AbortSignal.timeout(5000) }).then((r) => r.json()),
+    fetch(`https://phimapi.com/v1/api/phim/${slug}`, { cache: "no-store", signal: AbortSignal.timeout(5000) }).then((r) => r.json()),
+    fetch(`https://ophim1.com/v1/api/phim/${slug}`, { cache: "no-store", signal: AbortSignal.timeout(5000) }).then((r) => r.json()),
   ]);
-
+ 
+  // KKPhim v1 handle
+  if (kk.status === "fulfilled" && kk.value?.status === "success" && kk.value?.data?.item) {
+    const item = kk.value.data.item;
+    return { source: "kkphim", data: item, episodes: kk.value.data.episodes || item.episodes || [] };
+  }
+  // OPhim v1 handle
+  if (op.status === "fulfilled" && op.value?.status === "success" && op.value?.data?.item) {
+    const item = op.value.data.item;
+    return { source: "ophim", data: item, episodes: op.value.data.episodes || item.episodes || [] };
+  }
+  // Fallbacks to old engines if v1 fails
   if (kk.status === "fulfilled" && kk.value?.status === true && kk.value?.movie)
     return { source: "kkphim", data: kk.value.movie, episodes: kk.value.episodes || kk.value.movie.episodes || [] };
   if (op.status === "fulfilled" && op.value?.status === true && op.value?.movie)
     return { source: "ophim", data: op.value.movie, episodes: op.value.episodes || op.value.movie.episodes || [] };
   if (ng.status === "fulfilled" && ng.value?.status === "success" && ng.value?.movie)
     return { source: "nguonc", data: ng.value.movie, episodes: ng.value.episodes || ng.value.movie.episodes || [] };
-
+ 
   return null;
 }
 
