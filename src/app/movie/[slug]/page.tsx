@@ -110,7 +110,7 @@ export default async function MovieDetailsPage({ params }: { params: Promise<{ s
   return (
     <div className="min-h-screen">
       {/* ── Backdrop ── */}
-      <div className="relative w-full h-[45vh] min-h-[320px] overflow-hidden">
+      <div className="relative w-full h-[35vh] sm:h-[40vh] lg:h-[45vh] min-h-[250px] overflow-hidden">
         <img
           src={thumb || poster}
           alt={data.name}
@@ -120,13 +120,13 @@ export default async function MovieDetailsPage({ params }: { params: Promise<{ s
       </div>
 
       {/* ── Main Content: 2-column layout ── */}
-      <div className="container mx-auto px-4 lg:px-12 relative z-10 -mt-64 pb-16">
+      <div className="container mx-auto px-4 lg:px-12 relative z-10 -mt-44 sm:-mt-52 lg:-mt-64 pb-20 md:pb-16">
         <div className="flex flex-col lg:flex-row gap-8">
           
           {/* ═══ LEFT COLUMN: Poster + Info ═══ */}
           <div className="w-full lg:w-[280px] flex-shrink-0">
             {/* Poster */}
-            <div className="relative w-[200px] lg:w-full mx-auto lg:mx-0">
+            <div className="relative w-[160px] sm:w-[200px] lg:w-full mx-auto lg:mx-0">
               <img
                 src={poster}
                 alt={data.name}
@@ -233,7 +233,7 @@ export default async function MovieDetailsPage({ params }: { params: Promise<{ s
                       <div className="w-14 h-14 rounded-full overflow-hidden bg-white/5">
                         {actor.profile_path ? (
                           <Image
-                            src={getTMDBImageUrl(actor.profile_path, "w185") || ""}
+                            src={getTMDBImageUrl(actor.profile_path) || ""}
                             alt={actor.name}
                             width={56}
                             height={56}
@@ -298,7 +298,7 @@ export default async function MovieDetailsPage({ params }: { params: Promise<{ s
 
             {/* Episode grid */}
             {allServers.length > 0 && allServers[0].items.length > 0 && (
-              <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7 gap-2">
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-7 gap-2">
                 {(allServers[0]?.items || []).map((ep: any, idx: number) => (
                   <Link
                     key={idx}

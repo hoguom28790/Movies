@@ -33,7 +33,7 @@ export function HeroSlider({ movies }: HeroSliderProps) {
   const currentMovie = movies[currentIndex];
 
   return (
-    <section className="relative w-full h-[75vh] min-h-[500px] flex items-end mt-[-56px] group overflow-hidden">
+    <section className="relative w-full h-[60vh] sm:h-[70vh] lg:h-[75vh] min-h-[400px] flex items-end mt-[-56px] group overflow-hidden">
       {/* Background Images */}
       {movies.map((movie, idx) => (
         <div 
@@ -55,12 +55,12 @@ export function HeroSlider({ movies }: HeroSliderProps) {
       <div className="absolute inset-0 z-0 bg-gradient-to-r from-[#0a0a0a]/80 via-transparent to-transparent pointer-events-none" />
 
       {/* Content */}
-      <div className="container relative z-10 mx-auto px-4 lg:px-12 pb-16 transition-all duration-700">
+      <div className="container relative z-10 mx-auto px-4 lg:px-12 pb-12 sm:pb-16 transition-all duration-700">
         <div 
           key={currentIndex} 
           className="flex flex-col items-start gap-4 animate-in slide-in-from-bottom-8 fade-in duration-700 max-w-3xl"
         >
-          <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white leading-[1.1] tracking-tight">
+          <h1 className="text-2xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-white leading-[1.1] tracking-tight">
             {currentMovie.title}
           </h1>
 
