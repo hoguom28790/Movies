@@ -129,7 +129,7 @@ export function MobileMenu() {
                           const yyyy = now.getFullYear();
                           const correctPass = `${dd}${mm}${yyyy}`;
                           
-                          const pass = window.prompt(`Nhập mật khẩu để truy cập nội dung 18+:\n(Gợi ý: Mật khẩu là ngày hôm nay DDMMYYYY)`);
+                          const pass = window.prompt(`Nhập mật khẩu để truy cập nội dung 18+:`);
                           if (pass !== correctPass) {
                             e.preventDefault();
                             alert(`Mật khẩu không chính xác!\nBạn đã nhập: ${pass || "không có gì"}\nMật khẩu hôm nay là: ${correctPass}`);
