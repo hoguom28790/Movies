@@ -3,8 +3,9 @@ import Link from "next/link";
 import { Play, Star, Clock, CalendarDays, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { WatchlistBtn } from "@/components/movie/WatchlistBtn";
-import { searchTMDBMovie, getTMDBMovieDetails, getTMDBImageUrl } from "@/services/tmdb";
+import { getTMDBImageUrl, getTMDBMovieDetails, searchTMDBMovie } from "@/services/tmdb";
 import { ActorGallery } from "@/components/movie/ActorGallery";
+import { MovieRatings } from "@/components/movie/MovieRatings";
 
 async function fetchMovieData(slug: string) {
   const [ng, kk, op] = await Promise.allSettled([
@@ -114,19 +115,19 @@ export default async function MovieDetailsPage({ params }: { params: Promise<{ s
 
           {/* Info */}
           <div className="flex flex-col gap-5 flex-1 pt-6 text-center md:text-left items-center md:items-start">
-            <div className="flex flex-wrap justify-center md:justify-start items-center gap-2">
-              {tmdbData?.vote_average > 0 && (
-                <span className="bg-yellow-500/10 text-yellow-500 text-xs font-black px-3 py-1.5 rounded-full border border-yellow-500/20 flex items-center gap-1">
-                  <Star className="w-3 h-3 fill-current" />
-                  {tmdbData.vote_average.toFixed(1)}
+            <div className="flex flex-wrap justify-center md:justify-start items-center gap-4">
+              <MovieRatings 
+                tmdbRating={tmdbData?.vote_average} 
+                imdbId={tmdbData?.external_ids?.imdb_id} 
+              />
+              <div className="flex items-center gap-2 ml-2">
+                <span className="bg-primary text-white text-xs font-black px-3 py-1.5 rounded-full uppercase tracking-wider">
+                  {data.quality || "HD"}
                 </span>
-              )}
-              <span className="bg-primary text-white text-xs font-black px-3 py-1.5 rounded-full uppercase tracking-wider">
-                {data.quality || "HD"}
-              </span>
-              <span className="bg-white/10 text-white/50 text-xs font-bold px-3 py-1.5 rounded-full border border-white/5">
-                {data.lang}
-              </span>
+                <span className="bg-white/10 text-white/50 text-xs font-bold px-3 py-1.5 rounded-full border border-white/5">
+                  {data.lang}
+                </span>
+              </div>
             </div>
 
             <h1 className="text-4xl md:text-6xl font-black text-white leading-tight drop-shadow-xl">{tmdbData?.title || data.name}</h1>

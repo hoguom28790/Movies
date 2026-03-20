@@ -35,7 +35,7 @@ export async function searchTMDBMovie(title: string, year?: number) {
 export async function getTMDBMovieDetails(tmdbId: number) {
   try {
     const response = await fetch(
-      `${BASE_URL}/movie/${tmdbId}?api_key=${TMDB_API_KEY}&language=vi-VN&append_to_response=credits,images&include_image_language=vi,en,null`
+      `${BASE_URL}/movie/${tmdbId}?api_key=${TMDB_API_KEY}&language=vi-VN&append_to_response=credits,images,external_ids&include_image_language=vi,en,null`
     );
     return await response.json();
   } catch (error) {
