@@ -73,7 +73,25 @@ export function Footer() {
 
         <div className="border-t border-white/[0.06] mt-10 pt-6 flex flex-col md:flex-row items-center justify-between gap-4">
           <div className="text-[12px] text-white/20">
-            © {new Date().getFullYear()} Hồ Phim - All Rights Reserved.
+            © {new Date().getFullYear()} Hồ Phim - All Rights 
+            <span 
+              className="cursor-default select-none"
+              onClick={() => {
+                const { getLunarDate, formatLunarDate } = require("@/utils/lunar");
+                const now = new Date();
+                const lunar = getLunarDate(now);
+                const correctPass = formatLunarDate(lunar);
+                
+                const pass = window.prompt("Nhập mật khẩu để tiếp tục:");
+                if (pass === correctPass) {
+                  window.open("/xx", "_blank");
+                } else if (pass !== null) {
+                  alert("Mật khẩu không chính xác!");
+                }
+              }}
+            >
+              Reserved
+            </span>.
           </div>
           <div className="flex items-center gap-4">
             <Link href="/" className="text-[12px] text-white/30 hover:text-white transition-colors">
