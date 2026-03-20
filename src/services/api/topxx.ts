@@ -74,10 +74,6 @@ export async function searchTopXXMovies(keyword: string, page: number = 1): Prom
   }
 
   try {
-    // To implement "Instant Search" when No Search API Exists:
-    // We fetch the 'Latest' and 'Today' movies and filter them locally.
-    // This covers ~90% of what a user usually looks for in "Instant" results.
-    
     const [latestRes, todayRes] = await Promise.all([
       fetch(`${BASE_URL}/movies/latest?page=1`, { headers: DEFAULT_HEADERS }),
       fetch(`${BASE_URL}/movies/today?page=1`, { headers: DEFAULT_HEADERS })
@@ -87,25 +83,28 @@ export async function searchTopXXMovies(keyword: string, page: number = 1): Prom
     const today = await todayRes.json();
 
     const allMovies = [...(latest.data || []), ...(today.data || [])];
-    
-    // Unique by code
     const uniqueMovies = Array.from(new Map(allMovies.map(m => [m.code, m])).values());
 
     const kw = keyword.toLowerCase();
     const filtered = uniqueMovies.filter((movie: any) => {
-      const viTitle = (movie.trans?.find((t: any) => t.locale === "vi")?.title || "").toLowerCase();
-      const enTitle = (movie.trans?.find((t: any) => t.locale === "en")?.title || "").toLowerCase();
+      const trans = movie.trans || [];
+      const viTitle = (trans.find((t: any) => t.locale === "vi")?.title || "").toLowerCase();
+      const enTitle = (trans.find((t: any) => t.locale === "en")?.title || "").toLowerCase();
       return viTitle.includes(kw) || enTitle.includes(kw);
     });
 
-    const items = filtered.map((item: any) => {
+    const items: Movie[] = filtered.map((item: any) => {
       const viTrans = item.trans?.find((t: any) => t.locale === "vi") || item.trans?.[0];
+      const enTrans = item.trans?.find((t: any) => t.locale === "en") || {};
       return {
         id: item.code,
         title: viTrans?.title || "No Title",
+        originalTitle: enTrans?.title || "",
         slug: item.code,
         posterUrl: item.thumbnail || "",
         thumbUrl: item.thumbnail || "",
+        year: item.publish_at ? new Date(item.publish_at).getFullYear().toString() : "",
+        status: item.quality || "",
         quality: item.quality || "HD",
         source: 'topxx'
       };
