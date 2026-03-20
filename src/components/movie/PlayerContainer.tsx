@@ -125,6 +125,15 @@ export function PlayerContainer({ url, isHls, rawEmbedUrl, nextEpisodeUrl, movie
     return () => window.removeEventListener('message', handleMessage);
   }, [nextEpisodeUrl, router, user, movieSlug, episodeSlug, movieTitle, episodeName, posterUrl]);
 
+  useEffect(() => {
+    if (isPseudoFS) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => { document.body.style.overflow = ""; };
+  }, [isPseudoFS]);
+
   const iframeSrc = isHls 
     ? `/player.html?url=${encodeURIComponent(url)}&theme=${theme}`
     : rawEmbedUrl || `/player.html?url=${encodeURIComponent(url)}&theme=${theme}`;

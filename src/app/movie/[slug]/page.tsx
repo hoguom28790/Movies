@@ -3,6 +3,8 @@ import Link from "next/link";
 import { Play, Star, Clock, CalendarDays, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { WatchlistBtn } from "@/components/movie/WatchlistBtn";
+import { searchTMDBMovie, getTMDBMovieDetails, getTMDBImageUrl } from "@/services/tmdb";
+import { ActorGallery } from "@/components/movie/ActorGallery";
 
 async function fetchMovieData(slug: string) {
   const [ng, kk, op] = await Promise.allSettled([
@@ -40,12 +42,24 @@ export default async function MovieDetailsPage({ params }: { params: Promise<{ s
   if (!movieRes) return notFound();
 
   const { data, episodes, source } = movieRes;
-  const poster = data.poster_url?.startsWith("http")
+  
+  // TMDB Enrichment
+  const tmdbSearch = await searchTMDBMovie(data.name, data.year);
+  const tmdbData = tmdbSearch ? await getTMDBMovieDetails(tmdbSearch.id) : null;
+  
+  // Use TMDB Poster with fallback
+  const tmdbPoster = tmdbData?.poster_path ? getTMDBImageUrl(tmdbData.poster_path) : null;
+  const tmdbThumb = tmdbData?.backdrop_path ? getTMDBImageUrl(tmdbData.backdrop_path) : null;
+
+  const poster = tmdbPoster || (data.poster_url?.startsWith("http")
     ? data.poster_url
-    : `https://img.ophim.live/uploads/movies/${data.poster_url}`;
-  const thumb = data.thumb_url?.startsWith("http")
+    : `https://img.ophim.live/uploads/movies/${data.poster_url}`);
+    
+  const thumb = tmdbThumb || (data.thumb_url?.startsWith("http")
     ? data.thumb_url
-    : `https://img.ophim.live/uploads/movies/${data.thumb_url}`;
+    : `https://img.ophim.live/uploads/movies/${data.thumb_url}`);
+
+  const tmdbCredits = tmdbData?.credits?.cast || [];
 
   // All servers
   const allServers: { name: string; items: any[] }[] = episodes.map((srv: any, idx: number) => ({
@@ -61,7 +75,6 @@ export default async function MovieDetailsPage({ params }: { params: Promise<{ s
     typeof g === "string" ? { name: g, slug: g } : { name: g.name || g, slug: g.slug || g.name || g }
   );
 
-  // Fetch related by first genre - with a safety timeout or better handling
   const relatedSlug = genreTags[0]?.slug;
   const related = relatedSlug ? await fetchRelated(relatedSlug).catch(() => []) : [];
 
@@ -76,87 +89,75 @@ export default async function MovieDetailsPage({ params }: { params: Promise<{ s
         <img
           src={thumb || poster}
           alt={data.name}
-          className="w-full h-full object-cover object-top scale-105"
+          className="w-full h-full object-cover object-top opacity-50 blur-sm scale-110"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/70 to-black/20" />
-        <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-transparent to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/80 to-transparent" />
       </div>
 
-      {/* ── Content overlapping hero ── */}
-      <div className="container mx-auto px-4 lg:px-8 relative z-10 mt-[-280px] pb-16">
+      {/* ── Content ── */}
+      <div className="container mx-auto px-4 lg:px-8 relative z-10 -mt-80 pb-16">
         <div className="flex flex-col md:flex-row gap-8">
           {/* Poster */}
-          <div className="w-40 md:w-56 flex-shrink-0">
+          <div className="w-48 md:w-64 flex-shrink-0">
             <img
-              src={poster || thumb}
+              src={poster}
               alt={data.name}
-              className="w-full rounded-xl shadow-[0_8px_40px_rgba(0,0,0,0.8)] aspect-[2/3] object-cover ring-1 ring-white/10"
+              className="w-full rounded-3xl shadow-2xl aspect-[2/3] object-cover ring-1 ring-white/10"
             />
           </div>
 
           {/* Info */}
-          <div className="flex flex-col gap-4 flex-1 pt-2">
-            <div className="flex flex-wrap items-center gap-2">
-              {data.quality && (
-                <span className="bg-primary text-white text-xs font-black px-2 py-1 rounded uppercase tracking-wider">
-                  {data.quality}
+          <div className="flex flex-col gap-5 flex-1 pt-6 text-center md:text-left items-center md:items-start">
+            <div className="flex flex-wrap justify-center md:justify-start items-center gap-2">
+              {tmdbData?.vote_average > 0 && (
+                <span className="bg-yellow-500/10 text-yellow-500 text-xs font-black px-3 py-1.5 rounded-full border border-yellow-500/20 flex items-center gap-1">
+                  <Star className="w-3 h-3 fill-current" />
+                  {tmdbData.vote_average.toFixed(1)}
                 </span>
               )}
-              {data.lang && (
-                <span className="bg-white/10 text-white text-xs font-bold px-2 py-1 rounded border border-white/10">
-                  {data.lang}
-                </span>
-              )}
-              {data.episode_current && (
-                <span
-                  className={`text-xs font-bold px-2 py-1 rounded ${
-                    isCompleted
-                      ? "bg-green-500/20 text-green-400 border border-green-500/30"
-                      : "bg-yellow-500/20 text-yellow-400 border border-yellow-500/30"
-                  }`}
-                >
-                  {data.episode_current}
-                </span>
-              )}
+              <span className="bg-primary text-white text-xs font-black px-3 py-1.5 rounded-full uppercase tracking-wider">
+                {data.quality || "HD"}
+              </span>
+              <span className="bg-white/10 text-white/50 text-xs font-bold px-3 py-1.5 rounded-full border border-white/5">
+                {data.lang}
+              </span>
             </div>
 
-            <h1 className="text-3xl md:text-5xl font-black text-white leading-tight">{data.name}</h1>
-            {(data.origin_name || data.original_name) && (
-              <h2 className="text-lg text-white/50 font-medium -mt-2">
-                {data.origin_name || data.original_name}
-              </h2>
-            )}
+            <h1 className="text-4xl md:text-6xl font-black text-white leading-tight drop-shadow-xl">{tmdbData?.title || data.name}</h1>
+            <h2 className="text-xl text-white/40 font-medium -mt-3 italic">
+              {tmdbData?.original_title || data.origin_name || data.original_name}
+            </h2>
 
             {/* Meta row */}
-            <div className="flex flex-wrap items-center gap-4 text-sm text-neutral-400">
-              {data.year && (
-                <span className="flex items-center gap-1.5">
-                  <CalendarDays className="w-4 h-4" />
-                  {data.year}
-                </span>
-              )}
-              {data.time && (
-                <span className="flex items-center gap-1.5">
-                  <Clock className="w-4 h-4" />
-                  {data.time}
-                </span>
-              )}
-              {data.view && (
-                <span className="flex items-center gap-1.5">
-                  <Star className="w-4 h-4 text-yellow-400 fill-yellow-400" />
-                  {Number(data.view).toLocaleString()} lượt xem
-                </span>
-              )}
+            <div className="flex flex-wrap justify-center md:justify-start items-center gap-6 text-sm text-neutral-400 font-bold uppercase tracking-widest">
+              <span className="flex items-center gap-2">
+                <CalendarDays className="w-4 h-4 text-primary" />
+                {tmdbData?.release_date?.split("-")[0] || data.year}
+              </span>
+              <span className="flex items-center gap-2">
+                <Clock className="w-4 h-4 text-primary" />
+                {data.time || "Đang cập nhật"}
+              </span>
+              <span className="flex items-center gap-2">
+                <Star className="w-4 h-4 text-primary" />
+                {Number(data.view || 0).toLocaleString()} Views
+              </span>
             </div>
+
+            {/* Description */}
+            <div
+              className="text-neutral-300 leading-relaxed text-base max-w-3xl line-clamp-6 md:line-clamp-none prose prose-invert opacity-80"
+              dangerouslySetInnerHTML={{ __html: tmdbData?.overview || data.description || data.content || "Đang cập nhật nội dung..." }}
+            />
 
             {/* Genre tags */}
             {genreTags.length > 0 && (
-              <div className="flex flex-wrap gap-2">
+              <div className="flex flex-wrap justify-center md:justify-start gap-2">
                 {genreTags.map((g) => (
                   <Link
                     key={g.slug}
                     href={`/the-loai/${g.slug}`}
-                    className="px-3 py-1 rounded-full text-xs font-semibold bg-white/8 hover:bg-primary/30 border border-white/10 hover:border-primary/40 text-white/70 hover:text-white transition-all"
+                    className="px-4 py-2 rounded-xl text-xs font-black bg-white/5 hover:bg-primary/20 border border-white/10 hover:border-primary/40 text-white/40 hover:text-white transition-all uppercase tracking-widest"
                   >
                     {g.name}
                   </Link>
@@ -164,54 +165,53 @@ export default async function MovieDetailsPage({ params }: { params: Promise<{ s
               </div>
             )}
 
-            {/* Description */}
-            <div
-              className="text-neutral-300 leading-relaxed text-sm max-w-2xl line-clamp-4 prose prose-invert"
-              dangerouslySetInnerHTML={{ __html: data.content || data.description || "Chưa có nội dung." }}
-            />
-
             {/* Actions */}
-            <div className="flex flex-wrap gap-3 mt-2">
+            <div className="flex flex-wrap justify-center md:justify-start gap-4 mt-4">
               {firstEp ? (
                 <Link href={`/watch/${source}/${slug}/${firstEp.slug || firstEp.name}`}>
-                  <Button size="lg" className="rounded-lg px-7 gap-2 font-bold">
-                    <Play className="w-5 h-5 fill-current" />
-                    Xem Phim
+                  <Button size="lg" className="rounded-2xl px-10 h-14 gap-2 font-black text-lg transition-transform hover:scale-105 shadow-xl shadow-primary/20">
+                    <Play className="w-6 h-6 fill-current" />
+                    Xem Ngay
                   </Button>
                 </Link>
               ) : (
-                <Button size="lg" disabled className="rounded-lg px-7">
-                  Sắp chiếu
+                <Button size="lg" disabled className="rounded-2xl px-10 h-14 opacity-50">
+                  Phim Sắp Chiếu
                 </Button>
               )}
               <WatchlistBtn
                 movieSlug={data.slug}
                 movieTitle={data.name}
-                posterUrl={poster || thumb}
+                posterUrl={poster}
               />
             </div>
           </div>
         </div>
 
-        {/* ── Episode List (Multi-server tabs) ── */}
-        {allServers.length > 0 && allServers[0].items.length > 0 && (
-          <section className="mt-12">
-            <h3 className="text-xl font-black mb-5 flex items-center gap-2">
-              <span className="w-1 h-5 bg-primary rounded-full" />
-              Danh Sách Tập
-            </h3>
+        {/* ── Actor Gallery ── */}
+        <ActorGallery actors={tmdbCredits} />
 
+        {/* ── Episode List ── */}
+        {allServers.length > 0 && allServers[0].items.length > 0 && (
+          <section className="mt-16">
+            <h3 className="text-xl font-black mb-6 flex items-center gap-2">
+              <span className="w-1 h-5 bg-primary rounded-full" />
+              Tập Phim
+            </h3>
             {allServers.map((server, sIdx) => (
-              <div key={sIdx} className="mb-6">
+              <div key={sIdx} className="mb-8">
                 {allServers.length > 1 && (
-                  <p className="text-sm font-bold text-white/50 mb-3 uppercase tracking-wider">
-                    {server.name}
+                  <p className="text-xs font-black text-white/30 mb-4 uppercase tracking-[0.2em]">
+                    Hệ thống: {server.name}
                   </p>
                 )}
-                <div className="flex gap-2 flex-wrap max-h-64 overflow-y-auto p-3 bg-white/3 rounded-xl border border-white/5">
+                <div className="grid grid-cols-3 sm:grid-cols-5 md:grid-cols-8 lg:grid-cols-12 gap-3">
                   {server.items.map((ep: any, idx: number) => (
                     <Link key={idx} href={`/watch/${source}/${slug}/${ep.slug || ep.name}`}>
-                      <Button variant="secondary" className="min-w-[4rem] h-9 text-sm font-semibold">
+                      <Button 
+                        variant="secondary" 
+                        className="w-full h-11 rounded-xl text-sm font-bold bg-white/5 border border-white/5 hover:bg-primary/20 hover:border-primary/40 transition-all"
+                      >
                         {ep.name}
                       </Button>
                     </Link>
@@ -222,51 +222,33 @@ export default async function MovieDetailsPage({ params }: { params: Promise<{ s
           </section>
         )}
 
-        {/* ── Related Movies ── */}
+        {/* ── Related ── */}
         {related.length > 0 && (
-          <section className="mt-12">
-            <div className="flex items-center justify-between mb-5">
+          <section className="mt-16">
+            <div className="flex items-center justify-between mb-8">
               <h3 className="text-xl font-black flex items-center gap-2">
                 <span className="w-1 h-5 bg-primary rounded-full" />
-                Phim Liên Quan
+                Cùng Thể Loại
               </h3>
-              {relatedSlug && (
-                <Link
-                  href={`/the-loai/${relatedSlug}`}
-                  className="flex items-center gap-1 text-sm font-semibold text-white/40 hover:text-primary transition-colors"
-                >
-                  Xem thêm <ChevronRight className="w-4 h-4" />
-                </Link>
-              )}
+              <Link href={`/the-loai/${relatedSlug}`} className="text-sm font-bold text-primary/60 hover:text-primary transition-colors flex items-center gap-1 group">
+                Xem thêm <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+              </Link>
             </div>
-
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-x-4 gap-y-8">
-              {related.map((m: any) => {
-                const mPoster = m.poster_url?.startsWith("http")
-                  ? m.poster_url
-                  : `https://phimimg.com/${m.poster_url}`;
-                return (
-                  <Link key={m.slug} href={`/movie/${m.slug}`} className="group flex flex-col gap-2">
-                    <div className="relative aspect-[2/3] rounded-xl overflow-hidden bg-white/5 group-hover:-translate-y-1.5 transition-transform duration-300">
-                      <img
-                        src={mPoster}
-                        alt={m.name}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                        loading="lazy"
-                      />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-                      {m.quality && (
-                        <span className="absolute top-2 left-2 bg-primary/90 text-white text-[10px] font-black px-1.5 py-0.5 rounded uppercase">
-                          {m.quality}
-                        </span>
-                      )}
-                    </div>
-                    <p className="text-sm font-semibold text-white/80 group-hover:text-white line-clamp-1 px-0.5 transition-colors">
-                      {m.name}
-                    </p>
-                  </Link>
-                );
-              })}
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-6">
+              {related.map((m: any) => (
+                <Link key={m.slug} href={`/movie/${m.slug}`} className="group space-y-3">
+                  <div className="relative aspect-[2/3] rounded-2xl overflow-hidden bg-white/5 group-hover:-translate-y-2 transition-transform duration-300 shadow-lg group-hover:shadow-primary/10">
+                    <img
+                      src={m.poster_url?.startsWith("http") ? m.poster_url : `https://phimimg.com/${m.poster_url}`}
+                      alt={m.name}
+                      className="w-full h-full object-cover"
+                      loading="lazy"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                  </div>
+                  <p className="text-sm font-bold text-white/70 group-hover:text-white transition-colors line-clamp-1">{m.name}</p>
+                </Link>
+              ))}
             </div>
           </section>
         )}

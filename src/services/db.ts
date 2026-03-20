@@ -157,3 +157,34 @@ export async function disconnectTrakt(userId: string) {
   const docRef = doc(db, "users", userId);
   await setDoc(docRef, { trakt: null }, { merge: true });
 }
+
+// ================= FAVORITE ACTORS =================
+export async function toggleFavoriteActor(userId: string, actor: { id: number; name: string; profilePath: string | null }) {
+  const docId = `${userId}_${actor.id}`;
+  const docRef = doc(db, "favorite_actors", docId);
+  const snap = await getDoc(docRef);
+  
+  if (snap.exists()) {
+    await deleteDoc(docRef);
+    return false;
+  } else {
+    await setDoc(docRef, {
+      ...actor,
+      userId,
+      addedAt: Date.now()
+    });
+    return true; 
+  }
+}
+
+export async function getUserFavoriteActors(userId: string) {
+  const q = query(collection(db, "favorite_actors"), where("userId", "==", userId));
+  const snap = await getDocs(q);
+  return snap.docs.map(d => ({ ...d.data() })).sort((a: any, b: any) => b.addedAt - a.addedAt);
+}
+
+export async function isFavoriteActor(userId: string, actorId: number): Promise<boolean> {
+  const docId = `${userId}_${actorId}`;
+  const snap = await getDoc(doc(db, "favorite_actors", docId));
+  return snap.exists();
+}

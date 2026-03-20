@@ -14,8 +14,8 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Mishane Movies",
-  description: "Trang web xem phim trực tuyến miễn phí, cập nhật phim mới nhất chất lượng cao",
+  title: "Hồ Phim - Xem Phim Miễn Phí",
+  description: "Trang web xem phim trực tuyến chất lượng cao",
 };
 
 export default function RootLayout({

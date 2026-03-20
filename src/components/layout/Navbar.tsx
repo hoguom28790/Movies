@@ -31,9 +31,9 @@ export function Navbar() {
       <header className="fixed top-0 z-50 w-full border-b border-white/5 bg-black/40 backdrop-blur-2xl transition-all duration-300">
         <div className="container mx-auto flex h-16 items-center justify-between px-4 lg:px-8">
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-2 flex-shrink-0">
-            <span className="text-2xl font-black text-primary uppercase tracking-tighter drop-shadow-md">
-              Mishane Movies
+          <Link href="/" className="flex items-center gap-2 group">
+            <span className="text-2xl font-black text-primary uppercase tracking-tighter transition-transform group-hover:scale-105">
+              Hồ Phim
             </span>
           </Link>
 

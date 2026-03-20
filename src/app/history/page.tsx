@@ -74,7 +74,7 @@ export default function HistoryPage() {
               </div>
               <button 
                 onClick={(e) => handleDelete(item.movieSlug, e)}
-                className="absolute -top-2 -left-2 z-20 bg-black/40 hover:bg-red-500 backdrop-blur-xl text-white rounded-full p-1.5 opacity-0 lg:group-hover:opacity-100 transition-all shadow-sm hover:scale-110 border border-white/20"
+                className="absolute -top-2 -left-2 z-20 bg-black/60 hover:bg-red-500 backdrop-blur-xl text-white rounded-full p-1.5 transition-all shadow-sm hover:scale-110 border border-white/20"
                 title="Xóa khỏi lịch sử"
               >
                 <X className="w-4 h-4" />
