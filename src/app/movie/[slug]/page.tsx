@@ -1,10 +1,10 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { Play, Star, Clock, CalendarDays, ChevronRight } from "lucide-react";
+import Image from "next/image";
+import { Play, Heart, Share2, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { WatchlistBtn } from "@/components/movie/WatchlistBtn";
 import { getTMDBImageUrl, getTMDBMovieDetails, searchTMDBMovie } from "@/services/tmdb";
-import { ActorGallery } from "@/components/movie/ActorGallery";
 import { MovieRatings } from "@/components/movie/MovieRatings";
 
 async function fetchMovieData(slug: string) {
@@ -46,13 +46,9 @@ export default async function MovieDetailsPage({ params }: { params: Promise<{ s
   
   // TMDB Enrichment
   let tmdbSearch = await searchTMDBMovie(data.name, data.year);
-  
-  // Fallback to origin name if no results found
   if (!tmdbSearch && (data.origin_name || data.original_name)) {
     tmdbSearch = await searchTMDBMovie(data.origin_name || data.original_name, data.year);
   }
-
-  // Final fallback: search without year if still no results
   if (!tmdbSearch) {
     tmdbSearch = await searchTMDBMovie(data.name);
   }
@@ -63,7 +59,6 @@ export default async function MovieDetailsPage({ params }: { params: Promise<{ s
   const tmdbData = tmdbSearch ? await getTMDBMovieDetails(tmdbSearch.id) : null;
   const imdbId = tmdbData?.external_ids?.imdb_id;
   
-  // Fetch real IMDb rating from imdbapi.dev
   const { getIMDbRating } = await import("@/services/imdb");
   const { getRTRating } = await import("@/services/rottenTomatoes");
   
@@ -72,7 +67,6 @@ export default async function MovieDetailsPage({ params }: { params: Promise<{ s
     imdbId ? getRTRating(imdbId) : Promise.resolve(null)
   ]);
   
-  // Use TMDB Poster with fallback
   const tmdbPoster = tmdbData?.poster_path ? getTMDBImageUrl(tmdbData.poster_path) : null;
   const tmdbThumb = tmdbData?.backdrop_path ? getTMDBImageUrl(tmdbData.backdrop_path) : null;
 
@@ -87,12 +81,10 @@ export default async function MovieDetailsPage({ params }: { params: Promise<{ s
   const tmdbCredits = tmdbData?.credits?.cast || [];
   const tmdbDirector = tmdbData?.credits?.crew?.find((c: any) => c.job === "Director")?.name;
 
-  // Fallbacks from API data
   const fallbackActors = data.actor || [];
   const fallbackDirector = data.director?.[0] || data.director || "Đang cập nhật";
   const directorName = tmdbDirector || fallbackDirector;
 
-  // All servers
   const allServers: { name: string; items: any[] }[] = episodes.map((srv: any, idx: number) => ({
     name: srv.server_name || srv.name || `Server ${idx + 1}`,
     items: srv.server_data || srv.items || [],
@@ -101,7 +93,6 @@ export default async function MovieDetailsPage({ params }: { params: Promise<{ s
   const defaultServer = allServers[0]?.items || [];
   const firstEp = defaultServer[0];
 
-  // Genre tags
   const genreTags: { name: string; slug: string }[] = (data.category || data.genres || []).map((g: any) =>
     typeof g === "string" ? { name: g, slug: g } : { name: g.name || g, slug: g.slug || g.name || g }
   );
@@ -109,197 +100,255 @@ export default async function MovieDetailsPage({ params }: { params: Promise<{ s
   const relatedSlug = genreTags[0]?.slug;
   const related = relatedSlug ? await fetchRelated(relatedSlug).catch(() => []) : [];
 
-  const isCompleted =
-    data.episode_current?.toLowerCase().includes("full") ||
-    data.episode_current?.toLowerCase().includes("hoàn tất");
+  // Actor display list (combine TMDB + fallback)
+  const displayActors = tmdbCredits.length > 0 
+    ? tmdbCredits.slice(0, 8) 
+    : fallbackActors.slice(0, 8).map((name: string) => ({ name, profile_path: null }));
+
+  const countryName = data.country?.[0]?.name || data.country?.[0] || "Đang cập nhật";
 
   return (
     <div className="min-h-screen">
-      {/* ── Backdrop Hero ── */}
-      <div className="relative w-full h-[55vh] min-h-[380px] overflow-hidden">
+      {/* ── Backdrop ── */}
+      <div className="relative w-full h-[45vh] min-h-[320px] overflow-hidden">
         <img
           src={thumb || poster}
           alt={data.name}
-          className="w-full h-full object-cover object-top opacity-40 blur-sm scale-105"
+          className="w-full h-full object-cover object-top opacity-30 scale-105"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0a] via-[#0a0a0a]/70 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0a] via-[#0a0a0a]/60 to-[#0a0a0a]/30" />
       </div>
 
-      {/* ── Content ── */}
-      <div className="container mx-auto px-4 lg:px-8 relative z-10 -mt-80 pb-16">
-        <div className="flex flex-col md:flex-row gap-8">
-          {/* Poster */}
-          <div className="w-48 md:w-64 flex-shrink-0">
-            <img
-              src={poster}
-              alt={data.name}
-              className="w-full rounded-3xl shadow-2xl aspect-[2/3] object-cover ring-1 ring-white/10"
-            />
-          </div>
-
-          {/* Info */}
-          <div className="flex flex-col gap-5 flex-1 pt-6 text-center md:text-left items-center md:items-start">
-            <div className="flex flex-wrap justify-center md:justify-start items-center gap-4">
-              <MovieRatings 
-                tmdbRating={tmdbData?.vote_average} 
-                imdbId={tmdbData?.external_ids?.imdb_id} 
-                imdbRating={realImdbRating}
-                rottenRating={rtData?.criticScore}
-                audienceScore={rtData?.audienceScore}
+      {/* ── Main Content: 2-column layout ── */}
+      <div className="container mx-auto px-4 lg:px-12 relative z-10 -mt-64 pb-16">
+        <div className="flex flex-col lg:flex-row gap-8">
+          
+          {/* ═══ LEFT COLUMN: Poster + Info ═══ */}
+          <div className="w-full lg:w-[280px] flex-shrink-0">
+            {/* Poster */}
+            <div className="relative w-[200px] lg:w-full mx-auto lg:mx-0">
+              <img
+                src={poster}
+                alt={data.name}
+                className="w-full rounded-xl shadow-2xl shadow-black/60 aspect-[2/3] object-cover"
               />
-              <div className="flex items-center gap-2 ml-2">
-                <span className="bg-primary text-white text-xs font-black px-3 py-1.5 rounded-full uppercase tracking-wider">
-                  {data.quality || "HD"}
-                </span>
-                <span className="bg-white/10 text-white/50 text-xs font-bold px-3 py-1.5 rounded-full border border-white/5">
-                  {data.lang}
-                </span>
+            </div>
+
+            {/* XEM NGAY + Actions */}
+            <div className="flex flex-col items-center lg:items-stretch gap-3 mt-4">
+              {firstEp ? (
+                <Link href={`/watch/${source}/${slug}/${firstEp.slug || firstEp.name}`} className="w-full">
+                  <Button className="w-full h-11 rounded-xl gap-2 font-semibold text-[14px] bg-primary hover:bg-primary-hover transition-all">
+                    <Play className="w-5 h-5 fill-current" />
+                    XEM NGAY
+                  </Button>
+                </Link>
+              ) : (
+                <Button disabled className="w-full h-11 rounded-xl bg-white/5 text-white/30">
+                  Phim Sắp Chiếu
+                </Button>
+              )}
+
+              <div className="flex items-center justify-center gap-4">
+                <WatchlistBtn
+                  movieSlug={data.slug}
+                  movieTitle={data.name}
+                  posterUrl={poster}
+                />
+                <button className="flex items-center gap-1.5 text-[12px] text-white/40 hover:text-white transition-colors">
+                  <Share2 className="w-4 h-4" />
+                  Chia sẻ
+                </button>
               </div>
             </div>
 
-            <h1 className="text-3xl md:text-4xl font-bold text-white leading-tight">{tmdbData?.title || data.name}</h1>
-            <p className="text-sm text-white/40 -mt-2">
-              {tmdbData?.original_title || data.origin_name || data.original_name}
-            </p>
-
-            {/* Meta row */}
-            <div className="flex flex-wrap justify-center md:justify-start items-center gap-4 text-[12px] text-white/40">
-              <span className="flex items-center gap-1.5">
-                <CalendarDays className="w-3.5 h-3.5 text-white/30" />
-                {tmdbData?.release_date?.split("-")[0] || data.year}
-              </span>
-              <span className="flex items-center gap-1.5">
-                <Clock className="w-3.5 h-3.5 text-white/30" />
-                {data.time || "Đang cập nhật"}
-              </span>
-              <span className="flex items-center gap-1.5">
-                <Star className="w-3.5 h-3.5 text-white/30" />
-                {Number(data.view || 0).toLocaleString()} views
-              </span>
-            </div>
-
-            {/* Director & Actors text fallback if needed */}
-            <div className="flex flex-col gap-2 text-sm">
-              <p className="text-white/60">
-                <span className="text-primary font-bold uppercase tracking-wider mr-2">Đạo diễn:</span>
-                <span className="text-white font-medium">{directorName}</span>
+            {/* Movie Title & Tags */}
+            <div className="mt-6 text-center lg:text-left">
+              <h1 className="text-xl font-bold text-white leading-snug">{tmdbData?.title || data.name}</h1>
+              <p className="text-[13px] text-white/30 mt-0.5 italic">
+                {tmdbData?.original_title || data.origin_name || data.original_name}
               </p>
-              {tmdbCredits.length === 0 && fallbackActors.length > 0 && (
-                <p className="text-white/60">
-                  <span className="text-primary font-bold uppercase tracking-wider mr-2">Diễn viên:</span>
-                  <span className="text-white font-medium italic">{fallbackActors.join(", ")}</span>
-                </p>
+
+              {/* Badge row */}
+              <div className="flex flex-wrap justify-center lg:justify-start items-center gap-2 mt-3">
+                <span className="px-2.5 py-1 rounded-md bg-primary/20 text-primary text-[11px] font-semibold">
+                  {data.quality || "HD"}
+                </span>
+                <span className="px-2.5 py-1 rounded-md bg-white/5 text-white/50 text-[11px] font-medium">
+                  {tmdbData?.release_date?.split("-")[0] || data.year}
+                </span>
+                <span className="px-2.5 py-1 rounded-md bg-white/5 text-white/50 text-[11px] font-medium">
+                  {data.episode_current || `Tập ${defaultServer.length}`}
+                </span>
+              </div>
+
+              {/* Genre tags */}
+              {genreTags.length > 0 && (
+                <div className="flex flex-wrap justify-center lg:justify-start gap-1.5 mt-3">
+                  {genreTags.map((g) => (
+                    <Link
+                      key={g.slug}
+                      href={`/the-loai/${g.slug}`}
+                      className="px-2.5 py-1 rounded-md text-[11px] bg-white/5 text-white/40 hover:text-white hover:bg-white/10 transition-all"
+                    >
+                      {g.name}
+                    </Link>
+                  ))}
+                </div>
               )}
             </div>
 
-            {/* Description */}
-            <div
-              className="text-neutral-300 leading-relaxed text-base max-w-3xl line-clamp-6 md:line-clamp-none prose prose-invert opacity-80"
-              dangerouslySetInnerHTML={{ __html: tmdbData?.overview || data.description || data.content || "Đang cập nhật nội dung..." }}
-            />
+            {/* Giới thiệu */}
+            <div className="mt-5">
+              <h3 className="text-[13px] font-semibold text-white/60 mb-2">Giới thiệu:</h3>
+              <div
+                className="text-[13px] text-white/40 leading-relaxed"
+                dangerouslySetInnerHTML={{ __html: tmdbData?.overview || data.description || data.content || "Đang cập nhật nội dung..." }}
+              />
+            </div>
 
-            {/* Genre tags */}
-            {genreTags.length > 0 && (
-              <div className="flex flex-wrap justify-center md:justify-start gap-2">
-                {genreTags.map((g) => (
-                  <Link
-                    key={g.slug}
-                    href={`/the-loai/${g.slug}`}
-                    className="px-3 py-1.5 rounded-lg text-[12px] bg-white/5 hover:bg-white/10 text-white/40 hover:text-white transition-all"
+            {/* Meta info */}
+            <div className="mt-4 space-y-1.5 text-[13px]">
+              <p>
+                <span className="text-white/30">Thời lượng: </span>
+                <span className="text-white/60">{data.time || "Đang cập nhật"}</span>
+              </p>
+              <p>
+                <span className="text-white/30">Quốc gia: </span>
+                <span className="text-white/60">{countryName}</span>
+              </p>
+              <p>
+                <span className="text-white/30">Đạo diễn: </span>
+                <span className="text-white/60">{directorName}</span>
+              </p>
+            </div>
+
+            {/* Diễn viên */}
+            {displayActors.length > 0 && (
+              <div className="mt-5">
+                <h3 className="text-[13px] font-semibold text-white/60 mb-3">Diễn viên</h3>
+                <div className="grid grid-cols-4 gap-3">
+                  {displayActors.map((actor: any, idx: number) => (
+                    <div key={idx} className="flex flex-col items-center gap-1.5">
+                      <div className="w-14 h-14 rounded-full overflow-hidden bg-white/5">
+                        {actor.profile_path ? (
+                          <Image
+                            src={getTMDBImageUrl(actor.profile_path, "w185") || ""}
+                            alt={actor.name}
+                            width={56}
+                            height={56}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center text-white/20 text-[10px]">
+                            {actor.name?.charAt(0)}
+                          </div>
+                        )}
+                      </div>
+                      <span className="text-[10px] text-white/40 text-center line-clamp-1 max-w-full">
+                        {actor.name}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* ═══ RIGHT COLUMN: Episodes + Tabs ═══ */}
+          <div className="flex-1 min-w-0">
+            {/* Tab header */}
+            <div className="flex items-center gap-6 border-b border-white/[0.06] mb-6">
+              <button className="pb-3 text-[13px] font-semibold text-primary border-b-2 border-primary">
+                TẬP PHIM
+              </button>
+              <button className="pb-3 text-[13px] font-medium text-white/30 hover:text-white/60 transition-colors">
+                BỘ SƯU TẬP
+              </button>
+              <button className="pb-3 text-[13px] font-medium text-white/30 hover:text-white/60 transition-colors">
+                DIỄN VIÊN
+              </button>
+              <button className="pb-3 text-[13px] font-medium text-white/30 hover:text-white/60 transition-colors">
+                ĐỀ XUẤT
+              </button>
+            </div>
+
+            {/* Server notice */}
+            <div className="rounded-lg bg-emerald-500/10 border border-emerald-500/20 px-4 py-2.5 mb-5 text-[12px] text-emerald-400/80">
+              ⭐ Phim bị lỗi hoặc chưa thấy tập mới? Đổi server thôi coi chúng cũ chẳng có vấn đề gì 😉
+            </div>
+
+            {/* Server selector */}
+            {allServers.length > 0 && (
+              <div className="flex flex-wrap gap-2 mb-6">
+                {allServers.map((server, sIdx) => (
+                  <button
+                    key={sIdx}
+                    className={`px-4 py-2 rounded-lg text-[12px] font-medium transition-all ${
+                      sIdx === 0
+                        ? "bg-primary text-white"
+                        : "bg-white/5 text-white/40 hover:bg-white/10 hover:text-white"
+                    }`}
                   >
-                    {g.name}
+                    {server.name}
+                  </button>
+                ))}
+              </div>
+            )}
+
+            {/* Episode grid */}
+            {allServers.length > 0 && allServers[0].items.length > 0 && (
+              <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7 gap-2">
+                {(allServers[0]?.items || []).map((ep: any, idx: number) => (
+                  <Link
+                    key={idx}
+                    href={`/watch/${source}/${slug}/${ep.slug || ep.name}`}
+                    className="flex items-center gap-2 px-3 py-2.5 rounded-lg bg-white/[0.03] border border-white/[0.06] text-[12px] text-white/50 hover:bg-primary/10 hover:text-white hover:border-primary/30 transition-all"
+                  >
+                    <Play className="w-3 h-3 flex-shrink-0" />
+                    <span className="truncate">{ep.name}</span>
                   </Link>
                 ))}
               </div>
             )}
 
-            {/* Actions */}
-            <div className="flex flex-wrap justify-center md:justify-start gap-3 mt-4">
-              {firstEp ? (
-                <Link href={`/watch/${source}/${slug}/${firstEp.slug || firstEp.name}`}>
-                  <Button size="lg" className="rounded-lg px-8 h-11 gap-2 font-semibold text-[14px] bg-primary hover:bg-primary-hover transition-all hover:scale-[1.03] active:scale-[0.97]">
-                    <Play className="w-5 h-5 fill-current" />
-                    Xem Ngay
-                  </Button>
-                </Link>
-              ) : (
-                <Button size="lg" disabled className="rounded-lg px-8 h-11 bg-white/5 text-white/30">
-                  Phim Sắp Chiếu
-                </Button>
-              )}
-              <WatchlistBtn
-                movieSlug={data.slug}
-                movieTitle={data.name}
-                posterUrl={poster}
-              />
-            </div>
-          </div>
-        </div>
-
-        {/* ── Actor Gallery ── */}
-        <ActorGallery actors={tmdbCredits} />
-
-        {/* ── Episode List ── */}
-        {allServers.length > 0 && allServers[0].items.length > 0 && (
-          <section className="mt-16">
-            <h3 className="text-xl font-black mb-6 flex items-center gap-2">
-              <span className="w-1 h-5 bg-primary rounded-full" />
-              Tập Phim
-            </h3>
-            {allServers.map((server, sIdx) => (
-              <div key={sIdx} className="mb-8">
-                {allServers.length > 1 && (
-                  <p className="text-[11px] font-black text-white/30 mb-4 uppercase tracking-[0.2em]">
-                    Hệ thống: {server.name}
-                  </p>
-                )}
-                <div className="flex flex-wrap gap-2.5">
-                  {server.items.map((ep: any, idx: number) => (
-                    <Link key={idx} href={`/watch/${source}/${slug}/${ep.slug || ep.name}`}>
-                      <Button 
-                        variant="secondary" 
-                        className="px-6 h-10 rounded-full text-[13px] font-black bg-white/5 border border-white/5 hover:bg-primary hover:text-white hover:border-primary transition-all uppercase tracking-wider"
-                      >
-                        {ep.name}
-                      </Button>
+            {/* ── Related / Phim Hot Rần Rần ── */}
+            {related.length > 0 && (
+              <section className="mt-12">
+                <div className="flex items-center justify-between mb-5">
+                  <h3 className="text-base font-semibold text-white/90">Phim Hot Rần Rần</h3>
+                  <Link href={`/the-loai/${relatedSlug}`} className="text-[12px] text-white/40 hover:text-white transition-colors flex items-center gap-1 group">
+                    Xem toàn bộ <ChevronRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
+                  </Link>
+                </div>
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+                  {related.map((m: any) => (
+                    <Link key={m.slug} href={`/movie/${m.slug}`} className="group flex flex-col gap-2">
+                      <div className="relative aspect-[2/3] rounded-xl overflow-hidden bg-white/5 group-hover:-translate-y-1 transition-transform duration-300">
+                        <img
+                          src={m.poster_url?.startsWith("http") ? m.poster_url : `https://phimimg.com/${m.poster_url}`}
+                          alt={m.name}
+                          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                          loading="lazy"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                        {m.episode_current && (
+                          <div className="absolute top-2 left-2 px-2 py-0.5 rounded-md bg-primary/90 text-[10px] font-semibold text-white">
+                            {m.episode_current}
+                          </div>
+                        )}
+                      </div>
+                      <div className="px-0.5">
+                        <p className="text-[13px] font-semibold text-white/80 group-hover:text-white line-clamp-1 transition-colors">{m.name}</p>
+                        <p className="text-[11px] text-white/30 line-clamp-1">{m.origin_name}</p>
+                      </div>
                     </Link>
                   ))}
                 </div>
-              </div>
-            ))}
-          </section>
-        )}
-
-        {/* ── Related ── */}
-        {related.length > 0 && (
-          <section className="mt-16">
-            <div className="flex items-center justify-between mb-8">
-              <h3 className="text-xl font-black flex items-center gap-2">
-                <span className="w-1 h-5 bg-primary rounded-full" />
-                Cùng Thể Loại
-              </h3>
-              <Link href={`/the-loai/${relatedSlug}`} className="text-sm font-bold text-primary/60 hover:text-primary transition-colors flex items-center gap-1 group">
-                Xem thêm <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-              </Link>
-            </div>
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-6">
-              {related.map((m: any) => (
-                <Link key={m.slug} href={`/movie/${m.slug}`} className="group space-y-3">
-                  <div className="relative aspect-[2/3] rounded-2xl overflow-hidden bg-white/5 group-hover:-translate-y-2 transition-transform duration-300 shadow-lg group-hover:shadow-primary/10">
-                    <img
-                      src={m.poster_url?.startsWith("http") ? m.poster_url : `https://phimimg.com/${m.poster_url}`}
-                      alt={m.name}
-                      className="w-full h-full object-cover"
-                      loading="lazy"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-                  </div>
-                  <p className="text-sm font-bold text-white/70 group-hover:text-white transition-colors line-clamp-1">{m.name}</p>
-                </Link>
-              ))}
-            </div>
-          </section>
-        )}
+              </section>
+            )}
+          </div>
+        </div>
       </div>
     </div>
   );

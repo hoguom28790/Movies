@@ -1,24 +1,34 @@
 "use client";
 
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { ChevronDown } from "lucide-react";
 
 const GENRES = [
   { name: "Hành Động", slug: "hanh-dong" },
-  { name: "Tình Cảm", slug: "tinh-cam" },
-  { name: "Hài Hước", slug: "hai-huoc" },
+  { name: "Lịch Sử", slug: "lich-su" },
   { name: "Cổ Trang", slug: "co-trang" },
-  { name: "Tâm Lý", slug: "tam-ly" },
-  { name: "Hình Sự", slug: "hinh-su" },
   { name: "Chiến Tranh", slug: "chien-tranh" },
   { name: "Viễn Tưởng", slug: "vien-tuong" },
   { name: "Kinh Dị", slug: "kinh-di" },
-  { name: "Hoạt Hình", slug: "hoat-hinh" },
-  { name: "Phiêu Lưu", slug: "phieu-luu" },
-  { name: "Khoa Học", slug: "khoa-hoc" },
-  { name: "Âm Nhạc", slug: "am-nhac" },
+  { name: "Tài Liệu", slug: "tai-lieu" },
+  { name: "Bí Ẩn", slug: "bi-an" },
+  { name: "Phim 18+", slug: "phim-18" },
+  { name: "Tình Cảm", slug: "tinh-cam" },
+  { name: "Tâm Lý", slug: "tam-ly" },
   { name: "Thể Thao", slug: "the-thao" },
+  { name: "Phiêu Lưu", slug: "phieu-luu" },
+  { name: "Âm Nhạc", slug: "am-nhac" },
+  { name: "Gia Đình", slug: "gia-dinh" },
+  { name: "Học Đường", slug: "hoc-duong" },
+  { name: "Hài Hước", slug: "hai-huoc" },
+  { name: "Hình Sự", slug: "hinh-su" },
+  { name: "Võ Thuật", slug: "vo-thuat" },
+  { name: "Khoa Học", slug: "khoa-hoc" },
+  { name: "Thần Thoại", slug: "than-thoai" },
+  { name: "Chính Kịch", slug: "chinh-kich" },
+  { name: "Kinh Điển", slug: "kinh-dien" },
+  { name: "Phim Ngắn", slug: "phim-ngan" },
 ];
 
 const COUNTRIES = [
@@ -32,64 +42,32 @@ const COUNTRIES = [
   { name: "Anh", slug: "anh" },
   { name: "Pháp", slug: "phap" },
   { name: "Việt Nam", slug: "viet-nam" },
+  { name: "Hồng Kông", slug: "hong-kong" },
+  { name: "Indonesia", slug: "indonesia" },
+  { name: "Philippines", slug: "philippines" },
+  { name: "Brazil", slug: "brazil" },
+  { name: "Tây Ban Nha", slug: "tay-ban-nha" },
+  { name: "Đức", slug: "duc" },
 ];
 
-const YEARS = Array.from({ length: 8 }, (_, i) => {
+const YEARS = Array.from({ length: 12 }, (_, i) => {
   const y = new Date().getFullYear() - i;
   return { name: String(y), slug: String(y) };
 });
 
-interface DropdownProps {
+interface DropdownConfig {
+  id: string;
   label: string;
   items: { name: string; slug: string }[];
   basePath: string;
+  cols: number;
 }
 
-function Dropdown({ label, items, basePath }: DropdownProps) {
-  const [open, setOpen] = useState(false);
-  const ref = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const handler = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
-    };
-    document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
-  }, []);
-
-  return (
-    <div ref={ref} className="relative">
-      <button
-        onClick={() => setOpen(!open)}
-        onMouseEnter={() => setOpen(true)}
-        className="flex items-center gap-1 px-3 py-2 text-[13px] font-medium text-white/50 hover:text-white transition-colors"
-      >
-        {label}
-        <ChevronDown className={`h-3.5 w-3.5 transition-transform ${open ? "rotate-180" : ""}`} />
-      </button>
-
-      {open && (
-        <div
-          onMouseLeave={() => setOpen(false)}
-          className="absolute top-full left-0 mt-1 w-56 rounded-xl bg-[#141416] border border-white/[0.08] shadow-2xl shadow-black/60 py-2 z-50 animate-in fade-in slide-in-from-top-2 duration-200"
-        >
-          <div className="max-h-80 overflow-y-auto px-1">
-            {items.map((item) => (
-              <Link
-                key={item.slug}
-                href={`${basePath}/${item.slug}`}
-                onClick={() => setOpen(false)}
-                className="block px-3 py-2 text-[13px] text-white/50 hover:text-white hover:bg-white/5 rounded-lg transition-colors"
-              >
-                {item.name}
-              </Link>
-            ))}
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
+const dropdowns: DropdownConfig[] = [
+  { id: "genre", label: "Thể loại", items: GENRES, basePath: "/the-loai", cols: 4 },
+  { id: "country", label: "Quốc gia", items: COUNTRIES, basePath: "/quoc-gia", cols: 4 },
+  { id: "year", label: "Năm", items: YEARS, basePath: "/nam", cols: 4 },
+];
 
 const directLinks = [
   { label: "Phim Lẻ", href: "/phim-le" },
@@ -99,12 +77,75 @@ const directLinks = [
 ];
 
 export function NavMenu() {
+  const [openId, setOpenId] = useState<string | null>(null);
+  const navRef = useRef<HTMLElement>(null);
+  const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const clearCloseTimer = useCallback(() => {
+    if (closeTimer.current) {
+      clearTimeout(closeTimer.current);
+      closeTimer.current = null;
+    }
+  }, []);
+
+  const scheduleClose = useCallback(() => {
+    clearCloseTimer();
+    closeTimer.current = setTimeout(() => setOpenId(null), 200);
+  }, [clearCloseTimer]);
+
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (navRef.current && !navRef.current.contains(e.target as Node)) {
+        setOpenId(null);
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
+
   return (
-    <nav className="flex items-center gap-0.5">
-      <Dropdown label="Thể loại" items={GENRES} basePath="/the-loai" />
-      <Dropdown label="Quốc gia" items={COUNTRIES} basePath="/quoc-gia" />
-      <Dropdown label="Năm" items={YEARS} basePath="/nam" />
-      
+    <nav ref={navRef} className="flex items-center gap-0.5">
+      {dropdowns.map((dd) => (
+        <div key={dd.id} className="relative">
+          <button
+            onClick={() => setOpenId(openId === dd.id ? null : dd.id)}
+            onMouseEnter={() => { clearCloseTimer(); setOpenId(dd.id); }}
+            onMouseLeave={scheduleClose}
+            className={`flex items-center gap-1 px-3 py-2 text-[13px] font-medium transition-colors ${
+              openId === dd.id ? "text-primary" : "text-white/50 hover:text-white"
+            }`}
+          >
+            {dd.label}
+            <ChevronDown className={`h-3.5 w-3.5 transition-transform duration-200 ${openId === dd.id ? "rotate-180" : ""}`} />
+          </button>
+
+          {openId === dd.id && (
+            <div
+              onMouseEnter={clearCloseTimer}
+              onMouseLeave={scheduleClose}
+              className="absolute top-full left-1/2 -translate-x-1/2 mt-1 rounded-xl bg-[#141416]/95 backdrop-blur-xl border border-white/[0.08] shadow-2xl shadow-black/80 p-4 z-50 animate-in fade-in slide-in-from-top-2 duration-150"
+              style={{ minWidth: `${dd.cols * 140}px` }}
+            >
+              <div
+                className="grid gap-x-2 gap-y-0"
+                style={{ gridTemplateColumns: `repeat(${dd.cols}, minmax(0, 1fr))` }}
+              >
+                {dd.items.map((item) => (
+                  <Link
+                    key={item.slug}
+                    href={`${dd.basePath}/${item.slug}`}
+                    onClick={() => setOpenId(null)}
+                    className="px-3 py-2 text-[13px] text-white/50 hover:text-white hover:bg-white/5 rounded-lg transition-colors whitespace-nowrap"
+                  >
+                    {item.name}
+                  </Link>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      ))}
+
       {directLinks.map((link) => (
         <Link
           key={link.href}
