@@ -299,7 +299,7 @@ export default async function MovieDetailsPage({ params }: { params: Promise<{ s
                 dangerouslySetInnerHTML={{ __html: tmdbData?.overview || data.description || data.content || "Đang cập nhật nội dung..." }}
               />
             </div>
-
+ 
             {/* Meta info */}
             <div className="mt-4 space-y-1.5 text-[13px]">
               <p>
@@ -315,53 +315,54 @@ export default async function MovieDetailsPage({ params }: { params: Promise<{ s
                 <span className="text-white/60">{directorName}</span>
               </p>
             </div>
-
-            {/* Diễn viên */}
-            {displayActors.length > 0 && (
-              <div className="mt-5">
-                <h3 className="text-[13px] font-semibold text-white/60 mb-3">Diễn viên</h3>
-                <div className="grid grid-cols-4 gap-3">
-                  {displayActors.map((actor: any, idx: number) => (
-                    <div key={idx} className="flex flex-col items-center gap-1.5">
-                      <div className="w-14 h-14 rounded-full overflow-hidden bg-white/5">
-                        {actor.profile_path ? (
-                          <Image
-                            src={getTMDBImageUrl(actor.profile_path) || ""}
-                            alt={actor.name}
-                            width={56}
-                            height={56}
-                            className="w-full h-full object-cover"
-                          />
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center text-white/20 text-[10px]">
-                            {actor.name?.charAt(0)}
-                          </div>
-                        )}
-                      </div>
-                      <span className="text-[10px] text-white/40 text-center line-clamp-1 max-w-full">
-                        {actor.name}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
           </div>
-
+ 
           {/* ═══ RIGHT COLUMN: Episodes + Tabs ═══ */}
           <div className="flex-1 min-w-0">
             <MovieTabs 
               slug={slug}
               source={source}
               servers={allServers}
-              actors={tmdbCredits.slice(0, 16).map((c: any) => ({
-                name: c.name,
-                profile_path: c.profile_path,
-                character: c.character
-              }))}
               recommendations={recommendations}
               collection={collectionData}
             />
+ 
+            {/* ── Diễn viên Standalone Section ── */}
+            {displayActors.length > 0 && (
+              <section className="mt-10 animate-in fade-in slide-in-from-bottom-2 duration-500">
+                <div className="flex items-center gap-2 mb-5">
+                  <div className="w-1 h-5 bg-primary rounded-full" />
+                  <h3 className="text-base font-semibold text-white/90">Diễn viên</h3>
+                </div>
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-4">
+                  {displayActors.map((actor: any, idx: number) => (
+                    <div key={idx} className="group flex flex-col items-center text-center gap-3">
+                      <div className="relative w-full aspect-square rounded-2xl overflow-hidden bg-white/5 border border-white/[0.06] group-hover:border-primary/30 transition-all duration-300 shadow-lg shadow-black/20">
+                        {actor.profile_path ? (
+                          <img
+                            src={getTMDBImageUrl(actor.profile_path) || ""}
+                            alt={actor.name}
+                            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                            loading="lazy"
+                          />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center text-white/10 italic text-[12px] uppercase tracking-widest bg-gradient-to-br from-white/5 to-transparent">
+                            {actor.name?.charAt(0)}
+                          </div>
+                        )}
+                        <div className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                      </div>
+                      <div className="w-full px-1">
+                        <p className="text-[13px] font-bold text-white/80 group-hover:text-primary transition-colors line-clamp-1">{actor.name}</p>
+                        {actor.character && (
+                          <p className="text-[11px] text-white/30 line-clamp-1 mt-0.5 font-medium">{actor.character}</p>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </section>
+            )}
 
             {/* ── Related / Phim Hot Rần Rần ── */}
             {related.length > 0 && (

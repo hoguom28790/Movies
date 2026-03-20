@@ -9,7 +9,6 @@ interface MovieTabsProps {
   slug: string;
   source: string;
   servers: { name: string; items: any[] }[];
-  actors: { name: string; profile_path: string | null; character?: string }[];
   recommendations: any[];
   collection?: any;
 }
@@ -18,17 +17,15 @@ export function MovieTabs({
   slug,
   source,
   servers,
-  actors,
   recommendations,
   collection
 }: MovieTabsProps) {
-  const [activeTab, setActiveTab] = useState<"episodes" | "collection" | "actors" | "recommendations">("episodes");
+  const [activeTab, setActiveTab] = useState<"episodes" | "collection" | "recommendations">("episodes");
   const [activeServer, setActiveServer] = useState(0);
 
   const tabs = [
     { id: "episodes", label: "TẬP PHIM", show: true },
     { id: "collection", label: "BỘ SƯU TẬP", show: !!collection },
-    { id: "actors", label: "DIỄN VIÊN", show: actors.length > 0 },
     { id: "recommendations", label: "ĐỀ XUẤT", show: recommendations.length > 0 },
   ];
 
@@ -125,38 +122,7 @@ export function MovieTabs({
             </div>
           </div>
         )}
-
-        {/* ── ACTORS ── */}
-        {activeTab === "actors" && (
-          <div className="animate-in fade-in duration-300">
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-4">
-              {actors.map((actor, idx) => (
-                <div key={idx} className="flex flex-col items-center text-center gap-2">
-                  <div className="relative w-full aspect-square rounded-full overflow-hidden bg-white/5 border border-white/[0.06]">
-                    {actor.profile_path ? (
-                      <img
-                        src={`https://image.tmdb.org/t/p/w185${actor.profile_path}`}
-                        alt={actor.name}
-                        className="w-full h-full object-cover"
-                      />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center">
-                        <User className="w-1/2 h-1/2 text-white/10" />
-                      </div>
-                    )}
-                  </div>
-                  <div className="px-1 min-w-0 w-full">
-                    <p className="text-[12px] font-semibold text-white/80 line-clamp-1">{actor.name}</p>
-                    {actor.character && (
-                      <p className="text-[10px] text-white/30 line-clamp-1 mt-0.5 italic">{actor.character}</p>
-                    )}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
+ 
         {/* ── RECOMMENDATIONS ── */}
         {activeTab === "recommendations" && (
           <div className="animate-in fade-in duration-300">
