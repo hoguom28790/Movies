@@ -56,7 +56,20 @@ export async function getTMDBActorDetails(actorId: number) {
   }
 }
 
+export async function getTrendingMovies(page: number = 1) {
+  try {
+    const response = await fetch(
+      `${BASE_URL}/trending/movie/day?api_key=${TMDB_API_KEY}&language=vi-VN&page=${page}`
+    );
+    return await response.json();
+  } catch (error) {
+    console.error("TMDB Trending Error:", error);
+    return null;
+  }
+}
+
 export function getTMDBImageUrl(path: string | null) {
   if (!path) return null;
   return `${IMAGE_BASE_URL}${path}`;
 }
+
