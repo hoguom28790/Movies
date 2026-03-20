@@ -4,18 +4,20 @@ import React from "react";
 import { Star } from "lucide-react";
 
 interface MovieRatingsProps {
-  tmdbRating?: number;
-  imdbId?: string;
+  tmdbRating?: number | null;
+  imdbId?: string | null;
+  imdbRating?: number | null;
+  rottenRating?: number | null;
   className?: string;
 }
 
-export function MovieRatings({ tmdbRating, imdbId, className = "" }: MovieRatingsProps) {
-  if (!tmdbRating) return null;
+export function MovieRatings({ tmdbRating, imdbId, imdbRating, rottenRating, className = "" }: MovieRatingsProps) {
 
-  // Derive ratings for visual display if not fetched from separate API
-  // Usually TMDB rating is highly correlated.
-  const imdbScore = tmdbRating.toFixed(1);
-  const rottenScore = Math.round(tmdbRating * 10);
+  if (!tmdbRating && !imdbRating) return null;
+
+  const imdbScore = imdbRating ? imdbRating.toFixed(1) : (tmdbRating ? tmdbRating.toFixed(1) : "N/A");
+  const rottenScore = rottenRating || (tmdbRating ? Math.round(tmdbRating * 10) : 0);
+
 
   return (
     <div className={`flex flex-wrap items-center gap-6 ${className}`}>

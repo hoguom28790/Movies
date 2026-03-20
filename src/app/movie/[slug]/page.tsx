@@ -61,6 +61,11 @@ export default async function MovieDetailsPage({ params }: { params: Promise<{ s
   }
   
   const tmdbData = tmdbSearch ? await getTMDBMovieDetails(tmdbSearch.id) : null;
+  const imdbId = tmdbData?.external_ids?.imdb_id;
+  
+  // Fetch real IMDb rating from imdbapi.dev
+  const { getIMDbRating } = await import("@/services/imdb");
+  const realImdbRating = imdbId ? await getIMDbRating(imdbId) : null;
   
   // Use TMDB Poster with fallback
   const tmdbPoster = tmdbData?.poster_path ? getTMDBImageUrl(tmdbData.poster_path) : null;
@@ -133,6 +138,7 @@ export default async function MovieDetailsPage({ params }: { params: Promise<{ s
               <MovieRatings 
                 tmdbRating={tmdbData?.vote_average} 
                 imdbId={tmdbData?.external_ids?.imdb_id} 
+                imdbRating={realImdbRating}
               />
               <div className="flex items-center gap-2 ml-2">
                 <span className="bg-primary text-white text-xs font-black px-3 py-1.5 rounded-full uppercase tracking-wider">
