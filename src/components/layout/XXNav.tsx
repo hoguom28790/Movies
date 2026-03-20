@@ -4,14 +4,16 @@ import React, { useState, useRef, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { ChevronDown } from "lucide-react";
 
-// Correct codes based on TopXX API documentation
+// Official codes from TopXX API
 const GENRES = [
-  { name: "Việt Sub", slug: "viet-sub" },
-  { name: "Không Che", slug: "khong-che" },
-  { name: "Hentai", slug: "hentai" },
-  { name: "Trung Quốc", slug: "trung-quoc" },
-  { name: "Âu Mỹ", slug: "us-uk" },
-  { name: "Xnxx", slug: "xnxx" },
+  { name: "Việt Sub", slug: "NMf5df5FMg" },
+  { name: "Không Che", slug: "vdDkXwQsHi" },
+  { name: "JAV (Nhật)", slug: "vQMGvwTw5G" },
+  { name: "Hentai 18+", slug: "NqlIpFB5ov" },
+  { name: "Tập thể", slug: "1UhBBr5pNM" },
+  { name: "Âu Mỹ", slug: "oHJZdhXKfM" },
+  { name: "Xnxx", slug: "bXBvvD9LsZ" },
+  { name: "Sex 3D", slug: "8Vfsvu32pK" },
 ];
 
 const COUNTRIES = [
@@ -19,8 +21,8 @@ const COUNTRIES = [
   { name: "Việt Nam", slug: "vn" },
   { name: "Trung Quốc", slug: "cn" },
   { name: "Mỹ", slug: "us" },
-  { name: "Hàn Quốc", slug: "kr" },
-  { name: "Tây Ban Nha", slug: "es" },
+  { name: "Hàn Quốc", slug: "KR" },
+  { name: "Nga", slug: "ru" },
 ];
 
 interface DropdownConfig {
@@ -36,9 +38,9 @@ const dropdowns: DropdownConfig[] = [
 ];
 
 const directLinks = [
-  { label: "Việt Sub", href: "/xx/the-loai/viet-sub" },
+  { label: "Việt Sub", href: "/xx/the-loai/NMf5df5FMg" },
   { label: "Nhật Bản", href: "/xx/quoc-gia/jp" },
-  { label: "Không che", href: "/xx/the-loai/khong-che" },
+  { label: "Không che", href: "/xx/the-loai/vdDkXwQsHi" },
 ];
 
 export function XXNav() {

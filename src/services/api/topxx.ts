@@ -5,17 +5,12 @@ const BASE_URL = "https://topxx.vip/api/v1";
 export async function getTopXXMovies(page: number = 1, type: "danh-sach" | "the-loai" | "quoc-gia" = "danh-sach", slug: string = "phim-moi-cap-nhat"): Promise<MovieListResponse> {
   let url = `${BASE_URL}/movies/latest?page=${page}`;
   
-  // Mapping filter based on type
   if (type === "the-loai") {
-    url = `${BASE_URL}/genres/${slug}/movies?page=${page}`;
+    // API docs say: /movies?genre={code}
+    url = `${BASE_URL}/movies?genre=${slug}&page=${page}`;
   } else if (type === "quoc-gia") {
+    // API docs say: /countries/{code}/movies
     url = `${BASE_URL}/countries/${slug}/movies?page=${page}`;
-  } else if (slug === "viet-sub") {
-    url = `${BASE_URL}/genres/viet-sub/movies?page=${page}`;
-  } else if (slug === "nhat-ban") {
-    url = `${BASE_URL}/countries/jp/movies?page=${page}`;
-  } else if (slug === "khong-che") {
-    url = `${BASE_URL}/genres/khong-che/movies?page=${page}`;
   }
 
   try {
@@ -41,7 +36,8 @@ export async function getTopXXMovies(page: number = 1, type: "danh-sach" | "the-
         id: item.code,
         title: viTrans?.title || "No Title",
         originalTitle: enTrans?.title || "",
-        slug: viTrans?.slug || item.code,
+        // CRITICAL: use 'code' as slug to ensure detail URL works with /movies/{code}
+        slug: item.code, 
         posterUrl: item.thumbnail || "",
         thumbUrl: item.thumbnail || "",
         year: item.publish_at ? new Date(item.publish_at).getFullYear().toString() : "",
