@@ -6,6 +6,9 @@ import { Play, Trash2, ListMusic, Plus, ChevronRight, Heart, Search, Settings2, 
 import { getXXPlaylists, deleteXXPlaylist, removeMovieFromXXPlaylist, createXXPlaylist, XXPlaylist, getXXFavorites, toggleXXFavorite, renameXXPlaylist } from "@/services/xxDb";
 import { Button } from "@/components/ui/Button";
 
+import { XXMovieCard } from "@/components/movie/XXMovieCard";
+import { X } from "lucide-react";
+
 export default function XXLibraryPage() {
   const [playlists, setPlaylists] = useState<XXPlaylist[]>([]);
   const [favorites, setFavorites] = useState<any[]>([]);
@@ -229,48 +232,30 @@ export default function XXLibraryPage() {
            ) : (
              <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8">
                 {filteredMovies.map((movie) => (
-                  <div key={`${movie.movieCode}-${movie.addedAt}`} className="group flex flex-col gap-4">
-                     <div className="relative aspect-[2/3] rounded-3xl overflow-hidden border border-white/5 shadow-2xl transition-all duration-500 group-hover:border-white/20 group-hover:-translate-y-2">
-                        <img 
-                          src={movie.posterUrl} 
-                          alt={movie.movieTitle} 
-                          className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110" 
-                        />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-60" />
-                        
-                        <div className="absolute top-4 right-4 z-30 opacity-0 group-hover:opacity-100 translate-y-2 group-hover:translate-y-0 transition-all duration-300">
-                           <button 
-                             onClick={(e) => {
-                               e.preventDefault();
-                               e.stopPropagation();
-                               if (activeTab === "favorites") toggleXXFavorite(movie);
-                               else removeMovieFromXXPlaylist(activePlaylistId!, movie.movieCode);
-                               
-                               // Refresh local state
-                               if (activeTab === "favorites") setFavorites(getXXFavorites());
-                               else setPlaylists(getXXPlaylists());
-                             }}
-                             className="w-10 h-10 rounded-xl bg-black/60 backdrop-blur-xl text-red-500 border border-white/10 flex items-center justify-center hover:bg-red-500 hover:text-white transition-all shadow-2xl"
-                           >
-                              <Trash2 className="w-5 h-5" />
-                           </button>
-                        </div>
-
-                        <Link href={`/xx/movie/${movie.movieCode}`} className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-500">
-                           <div className="w-16 h-16 rounded-full bg-white text-black flex items-center justify-center shadow-2xl scale-75 group-hover:scale-100 transition-transform duration-500">
-                              <Play className="w-8 h-8 fill-current ml-1" />
-                           </div>
-                        </Link>
-                     </div>
-                     <div className="space-y-1.5 px-1">
-                        <Link href={`/xx/movie/${movie.movieCode}`}>
-                           <h3 className="text-sm font-black text-white group-hover:text-yellow-500 transition-colors line-clamp-2 uppercase leading-snug tracking-tight">{movie.movieTitle}</h3>
-                        </Link>
-                        <div className="flex items-center gap-2 text-[10px] font-black text-white/20 uppercase tracking-widest">
-                           <span>TopXX Member</span>
-                           <span>•</span>
-                           <span>Added {new Date(movie.addedAt).toLocaleDateString()}</span>
-                        </div>
+                  <div key={`${movie.movieCode}-${movie.addedAt}`} className="relative group">
+                     <XXMovieCard 
+                       title={movie.movieTitle}
+                       slug={movie.movieCode}
+                       posterUrl={movie.posterUrl}
+                     />
+                     
+                     <div className="absolute -top-2 -right-2 z-30 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-all">
+                        <button 
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            if (activeTab === "favorites") toggleXXFavorite(movie);
+                            else removeMovieFromXXPlaylist(activePlaylistId!, movie.movieCode);
+                            
+                            // Refresh local state
+                            if (activeTab === "favorites") setFavorites(getXXFavorites());
+                            else setPlaylists(getXXPlaylists());
+                          }}
+                          className="w-8 h-8 rounded-xl bg-black/60 backdrop-blur-xl text-white border border-white/10 flex items-center justify-center hover:bg-red-500 hover:scale-110 transition-all shadow-xl"
+                          title="Xóa"
+                        >
+                           <X className="w-4 h-4" />
+                        </button>
                      </div>
                   </div>
                 ))}
@@ -279,5 +264,6 @@ export default function XXLibraryPage() {
         </main>
       </div>
     </div>
+
   );
 }

@@ -2,8 +2,9 @@
  
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { Menu, X, ChevronDown, Heart, Search, History as HistoryIcon } from "lucide-react";
+import { Menu, X, ChevronDown, Heart, Search, History as HistoryIcon, Settings } from "lucide-react";
 import { usePathname } from "next/navigation";
+import { useAuth } from "@/contexts/AuthContext";
  
 const GENRES = [
   { name: "Hành Động", slug: "hanh-dong" },
@@ -15,6 +16,7 @@ const GENRES = [
   { name: "Hoạt Hình", slug: "hoat-hinh" },
   { name: "Cổ Trang", slug: "co-trang" },
   { name: "Phim 18+", slug: "phim-18" },
+  { name: "TopXX 🎬", href: "/xx" },
 ];
  
 const COUNTRIES = [
@@ -37,6 +39,7 @@ export function MobileMenu() {
   const [isOpen, setIsOpen] = useState(false);
   const [openSection, setOpenSection] = useState<string | null>(null);
   const pathname = usePathname();
+  const { user } = useAuth();
  
   // Close menu on navigation
   useEffect(() => {
@@ -119,8 +122,8 @@ export function MobileMenu() {
                 <div className="grid grid-cols-2 gap-2 p-2 mt-1 animate-in fade-in slide-in-from-top-2 duration-200">
                   {GENRES.map(g => (
                     <Link 
-                      key={g.slug} 
-                      href={`/the-loai/${g.slug}`}
+                      key={g.slug || g.href} 
+                      href={g.href || `/the-loai/${g.slug}`}
                       onClick={(e) => {
                         if (g.slug === "phim-18") {
                           const now = new Date();
@@ -190,6 +193,15 @@ export function MobileMenu() {
               <HistoryIcon className="h-5 w-5" />
               <span className="font-bold text-[14px]">Lịch sử xem phim</span>
             </Link>
+            {user && (
+              <Link 
+                href="/settings"
+                className="flex items-center gap-3 p-4 rounded-xl bg-white/5 border border-white/[0.06] text-white/80"
+              >
+                <Settings className="h-5 w-5" />
+                <span className="font-bold text-[14px]">Cài đặt đồng bộ Trakt.tv</span>
+              </Link>
+            )}
             <p className="text-[12px] text-white/20 text-center mt-8">
               &copy; 2026 Hồ Phim. All rights reserved.
             </p>
