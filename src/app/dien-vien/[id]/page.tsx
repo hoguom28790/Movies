@@ -1,8 +1,9 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { ChevronLeft, Star, Film, CalendarDays } from "lucide-react";
+import { Film, CalendarDays } from "lucide-react";
 import { getTMDBActorDetails, getTMDBImageUrl } from "@/services/tmdb";
 import { FavoriteActorBtn } from "@/components/movie/FavoriteActorBtn";
+import { BackButton } from "@/components/ui/BackButton";
 
 export default async function ActorPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -30,13 +31,7 @@ export default async function ActorPage({ params }: { params: Promise<{ id: stri
       </div>
 
       <div className="container mx-auto px-4 lg:px-8 relative z-10 -mt-40">
-        <Link 
-          href="javascript:history.back()" 
-          className="inline-flex items-center gap-2 text-sm font-bold text-white/40 hover:text-primary transition-colors mb-8 group"
-        >
-          <ChevronLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
-          Quay lại
-        </Link>
+        <BackButton />
 
         <div className="flex flex-col md:flex-row gap-10 items-start">
           {/* Avatar & Bio */}
