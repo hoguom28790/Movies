@@ -44,12 +44,12 @@ export default async function Home() {
           </Link>
         </div>
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-6">
-          {latest.items.slice(0, 12).map((movie: any) => (
+          {latest.items.slice(0, 12).map((movie) => (
             <MovieCard 
               key={movie.slug} 
-              title={movie.name} 
+              title={movie.title} 
               slug={movie.slug} 
-              posterUrl={movie.poster_url} 
+              posterUrl={movie.posterUrl} 
               year={movie.year}
               quality={movie.quality}
             />
@@ -63,11 +63,15 @@ export default async function Home() {
             <MovieRow 
               title="Thịnh Hành TMDB" 
               movies={trending.slice(0, 20).map((m: any) => ({
-                name: m.title || m.name,
+                id: m.id.toString(),
+                title: m.title || m.name,
+                originalTitle: m.original_title || m.original_name || "",
                 slug: `search?q=${encodeURIComponent(m.title || m.name)}`,
-                poster_url: getTMDBImageUrl(m.poster_path) || "",
+                posterUrl: getTMDBImageUrl(m.poster_path) || "",
+                thumbUrl: getTMDBImageUrl(m.backdrop_path) || "",
                 year: m.release_date?.split("-")[0] || "2024",
-                quality: "4K UHD"
+                quality: "4K UHD",
+                source: 'ophim'
               }))} 
               viewAllHref="/top-trending"
             />
