@@ -65,7 +65,12 @@ export default async function MovieDetailsPage({ params }: { params: Promise<{ s
   
   // Fetch real IMDb rating from imdbapi.dev
   const { getIMDbRating } = await import("@/services/imdb");
-  const realImdbRating = imdbId ? await getIMDbRating(imdbId) : null;
+  const { getRTRating } = await import("@/services/rottenTomatoes");
+  
+  const [realImdbRating, rtData] = await Promise.all([
+    imdbId ? getIMDbRating(imdbId) : Promise.resolve(null),
+    imdbId ? getRTRating(imdbId) : Promise.resolve(null)
+  ]);
   
   // Use TMDB Poster with fallback
   const tmdbPoster = tmdbData?.poster_path ? getTMDBImageUrl(tmdbData.poster_path) : null;
@@ -139,6 +144,8 @@ export default async function MovieDetailsPage({ params }: { params: Promise<{ s
                 tmdbRating={tmdbData?.vote_average} 
                 imdbId={tmdbData?.external_ids?.imdb_id} 
                 imdbRating={realImdbRating}
+                rottenRating={rtData?.criticScore}
+                audienceScore={rtData?.audienceScore}
               />
               <div className="flex items-center gap-2 ml-2">
                 <span className="bg-primary text-white text-xs font-black px-3 py-1.5 rounded-full uppercase tracking-wider">
