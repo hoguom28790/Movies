@@ -6,14 +6,7 @@ import Link from "next/link";
 import { Play, Info, ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 
-interface Movie {
-  slug: string;
-  title: string;
-  originalTitle?: string;
-  posterUrl: string;
-  quality?: string;
-  year?: string;
-}
+import type { Movie } from "@/types/movie";
 
 interface HeroSliderProps {
   movies: Movie[];
@@ -50,7 +43,7 @@ export function HeroSlider({ movies }: HeroSliderProps) {
           }`}
         >
           <Image
-            src={movie.posterUrl}
+            src={movie.thumbUrl || movie.posterUrl}
             alt={movie.title}
             fill
             priority={idx === 0}
@@ -62,53 +55,58 @@ export function HeroSlider({ movies }: HeroSliderProps) {
       <div className="absolute inset-0 z-0 bg-gradient-to-r from-black via-black/40 to-transparent pointer-events-none" />
 
       {/* Content Container */}
-      <div className="container relative z-10 mx-auto px-4 lg:px-8 flex flex-col items-start gap-8 pt-44 transition-all duration-700">
+      <div className="container relative z-10 mx-auto px-4 lg:px-12 flex flex-col justify-end pb-24 h-full transition-all duration-700">
         <div 
           key={currentIndex} 
-          className="flex flex-col items-start gap-6 animate-in slide-in-from-bottom-12 fade-in duration-1000"
+          className="flex flex-col items-start gap-5 animate-in slide-in-from-bottom-12 fade-in duration-1000 max-w-4xl"
         >
-          <h1 className="text-6xl md:text-8xl font-black text-white max-w-4xl leading-[1] tracking-tighter drop-shadow-2xl">
+          <h1 className="text-5xl md:text-7xl font-black text-white leading-[1.1] tracking-tight drop-shadow-2xl">
             {currentMovie.title}
           </h1>
 
           {currentMovie.originalTitle && currentMovie.originalTitle !== currentMovie.title && (
-            <h2 className="text-xl lg:text-2xl text-white/40 font-bold drop-shadow-md max-w-2xl mt-[-20px] italic">
+            <h2 className="text-lg lg:text-xl text-white/50 font-bold drop-shadow-md mt-[-15px]">
               {currentMovie.originalTitle}
             </h2>
           )}
 
-          <div className="flex flex-wrap items-center gap-2.5">
-            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-black/60 backdrop-blur-md border border-white/5 text-[11px] font-bold tracking-tight">
-               <span className="text-[#00a3ff]">IMDb</span>
-               <span className="text-white">8.9</span>
+          <div className="flex flex-wrap items-center gap-2">
+            <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#00a3ff] text-[12px] font-black text-white shadow-lg shadow-[#00a3ff]/20">
+               <span>IMDb</span>
+               <span>{currentMovie.imdbRating || "0.0"}</span>
             </div>
             {currentMovie.year && (
-              <span className="px-3 py-1.5 rounded-lg bg-black/60 backdrop-blur-md border border-white/5 text-[11px] font-bold text-white tracking-tight">
+              <span className="px-3 py-1 rounded-full bg-white/10 backdrop-blur-md border border-white/10 text-[12px] font-bold text-white">
                 {currentMovie.year}
               </span>
             )}
-            <span className="px-3 py-1.5 rounded-lg bg-black/60 backdrop-blur-md border border-white/5 text-[11px] font-bold text-white tracking-tight">
-              Hoàn Tất (37/37)
+            <span className="px-3 py-1 rounded-full bg-white/10 backdrop-blur-md border border-white/10 text-[12px] font-bold text-white">
+              {currentMovie.status || "HD"}
             </span>
+            {currentMovie.quality && (
+               <span className="px-3 py-1 rounded-full bg-white/10 backdrop-blur-md border border-white/10 text-[12px] font-bold text-white">
+                 {currentMovie.quality}
+               </span>
+            )}
           </div>
 
           <div className="flex flex-wrap items-center gap-2 mt-[-5px]">
-            {["Chính Kịch", "Cổ Trang", "Tâm Lý"].map((genre) => (
-               <span key={genre} className="px-3 py-1.5 rounded-lg bg-white/5 border border-white/5 text-[11px] font-medium text-white/50">
+            {currentMovie.genres?.slice(0, 3).map((genre) => (
+               <span key={genre} className="px-3 py-1 rounded-full bg-white/5 border border-white/5 text-[11px] font-bold text-white/60">
                  {genre}
                </span>
             ))}
           </div>
 
-          <p className="text-white/40 text-sm font-medium max-w-lg line-clamp-2 leading-relaxed opacity-80">
-            Vương Thủy Hoa xuyên không vào thế giới tiểu thuyết, nơi cô phải đối mặt với những âm mưu hoàng tộc thâm hiểm và tìm lại chính mình...
+          <p className="text-white/60 text-base font-medium max-w-2xl line-clamp-3 leading-relaxed drop-shadow-sm">
+            {currentMovie.overview || "Đang cập nhật nội dung cho bộ phim này..."}
           </p>
 
           <div className="flex flex-wrap gap-4 mt-2">
             <Link href={`/movie/${currentMovie.slug}`}>
               <Button
                 size="lg"
-                className="h-12 px-10 text-base font-bold rounded-full gap-2 bg-[#00a3ff] hover:bg-[#0095e6] text-white transition-all shadow-lg shadow-[#00a3ff]/20 hover:scale-105 active:scale-95 group/btn"
+                className="h-12 px-10 text-[15px] font-black rounded-full gap-2 bg-[#00a3ff] hover:bg-[#0095e6] text-white transition-all shadow-xl shadow-[#00a3ff]/30 hover:scale-105 active:scale-95 group/btn"
               >
                 <Play className="w-5 h-5 fill-current" />
                 Xem Ngay

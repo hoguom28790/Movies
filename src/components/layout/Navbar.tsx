@@ -8,6 +8,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useTheme } from "@/contexts/ThemeContext";
 import { AuthModal } from "@/components/auth/AuthModal";
 import { InstantSearch } from "./InstantSearch";
+import { NavMenu } from "./NavMenu";
 
 const navLinks = [
   { href: "/", label: "Trang chủ" },
@@ -38,8 +39,11 @@ export function Navbar() {
             </span>
           </Link>
 
-          {/* Search Bar - Center (Phimleak style) */}
-          <InstantSearch />
+          {/* Center Area: Search + Nav */}
+          <div className="flex-1 flex items-center justify-center gap-6 max-w-4xl mx-auto px-12">
+            <InstantSearch />
+            <NavMenu />
+          </div>
 
           {/* Right Actions */}
           <div className="flex items-center gap-3">

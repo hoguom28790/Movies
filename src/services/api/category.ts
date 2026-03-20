@@ -35,8 +35,8 @@ function normalizeKk(items: any[]): Movie[] {
   }));
 }
 
-/** Fetch movies for a list-type endpoint: phim-le, phim-bo, hoat-hinh, etc. */
-export async function getCategoryMovies(type: "phim-le" | "phim-bo" | "hoat-hinh", page = 1): Promise<MovieListResponse> {
+/** Fetch movies for a list-type endpoint: phim-le, phim-bo, hoat-hinh, tv-shows, etc. */
+export async function getCategoryMovies(type: "phim-le" | "phim-bo" | "hoat-hinh" | "tv-shows", page = 1): Promise<MovieListResponse> {
   // Priority 1: OPhim
   try {
     const res = await fetch(`${OPHIM}/danh-sach/${type}?page=${page}`, { 
@@ -93,6 +93,64 @@ export async function getGenreMovies(genre: string, page = 1): Promise<MovieList
   } catch { /* fall through */ }
 
   const res2 = await fetch(`${KKPHIM}/the-loai/${genre}?page=${page}`, { 
+    next: { revalidate: 3600 },
+    signal: AbortSignal.timeout(5000)
+  });
+  const data2 = await res2.json();
+  const pg2 = data2.data?.params?.pagination;
+  return {
+    items: normalizeKk(data2.data?.items || []),
+    pagination: { currentPage: pg2?.currentPage || page, totalPages: Math.ceil((pg2?.totalItems || 1000) / (pg2?.totalItemsPerPage || 10)), totalItems: pg2?.totalItems || 1000 },
+  };
+}
+
+/** Fetch movies by country slug */
+export async function getCountryMovies(country: string, page = 1): Promise<MovieListResponse> {
+  try {
+    const res = await fetch(`${OPHIM}/quoc-gia/${country}?page=${page}`, { 
+      next: { revalidate: 3600 },
+      signal: AbortSignal.timeout(5000)
+    });
+    const data = await res.json();
+    if (data.status === "success" && data.data?.items?.length) {
+      const pg = data.data.params?.pagination;
+      return {
+        items: normalizeOphim(data.data.items, data.data.APP_DOMAIN_CDN_IMAGE || "https://img.ophim.live/uploads/movies/"),
+        pagination: { currentPage: pg?.currentPage || page, totalPages: Math.ceil((pg?.totalItems || 1000) / (pg?.totalItemsPerPage || 24)), totalItems: pg?.totalItems || 1000 },
+      };
+    }
+  } catch { /* fall through */ }
+
+  const res2 = await fetch(`${KKPHIM}/quoc-gia/${country}?page=${page}`, { 
+    next: { revalidate: 3600 },
+    signal: AbortSignal.timeout(5000)
+  });
+  const data2 = await res2.json();
+  const pg2 = data2.data?.params?.pagination;
+  return {
+    items: normalizeKk(data2.data?.items || []),
+    pagination: { currentPage: pg2?.currentPage || page, totalPages: Math.ceil((pg2?.totalItems || 1000) / (pg2?.totalItemsPerPage || 10)), totalItems: pg2?.totalItems || 1000 },
+  };
+}
+
+/** Fetch movies by year */
+export async function getYearMovies(year: string, page = 1): Promise<MovieListResponse> {
+  try {
+    const res = await fetch(`${OPHIM}/nam-phat-hanh/${year}?page=${page}`, { 
+      next: { revalidate: 3600 },
+      signal: AbortSignal.timeout(5000)
+    });
+    const data = await res.json();
+    if (data.status === "success" && data.data?.items?.length) {
+      const pg = data.data.params?.pagination;
+      return {
+        items: normalizeOphim(data.data.items, data.data.APP_DOMAIN_CDN_IMAGE || "https://img.ophim.live/uploads/movies/"),
+        pagination: { currentPage: pg?.currentPage || page, totalPages: Math.ceil((pg?.totalItems || 1000) / (pg?.totalItemsPerPage || 24)), totalItems: pg?.totalItems || 1000 },
+      };
+    }
+  } catch { /* fall through */ }
+
+  const res2 = await fetch(`${KKPHIM}/nam-phat-hanh/${year}?page=${page}`, { 
     next: { revalidate: 3600 },
     signal: AbortSignal.timeout(5000)
   });

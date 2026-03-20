@@ -16,10 +16,10 @@ import {
 
 const menuItems = [
   { icon: Home, label: "Trang chủ", href: "/" },
-  { icon: Film, label: "Phim Lẻ", href: "/phim-le" },
-  { icon: Tv, label: "Phim Bộ", href: "/phim-bo" },
-  { icon: LayoutGrid, label: "Thể Loại", href: "/the-loai" },
-  { icon: Heart, label: "Yêu Thích", href: "/watchlist" },
+  { icon: Film, label: "Phim Hàn", href: "/quoc-gia/han-quoc" },
+  { icon: Film, label: "Phim Trung", href: "/quoc-gia/trung-quoc" },
+  { icon: LayoutGrid, label: "Duyệt Tìm", href: "/the-loai" },
+  { icon: TrendingUp, label: "Chủ đề", href: "/top-trending" },
   { icon: History, label: "Lịch Sử", href: "/history" },
 ];
 
@@ -44,18 +44,18 @@ export function Sidebar() {
               >
                 <div className={`flex h-11 w-11 items-center justify-center rounded-xl transition-all duration-300 ${
                   Active
-                    ? "bg-[#00a3ff]/10 text-[#00a3ff] scale-105 shadow-sm shadow-[#00a3ff]/10"
-                    : "text-white/30 group-hover:bg-white/5 group-hover:text-white/60"
+                    ? "bg-primary text-white scale-105 shadow-lg shadow-primary/20"
+                    : "text-white/40 group-hover:bg-white/5 group-hover:text-white/80"
                 }`}>
-                  <item.icon className="h-5 w-5" strokeWidth={Active ? 2 : 1.5} />
+                  <item.icon className={`h-5 w-5 ${Active ? "fill-white" : ""}`} strokeWidth={Active ? 2.5 : 2} />
                 </div>
-                <span className={`text-[9px] font-black uppercase tracking-widest transition-opacity duration-300 ${
-                  Active ? "text-[#00a3ff] opacity-100" : "text-white/20 opacity-0 group-hover:opacity-100"
+                <span className={`text-[10px] font-bold transition-all duration-300 ${
+                  Active ? "text-primary opacity-100" : "text-white/40 opacity-100 group-hover:text-white/80"
                 }`}>
                   {item.label}
                 </span>
                 {Active && (
-                  <div className="absolute -left-3 top-1/2 h-6 w-1 -translate-y-1/2 rounded-r-full bg-[#00a3ff] shadow-[0_0_8px_rgba(0,163,255,0.6)]" />
+                  <div className="absolute -left-2 top-1/2 h-8 w-1 -translate-y-1/2 rounded-r-full bg-primary shadow-[0_0_12px_rgba(0,163,255,0.8)]" />
                 )}
               </Link>
             );

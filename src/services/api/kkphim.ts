@@ -15,8 +15,8 @@ export async function getKKPhimMovies(page: number = 1): Promise<MovieListRespon
     title: item.name,
     originalTitle: item.origin_name,
     slug: item.slug,
-    posterUrl: item.poster_url,
-    thumbUrl: item.thumb_url,
+    posterUrl: item.poster_url?.startsWith('http') ? item.poster_url : `https://phimimg.com/${item.poster_url}`,
+    thumbUrl: item.thumb_url?.startsWith('http') ? item.thumb_url : `https://phimimg.com/${item.thumb_url}`,
     year: item.year?.toString() || "",
     status: item.status || item.episode_current || "",
     source: 'kkphim'

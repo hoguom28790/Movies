@@ -85,13 +85,15 @@ export default async function WatchPage({
 
           {/* Server switcher */}
           <div className="flex items-center gap-2">
-            <span className="text-xs font-bold text-white/30 uppercase tracking-wider hidden sm:block">Server:</span>
+            <span className="text-[10px] font-black text-white/30 uppercase tracking-[0.2em] hidden sm:block">Server:</span>
             {rawEmbedUrl && (
               <Link href={`/watch/${source}/${slug}/${episode}?s=embed`} scroll={false} replace>
                 <Button
                   variant={!isHls ? "primary" : "secondary"}
                   size="sm"
-                  className="h-7 text-xs px-3"
+                  className={`h-8 text-[11px] px-4 rounded-full font-black uppercase tracking-wider transition-all ${
+                    !isHls ? "shadow-lg shadow-primary/30" : "bg-white/5 border-white/5"
+                  }`}
                 >
                   VIP 1
                 </Button>
@@ -102,7 +104,9 @@ export default async function WatchPage({
                 <Button
                   variant={isHls ? "primary" : "secondary"}
                   size="sm"
-                  className="h-7 text-xs px-3"
+                  className={`h-8 text-[11px] px-4 rounded-full font-black uppercase tracking-wider transition-all ${
+                    isHls ? "shadow-lg shadow-primary/30" : "bg-white/5 border-white/5"
+                  }`}
                 >
                   VIP 2
                 </Button>
@@ -181,7 +185,7 @@ export default async function WatchPage({
               <span className="w-1 h-4 bg-primary rounded-full" />
               {allServers.length > 1 ? server.name : "Chọn Tập"}
             </h3>
-            <div className="flex gap-2 flex-wrap max-h-72 overflow-y-auto p-3 bg-white/3 rounded-xl border border-white/5">
+            <div className="flex gap-2 flex-wrap max-h-72 overflow-y-auto p-4 bg-white/3 rounded-2xl border border-white/5 shadow-inner">
               {server.items.map((ep: any, idx: number) => {
                 const epId = ep.slug || ep.name;
                 const isCurrent = sIdx === 0 && (ep.slug === episode || ep.name === episode);
@@ -189,7 +193,9 @@ export default async function WatchPage({
                   <Link key={idx} href={`/watch/${source}/${slug}/${epId}`}>
                     <Button
                       variant={isCurrent ? "primary" : "secondary"}
-                      className={`min-w-[3.5rem] h-9 text-sm font-semibold ${isCurrent ? "shadow-[0_0_12px_rgba(229,9,20,0.4)]" : ""}`}
+                      className={`min-w-[4rem] px-5 h-10 text-[13px] font-black rounded-full transition-all uppercase tracking-wider ${
+                        isCurrent ? "shadow-lg shadow-primary/30" : "bg-white/5 border-white/5 hover:bg-white/10"
+                      }`}
                     >
                       {ep.name}
                     </Button>

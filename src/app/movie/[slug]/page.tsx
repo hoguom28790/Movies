@@ -214,16 +214,16 @@ export default async function MovieDetailsPage({ params }: { params: Promise<{ s
             )}
 
             {/* Actions */}
-            <div className="flex flex-wrap justify-center md:justify-start gap-4 mt-4">
+            <div className="flex flex-wrap justify-center md:justify-start gap-4 mt-6">
               {firstEp ? (
                 <Link href={`/watch/${source}/${slug}/${firstEp.slug || firstEp.name}`}>
-                  <Button size="lg" className="rounded-2xl px-10 h-14 gap-2 font-black text-lg transition-transform hover:scale-105 shadow-xl shadow-primary/20">
+                  <Button size="lg" className="rounded-full px-12 h-14 gap-2 font-black text-lg bg-primary hover:bg-primary-hover shadow-xl shadow-primary/30 transition-all hover:scale-105 active:scale-95">
                     <Play className="w-6 h-6 fill-current" />
                     Xem Ngay
                   </Button>
                 </Link>
               ) : (
-                <Button size="lg" disabled className="rounded-2xl px-10 h-14 opacity-50">
+                <Button size="lg" disabled className="rounded-full px-12 h-14 bg-white/5 text-white/20 border border-white/10">
                   Phim Sắp Chiếu
                 </Button>
               )}
@@ -249,16 +249,16 @@ export default async function MovieDetailsPage({ params }: { params: Promise<{ s
             {allServers.map((server, sIdx) => (
               <div key={sIdx} className="mb-8">
                 {allServers.length > 1 && (
-                  <p className="text-xs font-black text-white/30 mb-4 uppercase tracking-[0.2em]">
+                  <p className="text-[11px] font-black text-white/30 mb-4 uppercase tracking-[0.2em]">
                     Hệ thống: {server.name}
                   </p>
                 )}
-                <div className="grid grid-cols-3 sm:grid-cols-5 md:grid-cols-8 lg:grid-cols-12 gap-3">
+                <div className="flex flex-wrap gap-2.5">
                   {server.items.map((ep: any, idx: number) => (
                     <Link key={idx} href={`/watch/${source}/${slug}/${ep.slug || ep.name}`}>
                       <Button 
                         variant="secondary" 
-                        className="w-full h-11 rounded-xl text-sm font-bold bg-white/5 border border-white/5 hover:bg-primary/20 hover:border-primary/40 transition-all"
+                        className="px-6 h-10 rounded-full text-[13px] font-black bg-white/5 border border-white/5 hover:bg-primary hover:text-white hover:border-primary transition-all uppercase tracking-wider"
                       >
                         {ep.name}
                       </Button>

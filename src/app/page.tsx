@@ -24,22 +24,26 @@ export default async function Home() {
   const hoatHinh = hoatHinhData.status === "fulfilled" ? hoatHinhData.value : { items: [] };
   const trending = trendingData.status === "fulfilled" ? trendingData.value?.results || [] : [];
 
+  // Enrich Hero Slider movies with real metadata
+  const { enrichMovies } = await import("@/services/movieEnricher");
+  const heroMovies = await enrichMovies(latest.items.slice(0, 5));
+
   return (
     <div className="flex flex-col gap-12 pb-20 bg-black min-h-screen">
       {/* ── Hero Section ── */}
-      <HeroSlider movies={latest.items.slice(0, 5)} />
+      <HeroSlider movies={heroMovies} />
 
       {/* ── Category Shortcuts ── */}
       <CategoryShortcuts />
 
       {/* ── Phim Mới Cập Nhật (Featured Grid) ── */}
-      <section className="container mx-auto px-4 lg:px-8 relative z-10">
+      <section className="container mx-auto px-4 lg:px-12 relative z-10">
         <div className="flex items-center justify-between mb-8">
-          <h3 className="text-2xl font-black text-white flex items-center gap-2">
-            <span className="w-1 h-7 bg-primary rounded-full inline-block" />
+          <h3 className="text-xl md:text-2xl font-black text-white flex items-center gap-3 uppercase tracking-tight">
+            <span className="w-1.5 h-8 bg-primary rounded-full inline-block shadow-[0_0_15px_rgba(0,163,255,0.4)]" />
             Phim Mới Cập Nhật
           </h3>
-          <Link href="/phim-moi" className="text-sm font-bold text-white/40 hover:text-primary transition-colors flex items-center gap-1 group">
+          <Link href="/phim-moi" className="text-[13px] font-black text-white/40 hover:text-primary transition-all uppercase tracking-[0.2em] flex items-center gap-1 group">
              Xem tất cả <ChevronRight className="h-4 w-4 group-hover:translate-x-1 transition-all" />
           </Link>
         </div>
@@ -59,7 +63,7 @@ export default async function Home() {
 
       {/* ── Trending TMDB ── */}
       {trending.length > 0 && (
-         <section className="container mx-auto px-4 lg:px-8">
+         <section className="container mx-auto px-0">
             <MovieRow 
               title="Thịnh Hành TMDB" 
               movies={trending.slice(0, 20).map((m: any) => ({
@@ -80,7 +84,7 @@ export default async function Home() {
 
       {/* ── Phim Bộ ── */}
       {phimBo.items.length > 0 && (
-        <section className="container mx-auto px-4 lg:px-8">
+        <section className="container mx-auto px-0">
           <MovieRow
             title="Phim Bộ Đang Chiếu"
             movies={phimBo.items.slice(0, 20)}
@@ -91,7 +95,7 @@ export default async function Home() {
 
       {/* ── Phim Lẻ ── */}
       {phimLe.items.length > 0 && (
-        <section className="container mx-auto px-4 lg:px-8">
+        <section className="container mx-auto px-0">
           <MovieRow
             title="Phim Lẻ Hay Nhất"
             movies={phimLe.items.slice(0, 20)}
@@ -102,7 +106,7 @@ export default async function Home() {
 
       {/* ── Hoạt Hình ── */}
       {hoatHinh.items.length > 0 && (
-        <section className="container mx-auto px-4 lg:px-8">
+        <section className="container mx-auto px-0">
           <MovieRow
             title="Hoạt Hình Mới"
             movies={hoatHinh.items.slice(0, 20)}

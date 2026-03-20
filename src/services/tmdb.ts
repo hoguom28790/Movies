@@ -1,4 +1,4 @@
-const TMDB_API_KEY = "3fd2be6f0c70a2a598f084dd5754b98"; // Example key, should be replaced by user
+const TMDB_API_KEY = "3fd2be6f0c70a2a598f084dd5754b980"; // Added missing 0 at the end
 const BASE_URL = "https://api.themoviedb.org/3";
 const IMAGE_BASE_URL = "https://image.tmdb.org/t/p/w500";
 

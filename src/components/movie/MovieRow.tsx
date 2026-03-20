@@ -21,36 +21,36 @@ export function MovieRow({ title, movies, viewAllHref }: MovieRowProps) {
   };
 
   return (
-    <section className="relative">
+    <section className="relative px-4 lg:px-12">
       {/* Header */}
-      <div className="flex items-center justify-between mb-5 px-1">
-        <h3 className="text-xl font-black text-white flex items-center gap-2">
-          <span className="w-1 h-6 bg-primary rounded-full inline-block" />
+      <div className="flex items-center justify-between mb-8">
+        <h3 className="text-xl md:text-2xl font-black text-white flex items-center gap-3 uppercase tracking-tight">
+          <span className="w-1.5 h-8 bg-primary rounded-full inline-block shadow-[0_0_15px_rgba(0,163,255,0.4)]" />
           {title}
         </h3>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-4">
           {viewAllHref && (
             <Link
               href={viewAllHref}
-              className="text-sm font-semibold text-white/50 hover:text-primary transition-colors"
+              className="text-[13px] font-black text-white/40 hover:text-primary transition-all uppercase tracking-[0.2em]"
             >
-              Xem tất cả →
+              Xem tất cả
             </Link>
           )}
-          <div className="hidden sm:flex items-center gap-1">
+          <div className="hidden sm:flex items-center gap-2">
             <button
               onClick={() => scroll("left")}
-              className="p-1.5 rounded-lg bg-white/5 hover:bg-white/15 border border-white/10 text-white/70 hover:text-white transition-all"
+              className="p-2.5 rounded-full bg-white/5 hover:bg-primary border border-white/5 text-white/40 hover:text-white transition-all shadow-lg active:scale-95"
               aria-label="Cuộn trái"
             >
-              <ChevronLeft className="w-4 h-4" />
+              <ChevronLeft className="w-5 h-5" />
             </button>
             <button
               onClick={() => scroll("right")}
-              className="p-1.5 rounded-lg bg-white/5 hover:bg-white/15 border border-white/10 text-white/70 hover:text-white transition-all"
+              className="p-2.5 rounded-full bg-white/5 hover:bg-primary border border-white/5 text-white/40 hover:text-white transition-all shadow-lg active:scale-95"
               aria-label="Cuộn phải"
             >
-              <ChevronRight className="w-4 h-4" />
+              <ChevronRight className="w-5 h-5" />
             </button>
           </div>
         </div>

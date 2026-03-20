@@ -8,6 +8,9 @@ export interface Movie {
   year?: string;
   quality?: string;
   status?: string;
+  overview?: string;
+  genres?: string[];
+  imdbRating?: number;
   source: 'nguonc' | 'kkphim' | 'ophim';
 }
 

@@ -1,11 +1,11 @@
 import { NextResponse } from "next/server";
-import { getCategoryMovies, getGenreMovies, getLatestMovies } from "@/services/api";
+import { getCategoryMovies, getGenreMovies, getLatestMovies, getCountryMovies, getYearMovies, searchMovies } from "@/services/api";
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
-  const type = searchParams.get("type"); // 'category', 'latest', 'genre'
-  const category = searchParams.get("category"); // 'phim-le', 'phim-bo', 'hoat-hinh'
-  const slug = searchParams.get("slug"); // e.g. 'hanh-dong'
+  const type = searchParams.get("type"); 
+  const category = searchParams.get("category"); 
+  const slug = searchParams.get("slug"); 
   const page = parseInt(searchParams.get("page") || "1", 10);
 
   try {
@@ -17,10 +17,13 @@ export async function GET(request: Request) {
       result = await getLatestMovies(page);
     } else if (type === "genre" && slug) {
       result = await getGenreMovies(slug, page);
+    } else if (type === "country" && slug) {
+      result = await getCountryMovies(slug, page);
+    } else if (type === "year" && slug) {
+      result = await getYearMovies(slug, page);
     } else if (type === "search") {
       const keyword = searchParams.get("keyword");
       if (!keyword) return NextResponse.json({ error: "Missing keyword" }, { status: 400 });
-      const { searchMovies } = await import("@/services/api");
       result = await searchMovies(keyword, page);
     } else {
       return NextResponse.json({ error: "Invalid type or missing parameters" }, { status: 400 });

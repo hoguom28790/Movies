@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Inter, Outfit } from "next/font/google";
 import "./globals.css";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
@@ -9,9 +9,16 @@ import { ThemeProvider } from "@/contexts/ThemeContext";
 
 const inter = Inter({
   variable: "--font-inter",
-  subsets: ["latin", "vietnamese"],
+  subsets: ["latin"],
   display: "swap",
 });
+
+const outfit = Outfit({
+  variable: "--font-outfit",
+  subsets: ["latin"],
+  display: "swap",
+});
+
 
 export const metadata: Metadata = {
   title: "Hồ Phim - Xem Phim Miễn Phí",
@@ -24,7 +31,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="vi" className={inter.variable}>
+    <html lang="vi" className={`${inter.variable} ${outfit.variable}`}>
       <body className="bg-black text-white selection:bg-primary/30 antialiased font-sans">
         <ThemeProvider>
           <AuthProvider>
