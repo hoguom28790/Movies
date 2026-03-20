@@ -3,6 +3,7 @@
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { ChevronDown } from "lucide-react";
+import { XXSearch } from "./XXSearch";
 
 // Official codes from TopXX API
 const GENRES = [
@@ -88,6 +89,8 @@ export function XXNav() {
           {link.label}
         </Link>
       ))}
+
+      <XXSearch />
 
       {dropdowns.map((dd) => (
         <div key={dd.id} className="relative">

@@ -2,24 +2,30 @@ import { Movie, MovieListResponse } from "@/types/movie";
 
 const BASE_URL = "https://topxx.vip/api/v1";
 
-export async function getTopXXMovies(page: number = 1, type: "danh-sach" | "the-loai" | "quoc-gia" = "danh-sach", slug: string = "phim-moi-cap-nhat"): Promise<MovieListResponse> {
+const DEFAULT_HEADERS = {
+  'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+  'Referer': 'https://topxx.vip/'
+};
+
+export async function getTopXXMovies(
+  page: number = 1, 
+  type: "danh-sach" | "the-loai" | "quoc-gia" | "dien-vien" = "danh-sach", 
+  slug: string = "phim-moi-cap-nhat"
+): Promise<MovieListResponse> {
   let url = `${BASE_URL}/movies/latest?page=${page}`;
   
   if (type === "the-loai") {
-    // API docs say: /movies?genre={code}
-    url = `${BASE_URL}/movies?genre=${slug}&page=${page}`;
+    url = `${BASE_URL}/genres/${slug}/movies?page=${page}`;
   } else if (type === "quoc-gia") {
-    // API docs say: /countries/{code}/movies
     url = `${BASE_URL}/countries/${slug}/movies?page=${page}`;
+  } else if (type === "dien-vien") {
+    url = `${BASE_URL}/actors/${slug}/movies?page=${page}`;
   }
 
   try {
     const res = await fetch(url, { 
       next: { revalidate: 3600 },
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-        'Referer': 'https://topxx.vip/'
-      },
+      headers: DEFAULT_HEADERS,
       signal: AbortSignal.timeout(10000)
     });
     
@@ -36,7 +42,6 @@ export async function getTopXXMovies(page: number = 1, type: "danh-sach" | "the-
         id: item.code,
         title: viTrans?.title || "No Title",
         originalTitle: enTrans?.title || "",
-        // CRITICAL: use 'code' as slug to ensure detail URL works with /movies/{code}
         slug: item.code, 
         posterUrl: item.thumbnail || "",
         thumbUrl: item.thumbnail || "",
@@ -62,14 +67,52 @@ export async function getTopXXMovies(page: number = 1, type: "danh-sach" | "the-
   }
 }
 
+export async function searchTopXXMovies(keyword: string, page: number = 1): Promise<MovieListResponse> {
+  if (!keyword || keyword.trim().length === 0) {
+     return { items: [], pagination: { currentPage: 1, totalPages: 1, totalItems: 0 } };
+  }
+
+  try {
+    const res = await fetch(`${BASE_URL}/movies/latest?keyword=${encodeURIComponent(keyword)}&page=${page}`, {
+      headers: DEFAULT_HEADERS,
+      signal: AbortSignal.timeout(10000)
+    });
+    if (!res.ok) return { items: [], pagination: { currentPage: 1, totalPages: 1, totalItems: 0 } };
+    const data = await res.json();
+    if (data.status !== "success" || !data.data) return { items: [], pagination: { currentPage: 1, totalPages: 1, totalItems: 0 } };
+
+    const items = data.data.map((item: any) => {
+      const viTrans = item.trans?.find((t: any) => t.locale === "vi") || item.trans?.[0];
+      return {
+        id: item.code,
+        title: viTrans?.title || "No Title",
+        slug: item.code,
+        posterUrl: item.thumbnail || "",
+        thumbUrl: item.thumbnail || "",
+        quality: item.quality || "HD",
+        source: 'topxx'
+      };
+    });
+
+    return {
+      items,
+      pagination: {
+        currentPage: data.meta.current_page,
+        totalPages: data.meta.last_page,
+        totalItems: data.meta.total
+      }
+    };
+  } catch (error) {
+    console.error("TopXX Search Error:", error);
+    return { items: [], pagination: { currentPage: 1, totalPages: 1, totalItems: 0 } };
+  }
+}
+
 export async function getTopXXDetails(code: string) {
   try {
     const res = await fetch(`${BASE_URL}/movies/${code}`, { 
       cache: "no-store",
-      headers: {
-        'User-Agent': 'Mozilla/5.0',
-        'Referer': 'https://topxx.vip/'
-      },
+      headers: DEFAULT_HEADERS,
       signal: AbortSignal.timeout(10000)
     });
     if (!res.ok) return null;

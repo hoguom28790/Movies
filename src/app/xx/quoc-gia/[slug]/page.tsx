@@ -9,16 +9,15 @@ export default async function XXCountryPage({ params }: { params: Promise<{ slug
   
   try {
     const initialData = await getTopXXMovies(1, "quoc-gia", slug);
-    const title = slug.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
 
     return (
       <div className="container mx-auto">
         <XXMovieGrid 
-          initialMovies={initialData.items} 
-          title={`QUỐC GIA: ${title}`} 
+          initialMovies={initialData.items || []} 
+          title={`QUỐC GIA: ${slug.toUpperCase()}`} 
           fetchUrl={`/api/xx?type=quoc-gia&slug=${slug}`}
           initialPage={1}
-          totalPages={initialData.pagination.totalPages}
+          totalPages={initialData.pagination?.totalPages || 1}
         />
       </div>
     );

@@ -7,7 +7,6 @@ export const dynamic = "force-dynamic";
 
 export default async function XXMovieDetailsPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  // In TopXX, the 'slug' we use in URLs is actually the 'code'
   const item = await getTopXXDetails(slug);
 
   if (!item) return notFound();
@@ -15,8 +14,6 @@ export default async function XXMovieDetailsPage({ params }: { params: Promise<{
   const viTrans = item.trans?.find((t: any) => t.locale === "vi") || item.trans?.[0];
   const poster = item.thumbnail;
   const thumb = item.thumbnail;
-
-  // TopXX sources are in the 'sources' array
   const mainSource = item.sources?.[0];
 
   return (
@@ -42,7 +39,7 @@ export default async function XXMovieDetailsPage({ params }: { params: Promise<{
                   <Calendar className="w-3 h-3" />
                   {item.publish_at ? new Date(item.publish_at).getFullYear() : ""}
                 </div>
-                <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/5 border border-white/10 text-white/50 text-xs font-semibold">
+                <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/5 border border-white/10 text-white/50 text-xs font-semibold text-white">
                   {item.duration}
                 </div>
              </div>
@@ -53,7 +50,7 @@ export default async function XXMovieDetailsPage({ params }: { params: Promise<{
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
         {/* Left Column: Player & Sources */}
         <div className="lg:col-span-2 space-y-8">
-          <div className="aspect-video w-full rounded-2xl overflow-hidden bg-black/40 border border-white/5 shadow-inner shadow-black/50">
+          <div className="aspect-video w-full rounded-2xl overflow-hidden bg-black/40 border border-white/5 shadow-inner shadow-black/50 overflow-hidden relative group">
             {mainSource ? (
               <iframe
                 src={mainSource.link}
@@ -64,7 +61,7 @@ export default async function XXMovieDetailsPage({ params }: { params: Promise<{
             ) : (
               <div className="w-full h-full flex flex-col items-center justify-center text-white/20 gap-4">
                  <Play className="w-16 h-16 opacity-10" />
-                 <p className="font-medium">Nội dung đang được chuẩn bị...</p>
+                 <p className="font-medium text-white">Nội dung đang được chuẩn bị...</p>
               </div>
             )}
           </div>
@@ -72,7 +69,7 @@ export default async function XXMovieDetailsPage({ params }: { params: Promise<{
           {item.sources && item.sources.length > 1 && (
             <div className="bg-white/[0.03] rounded-2xl p-6 border border-white/5 backdrop-blur-md">
               <h2 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
-                 <div className="w-1.5 h-6 bg-yellow-500 rounded-full" />
+                 <div className="w-1.5 h-6 bg-yellow-500 rounded-full text-white" />
                  SERVER DỰ PHÒNG
               </h2>
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
@@ -97,41 +94,53 @@ export default async function XXMovieDetailsPage({ params }: { params: Promise<{
              <h3 className="text-lg font-bold text-white mb-6 border-b border-white/5 pb-4 uppercase tracking-wider text-yellow-500">Thông tin chi tiết</h3>
              <ul className="space-y-5">
                <li className="flex flex-col gap-1.5">
-                 <div className="flex items-center gap-2 text-white/30 text-[11px] font-bold uppercase tracking-widest">
+                 <div className="flex items-center gap-2 text-white/30 text-[11px] font-bold uppercase tracking-widest leading-none">
                    <Tag className="w-3.5 h-3.5" />
                    Thể loại
                  </div>
-                 <div className="flex flex-wrap gap-2">
+                 <div className="flex flex-wrap gap-2 text-white">
                    {item.genres?.map((g: any) => (
-                     <span key={g.code} className="text-sm font-bold border-b border-white/10 text-white/80 pb-0.5">
+                     <Link 
+                        key={g.code} 
+                        href={`/xx/the-loai/${g.code}`}
+                        className="text-sm font-bold border-b border-transparent hover:border-yellow-500 hover:text-yellow-500 transition-all text-white/70"
+                     >
                        {g.trans?.find((t: any) => t.locale === "vi")?.name || g.code}
-                     </span>
+                     </Link>
                    ))}
                  </div>
                </li>
                <li className="flex flex-col gap-1.5">
-                 <div className="flex items-center gap-2 text-white/30 text-[11px] font-bold uppercase tracking-widest">
+                 <div className="flex items-center gap-2 text-white/30 text-[11px] font-bold uppercase tracking-widest leading-none">
                    <Globe className="w-3.5 h-3.5" />
                    Quốc gia
                  </div>
-                 <div className="flex flex-wrap gap-2">
+                 <div className="flex flex-wrap gap-2 text-white">
                    {item.countries?.map((c: any) => (
-                     <span key={c.code} className="text-sm font-bold border-b border-white/10 text-white/80 pb-0.5">
+                     <Link 
+                        key={c.code} 
+                        href={`/xx/quoc-gia/${c.code}`}
+                        className="text-sm font-bold border-b border-transparent hover:border-yellow-500 hover:text-yellow-500 transition-all text-white/70"
+                     >
                         {c.trans?.find((t: any) => t.locale === "vi")?.name || c.code}
-                     </span>
+                     </Link>
                    ))}
                  </div>
                </li>
                <li className="flex flex-col gap-1.5">
-                 <div className="flex items-center gap-2 text-white/30 text-[11px] font-bold uppercase tracking-widest">
+                 <div className="flex items-center gap-2 text-white/30 text-[11px] font-bold uppercase tracking-widest leading-none">
                    <Users className="w-3.5 h-3.5" />
                    Diễn viên
                  </div>
-                 <div className="flex flex-wrap gap-2">
+                 <div className="flex flex-wrap gap-2 text-white">
                    {item.actors?.map((a: any, idx: number) => (
-                     <span key={idx} className="text-sm font-bold border-b border-white/10 text-white/80 pb-0.5">
+                     <Link 
+                        key={idx} 
+                        href={`/xx/dien-vien/${a.code}`}
+                        className="text-sm font-bold border-b border-transparent hover:border-yellow-500 hover:text-yellow-500 transition-all text-white/70"
+                     >
                         {a.trans?.find((t: any) => t.locale === "vi")?.name || "Actor"}
-                     </span>
+                     </Link>
                    ))}
                  </div>
                </li>
