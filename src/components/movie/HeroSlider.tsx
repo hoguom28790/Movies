@@ -72,23 +72,27 @@ export function HeroSlider({ movies }: HeroSliderProps) {
 
           <div className="flex flex-wrap items-center gap-3">
             {/* TMDB Rating */}
-            {(currentMovie as any).tmdbRating > 0 && (
+            {(currentMovie.tmdbRating !== undefined && currentMovie.tmdbRating !== null) && (
               <div className="flex items-center gap-1.5 px-2 py-0.5 rounded bg-blue-500/10 border border-blue-500/20">
                 <span className="text-[10px] font-black text-blue-400 uppercase tracking-wider">TMDB</span>
                 <div className="flex items-center gap-1">
                   <Star className="w-2.5 h-2.5 text-blue-400 fill-current" />
-                  <span className="text-[12px] font-bold text-white">{(currentMovie as any).tmdbRating?.toFixed(1)}</span>
+                  <span className="text-[12px] font-bold text-white">
+                    {currentMovie.tmdbRating > 0 ? currentMovie.tmdbRating.toFixed(1) : "0.0"}
+                  </span>
                 </div>
               </div>
             )}
 
             {/* IMDB Rating */}
-            {(currentMovie as any).imdbRating > 0 && (
+            {(currentMovie.imdbRating !== undefined && currentMovie.imdbRating !== null) && (
               <div className="flex items-center gap-1.5 px-2 py-0.5 rounded bg-yellow-500/10 border border-yellow-500/20">
                 <span className="text-[10px] font-black text-yellow-500 uppercase tracking-wider">IMDB</span>
                 <div className="flex items-center gap-1">
                   <Star className="w-2.5 h-2.5 text-yellow-500 fill-current" />
-                  <span className="text-[12px] font-bold text-white">{(currentMovie as any).imdbRating?.toFixed(1)}</span>
+                  <span className="text-[12px] font-bold text-white">
+                    {currentMovie.imdbRating > 0 ? currentMovie.imdbRating.toFixed(1) : "0.0"}
+                  </span>
                 </div>
               </div>
             )}
@@ -101,7 +105,7 @@ export function HeroSlider({ movies }: HeroSliderProps) {
           </div>
 
           <p className="text-white/40 text-sm max-w-xl line-clamp-2 sm:line-clamp-3 leading-relaxed">
-            {currentMovie.overview || "Đang cập nhật nội dung cho bộ phim này..."}
+            {currentMovie.overview ? currentMovie.overview.replace(/<[^>]*>/g, '') : "Đang cập nhật nội dung cho bộ phim này..."}
           </p>
 
           <Link href={`/movie/${currentMovie.slug}`}>

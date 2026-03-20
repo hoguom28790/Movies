@@ -17,7 +17,7 @@ export async function enrichMovies(movies: Movie[]): Promise<Movie[]> {
           const sd = sourceDetail.data;
           currentMovie = {
             ...movie,
-            overview: sd.content || sd.description || movie.overview,
+            overview: (sd.content || sd.description || movie.overview)?.replace(/<[^>]*>/g, ''),
             tmdbId: sd.tmdb?.id || sd.tmdb_id || movie.tmdbId,
             imdbId: sd.imdb?.id || sd.imdb_id || movie.imdbId,
             tmdbRating: sd.tmdb?.vote_average || movie.tmdbRating,
