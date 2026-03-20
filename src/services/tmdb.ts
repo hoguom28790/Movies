@@ -21,21 +21,31 @@ export interface TMDBActor {
 export async function searchTMDBMovie(title: string, year?: number) {
   try {
     const yearParam = year ? `&year=${year}` : "";
-    const response = await fetch(
+    // Try movie first
+    let response = await fetch(
       `${BASE_URL}/search/movie?api_key=${TMDB_API_KEY}&query=${encodeURIComponent(title)}${yearParam}&language=vi-VN`
     );
-    const data = await response.json();
-    return data.results[0] || null;
+    let data = await response.json();
+    if (data.results?.length) return { ...data.results[0], media_type: "movie" };
+
+    // Try TV if movie fails
+    response = await fetch(
+      `${BASE_URL}/search/tv?api_key=${TMDB_API_KEY}&query=${encodeURIComponent(title)}${year ? `&first_air_date_year=${year}` : ""}&language=vi-VN`
+    );
+    data = await response.json();
+    if (data.results?.length) return { ...data.results[0], media_type: "tv" };
+
+    return null;
   } catch (error) {
     console.error("TMDB Search Error:", error);
     return null;
   }
 }
 
-export async function getTMDBMovieDetails(tmdbId: number) {
+export async function getTMDBMovieDetails(tmdbId: number, type: "movie" | "tv" = "movie") {
   try {
     const response = await fetch(
-      `${BASE_URL}/movie/${tmdbId}?api_key=${TMDB_API_KEY}&language=vi-VN&append_to_response=credits,images,external_ids&include_image_language=vi,en,null`
+      `${BASE_URL}/${type}/${tmdbId}?api_key=${TMDB_API_KEY}&language=vi-VN&append_to_response=credits,images,external_ids,recommendations&include_image_language=vi,en,null`
     );
     return await response.json();
   } catch (error) {
@@ -52,6 +62,18 @@ export async function getTMDBActorDetails(actorId: number) {
     return await response.json();
   } catch (error) {
     console.error("TMDB Actor Error:", error);
+    return null;
+  }
+}
+
+export async function getTMDBCollection(collectionId: number) {
+  try {
+    const response = await fetch(
+      `${BASE_URL}/collection/${collectionId}?api_key=${TMDB_API_KEY}&language=vi-VN`
+    );
+    return await response.json();
+  } catch (error) {
+    console.error("TMDB Collection Error:", error);
     return null;
   }
 }

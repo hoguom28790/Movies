@@ -1,0 +1,189 @@
+"use client";
+
+import React, { useState } from "react";
+import Link from "next/link";
+import Image from "next/image";
+import { Play, User, Users, Star, Info } from "lucide-react";
+
+interface MovieTabsProps {
+  slug: string;
+  source: string;
+  servers: { name: string; items: any[] }[];
+  actors: { name: string; profile_path: string | null; character?: string }[];
+  recommendations: any[];
+  collection?: any;
+}
+
+export function MovieTabs({
+  slug,
+  source,
+  servers,
+  actors,
+  recommendations,
+  collection
+}: MovieTabsProps) {
+  const [activeTab, setActiveTab] = useState<"episodes" | "collection" | "actors" | "recommendations">("episodes");
+  const [activeServer, setActiveServer] = useState(0);
+
+  const tabs = [
+    { id: "episodes", label: "TẬP PHIM", show: true },
+    { id: "collection", label: "BỘ SƯU TẬP", show: !!collection },
+    { id: "actors", label: "DIỄN VIÊN", show: actors.length > 0 },
+    { id: "recommendations", label: "ĐỀ XUẤT", show: recommendations.length > 0 },
+  ];
+
+  return (
+    <div className="flex flex-col">
+      {/* Tab headers */}
+      <div className="flex items-center gap-4 sm:gap-6 border-b border-white/[0.06] mb-6 overflow-x-auto no-scrollbar">
+        {tabs.filter(t => t.show).map((tab) => (
+          <button
+            key={tab.id}
+            onClick={() => setActiveTab(tab.id as any)}
+            className={`pb-3 text-[12px] sm:text-[13px] font-semibold whitespace-nowrap transition-all relative ${
+              activeTab === tab.id 
+                ? "text-primary" 
+                : "text-white/30 hover:text-white/60"
+            }`}
+          >
+            {tab.label}
+            {activeTab === tab.id && (
+              <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary rounded-full" />
+            )}
+          </button>
+        ))}
+      </div>
+
+      {/* Tab Content */}
+      <div className="min-h-[300px]">
+        {/* ── EPISODES ── */}
+        {activeTab === "episodes" && (
+          <div className="animate-in fade-in duration-300">
+            {/* Server notice */}
+            <div className="rounded-lg bg-emerald-500/10 border border-emerald-500/20 px-4 py-2.5 mb-5 text-[12px] text-emerald-400/80">
+              ⭐ Phim bị lỗi hoặc chưa thấy tập mới? Đổi server thôi coi chúng cũ chẳng có vấn đề gì 😉
+            </div>
+
+            {/* Server selector */}
+            {servers.length > 1 && (
+              <div className="flex flex-wrap gap-2 mb-6">
+                {servers.map((server, sIdx) => (
+                  <button
+                    key={sIdx}
+                    onClick={() => setActiveServer(sIdx)}
+                    className={`px-4 py-2 rounded-lg text-[12px] font-medium transition-all ${
+                      activeServer === sIdx
+                        ? "bg-primary text-white"
+                        : "bg-white/5 text-white/40 hover:bg-white/10 hover:text-white"
+                    }`}
+                  >
+                    {server.name}
+                  </button>
+                ))}
+              </div>
+            )}
+
+            {/* Episode grid */}
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-7 gap-2">
+              {(servers[activeServer]?.items || []).map((ep: any, idx: number) => (
+                <Link
+                  key={idx}
+                  href={`/watch/${source}/${slug}/${ep.slug || ep.name}`}
+                  className="flex items-center gap-2 px-3 py-2.5 rounded-lg bg-white/[0.03] border border-white/[0.06] text-[12px] text-white/50 hover:bg-primary/10 hover:text-white hover:border-primary/30 transition-all"
+                >
+                  <Play className="w-3 h-3 flex-shrink-0" />
+                  <span className="truncate">{ep.name}</span>
+                </Link>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* ── COLLECTION ── */}
+        {activeTab === "collection" && collection && (
+          <div className="animate-in fade-in duration-300">
+            <div className="mb-4">
+              <h3 className="text-base font-semibold text-white/90">{collection.name}</h3>
+              <p className="text-[13px] text-white/40 mt-1">{collection.parts?.length} phim trong bộ sưu tập này</p>
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+              {collection.parts?.map((part: any) => (
+                <Link key={part.id} href={`/search?q=${encodeURIComponent(part.title)}`} className="group flex flex-col gap-2">
+                  <div className="relative aspect-[2/3] rounded-xl overflow-hidden bg-white/5 group-hover:-translate-y-1 transition-transform">
+                    <img
+                      src={part.poster_path ? `https://image.tmdb.org/t/p/w342${part.poster_path}` : "/placeholder-poster.png"}
+                      alt={part.title}
+                      className="w-full h-full object-cover"
+                    />
+                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                      <Info className="w-8 h-8 text-white" />
+                    </div>
+                  </div>
+                  <p className="text-[12px] font-medium text-white/70 group-hover:text-primary line-clamp-1 truncate">{part.title}</p>
+                </Link>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* ── ACTORS ── */}
+        {activeTab === "actors" && (
+          <div className="animate-in fade-in duration-300">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-4">
+              {actors.map((actor, idx) => (
+                <div key={idx} className="flex flex-col items-center text-center gap-2">
+                  <div className="relative w-full aspect-square rounded-full overflow-hidden bg-white/5 border border-white/[0.06]">
+                    {actor.profile_path ? (
+                      <img
+                        src={`https://image.tmdb.org/t/p/w185${actor.profile_path}`}
+                        alt={actor.name}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center">
+                        <User className="w-1/2 h-1/2 text-white/10" />
+                      </div>
+                    )}
+                  </div>
+                  <div className="px-1 min-w-0 w-full">
+                    <p className="text-[12px] font-semibold text-white/80 line-clamp-1">{actor.name}</p>
+                    {actor.character && (
+                      <p className="text-[10px] text-white/30 line-clamp-1 mt-0.5 italic">{actor.character}</p>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* ── RECOMMENDATIONS ── */}
+        {activeTab === "recommendations" && (
+          <div className="animate-in fade-in duration-300">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+              {recommendations.map((m: any) => (
+                <Link key={m.id} href={`/search?q=${encodeURIComponent(m.title || m.name)}`} className="group flex flex-col gap-2">
+                  <div className="relative aspect-[2/3] rounded-xl overflow-hidden bg-white/5 group-hover:-translate-y-1 transition-transform">
+                    <img
+                      src={m.poster_path ? `https://image.tmdb.org/t/p/w342${m.poster_path}` : "/placeholder-poster.png"}
+                      alt={m.title || m.name}
+                      className="w-full h-full object-cover"
+                    />
+                    <div className="absolute top-2 right-2 px-1.5 py-0.5 rounded bg-black/60 backdrop-blur-md flex items-center gap-1">
+                      <Star className="w-2.5 h-2.5 text-yellow-500 fill-current" />
+                      <span className="text-[10px] text-white font-medium">{m.vote_average?.toFixed(1)}</span>
+                    </div>
+                  </div>
+                  <div>
+                    <p className="text-[13px] font-semibold text-white/80 group-hover:text-white line-clamp-1">{m.title || m.name}</p>
+                    <p className="text-[11px] text-white/30">{m.release_date?.split("-")[0] || m.first_air_date?.split("-")[0]}</p>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}

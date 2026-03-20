@@ -4,7 +4,8 @@ import Image from "next/image";
 import { Play, Heart, Share2, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { WatchlistBtn } from "@/components/movie/WatchlistBtn";
-import { getTMDBImageUrl, getTMDBMovieDetails, searchTMDBMovie } from "@/services/tmdb";
+import { getTMDBImageUrl, getTMDBMovieDetails, searchTMDBMovie, getTMDBCollection } from "@/services/tmdb";
+import { MovieTabs } from "@/components/movie/MovieTabs";
 import { MovieRatings } from "@/components/movie/MovieRatings";
 
 async function fetchMovieData(slug: string) {
@@ -56,8 +57,13 @@ export default async function MovieDetailsPage({ params }: { params: Promise<{ s
     tmdbSearch = await searchTMDBMovie(data.origin_name || data.original_name);
   }
   
-  const tmdbData = tmdbSearch ? await getTMDBMovieDetails(tmdbSearch.id) : null;
+  const tmdbData = tmdbSearch ? await getTMDBMovieDetails(tmdbSearch.id, tmdbSearch.media_type) : null;
   const imdbId = tmdbData?.external_ids?.imdb_id;
+  
+  // Fetch collection if exists
+  const collectionData = tmdbData?.belongs_to_collection 
+    ? await getTMDBCollection(tmdbData.belongs_to_collection.id) 
+    : null;
   
   const { getIMDbRating } = await import("@/services/imdb");
   const { getRTRating } = await import("@/services/rottenTomatoes");
@@ -99,6 +105,8 @@ export default async function MovieDetailsPage({ params }: { params: Promise<{ s
 
   const relatedSlug = genreTags[0]?.slug;
   const related = relatedSlug ? await fetchRelated(relatedSlug).catch(() => []) : [];
+
+  const recommendations = tmdbData?.recommendations?.results || [];
 
   // Actor display list (combine TMDB + fallback)
   const displayActors = tmdbCredits.length > 0 
@@ -189,13 +197,40 @@ export default async function MovieDetailsPage({ params }: { params: Promise<{ s
                     <Link
                       key={g.slug}
                       href={`/the-loai/${g.slug}`}
-                      className="px-2.5 py-1 rounded-md text-[11px] bg-white/5 text-white/40 hover:text-white hover:bg-white/10 transition-all"
+                      className="px-2.5 py-1 rounded-md text-[11px] bg-white/5 text-white/40 hover:text-white hover:bg-white/10 transition-all font-medium"
                     >
                       {g.name}
                     </Link>
                   ))}
                 </div>
               )}
+
+              {/* External Links / API Buttons */}
+              <div className="flex flex-wrap justify-center lg:justify-start items-center gap-2 mt-4">
+                <button className="flex items-center gap-1.5 px-2.5 py-1 rounded bg-white/5 border border-white/[0.08] text-[10px] text-white/40 hover:text-white hover:bg-white/10 transition-all uppercase font-bold tracking-wider">
+                  <span className="w-1 h-1 rounded-full bg-blue-500" /> API
+                </button>
+                {tmdbData && (
+                  <a 
+                    href={`https://www.themoviedb.org/${tmdbData.media_type || "movie"}/${tmdbData.id}`} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-1.5 px-2.5 py-1 rounded bg-white/5 border border-white/[0.08] text-[10px] text-white/40 hover:text-primary hover:bg-white/10 transition-all uppercase font-bold tracking-wider"
+                  >
+                    <span className="w-1 h-1 rounded-full bg-primary" /> TMDB
+                  </a>
+                )}
+                {imdbId && (
+                  <a 
+                    href={`https://www.imdb.com/title/${imdbId}`} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-1.5 px-2.5 py-1 rounded bg-white/5 border border-white/[0.08] text-[10px] text-white/40 hover:text-yellow-500 hover:bg-white/10 transition-all uppercase font-bold tracking-wider"
+                  >
+                    <span className="w-1 h-1 rounded-full bg-yellow-500" /> IMDB
+                  </a>
+                )}
+              </div>
             </div>
 
             {/* Giới thiệu */}
@@ -210,17 +245,54 @@ export default async function MovieDetailsPage({ params }: { params: Promise<{ s
             {/* Meta info */}
             <div className="mt-4 space-y-1.5 text-[13px]">
               <p>
-                <span className="text-white/30">Thời lượng: </span>
+                <span className="text-white/30 font-medium">Thời lượng: </span>
                 <span className="text-white/60">{data.time || "Đang cập nhật"}</span>
               </p>
               <p>
-                <span className="text-white/30">Quốc gia: </span>
+                <span className="text-white/30 font-medium">Quốc gia: </span>
                 <span className="text-white/60">{countryName}</span>
               </p>
               <p>
-                <span className="text-white/30">Đạo diễn: </span>
+                <span className="text-white/30 font-medium">Đạo diễn: </span>
                 <span className="text-white/60">{directorName}</span>
               </p>
+            </div>
+
+            {/* ID & Ratings Block */}
+            <div className="mt-6 grid grid-cols-2 gap-2">
+              {/* TMDB Box */}
+              <div className="p-3 rounded-xl bg-white/[0.03] border border-white/[0.06] flex flex-col gap-1.5">
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] font-black text-primary uppercase tracking-wider">TMDB</span>
+                  <span className="text-[9px] px-1.5 py-0.5 rounded bg-primary/10 text-primary uppercase font-bold">
+                    {tmdbData?.status === "Returning Series" ? "TV" : "PHIM"}
+                  </span>
+                </div>
+                <div>
+                  <p className="text-[11px] text-white/30">ID: {tmdbData?.id || "N/A"}</p>
+                  <p className="text-[13px] font-bold text-white mt-0.5">
+                    {tmdbData?.vote_average?.toFixed(1) || "0.0"}{" "}
+                    <span className="text-[10px] text-white/30 font-normal">/ 10 ({tmdbData?.vote_count || 0})</span>
+                  </p>
+                </div>
+              </div>
+
+              {/* IMDB Box */}
+              <div className="p-3 rounded-xl bg-white/[0.03] border border-white/[0.06] flex flex-col gap-1.5">
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] font-black text-yellow-500 uppercase tracking-wider">IMDB</span>
+                  <span className="text-[9px] px-1.5 py-0.5 rounded bg-yellow-500/10 text-yellow-500 uppercase font-bold">
+                    Rating
+                  </span>
+                </div>
+                <div>
+                  <p className="text-[11px] text-white/30">ID: {imdbId || "N/A"}</p>
+                  <p className="text-[13px] font-bold text-white mt-0.5">
+                    {realImdbRating || "0.0"}{" "}
+                    <span className="text-[10px] text-white/30 font-normal">/ 10</span>
+                  </p>
+                </div>
+              </div>
             </div>
 
             {/* Diễn viên */}
@@ -257,60 +329,18 @@ export default async function MovieDetailsPage({ params }: { params: Promise<{ s
 
           {/* ═══ RIGHT COLUMN: Episodes + Tabs ═══ */}
           <div className="flex-1 min-w-0">
-            {/* Tab header */}
-            <div className="flex items-center gap-6 border-b border-white/[0.06] mb-6">
-              <button className="pb-3 text-[13px] font-semibold text-primary border-b-2 border-primary">
-                TẬP PHIM
-              </button>
-              <button className="pb-3 text-[13px] font-medium text-white/30 hover:text-white/60 transition-colors">
-                BỘ SƯU TẬP
-              </button>
-              <button className="pb-3 text-[13px] font-medium text-white/30 hover:text-white/60 transition-colors">
-                DIỄN VIÊN
-              </button>
-              <button className="pb-3 text-[13px] font-medium text-white/30 hover:text-white/60 transition-colors">
-                ĐỀ XUẤT
-              </button>
-            </div>
-
-            {/* Server notice */}
-            <div className="rounded-lg bg-emerald-500/10 border border-emerald-500/20 px-4 py-2.5 mb-5 text-[12px] text-emerald-400/80">
-              ⭐ Phim bị lỗi hoặc chưa thấy tập mới? Đổi server thôi coi chúng cũ chẳng có vấn đề gì 😉
-            </div>
-
-            {/* Server selector */}
-            {allServers.length > 0 && (
-              <div className="flex flex-wrap gap-2 mb-6">
-                {allServers.map((server, sIdx) => (
-                  <button
-                    key={sIdx}
-                    className={`px-4 py-2 rounded-lg text-[12px] font-medium transition-all ${
-                      sIdx === 0
-                        ? "bg-primary text-white"
-                        : "bg-white/5 text-white/40 hover:bg-white/10 hover:text-white"
-                    }`}
-                  >
-                    {server.name}
-                  </button>
-                ))}
-              </div>
-            )}
-
-            {/* Episode grid */}
-            {allServers.length > 0 && allServers[0].items.length > 0 && (
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-7 gap-2">
-                {(allServers[0]?.items || []).map((ep: any, idx: number) => (
-                  <Link
-                    key={idx}
-                    href={`/watch/${source}/${slug}/${ep.slug || ep.name}`}
-                    className="flex items-center gap-2 px-3 py-2.5 rounded-lg bg-white/[0.03] border border-white/[0.06] text-[12px] text-white/50 hover:bg-primary/10 hover:text-white hover:border-primary/30 transition-all"
-                  >
-                    <Play className="w-3 h-3 flex-shrink-0" />
-                    <span className="truncate">{ep.name}</span>
-                  </Link>
-                ))}
-              </div>
-            )}
+            <MovieTabs 
+              slug={slug}
+              source={source}
+              servers={allServers}
+              actors={tmdbCredits.slice(0, 16).map((c: any) => ({
+                name: c.name,
+                profile_path: c.profile_path,
+                character: c.character
+              }))}
+              recommendations={recommendations}
+              collection={collectionData}
+            />
 
             {/* ── Related / Phim Hot Rần Rần ── */}
             {related.length > 0 && (
