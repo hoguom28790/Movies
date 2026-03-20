@@ -17,7 +17,6 @@ const menuItems = [
   { icon: Film, label: "Phim Hàn", href: "/quoc-gia/han-quoc" },
   { icon: Film, label: "Phim Trung", href: "/quoc-gia/trung-quoc" },
   { icon: LayoutGrid, label: "Duyệt Tìm", href: "/the-loai" },
-  { icon: Sparkles, label: "Chủ đề", href: "/top-trending" },
   { icon: History, label: "Lịch sử", href: "/history" },
   { icon: Heart, label: "Yêu thích", href: "/watchlist" },
 ];

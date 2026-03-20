@@ -134,7 +134,17 @@ export function NavMenu() {
                   <Link
                     key={item.slug}
                     href={`${dd.basePath}/${item.slug}`}
-                    onClick={() => setOpenId(null)}
+                    onClick={(e) => {
+                      if (item.slug === "phim-18") {
+                        const pass = window.prompt("Nhập mật khẩu để truy cập nội dung này:");
+                        if (pass !== "123456") {
+                          e.preventDefault();
+                          alert("Mật khẩu không chính xác!");
+                          return;
+                        }
+                      }
+                      setOpenId(null);
+                    }}
                     className="px-3 py-2 text-[13px] text-white/50 hover:text-white hover:bg-white/5 rounded-lg transition-colors whitespace-nowrap"
                   >
                     {item.name}
