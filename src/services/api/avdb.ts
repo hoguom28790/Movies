@@ -1,22 +1,21 @@
 const BASE_URL = "https://avdbapi.com/api.php/provide/vod?ac=detail";
 
 export interface AVDBMovie {
-  vod_id: number;
-  vod_name: string;
-  vod_sub: string;
-  vod_en: string;
-  vod_letter: string;
-  type_id: number;
-  type_name: string;
-  vod_pic: string;
-  vod_lang: string;
-  vod_area: string;
-  vod_year: string;
-  vod_actor: string;
-  vod_director: string;
-  vod_content: string;
-  vod_play_from: string;
-  vod_play_url: string;
+  id: number;
+  name: string;
+  slug: string;
+  poster_url: string;
+  thumb_url: string;
+  actor: string[] | string;
+  director: string[] | string;
+  year: string;
+  quality: string;
+  description: string;
+  movie_code: string;
+  episodes: {
+    server_name?: string;
+    server_data?: Record<string, string | { link_embed?: string }>;
+  };
 }
 
 export interface AVDBResponse {
@@ -39,18 +38,19 @@ export async function getAVDBMovies(page = 1, typeId?: number, keyword?: string,
     const res = await fetch(url, { next: { revalidate: 3600 } });
     const data: AVDBResponse = await res.json();
     
-    // Map to normalized movie format
+    if (!data.list) return { items: [], pagination: { totalItems: 0, totalPages: 1, currentPage: 1 } };
+
     return {
       items: data.list.map(m => ({
-        id: m.vod_id.toString(),
-        title: m.vod_name,
-        originalTitle: m.vod_en || m.vod_sub,
-        slug: `av-${m.vod_id}`, // Prefix with av- to distinguish source
-        posterUrl: m.vod_pic,
-        thumbUrl: m.vod_pic,
-        year: m.vod_year,
-        quality: "HD",
-        actor: m.vod_actor,
+        id: m.id.toString(),
+        title: m.name,
+        originalTitle: m.movie_code || m.slug,
+        slug: `av-${m.id}`,
+        posterUrl: m.poster_url,
+        thumbUrl: m.thumb_url,
+        year: m.year,
+        quality: m.quality || "HD",
+        actor: Array.isArray(m.actor) ? m.actor.join(", ") : m.actor,
         source: 'avdb' as const
       })),
       pagination: {
@@ -73,25 +73,23 @@ export async function getAVDBDetails(id: string) {
     const movie = data.list[0];
     if (!movie) return null;
 
-    // Parse play URLs (format: Server Name$$$Name1$URL1#Name2$URL2)
-    const servers = movie.vod_play_from.split("$$$");
-    const urls = movie.vod_play_url.split("$$$");
-    
-    const epData = servers.map((server, idx) => {
-      const episodes = urls[idx].split("#").map(ep => {
-        const [name, link] = ep.split("$");
-        return { name, link };
-      });
-      return { server, episodes };
-    });
+    // Handle episode format
+    const episodesData = movie.episodes?.server_data || {};
+    const servers = [{
+      server: movie.episodes?.server_name || "Server Premium",
+      episodes: Object.entries(episodesData).map(([name, data]) => ({
+        name: name,
+        link: typeof data === 'string' ? data : data.link_embed
+      }))
+    }];
 
     return {
       ...movie,
-      id: movie.vod_id.toString(),
-      title: movie.vod_name,
-      posterUrl: movie.vod_pic,
-      content: movie.vod_content,
-      servers: epData,
+      id: movie.id.toString(),
+      title: movie.name,
+      posterUrl: movie.poster_url,
+      content: movie.description,
+      servers: servers,
       source: 'avdb'
     };
   } catch (error) {
