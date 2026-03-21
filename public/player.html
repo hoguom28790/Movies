@@ -2,7 +2,7 @@
 <html lang="vi">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>VIP Player Pro</title>
   <link rel="stylesheet" href="https://cdn.plyr.io/3.7.8/plyr.css" />
   <style>
@@ -14,17 +14,25 @@
       align-items: center; 
       justify-content: center; 
       height: 100vh; 
-      font-family: inherit;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      touch-action: none;
     }
     .plyr {
       width: 100%;
       height: 100%;
     }
     :root {
-      --plyr-color-main: #0063e5; /* Disney Blue */
+      --plyr-color-main: #0063e5; /* Default Blue */
+      --plyr-menu-background: rgba(20, 20, 22, 0.95);
+      --plyr-menu-color: #fff;
+      --plyr-control-spacing: 12px;
+      --plyr-font-family: inherit;
     }
 
     #player-container {
+      width: 100%; 
+      height: 100%; 
+      position: relative;
       touch-action: none;
       -webkit-user-select: none;
       user-select: none;
@@ -52,347 +60,453 @@
       z-index: 2;
     }
 
+    /* OSD Feedback */
     #osd {
       position: absolute;
       top: 15%;
       left: 50%;
       transform: translateX(-50%);
-      background: rgba(0,0,0,0.6);
-      backdrop-filter: blur(4px);
+      background: rgba(0,0,0,0.65);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      border: 1px solid rgba(255,255,255,0.1);
       color: white;
-      padding: 8px 16px;
-      border-radius: 20px;
-      font-size: 15px;
-      font-weight: bold;
+      padding: 10px 20px;
+      border-radius: 30px;
+      font-size: 14px;
+      font-weight: 600;
       display: none;
-      z-index: 10;
+      z-index: 20;
       pointer-events: none;
       align-items: center;
-      gap: 10px;
+      gap: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+      white-space: nowrap;
     }
     
-    /* Seek buttons on overlay */
-    .custom-skip {
+    /* Center Seek Ripple */
+    #center-ripple {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%) scale(0.5);
+      background: rgba(0,0,0,0.5);
+      color: white;
+      border-radius: 50%;
+      width: 64px;
+      height: 64px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      z-index: 5;
+      pointer-events: none;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    #center-ripple.active {
+      transform: translate(-50%, -50%) scale(1.5);
+      opacity: 1;
+    }
+
+    /* Overlay Bar (for Volume/Brightness gestures) */
+    #gesture-bar {
       position: absolute;
       top: 50%;
       transform: translateY(-50%);
+      width: 44px;
+      height: 150px;
       background: rgba(0,0,0,0.5);
-      border: none;
-      color: white;
-      padding: 15px;
-      border-radius: 50%;
-      cursor: pointer;
-      opacity: 0;
-      transition: opacity 0.3s;
-      z-index: 5;
+      backdrop-filter: blur(4px);
+      border-radius: 22px;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-end;
+      padding: 4px;
+      z-index: 10;
+      pointer-events: none;
     }
-    .plyr--hover .custom-skip, .plyr--paused .custom-skip {
-      opacity: 1;
+    #gesture-bar-fill {
+      width: 36px;
+      height: 50%; /* dynamic */
+      background: var(--plyr-color-main);
+      border-radius: 18px;
+      transition: height 0.1s;
     }
+    #gesture-bar-icon {
+      margin-bottom: 8px;
+    }
+
     /* Themes */
     .theme-topxx {
       --plyr-color-main: #fbbf24; /* TopXX Yellow */
     }
+    .theme-truyen {
+      --plyr-color-main: #6366f1; /* Indigo */
+    }
     
-    .skip-back { left: 15%; }
-    .skip-forward { right: 15%; }
-
     /* Mobile-First Touch Target Optimizations */
     @media (max-width: 768px) {
-      .plyr__controls { padding: 12px !important; }
+      .plyr__controls { padding: 12px 16px !important; }
       .plyr__control {
-        min-height: 48px !important;
-        min-width: 48px !important;
-        padding: 12px !important;
-        margin: 2px !important;
+        min-height: 44px !important;
+        min-width: 44px !important;
+        margin: 0 4px !important;
+      }
+      .plyr__menu__container {
+        width: 250px !important;
       }
       .plyr__menu__container .plyr__control {
-        min-height: 54px !important;
-        font-size: 16px !important;
-        padding-left: 20px !important;
+        min-height: 50px !important;
+        font-size: 15px !important;
       }
       .plyr__progress__container {
-        min-height: 44px !important;
-        align-items: center;
+        position: absolute;
+        bottom: 56px;
+        left: 0;
+        right: 0;
+        padding: 0 16px !important;
+        margin-bottom: 4px;
       }
-      .custom-skip {
-        padding: 24px;
+      .plyr__controls__item.plyr__time {
+        font-size: 13px;
+        font-weight: 500;
+        opacity: 0.8;
       }
+      /* Hide volume on iOS since it's hardware tied */
+      .plyr--ios .plyr__volume { display: none !important; }
+    }
+    
+    /* Fullscreen layout tweaks */
+    .plyr--fullscreen-active .plyr__controls {
+      padding-bottom: env(safe-area-inset-bottom, 20px) !important;
+      padding-left: env(safe-area-inset-left, 20px) !important;
+      padding-right: env(safe-area-inset-right, 20px) !important;
     }
   </style>
-  <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+  <script src="https://cdn.jsdelivr.net/npm/hls.js@1.3.5"></script>
   <script src="https://cdn.plyr.io/3.7.8/plyr.polyfilled.js"></script>
 </head>
 <body>
-  <div id="player-container" style="width: 100%; height: 100%; position: relative;">
+  <div id="player-container">
     <video id="video" playsinline crossorigin="anonymous"></video>
     <div id="brightness-overlay"></div>
     <div id="osd"></div>
-    <button class="custom-skip skip-back" onclick="skip(-10)" title="Lùi 10s">
-      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" class="lucide" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
-        <path d="M3 3v5h5"/>
-        <text x="12" y="15.5" font-family="system-ui, -apple-system, sans-serif" font-size="8" font-weight="600" text-anchor="middle" fill="white" stroke="none">10</text>
-      </svg>
-    </button>
-    <button class="custom-skip skip-forward" onclick="skip(10)" title="Tiến 10s">
-      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" class="lucide" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+    
+    <!-- Visual Indicator for Seek -->
+    <div id="center-ripple">
+      <svg id="ripple-icon" width="32" height="32" viewBox="0 0 24 24" fill="none" class="lucide" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <path d="M21 12a9 9 0 1 1-9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/>
         <path d="M21 3v5h-5"/>
-        <text x="12" y="15.5" font-family="system-ui, -apple-system, sans-serif" font-size="8" font-weight="600" text-anchor="middle" fill="white" stroke="none">10</text>
       </svg>
-    </button>
+    </div>
+
+    <!-- Vertical Gesture Bar (Volume/Brightness) -->
+    <div id="gesture-bar">
+      <div id="gesture-bar-icon">
+        <!-- SVG dynamically inserted -->
+      </div>
+      <div id="gesture-bar-bg" style="width: 100%; flex: 1; background: rgba(255,255,255,0.2); border-radius: 18px; position: relative; overflow: hidden;">
+        <div id="gesture-bar-fill" style="position: absolute; bottom: 0; width: 100%;"></div>
+      </div>
+    </div>
   </div>
   
   <div id="error-msg"></div>
 
   <script>
+    // URL Parsing
     const urlParams = new URLSearchParams(window.location.search);
     const source = urlParams.get('url');
     const theme = urlParams.get('theme') || 'default';
     if (theme !== 'default') document.body.classList.add('theme-' + theme);
 
+    // Elements
     const video = document.getElementById('video');
+    const container = document.getElementById('player-container');
     const errorMsg = document.getElementById('error-msg');
-    let hls;
-
-    function skip(seconds) {
-      video.currentTime = Math.max(0, Math.min(video.duration, video.currentTime + seconds));
-    }
-
-    // Pro Keyboard Shortcuts
-    window.addEventListener('keydown', (e) => {
-      if (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA') return;
-
-      const act = () => { if (video.paused) video.play(); else video.pause(); };
-
-      switch(e.key.toLowerCase()) {
-        case ' ': // Space uses empty string or ' ' technically
-        case 'k': e.preventDefault(); act(); break;
-        case 'f': e.preventDefault(); if(player) player.fullscreen.toggle(); break;
-        case 'm': e.preventDefault(); if(player) player.muted = !player.muted; break;
-        case 'j': e.preventDefault(); skip(-10); break;
-        case 'l': e.preventDefault(); skip(10); break;
-        case 'arrowright': e.preventDefault(); skip(e.shiftKey ? 5 : 10); break;
-        case 'arrowleft': e.preventDefault(); skip(e.shiftKey ? -5 : -10); break;
-        case 'arrowup': e.preventDefault(); if(player) player.volume = Math.min(1, player.volume + 0.1); break;
-        case 'arrowdown': e.preventDefault(); if(player) player.volume = Math.max(0, player.volume - 0.1); break;
-        case '>': case '.': e.preventDefault(); if(player) player.speed = Math.min(2, player.speed + 0.25); break;
-        case '<': case ',': e.preventDefault(); if(player) player.speed = Math.max(0.5, player.speed - 0.25); break;
-      }
-    });
-
-    // Smart Touch Interface variables
-    let touchStartX = 0;
-    let touchStartY = 0;
-    let touchStartTime = 0;
-    let isSwipeAction = false;
-    let startVolume = 0;
-    let startBrightness = 0; // 0 is max bright, 0.8 is max dark
-    let activeSwipeMode = null; // 'volume' or 'brightness'
-
-    let longPressTimer = null;
-    let isSpeedingUp = false;
-    let originalSpeed = 1;
-    let currentBrightness = 0; // 0 to 0.8
-    let lastTapTime = 0;
-
     const brightnessOverlay = document.getElementById('brightness-overlay');
     const osd = document.getElementById('osd');
-    let osdTimer = null;
+    const centerRipple = document.getElementById('center-ripple');
+    const rippleIcon = document.getElementById('ripple-icon');
+    const gestureBar = document.getElementById('gesture-bar');
+    const gestureBarFill = document.getElementById('gesture-bar-fill');
+    const gestureBarIcon = document.getElementById('gesture-bar-icon');
 
+    // State
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+    let hls;
+    let player;
+    let osdTimer = null;
+    let rippleTimer = null;
+
+    // --- Helpers ---
     function showOSD(text) {
       if(!osd) return;
       osd.innerHTML = text;
       osd.style.display = 'flex';
       clearTimeout(osdTimer);
-      osdTimer = setTimeout(() => { osd.style.display = 'none'; }, 1500);
+      osdTimer = setTimeout(() => { osd.style.display = 'none'; }, 2000);
     }
 
-    const container = document.getElementById('player-container');
+    function showRipple(direction, text) {
+      if (!centerRipple) return;
+      // direction: 'forward' or 'backward'
+      const isFwd = direction === 'forward';
+      rippleIcon.innerHTML = isFwd
+        ? `<path d="M21 12a9 9 0 1 1-9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><text x="12" y="15.5" font-family="system-ui" font-size="8" font-weight="bold" text-anchor="middle" fill="white" stroke="none">${text}</text>`
+        : `<path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><text x="12" y="15.5" font-family="system-ui" font-size="8" font-weight="bold" text-anchor="middle" fill="white" stroke="none">${text}</text>`;
+      
+      centerRipple.className = 'active';
+      clearTimeout(rippleTimer);
+      rippleTimer = setTimeout(() => { centerRipple.className = ''; }, 400);
+    }
 
-    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+    function skip(seconds) {
+      if (!player) return;
+      player.currentTime = Math.max(0, Math.min(player.duration, player.currentTime + seconds));
+      showRipple(seconds > 0 ? 'forward' : 'backward', Math.abs(seconds));
+      showOSD(`${seconds > 0 ? '⏩' : '⏪'} ${Math.abs(seconds)}s`);
+    }
 
-    container.addEventListener('pointerdown', (e) => {
-      // Ignore if clicking on controls or buttons
+    function showGestureBar(mode, percent) {
+      gestureBar.style.display = 'flex';
+      gestureBar.style.left = mode === 'brightness' ? '20px' : 'auto';
+      gestureBar.style.right = mode === 'volume' ? '20px' : 'auto';
+      gestureBarFill.style.height = `${percent}%`;
+
+      if (mode === 'brightness') {
+        gestureBarIcon.innerHTML = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg>`;
+      } else {
+        const isMuted = percent === 0;
+        gestureBarIcon.innerHTML = isMuted 
+          ? `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg>`
+          : `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>`;
+      }
+
+      clearTimeout(gestureBar.timer);
+      gestureBar.timer = setTimeout(() => { gestureBar.style.display = 'none'; }, 1000);
+    }
+
+    // --- Complex Touch Gesture Engine ---
+    let tStartX = 0, tStartY = 0, tStartTime = 0;
+    let swipeMode = null; // 'volume', 'brightness', 'seek', 'pip'
+    let tStartVolume = 1, tStartBrightness = 0, tStartSeek = 0;
+    let isSpeedingUp = false, originalSpeed = 1, speedTimer = null;
+    let currentBrightness = 0; // 0 = original, 0.8 = max dimming
+    let lastTapTime = 0, lastTapX = 0;
+
+    container.addEventListener('touchstart', (e) => {
+      // Ignore UI overlapping
       if (e.target.closest('.plyr__controls') || e.target.closest('button')) return;
-      if (!e.isPrimary) return; 
-      if (e.pointerType === 'mouse' && e.button !== 0) return; // Only left-click
-      
+      const touch = e.touches[0];
       const rect = container.getBoundingClientRect();
-      touchStartX = e.clientX - rect.left;
-      touchStartY = e.clientY - rect.top;
-      touchStartTime = Date.now();
-      isSwipeAction = false;
-      activeSwipeMode = null;
-      startVolume = player ? player.volume : 1;
-      startBrightness = currentBrightness;
       
-      // Set up Long Press to 2x Speed
+      tStartX = touch.clientX - rect.left;
+      tStartY = touch.clientY - rect.top;
+      tStartTime = Date.now();
+      swipeMode = null;
+      
+      tStartVolume = player ? player.volume : 1;
+      tStartBrightness = currentBrightness;
+      tStartSeek = player ? player.currentTime : 0;
+
+      // Long press -> 2x Speed
       originalSpeed = player ? player.speed : 1;
-      longPressTimer = setTimeout(() => {
-        if (!isSwipeAction && !video.paused) {
+      speedTimer = setTimeout(() => {
+        if (!swipeMode && player && !player.paused) {
           isSpeedingUp = true;
-          if(player) player.speed = 2;
-          showOSD(`⚡ 2x Speed`);
+          player.speed = 2;
+          showOSD(`⚡ Tua nhanh 2x (Đang giữ)`);
+          
+          container.classList.add('plyr--hide-controls'); // Hide controls manually when speeding
         }
-      }, 500); // 500ms to trigger long press jump
-    });
+      }, 500);
+    }, { passive: false });
 
-    container.addEventListener('pointermove', (e) => {
-      if (!e.isPrimary) return;
-      // If it's a mouse, ensure left button is held down
-      if (e.pointerType === 'mouse' && e.buttons !== 1) return;
-      
+    container.addEventListener('touchmove', (e) => {
+      if (e.target.closest('.plyr__controls')) return;
+      if (isSpeedingUp) { e.preventDefault(); return; } // Lock swipes if long pressing
+
+      const touch = e.touches[0];
       const rect = container.getBoundingClientRect();
-      const currentX = e.clientX - rect.left;
-      const currentY = e.clientY - rect.top;
+      const currentX = touch.clientX - rect.left;
+      const currentY = touch.clientY - rect.top;
       
-      const deltaX = currentX - touchStartX;
-      const deltaY = currentY - touchStartY;
-      
-      if (Math.abs(deltaX) > 10 || Math.abs(deltaY) > 10) {
-        if (!isSwipeAction) {
-          isSwipeAction = true;
-          clearTimeout(longPressTimer); // Cancel long press if moved
+      const deltaX = currentX - tStartX;
+      const deltaY = currentY - tStartY;
+
+      if (!swipeMode) {
+        if (Math.abs(deltaY) > 20 && Math.abs(deltaY) > Math.abs(deltaX)) {
+           // Vertical swipe
+           clearTimeout(speedTimer);
+           // If swipe down dramatically, trigger PiP/Exit
+           if (deltaY > 50 && tStartY < 100) {
+              swipeMode = 'pip';
+           } else {
+              swipeMode = tStartX < rect.width / 2 ? 'brightness' : 'volume';
+           }
+        } else if (Math.abs(deltaX) > 20 && Math.abs(deltaX) > Math.abs(deltaY)) {
+           // Horizontal swipe
+           clearTimeout(speedTimer);
+           swipeMode = 'seek';
         }
       }
-      
-      // If already speeding up, don't execute swipe logic
-      if (isSpeedingUp) return;
 
-      if (isSwipeAction && Math.abs(deltaY) > Math.abs(deltaX)) {
-        // Vertical sweep
-        if (!activeSwipeMode) {
-          activeSwipeMode = touchStartX < rect.width / 2 ? 'brightness' : 'volume';
-        }
-        
-        // Sensitivity: full screen height = 1.0 change
-        const deltaRatio = -(deltaY / rect.height) * 1.5; 
-        
-        if (activeSwipeMode === 'volume') {
-          if (isIOS) {
-            showOSD(`Vui lòng dùng nút cứng để chỉnh âm lượng trên iPhone`);
-            return;
-          }
-          let newVol = Math.max(0, Math.min(1, startVolume + deltaRatio));
-          if(player) player.volume = newVol;
-          showOSD(`🔊 Âm lượng: ${Math.round(newVol * 100)}%`);
-        } else if (activeSwipeMode === 'brightness') {
-          let newBrightness = startBrightness - (deltaRatio * 0.8);
-          currentBrightness = Math.max(0, Math.min(0.8, newBrightness));
-          brightnessOverlay.style.opacity = currentBrightness;
-          let percent = Math.round((1 - (currentBrightness / 0.8)) * 100);
-          showOSD(`☀️ Độ sáng: ${percent}%`);
+      if (swipeMode) e.preventDefault(); // Stop native scrolling
+
+      if (swipeMode === 'volume') {
+        if (isIOS) return; // iOS prevents volume control via JS
+        const deltaVol = -(deltaY / rect.height) * 1.5;
+        let newVol = Math.max(0, Math.min(1, tStartVolume + deltaVol));
+        if (player) player.volume = newVol;
+        showGestureBar('volume', Math.round(newVol * 100));
+      } 
+      else if (swipeMode === 'brightness') {
+        const deltaBright = -(deltaY / rect.height) * 1.5;
+        let newBright = Math.max(0, Math.min(0.8, tStartBrightness - deltaBright));
+        currentBrightness = newBright;
+        brightnessOverlay.style.opacity = currentBrightness;
+        showGestureBar('brightness', Math.round((1 - (currentBrightness / 0.8)) * 100));
+      }
+      else if (swipeMode === 'seek') {
+        // Horizontal Seek: 1 pixel = ~0.5s
+        const seekDelta = deltaX * 0.5; 
+        const newTime = Math.max(0, Math.min(player.duration, tStartSeek + seekDelta));
+        const sign = seekDelta > 0 ? '+' : '';
+        showOSD(`🕒 ${sign}${Math.round(seekDelta)}s (${formatTime(newTime)})`);
+      }
+      else if (swipeMode === 'pip' && deltaY > 80) {
+        if (player && document.pictureInPictureEnabled && !document.pictureInPictureElement) {
+          video.requestPictureInPicture().catch(()=>{});
         }
       }
-    });
+    }, { passive: false });
 
-    const handlePointerEnd = (e) => {
-      if (!e.isPrimary) return;
-      clearTimeout(longPressTimer);
+    container.addEventListener('touchend', (e) => {
+      clearTimeout(speedTimer);
       
       if (isSpeedingUp) {
         isSpeedingUp = false;
-        if(player) player.speed = originalSpeed;
-        showOSD(`▶️ 1x Speed`);
-        return; 
+        if (player) player.speed = originalSpeed;
+        showOSD(`▶️ Tốc độ bình thường`);
+        return;
       }
-      
-      // Apply double tap logic only on pointerup (ignore cancel/leave to avoid accidental seeks)
-      if (!isSwipeAction && e.type === 'pointerup') {
-        const tapLength = Date.now() - touchStartTime;
-        if (tapLength < 300) {
-          const timeSinceLastTap = Date.now() - lastTapTime;
-          if (timeSinceLastTap > 0 && timeSinceLastTap < 400) {
-            // Double tap confirmed
+
+      if (swipeMode === 'seek') {
+        const touch = e.changedTouches[0];
+        const rect = container.getBoundingClientRect();
+        const deltaX = (touch.clientX - rect.left) - tStartX;
+        const seekDelta = deltaX * 0.5;
+        if (player) player.currentTime = Math.max(0, Math.min(player.duration, tStartSeek + seekDelta));
+      } 
+      else if (!swipeMode) {
+        // Double Tap detection
+        const now = Date.now();
+        const tapLength = now - tStartTime;
+        if (tapLength < 250) { // Fast tap
+          if (now - lastTapTime < 300) {
+            // Double Tap Confirmed!
             const rect = container.getBoundingClientRect();
-            if (touchStartX < rect.width / 2) {
-              skip(-10); showRipple('left'); showOSD(`⏪ -10s`);
+            if (tStartX < rect.width * 0.4) {
+              skip(-15);
+            } else if (tStartX > rect.width * 0.6) {
+              skip(15);
             } else {
-              skip(10); showRipple('right'); showOSD(`+10s ⏩`);
+              // Center double tap = toggle fullscreen or play/pause
+              if (player) player.togglePlay();
             }
+            lastTapTime = 0; // Reset
+          } else {
+            lastTapTime = now;
+            lastTapX = tStartX;
           }
-          lastTapTime = Date.now();
         }
       }
-      isSwipeAction = false;
-      activeSwipeMode = null;
-    };
+      swipeMode = null;
+    });
 
-    container.addEventListener('pointerup', handlePointerEnd);
-    container.addEventListener('pointercancel', handlePointerEnd);
-    container.addEventListener('pointerleave', handlePointerEnd);
-
-    function showRipple(side) {
-      const btn = side === 'left' ? document.querySelector('.skip-back') : document.querySelector('.skip-forward');
-      if(btn) {
-        btn.style.opacity = '1';
-        btn.style.transform = `translateY(-50%) scale(1.5)`;
-        setTimeout(() => {
-          btn.style.opacity = '0';
-          btn.style.transform = `translateY(-50%) scale(1)`;
-        }, 500);
-      }
+    // Format time (s to MM:SS)
+    function formatTime(secs) {
+      if(!secs || isNaN(secs)) return "00:00";
+      const m = Math.floor(secs / 60);
+      const s = Math.floor(secs % 60);
+      return `${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
     }
 
-    if (source) {
-      // Initialize Plyr
-      const player = new Plyr(video, {
+    // --- Desktop Keyboard Shortcuts ---
+    window.addEventListener('keydown', (e) => {
+      if (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA') return;
+      if (!player) return;
+
+      const act = () => player.togglePlay();
+
+      switch(e.key.toLowerCase()) {
+        case ' ': case 'k': e.preventDefault(); act(); break;
+        case 'f': e.preventDefault(); player.fullscreen.toggle(); break;
+        case 'm': e.preventDefault(); player.muted = !player.muted; break;
+        case 'j': e.preventDefault(); skip(-15); break;
+        case 'l': e.preventDefault(); skip(15); break;
+        case 'arrowright': e.preventDefault(); skip(15); break;
+        case 'arrowleft': e.preventDefault(); skip(-15); break;
+        case 'arrowup': e.preventDefault(); player.volume = Math.min(1, player.volume + 0.1); showGestureBar('volume', player.volume*100); break;
+        case 'arrowdown': e.preventDefault(); player.volume = Math.max(0, player.volume - 0.1); showGestureBar('volume', player.volume*100); break;
+      }
+    });
+
+    // --- Plyr & HLS Initialization ---
+    function initPlayer(qualityOptions = [], defaultQuality = 0) {
+      const plyrOptions = {
         controls: [
-          'play-large', 'play', 'progress', 'current-time', 'mute', 'volume', 
+          'play-large', 'play', 'progress', 'current-time', 'duration', 'mute', 'volume', 
           'captions', 'settings', 'pip', 'airplay', 'fullscreen'
         ],
-        settings: ['quality', 'speed', 'loop'],
+        settings: ['quality', 'speed', 'captions'],
         speed: { selected: 1, options: [0.5, 0.75, 1, 1.25, 1.5, 2] },
         tooltips: { controls: true, seek: true },
-        keyboard: { focused: false, global: false }, // Use our custom pro keyboard listener instead
-        fullscreen: { iosNative: false, fallback: true }, // DISABLE IOS NATIVE TO KEEP DOM TOUCH EVENTS
-        storage: { enabled: true, key: 'disney-player' }, // Smart memory
-      });
+        keyboard: { focused: false, global: false }, // we use custom
+        fullscreen: { iosNative: false, fallback: true }, // Keep UI layer
+        storage: { enabled: true, key: 'disney-player' },
+        hideControls: true, 
+      };
 
-      window.player = player;
+      if (qualityOptions.length > 0) {
+        plyrOptions.quality = {
+          default: defaultQuality,
+          options: qualityOptions,
+          forced: true,
+          onChange: (newQuality) => {
+            if (hls) {
+               if (newQuality === 0) {
+                  hls.currentLevel = -1; // Auto
+               } else {
+                  hls.levels.forEach((level, index) => {
+                     if (level.height === newQuality) hls.currentLevel = index;
+                  });
+               }
+            }
+          }
+        };
+      }
 
-      // Handle Fullscreen natively for Desktop/Android, but fallback Pseudo-Fullscreen for iOS
+      player = new Plyr(video, plyrOptions);
+
+      // Force Landscape on Fullscreen Enter (Mobile only)
       player.on('enterfullscreen', () => {
         if (screen.orientation && screen.orientation.lock) {
           screen.orientation.lock('landscape').catch(()=>{}); 
         }
-        // Force tell the React Parent to go pseudo-fullscreen for iOS just in case
         window.parent.postMessage({ type: 'ENTER_PSEUDO_FULLSCREEN' }, '*');
       });
 
       player.on('exitfullscreen', () => {
         if (screen.orientation && screen.orientation.unlock) {
-          screen.orientation.unlock();
+          screen.orientation.unlock().catch(()=>{});
         }
         window.parent.postMessage({ type: 'EXIT_PSEUDO_FULLSCREEN' }, '*');
       });
 
-      player.on('ended', () => {
-        window.parent.postMessage({ type: 'VIDEO_ENDED', url: source }, '*');
-      });
-
-      // Cross-window Data Synchronization for Resumable Playback
-      window.addEventListener('message', (e) => {
-        if (e.data && e.data.type === 'SEEK') {
-          const targetTime = e.data.time;
-          if (targetTime > 0) {
-            const doSeek = () => {
-              video.currentTime = targetTime;
-              const mins = Math.floor(targetTime / 60);
-              if(mins > 0) showOSD(`Tiếp tục xem từ phút thứ ${mins} 🎬`);
-            };
-            if (video.readyState >= 1) { // HAVE_METADATA
-              doSeek();
-            } else {
-              video.addEventListener('loadedmetadata', doSeek, { once: true });
-            }
-          }
-        }
-      });
-
-      // Periodically sync progress (React will throttle writes)
+      // Synchronize Progress to React Wrapper
       setInterval(() => {
         if (!video.paused && video.currentTime > 0) {
           window.parent.postMessage({ 
@@ -403,14 +517,40 @@
         }
       }, 5000);
 
+      // Listen for initial seek from parent
+      window.addEventListener('message', (e) => {
+        if (e.data && e.data.type === 'SEEK') {
+          const targetTime = e.data.time;
+          if (targetTime > 0) {
+            const doSeek = () => {
+              video.currentTime = targetTime;
+              const mins = Math.floor(targetTime / 60);
+              if(mins > 0) showOSD(`Tiếp tục xem từ phút thứ ${mins} 🎬`);
+            };
+            if (video.readyState >= 1) doSeek();
+            else video.addEventListener('loadedmetadata', doSeek, { once: true });
+          }
+        }
+      });
+    }
+
+    // --- Media Loading Engine ---
+    if (source) {
       const isM3U8 = source.includes('.m3u8') || source.includes('m3u8');
       
       if (isM3U8 && Hls.isSupported()) {
-        hls = new Hls({ maxBufferLength: 30 });
+        hls = new Hls({ maxBufferLength: 30, maxMaxBufferLength: 60 });
         hls.loadSource(source);
         hls.attachMedia(video);
-        hls.on(Hls.Events.MANIFEST_PARSED, () => {
-          video.play().catch(() => {});
+        
+        hls.on(Hls.Events.MANIFEST_PARSED, (event, data) => {
+          // Extract Qualities
+          const availableQualities = hls.levels.map((l) => l.height).sort((a,b) => b-a);
+          availableQualities.unshift(0); // Add 'Auto' (0)
+          
+          initPlayer(availableQualities, 0); // Pass qualities to Plyr
+          
+          // Wait for custom seek before auto playing, handled via interact
         });
         
         hls.on(Hls.Events.ERROR, (event, data) => {
@@ -420,7 +560,7 @@
               case Hls.ErrorTypes.MEDIA_ERROR: hls.recoverMediaError(); break;
               default:
                 hls.destroy();
-                document.getElementById('player-container').style.display = 'none';
+                container.style.display = 'none';
                 errorMsg.style.display = 'block';
                 errorMsg.innerHTML = '<h2>Lỗi tải Video</h2><p>Vui lòng thử server khác.</p>';
                 break;
@@ -428,22 +568,22 @@
           }
         });
       } else if (video.canPlayType('application/vnd.apple.mpegurl') && isM3U8) {
+        // Native HLS (Safari iOS)
         video.src = source;
-        video.addEventListener('loadedmetadata', () => video.play().catch(() => {}));
+        initPlayer();
+        video.addEventListener('loadedmetadata', () => {});
       } else {
-        // Direct MP4 or other native formats
+        // MP4
         video.src = source;
-        video.addEventListener('loadedmetadata', () => video.play().catch(() => {}));
+        initPlayer();
       }
 
-      // Cleanup
       window.addEventListener('beforeunload', () => {
         if (hls) hls.destroy();
         if (player) player.destroy();
       });
-
     } else {
-      document.getElementById('player-container').style.display = 'none';
+      container.style.display = 'none';
     }
   </script>
 </body>
