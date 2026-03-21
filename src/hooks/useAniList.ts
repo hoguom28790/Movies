@@ -151,7 +151,7 @@ export function useAniList() {
 
     const login = useCallback(() => {
         if (!user) return;
-        const authUrl = getAniListAuthUrl(user.uid);
+        const authUrl = getAniListAuthUrl(`anilist:${user.uid}`);
         window.location.href = authUrl;
     }, [user]);
 

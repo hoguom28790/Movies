@@ -4,9 +4,9 @@
  */
 
 const TRAKT_API_URL = "https://api.trakt.tv";
-const CLIENT_ID = process.env.NEXT_PUBLIC_TRAKT_CLIENT_ID || "";
-const CLIENT_SECRET = process.env.TRAKT_CLIENT_SECRET || "";
-const REDIRECT_URI = process.env.NEXT_PUBLIC_TRAKT_REDIRECT_URI || "";
+const CLIENT_ID = (process.env.NEXT_PUBLIC_TRAKT_CLIENT_ID || "").trim();
+const CLIENT_SECRET = (process.env.TRAKT_CLIENT_SECRET || "").trim();
+const REDIRECT_URI = (process.env.NEXT_PUBLIC_TRAKT_REDIRECT_URI || "").trim();
 
 export interface TraktAuth {
   access_token: string;

@@ -2,6 +2,7 @@ import { StitchHero } from "@/components/stitch/StitchHero";
 import { StitchMangaGrid } from "@/components/stitch/StitchMangaGrid";
 import { StitchMangaCard } from "@/components/stitch/StitchMangaCard";
 import { StitchAniListSync } from "@/components/stitch/StitchAniListSync";
+import { SyncCallbackHandler } from "@/components/auth/SyncCallbackHandler";
 import { BookOpen } from "lucide-react";
 
 export const dynamic = "force-dynamic";
@@ -100,7 +101,7 @@ export default async function ComicHomePage({
 
   return (
     <div className="flex flex-col gap-0 pb-20 theme-truyen bg-background overflow-x-hidden">
-      
+      <SyncCallbackHandler />
       {/* Editorial Hero */}
       {heroComic && (
         <StitchHero 

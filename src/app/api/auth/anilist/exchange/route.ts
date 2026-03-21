@@ -7,9 +7,9 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Missing authorization code" }, { status: 400 });
     }
 
-    const clientId = process.env.NEXT_PUBLIC_ANILIST_CLIENT_ID;
-    const clientSecret = process.env.ANILIST_CLIENT_SECRET;
-    const redirectUri = process.env.NEXT_PUBLIC_ANILIST_REDIRECT_URI;
+    const clientId = process.env.NEXT_PUBLIC_ANILIST_CLIENT_ID?.trim();
+    const clientSecret = process.env.ANILIST_CLIENT_SECRET?.trim();
+    const redirectUri = process.env.NEXT_PUBLIC_ANILIST_REDIRECT_URI?.trim();
 
     const response = await fetch("https://anilist.co/api/v2/oauth/token", {
       method: "POST",

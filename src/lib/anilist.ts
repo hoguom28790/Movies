@@ -94,5 +94,5 @@ export async function fetchAniList(query: string, variables: any, token?: string
 export const getAniListAuthUrl = (state: string) => {
   const clientId = process.env.NEXT_PUBLIC_ANILIST_CLIENT_ID;
   const redirectUri = process.env.NEXT_PUBLIC_ANILIST_REDIRECT_URI;
-  return `https://anilist.co/api/v2/oauth/authorize?client_id=${clientId}&redirect_uri=${redirectUri}&response_type=code&state=${state}`;
+  return `https://anilist.co/api/v2/oauth/authorize?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri || '')}&response_type=code&state=${state}`;
 };

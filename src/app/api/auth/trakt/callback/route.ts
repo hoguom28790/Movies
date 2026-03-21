@@ -29,8 +29,9 @@ export async function GET(req: NextRequest) {
         updatedAt: Date.now()
     };
 
-    // 3. Save to Firebase (state = userId)
-    await saveTraktTokens(state, enrichedTokens);
+    // 3. Save to Firebase (state = userId or trakt:userId)
+    const userId = state.startsWith('trakt:') ? state.replace('trakt:', '') : state;
+    await saveTraktTokens(userId, enrichedTokens);
 
     // 4. Redirect back to settings page
     return NextResponse.redirect(new URL("/settings", req.url));

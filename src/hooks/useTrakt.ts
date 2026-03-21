@@ -38,7 +38,7 @@ export function useTrakt() {
         if (!user) return;
         const clientId = process.env.NEXT_PUBLIC_TRAKT_CLIENT_ID;
         const redirectUri = process.env.NEXT_PUBLIC_TRAKT_REDIRECT_URI;
-        window.location.href = `https://trakt.tv/oauth/authorize?response_type=code&client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri || '')}&state=${user.uid}`;
+        window.location.href = `https://trakt.tv/oauth/authorize?response_type=code&client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri || '')}&state=trakt:${user.uid}`;
     }, [user]);
 
     const isConnected = status === "connected";
