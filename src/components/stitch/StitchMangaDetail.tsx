@@ -183,15 +183,15 @@ export function StitchMangaDetail({
                             className="group relative bg-surface hover:bg-surface-container-low active:bg-surface-container-highest transition-all duration-300 min-h-[160px] overflow-hidden"
                         >
                             {/* Chapter Thumbnail (Bg) */}
-                            <div className="absolute inset-0 z-0 opacity-10 group-hover:opacity-30 transition-opacity duration-700">
+                            <div className="absolute inset-0 z-0 opacity-20 group-hover:opacity-50 transition-all duration-700 bg-black">
                                 <Image 
                                     src={posterUrl} 
                                     alt={chapter.chapter_name}
                                     fill
-                                    className="object-cover scale-125 group-hover:scale-100 transition-transform duration-[2000ms]"
+                                    className="object-cover scale-150 group-hover:scale-110 transition-transform duration-[4000ms] blur-[2px] group-hover:blur-0"
                                     unoptimized
                                 />
-                                <div className="absolute inset-0 bg-gradient-to-t from-surface via-surface/80 to-transparent" />
+                                <div className="absolute inset-0 bg-gradient-to-t from-background via-background/40 to-transparent" />
                             </div>
 
                             <div className="relative z-10 p-6 md:p-8 flex flex-col justify-center h-full">
