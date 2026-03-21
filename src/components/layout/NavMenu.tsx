@@ -70,6 +70,7 @@ const dropdowns: DropdownConfig[] = [
 ];
 
 const directLinks = [
+  { label: "Truyện Tranh", href: "/truyen" },
   { label: "Phim Lẻ", href: "/phim-le" },
   { label: "Phim Bộ", href: "/phim-bo" },
   { label: "Hoạt Hình", href: "/hoat-hinh" },

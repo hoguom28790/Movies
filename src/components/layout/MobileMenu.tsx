@@ -29,6 +29,7 @@ const COUNTRIES = [
 ];
  
 const DIRECT_LINKS = [
+  { label: "Truyện Tranh", href: "/truyen" },
   { label: "Phim Lẻ", href: "/phim-le" },
   { label: "Phim Bộ", href: "/phim-bo" },
   { label: "Hoạt Hình", href: "/hoat-hinh" },
@@ -68,7 +69,7 @@ export function MobileMenu() {
  
       {/* Overlay Drawer */}
       <div 
-        className={`fixed inset-0 z-[100] bg-[#0a0a0a] transition-all duration-300 ease-in-out ${
+        className={`fixed inset-0 z-[1000] bg-black transition-all duration-300 ease-in-out ${
           isOpen ? "opacity-100 translate-x-0" : "opacity-0 translate-x-full pointer-events-none"
         }`}
       >

@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Search, UserCircle, LogOut, Heart, History as HistoryIcon, Settings } from "lucide-react";
+import { Search, UserCircle, LogOut, Heart, History as HistoryIcon, Settings, BookOpen } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTheme } from "@/contexts/ThemeContext";
 import { AuthModal } from "@/components/auth/AuthModal";
@@ -42,6 +42,9 @@ export function Navbar() {
 
           {/* Right: Search + Actions */}
           <div className="flex items-center gap-2 flex-shrink-0">
+            <Link href="/truyen" className="hidden sm:flex items-center gap-1.5 px-4 py-1.5 mr-2 rounded-lg bg-indigo-500 hover:bg-indigo-600 text-white text-[12px] font-bold transition-all shadow-lg shadow-indigo-500/20">
+              <BookOpen className="w-4 h-4" /> Đọc Truyện
+            </Link>
             <div className="hidden md:block w-48 lg:w-64">
               <InstantSearch />
             </div>
