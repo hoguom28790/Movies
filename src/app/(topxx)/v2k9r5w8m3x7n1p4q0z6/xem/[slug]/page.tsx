@@ -1,4 +1,4 @@
-import { getTopXXDetails } from "@/services/api/v2k9r5w8m3x7n1p4q0z6";
+import { getTopXXDetails } from "@/services/api/topxx";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, ChevronLeft, ChevronRight, Play } from "lucide-react";

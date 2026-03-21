@@ -4,6 +4,7 @@ import React, { useState, useRef, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ChevronDown } from "lucide-react";
+import { getLunarAuthPass } from "@/lib/lunar";
 
 const GENRES = [
   { name: "Hành Động", slug: "hanh-dong" },
@@ -213,13 +214,9 @@ export function NavMenu({ mode }: NavMenuProps) {
                     href={isComicSection ? `/truyen?genre=${item.slug}` : `${dd.basePath}/${item.slug}`}
                     onClick={(e) => {
                       if (item.slug === "phim-18") {
-                        const now = new Date();
-                        const dd = String(now.getDate()).padStart(2, "0");
-                        const mm = String(now.getMonth() + 1).padStart(2, "0");
-                        const yyyy = now.getFullYear();
-                        const correctPass = `${dd}${mm}${yyyy}`;
+                        const correctPass = getLunarAuthPass();
                         
-                        const pass = window.prompt(`Nhập mật khẩu để truy cập nội dung 18+:`);
+                        const pass = window.prompt(`Nhập mật khẩu âm lịch để truy cập nội dung 18+:`);
                         if (pass !== correctPass) {
                           e.preventDefault();
                           alert(`Mật khẩu không chính xác! Vui lòng thử lại.`);

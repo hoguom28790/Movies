@@ -25,7 +25,7 @@ export function XXSearch() {
 
       setIsLoading(true);
       try {
-        const res = await fetch(`/api/v2k9r5w8m3x7n1p4q0z6/search?q=${encodeURIComponent(debouncedQuery)}`);
+        const res = await fetch(`/api/topxx/search?q=${encodeURIComponent(debouncedQuery)}`);
         const data = await res.json();
         setResults(data.items || []);
       } catch (err) {

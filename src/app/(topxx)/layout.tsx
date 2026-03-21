@@ -6,6 +6,8 @@ import { usePathname, useRouter } from "next/navigation";
 import { AlertCircle, LogOut, User, Home, History as HistoryIcon, Heart, Search } from "lucide-react";
 import { TOPXX_PATH } from "@/lib/constants";
 
+import { getLunarAuthPass } from "@/lib/lunar";
+
 export default function TopXXLayout({
   children,
 }: {
@@ -23,14 +25,9 @@ export default function TopXXLayout({
       return;
     }
 
-    // Date-based dynamic password (DDMMYYYY)
-    const now = new Date();
-    const dd = String(now.getDate()).padStart(2, "0");
-    const mm = String(now.getMonth() + 1).padStart(2, "0");
-    const yyyy = now.getFullYear();
-    const correctPass = `${dd}${mm}${yyyy}`;
+    const correctPass = getLunarAuthPass();
 
-    const pass = window.prompt("⚠️ TopXX Restricted Area\nNhập mật mã để xác nhận bạn trên 18 tuổi:");
+    const pass = window.prompt("⚠️ TopXX Restricted Area\nNhập mật mã âm lịch để truy cập:");
     
     if (pass === correctPass) {
       sessionStorage.setItem("topxx_authorized", "true");

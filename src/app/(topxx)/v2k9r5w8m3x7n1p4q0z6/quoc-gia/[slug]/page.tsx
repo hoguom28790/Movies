@@ -1,4 +1,4 @@
-import { getTopXXMovies } from "@/services/api/v2k9r5w8m3x7n1p4q0z6";
+import { getTopXXMovies } from "@/services/api/topxx";
 import { XXMovieGrid } from "@/components/movie/XXMovieGrid";
 import { notFound } from "next/navigation";
 
