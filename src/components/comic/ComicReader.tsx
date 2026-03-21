@@ -244,7 +244,8 @@ export function ComicReader({ slug, title, posterUrl, chapter, images, chaptersL
               <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-white/80 transition-all text-[11px] font-bold border border-white/5 active:scale-95">
                 Nguồn: <span className="text-primary uppercase">{activeSource}</span>
               </button>
-              <div className="absolute top-10 right-0 w-32 bg-[#141416]/95 backdrop-blur-xl border border-white/10 rounded-xl overflow-hidden hidden group-hover:flex flex-col z-50 shadow-2xl animate-in fade-in slide-in-from-top-2">
+              <div className="absolute top-full right-0 pt-2 w-36 hidden group-hover:block z-50">
+                <div className="bg-[#141416]/95 backdrop-blur-3xl border border-white/10 rounded-xl overflow-hidden shadow-2xl animate-in fade-in slide-in-from-top-2 flex flex-col">
                 {AVAILABLE_SOURCES.map((src) => (
                   <button 
                     key={src}
@@ -259,6 +260,7 @@ export function ComicReader({ slug, title, posterUrl, chapter, images, chaptersL
                     {src}
                   </button>
                 ))}
+                </div>
               </div>
             </div>
 
