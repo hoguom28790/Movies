@@ -20,13 +20,22 @@ export function ComicReader({ slug, title, posterUrl, chapter, images, chaptersL
   posterUrl: string;
   chapter: string;
   images: string[];
-  chaptersList: string[]; // Order depends on API, ascending or descending
+  chaptersList: string[]; // Usually comes unsorted. We must sort it to ensure Prev/Next logic is flawless.
   servers: string[];
   currentServer: string;
 }) {
   const { user } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
+
+  // Sort chapters mathematically to ensure Prev/Next is always perfectly sequential regardless of API order
+  const sortedChapters = [...chaptersList].sort((a, b) => {
+    const numA = parseFloat(a.match(/[\d.]+/)?.[0] || "0");
+    const numB = parseFloat(b.match(/[\d.]+/)?.[0] || "0");
+    return numA - numB; // Ascending (1, 2, 3...)
+  });
+
+  const [toastMsg, setToastMsg] = useState<string | null>(null);
   
   // Settings State
   const [readingMode, setReadingMode] = useState<ReadingMode>("vertical");
@@ -65,20 +74,36 @@ export function ComicReader({ slug, title, posterUrl, chapter, images, chaptersL
     }
   };
 
-  const currentIndex = chaptersList.indexOf(chapter);
-  const isAscending = parseFloat(chaptersList[0]) <= parseFloat(chaptersList[chaptersList.length - 1] || "0");
+  const currentIndex = sortedChapters.indexOf(chapter);
   
   let prevChapter: string | null = null;
   let nextChapter: string | null = null;
 
-  if (isAscending) {
-    if (currentIndex > 0) prevChapter = chaptersList[currentIndex - 1];
-    if (currentIndex < chaptersList.length - 1) nextChapter = chaptersList[currentIndex + 1];
-  } else {
-    // index 0 is newest
-    if (currentIndex < chaptersList.length - 1) prevChapter = chaptersList[currentIndex + 1];
-    if (currentIndex > 0) nextChapter = chaptersList[currentIndex - 1];
-  }
+  if (currentIndex > 0) prevChapter = sortedChapters[currentIndex - 1];
+  if (currentIndex < sortedChapters.length - 1) nextChapter = sortedChapters[currentIndex + 1];
+
+  const handleNavigateChapter = (targetChap: string | null) => {
+    if (!targetChap) return;
+    setToastMsg(`Đang chuyển sang chương ${targetChap}...`);
+    router.push(`/doc/${slug}/${targetChap}?server=${currentServer}`);
+  };
+
+  useEffect(() => {
+    // Keyboard navigation
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Don't trigger if user is typing in an input
+      if (document.activeElement?.tagName === "INPUT" || document.activeElement?.tagName === "TEXTAREA") return;
+
+      if (e.key === "ArrowLeft" || e.key.toLowerCase() === "a") {
+        handleNavigateChapter(prevChapter);
+      } else if (e.key === "ArrowRight" || e.key.toLowerCase() === "d") {
+        handleNavigateChapter(nextChapter);
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [prevChapter, nextChapter, slug, currentServer]);
 
   const lastSavedProgress = useRef(-1);
   const lastSavedTime = useRef(0);
@@ -274,6 +299,44 @@ export function ComicReader({ slug, title, posterUrl, chapter, images, chaptersL
         </div>
       </div>
 
+      {/* Toast Notification */}
+      {toastMsg && (
+        <div className="fixed top-20 left-1/2 -translate-x-1/2 z-[200] bg-primary text-white px-6 py-3 rounded-full shadow-2xl shadow-primary/30 font-bold text-[14px] animate-in slide-in-from-top-4 fade-in duration-300">
+          {toastMsg}
+        </div>
+      )}
+
+      {/* Floating Side Navigation Buttons (Desktop/Tablet) */}
+      <div className={`fixed inset-y-0 left-0 w-[15vw] max-w-[150px] z-40 flex items-center justify-start px-4 transition-opacity duration-300 ${showNav ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
+        {prevChapter && (
+           <button 
+             onClick={(e) => { e.stopPropagation(); handleNavigateChapter(prevChapter); }}
+             className="w-12 h-12 rounded-full bg-black/40 backdrop-blur-md border border-white/10 text-white/70 hover:text-white hover:bg-black/60 hover:scale-110 transition-all flex items-center justify-center shadow-2xl"
+             title={`Chương ${prevChapter} (Phím ArrowLeft / A)`}
+           >
+             <ChevronLeft className="w-6 h-6" />
+           </button>
+        )}
+      </div>
+      <div className={`fixed inset-y-0 right-0 w-[15vw] max-w-[150px] z-40 flex items-center justify-end px-4 transition-opacity duration-300 ${showNav ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
+        {nextChapter ? (
+           <button 
+             onClick={(e) => { e.stopPropagation(); handleNavigateChapter(nextChapter); }}
+             className="w-12 h-12 rounded-full bg-black/40 backdrop-blur-md border border-white/10 text-white/70 hover:text-white hover:bg-black/60 hover:scale-110 transition-all flex items-center justify-center shadow-2xl"
+             title={`Chương ${nextChapter} (Phím ArrowRight / D)`}
+           >
+             <ChevronRight className="w-6 h-6" />
+           </button>
+        ) : (
+           <button 
+             disabled
+             className="px-4 py-2 rounded-xl bg-black/40 backdrop-blur-md border border-white/10 text-white/40 flex items-center justify-center shadow-2xl text-[12px] font-bold"
+           >
+             Hết Truyện
+           </button>
+        )}
+      </div>
+
       {/* Reader Images Container */}
       {readingMode === "vertical" ? (
         <div 
@@ -294,11 +357,9 @@ export function ComicReader({ slug, title, posterUrl, chapter, images, chaptersL
           {/* End of chapter controls */}
           <div className="w-full mt-10 p-6 flex flex-col items-center justify-center gap-4 border-t border-white/[0.06] pb-24">
              {nextChapter ? (
-               <Link href={`/doc/${slug}/${nextChapter}?server=${currentServer}`}>
-                  <button className="px-8 py-3 rounded-xl bg-primary hover:bg-primary-hover text-white text-[15px] font-bold transition-all shadow-lg shadow-primary/20 hover:scale-105 active:scale-95">
-                    Chương Phía Sau
-                  </button>
-               </Link>
+                <button onClick={() => handleNavigateChapter(nextChapter)} className="px-8 py-3 rounded-xl bg-primary hover:bg-primary-hover text-white text-[15px] font-bold transition-all shadow-lg shadow-primary/20 hover:scale-105 active:scale-95">
+                  Chương Kế Tiếp
+                </button>
              ) : (
                <button disabled className="px-8 py-3 rounded-xl bg-white/5 text-white/30 text-[15px] font-bold">
                  Cập Nhật Truyện Đang Chờ...
@@ -351,11 +412,9 @@ export function ComicReader({ slug, title, posterUrl, chapter, images, chaptersL
           {currentPage === images.length && (
             <div className="absolute right-4 top-1/2 -translate-y-1/2 z-20 animate-in slide-in-from-right-10 fade-in">
                {nextChapter ? (
-                 <Link href={`/doc/${slug}/${nextChapter}?server=${currentServer}`}>
-                    <button className="flex items-center gap-2 px-6 py-3 rounded-l-full bg-primary hover:bg-primary-hover text-white text-[14px] font-bold transition-all shadow-xl shadow-primary/30">
-                      Chương Tiếp <ChevronRight className="w-5 h-5" />
-                    </button>
-                 </Link>
+                  <button onClick={() => handleNavigateChapter(nextChapter)} className="flex items-center gap-2 px-6 py-3 rounded-l-full bg-primary hover:bg-primary-hover text-white text-[14px] font-bold transition-all shadow-xl shadow-primary/30">
+                    Chương Tiếp <ChevronRight className="w-5 h-5" />
+                  </button>
                ) : (
                  <div className="flex flex-col items-end gap-2 px-6 py-4 rounded-xl bg-black/80 backdrop-blur-md border border-white/10 shadow-2xl">
                     <span className="text-white/50 text-[12px] font-bold uppercase tracking-widest">Hết chương</span>
@@ -383,11 +442,9 @@ export function ComicReader({ slug, title, posterUrl, chapter, images, chaptersL
            </Link>
 
            <div className="flex items-center gap-1 sm:gap-5">
-             <Link href={prevChapter ? `/doc/${slug}/${prevChapter}?server=${currentServer}` : "#"} className={!prevChapter ? "pointer-events-none opacity-30" : ""}>
-               <button className="p-2 text-white/80 hover:text-white transition-colors bg-white/5 rounded-full" disabled={!prevChapter}>
+               <button onClick={() => handleNavigateChapter(prevChapter)} className="p-2 text-white/80 hover:text-white transition-colors bg-white/5 rounded-full" disabled={!prevChapter}>
                  <ChevronLeft className="w-5 h-5" />
                </button>
-             </Link>
 
              <div className="flex items-center justify-center min-w-[5rem] text-center">
                <span className="text-[13px] font-bold text-white/90">{currentPage}</span>
@@ -395,11 +452,9 @@ export function ComicReader({ slug, title, posterUrl, chapter, images, chaptersL
                <span className="text-[13px] font-medium text-white/50">{images.length}</span>
              </div>
 
-             <Link href={nextChapter ? `/doc/${slug}/${nextChapter}?server=${currentServer}` : "#"} className={!nextChapter ? "pointer-events-none opacity-30" : ""}>
-               <button className="p-2 text-white/80 hover:text-white transition-colors bg-white/5 rounded-full" disabled={!nextChapter}>
+               <button onClick={() => handleNavigateChapter(nextChapter)} className="p-2 text-white/80 hover:text-white transition-colors bg-white/5 rounded-full" disabled={!nextChapter}>
                  <ChevronRight className="w-5 h-5" />
                </button>
-             </Link>
            </div>
          </div>
       </div>

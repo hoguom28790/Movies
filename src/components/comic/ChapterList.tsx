@@ -15,9 +15,27 @@ interface ChapterListProps {
 }
 
 export function ChapterList({ chapters, slug }: ChapterListProps) {
-  const [isDesc, setIsDesc] = useState(false); // OTruyen defaults to older chapters first or latest first depending on api. We'll simply reverse the array.
+  const [isDesc, setIsDesc] = useState(true); // Default to Descending (newest first)
 
-  const displayChapters = isDesc ? [...chapters].reverse() : chapters;
+  React.useEffect(() => {
+    const saved = localStorage.getItem("truyen_sort_desc");
+    if (saved !== null) {
+      setIsDesc(saved === "true");
+    }
+  }, []);
+
+  const toggleSort = () => {
+    const newVal = !isDesc;
+    setIsDesc(newVal);
+    localStorage.setItem("truyen_sort_desc", String(newVal));
+  };
+
+  // Sort mathematically extracted numbers instead of just reversing array
+  const displayChapters = [...chapters].sort((a, b) => {
+    const numA = parseFloat(a.chapter_name.match(/[\d.]+/)?.[0] || "0");
+    const numB = parseFloat(b.chapter_name.match(/[\d.]+/)?.[0] || "0");
+    return isDesc ? numB - numA : numA - numB;
+  });
 
   return (
     <div className="bg-[#0a0a0a]/50 rounded-2xl border border-white/[0.06] p-4 sm:p-6 backdrop-blur-md">
@@ -26,7 +44,7 @@ export function ChapterList({ chapters, slug }: ChapterListProps) {
         
         <div className="flex items-center gap-4">
           <button 
-            onClick={() => setIsDesc(!isDesc)}
+            onClick={toggleSort}
             className="flex items-center gap-1.5 text-xs text-white/60 hover:text-white transition-colors bg-white/5 py-1.5 px-3 rounded-lg border border-white/10"
           >
             <ArrowDownUp className="w-3.5 h-3.5" />
