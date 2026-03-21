@@ -70,12 +70,26 @@ export function InstantSearch() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  const handleSearchSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (query.trim().length > 1) {
+      setIsOpen(false);
+      const url = isComicSection ? `/truyen/search?q=${encodeURIComponent(query)}` : `/search?q=${encodeURIComponent(query)}`;
+      window.location.href = url; // Hard nav or use router.push if we add useRouter
+    }
+  };
+
   return (
     <div className="relative flex-1 max-w-md hidden md:block mx-auto" ref={dropdownRef}>
-      <div className={`relative flex items-center bg-[#111]/80 border border-white/5 rounded-lg px-4 py-2 transition-all duration-300 ${
-        isOpen ? "ring-1 ring-[#00a3ff]/30 bg-[#161616]" : "hover:bg-[#1a1a1a]"
-      }`}>
-        <Search className={`h-4 w-4 transition-colors ${loading ? "text-[#00a3ff] animate-pulse" : "text-white/20"}`} />
+      <form 
+        onSubmit={handleSearchSubmit}
+        className={`relative flex items-center bg-[#111]/80 border border-white/5 rounded-lg px-4 py-2 transition-all duration-300 ${
+          isOpen ? "ring-1 ring-[#00a3ff]/30 bg-[#161616]" : "hover:bg-[#1a1a1a]"
+        }`}
+      >
+        <button type="submit" className="outline-none" aria-label="Search">
+           <Search className={`h-4 w-4 transition-colors ${loading ? "text-[#00a3ff] animate-pulse" : "text-white/20 hover:text-white"}`} />
+        </button>
         <input
           type="text"
           value={query}
@@ -85,11 +99,11 @@ export function InstantSearch() {
           className="ml-3 flex-1 bg-transparent text-[13px] text-white placeholder:text-white/10 outline-none font-medium tracking-tight"
         />
         {query && (
-          <button onClick={() => setQuery("")} className="ml-2 text-white/20 hover:text-white transition-colors">
+          <button type="button" onClick={() => setQuery("")} className="ml-2 text-white/20 hover:text-white transition-colors">
             <X className="h-4 w-4" />
           </button>
         )}
-      </div>
+      </form>
 
       {/* Dropdown Results */}
       {isOpen && (results.length > 0 || loading) && (
