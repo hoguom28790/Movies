@@ -315,14 +315,14 @@ export default function XXLibraryPage() {
                        posterUrl={movie.posterUrl}
                      />
                      
-                     <div className="absolute -top-2 -right-2 z-30 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-all">
+                     <div className="absolute -top-2 -right-2 z-30">
                         <button 
                           onClick={(e) => {
                             e.preventDefault();
                             e.stopPropagation();
                             handleRemoveMovie(movie);
                           }}
-                          className="w-8 h-8 rounded-xl bg-black/60 backdrop-blur-xl text-white border border-white/10 flex items-center justify-center hover:bg-red-500 hover:scale-110 transition-all shadow-xl"
+                          className="delete-btn-premium"
                           title="Xóa"
                         >
                            <X className="w-4 h-4" />

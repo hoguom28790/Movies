@@ -5,6 +5,7 @@ import { MovieCard } from "@/components/movie/MovieCard";
 import { ChevronRight } from "lucide-react";
 import Link from "next/link";
 import { HeroSlider } from "@/components/movie/HeroSlider";
+import { MovieContinueWatching } from "@/components/movie/MovieContinueWatching";
 import { CategoryShortcuts } from "@/components/movie/CategoryShortcuts";
 import { getTrendingMovies, getTMDBImageUrl } from "@/services/tmdb";
 import { BentoMovieRow } from "@/components/movie/BentoMovieRow";
@@ -38,6 +39,8 @@ export default async function Home() {
       {/* Hero with Cinematic Style */}
       <HeroSlider movies={heroMovies} />
 
+      {/* Tiếp tục xem */}
+      <MovieContinueWatching />
 
       {/* Category Shortcuts */}
       <CategoryShortcuts />

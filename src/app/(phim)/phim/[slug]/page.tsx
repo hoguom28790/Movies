@@ -8,6 +8,8 @@ import { getTMDBImageUrl, getTMDBMovieDetails, searchTMDBMovie, getTMDBCollectio
 import { MovieTabs } from "@/components/movie/MovieTabs";
 import { MovieRatings } from "@/components/movie/MovieRatings";
  
+import { TraktWatchedBadge } from "@/components/movie/TraktWatchedBadge";
+
 async function fetchMovieData(slug: string) {
   try {
     const [ng, kk, op] = await Promise.allSettled([
@@ -247,8 +249,12 @@ export default async function MovieDetailsPage({ params }: { params: Promise<{ s
                 <p className="text-[13px] text-white/30 mt-0.5 italic">
                   {tmdbData?.original_title || safeData.origin_name}
                 </p>
- 
+
                 <div className="flex flex-wrap justify-center lg:justify-start items-center gap-2 mt-3">
+                  <TraktWatchedBadge 
+                    movieTitle={safeData.name} 
+                    year={tmdbData?.release_date?.split("-")[0] || tmdbData?.first_air_date?.split("-")[0] || safeData.year} 
+                  />
                   <span className="px-2.5 py-1 rounded-md bg-primary/20 text-primary text-[11px] font-semibold">
                     {safeData.quality}
                   </span>

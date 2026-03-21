@@ -100,7 +100,7 @@ export default function ComicFavoritePage() {
                 <ComicCard title={comic.comicTitle} slug={comic.comicSlug} posterUrl={comic.coverUrl} />
                 <button 
                   onClick={(e) => handleRemove(comic.comicSlug, e)}
-                  className="absolute top-0 left-0 w-10 h-10 rounded-full bg-black/80 text-red-500 border border-white/10 flex items-center justify-center hover:bg-red-500 hover:text-white transition-all shadow-xl z-20 m-[-12px] opacity-0 group-hover:opacity-100"
+                  className="delete-btn-premium"
                   title="Xóa khỏi yêu thích"
                 >
                    <X className="w-5 h-5" />

@@ -28,11 +28,6 @@ export function BottomNav() {
 
   return (
     <>
-      {/* Floating Action Button for Premium */}
-      <button className="fixed right-6 bottom-24 w-14 h-14 bg-gradient-to-br from-primary to-primary-container text-white rounded-full shadow-[0_8px_25px_rgba(59,130,246,0.4)] flex items-center justify-center z-40 active:scale-95 transition-transform md:hidden">
-        <Zap className="w-6 h-6 fill-current" />
-      </button>
-
       {/* Bottom Navigation Bar */}
       <nav className="fixed bottom-0 left-0 w-full h-20 bg-[#0a0a0a]/80 backdrop-blur-2xl border-t border-white/5 shadow-[0_-10px_40px_rgba(0,0,0,0.5)] flex justify-around items-center px-4 pb-4 z-50 rounded-t-3xl md:hidden">
         {navItems.map((item) => {

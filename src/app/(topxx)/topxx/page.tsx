@@ -1,5 +1,6 @@
 import { getTopXXMovies } from "@/services/api/topxx";
 import { XXHeroSection } from "@/components/movie/XXHeroSection";
+import { XXContinueWatching } from "@/components/movie/XXContinueWatching";
 import { XXMovieRow } from "@/components/movie/XXMovieRow";
 import { XXMovieGrid } from "@/components/movie/XXMovieGrid";
 
@@ -25,6 +26,9 @@ export default async function XXHomePage() {
   return (
     <div className="flex flex-col gap-16 pb-20 mt-[-20px] max-w-7xl mx-auto">
       {heroMovie && <XXHeroSection movie={heroMovie} />}
+      
+      {/* Xem Tiếp */}
+      <XXContinueWatching />
       
       <div className="flex flex-col gap-20">
         <XXMovieRow 

@@ -105,7 +105,7 @@ export default function ComicHistoryPage() {
 
               <button 
                 onClick={(e) => handleDelete(item.comicSlug, e)}
-                className="absolute -top-3 -left-3 z-20 bg-black/60 hover:bg-red-500 backdrop-blur-xl text-white rounded-full p-2 transition-all shadow-lg hover:scale-110 border border-white/20 opacity-0 group-hover:opacity-100"
+                className="delete-btn-premium"
                 title="Xóa khỏi lịch sử"
               >
                 <X className="w-4 h-4" />

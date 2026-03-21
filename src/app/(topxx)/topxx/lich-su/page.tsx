@@ -145,7 +145,7 @@ export default function XXHistoryPage() {
               {/* Individual Remove Button */}
               <button 
                 onClick={(e) => handleRemoveItem(item.movieCode, e)}
-                className="absolute -top-3 -right-3 z-30 w-8 h-8 rounded-full bg-black/60 backdrop-blur-xl text-white border border-white/10 flex items-center justify-center hover:bg-red-500 hover:scale-110 transition-all shadow-xl opacity-0 group-hover:opacity-100"
+                className="delete-btn-premium"
                 title="Xóa khỏi lịch sử"
               >
                  <X className="w-4 h-4" />

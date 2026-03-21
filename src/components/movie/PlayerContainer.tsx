@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
@@ -34,10 +34,40 @@ export function PlayerContainer({ url, isHls, rawEmbedUrl, nextEpisodeUrl, movie
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  // Load Playhead History
+  // Trakt.tv Scrobbling State
+  const [traktMatch, setTraktMatch] = useState<any>(null);
+  const scrobbleSession = useRef<{ started: boolean; paused: boolean }>({ started: false, paused: false });
+
+  // 1. Content Resolution (Match OPhim Metadata to Trakt ID)
   useEffect(() => {
-    let iframeHasLoaded = false;
-    
+    const resolveTrakt = async () => {
+      if (!user || !movieTitle) return;
+      try {
+        const { getTraktTokens } = await import("@/services/db");
+        const { matchTraktContent } = await import("@/lib/trakt");
+        
+        const tokens = await getTraktTokens(user.uid);
+        if (tokens?.access_token) {
+          // Extract Year from title if available (e.g. "Movie (2024)")
+          const yearMatch = movieTitle.match(/\((\d{4})\)/);
+          const year = yearMatch ? parseInt(yearMatch[1]) : undefined;
+          const cleanTitle = movieTitle.replace(/\(\d{4}\)/, "").trim();
+
+          const match = await matchTraktContent(cleanTitle, year);
+          if (match) {
+            setTraktMatch(match);
+            console.log("Trakt Match Found:", match.title);
+          }
+        }
+      } catch (e) {
+        console.error("Trakt Resolution Error:", e);
+      }
+    };
+    resolveTrakt();
+  }, [user, movieTitle]);
+
+  // Load Playhead History & Sync
+  useEffect(() => {
     const attemptSeek = async () => {
       if (!user || !movieSlug || !episodeSlug) return;
       const { getMovieHistory, saveHistory } = await import("@/services/db");
@@ -49,24 +79,20 @@ export function PlayerContainer({ url, isHls, rawEmbedUrl, nextEpisodeUrl, movie
         episodeName: episodeName || "",
         episodeSlug: episodeSlug || "",
         posterUrl: posterUrl || "",
-        progressSeconds: 0 // Default to 0 for new episodes
+        progressSeconds: 0 
       };
 
       if (history && history.episodeSlug === episodeSlug && history.progressSeconds) {
-        // Same episode -> send SEEK message to iframe
         const iframeRef = document.getElementById('main-player') as HTMLIFrameElement;
         if (iframeRef && iframeRef.contentWindow) {
           iframeRef.contentWindow.postMessage({ type: 'SEEK', time: history.progressSeconds }, '*');
         }
-        // Keep existing progress internally while bumping updatedAt
         payload.progressSeconds = history.progressSeconds;
       }
       
-      // Register movie visit immediately to bump top of history
       saveHistory(user.uid, payload).catch(console.error);
     };
     
-    // Slight delay to let iframe spin up
     const timer = setTimeout(attemptSeek, 1000);
     return () => clearTimeout(timer);
   }, [user, movieSlug, episodeSlug]);
@@ -77,19 +103,45 @@ export function PlayerContainer({ url, isHls, rawEmbedUrl, nextEpisodeUrl, movie
     const handleMessage = async (event: MessageEvent) => {
       if (typeof event.data !== 'object') return;
 
-      if (event.data.type === 'ENTER_PSEUDO_FULLSCREEN') {
-        setIsPseudoFS(true);
-      }
-      if (event.data.type === 'EXIT_PSEUDO_FULLSCREEN') {
-        setIsPseudoFS(false);
-      }
+      if (event.data.type === 'ENTER_PSEUDO_FULLSCREEN') setIsPseudoFS(true);
+      if (event.data.type === 'EXIT_PSEUDO_FULLSCREEN') setIsPseudoFS(false);
+
+      // Handle Trakt Scrobbling Logic
+      const handleTraktScrobble = async (eventType: 'start' | 'pause' | 'stop', progress: number) => {
+        if (!user || !traktMatch) return;
+        try {
+          const { getTraktTokens } = await import("@/services/db");
+          const { scrobbleStart, scrobblePause, scrobbleStop } = await import("@/lib/trakt");
+          const tokens = await getTraktTokens(user.uid);
+          if (!tokens?.access_token) return;
+
+          if (eventType === 'start') {
+            await scrobbleStart(tokens.access_token, traktMatch, progress);
+            scrobbleSession.current.started = true;
+            scrobbleSession.current.paused = false;
+          } else if (eventType === 'pause') {
+            await scrobblePause(tokens.access_token, traktMatch, progress);
+            scrobbleSession.current.paused = true;
+          } else if (eventType === 'stop') {
+            await scrobbleStop(tokens.access_token, traktMatch, progress);
+            scrobbleSession.current.started = false;
+          }
+        } catch (e) {}
+      };
 
       // Handle continuous progress updates
       if (event.data.type === 'UPDATE_PROGRESS' && user && movieSlug) {
         const currentTime = event.data.time;
         const duration = event.data.duration;
+        const percent = duration > 0 ? (currentTime / duration) * 100 : 0;
         const now = Date.now();
-        // Throttle Firestore saves to every 10 seconds
+
+        // Trakt Start: Triggers at 1% or when resumed from pause
+        if (percent >= 1 && !scrobbleSession.current.started) {
+          handleTraktScrobble('start', percent);
+        }
+
+        // Periodic Local Save (Firestore)
         if (now - lastSaveTime > 10000) {
           lastSaveTime = now;
           const { saveHistory } = await import("@/services/db");
@@ -103,21 +155,25 @@ export function PlayerContainer({ url, isHls, rawEmbedUrl, nextEpisodeUrl, movie
             durationSeconds: duration
           }).catch(console.error);
         }
+
+        // Trakt Stop: Triggers at 90% (marked as watched)
+        if (percent >= 90 && scrobbleSession.current.started) {
+          handleTraktScrobble('stop', percent);
+        }
+      }
+
+      // Handle Pause/Play for Scrobble
+      if (event.data.type === 'VIDEO_PAUSE' && scrobbleSession.current.started) {
+        handleTraktScrobble('pause', event.data.percent || 0);
+      }
+      if (event.data.type === 'VIDEO_PLAY' && scrobbleSession.current.paused) {
+        handleTraktScrobble('start', event.data.percent || 0);
       }
 
       // Handle Video Ended
       if (event.data.type === 'VIDEO_ENDED') {
-        
-        // Auto Sync to Trakt if connected
-        if (user && movieTitle) {
-          try {
-            const { getTraktTokens } = await import("@/services/db");
-            const { pushSingleMovieToTrakt } = await import("@/services/trakt");
-            const tokens = await getTraktTokens(user.uid);
-            if (tokens && tokens.access_token) {
-              await pushSingleMovieToTrakt(tokens.access_token, movieTitle);
-            }
-          } catch(e) { }
+        if (scrobbleSession.current.started) {
+          handleTraktScrobble('stop', 100);
         }
 
         if (nextEpisodeUrl) {
@@ -127,7 +183,7 @@ export function PlayerContainer({ url, isHls, rawEmbedUrl, nextEpisodeUrl, movie
     };
     window.addEventListener('message', handleMessage);
     return () => window.removeEventListener('message', handleMessage);
-  }, [nextEpisodeUrl, router, user, movieSlug, episodeSlug, movieTitle, episodeName, posterUrl]);
+  }, [nextEpisodeUrl, router, user, movieSlug, episodeSlug, movieTitle, episodeName, posterUrl, traktMatch]);
 
   useEffect(() => {
     if (isPseudoFS) {

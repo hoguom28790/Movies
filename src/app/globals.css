@@ -121,3 +121,44 @@ body {
   scrollbar-width: none;
 }
 .scrollbar-hide::-webkit-scrollbar { display: none; }
+
+/* Premium Delete Button Standard */
+.delete-btn-premium {
+  position: absolute;
+  top: -12px;
+  right: -12px;
+  z-index: 30;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: white;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  opacity: 1; /* Visible by default on touch */
+}
+
+@media (min-width: 768px) {
+  .delete-btn-premium {
+    opacity: 0;
+  }
+  .group:hover .delete-btn-premium {
+    opacity: 1;
+  }
+}
+
+.delete-btn-premium:hover {
+  background: oklch(60% 0.2 25); /* Primary red-ish */
+  transform: scale(1.1);
+  color: white;
+}
+
+.delete-btn-premium:active {
+  transform: scale(0.95);
+}

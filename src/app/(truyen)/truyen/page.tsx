@@ -1,5 +1,6 @@
 import { ComicCard } from "@/components/comic/ComicCard";
 import { ComicRow } from "@/components/comic/ComicRow";
+import { ComicContinueReading } from "@/components/comic/ComicContinueReading";
 import { BookOpen, Flame } from "lucide-react";
 
 export const dynamic = "force-dynamic";
@@ -95,6 +96,9 @@ export default async function ComicHomePage({
   return (
     <div className="flex flex-col gap-16 pb-20 mt-[-20px] max-w-7xl mx-auto md:px-0">
       
+      {/* Đọc Tiếp */}
+      <ComicContinueReading />
+
       {/* Mới Cập Nhật */}
       <ComicRow 
         title="Mới Cập Nhật"

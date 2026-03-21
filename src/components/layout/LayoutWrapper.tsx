@@ -1,7 +1,6 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import { Sidebar } from "@/components/layout/Sidebar";
 import { BottomNav } from "@/components/layout/BottomNav";
 
 export function LayoutWrapper({ children }: { children: React.ReactNode }) {
@@ -14,7 +13,6 @@ export function LayoutWrapper({ children }: { children: React.ReactNode }) {
         {children}
       </main>
       {!isXX && <BottomNav />}
-      {!isXX && <Sidebar />}
     </div>
   );
 }
