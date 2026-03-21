@@ -21,8 +21,8 @@ export function BottomNav() {
   const navItems = [
     { label: "Trang chủ", icon: Home, href: isXX ? "/topxx" : (isComic ? "/truyen" : "/"), activeRegex: isXX ? /^\/topxx$/ : (isComic ? /^\/truyen$/ : /^\/$/) },
     { label: "Duyệt Tìm", icon: LayoutGrid, href: isXX ? "/topxx/the-loai" : (isComic ? "/truyen?genre=all" : "/the-loai"), activeRegex: /\/(the-loai|search|truyen\?genre)/ },
-    { label: "Lịch sử", icon: History, href: isXX ? "/topxx/lich-su" : (isComic ? "/truyen/lich-su" : "/history"), activeRegex: /\/(history|lich-su)/ },
-    { label: "Yêu thích", icon: Heart, href: isXX ? "/topxx/yeu-thich" : (isComic ? "/truyen/yeu-thich" : "/watchlist"), activeRegex: /\/(watchlist|yeu-thich)/ },
+    { label: "Lịch sử", icon: History, href: isXX ? "/topxx/lich-su" : (isComic ? "/truyen/lich-su" : "/lich-su"), activeRegex: /\/lich-su/ },
+    { label: "Yêu thích", icon: Heart, href: isXX ? "/topxx/yeu-thich" : (isComic ? "/truyen/yeu-thich" : "/yeu-thich"), activeRegex: /\/yeu-thich/ },
     { label: isComic ? "Hồ Phim" : "Hồ Truyện", icon: BookOpen, href: isComic ? "/" : "/truyen", activeRegex: isComic ? /^\/(?!truyen|doc|topxx).*/ : /^\/(truyen|doc)/ },
   ];
 
