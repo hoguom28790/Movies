@@ -4,7 +4,7 @@ import React, { useEffect, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { getUserHistory, deleteFromHistory } from "@/services/db";
 import { HistoryEntry } from "@/types/database";
-import { MovieCard } from "@/components/phim/MovieCard";
+import { MovieCard } from "@/components/movie/MovieCard";
 import { X, Film } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 

@@ -1,5 +1,5 @@
 import { searchMovies } from "@/services/api";
-import { MovieCard } from "@/components/phim/MovieCard";
+import { MovieCard } from "@/components/movie/MovieCard";
 import Form from "next/form";
 import Link from "next/link";
 import { Search, Filter } from "lucide-react";

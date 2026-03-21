@@ -2,7 +2,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/Button";
 import { ChevronLeft, ChevronRight, ArrowLeft, Play } from "lucide-react";
-import { PlayerContainer } from "@/components/phim/PlayerContainer";
+import { PlayerContainer } from "@/components/movie/PlayerContainer";
 
 async function fetchMovieData(source: string, slug: string) {
   let url = "";

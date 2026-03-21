@@ -5,7 +5,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import Link from "next/link";
 import { getUserPlaylists, deletePlaylist, removeMovieFromPlaylist, ensureDefaultPlaylist, createPlaylist } from "@/services/db";
 import { Playlist } from "@/types/database";
-import { MovieCard } from "@/components/phim/MovieCard";
+import { MovieCard } from "@/components/movie/MovieCard";
 import { Trash, Library, Loader2, X, Plus, Heart, Search, Film } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 

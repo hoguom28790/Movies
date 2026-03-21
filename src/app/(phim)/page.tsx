@@ -1,13 +1,13 @@
 import { getLatestMovies } from "@/services/api";
 import { getCategoryMovies } from "@/services/api/category";
-import { MovieRow } from "@/components/phim/MovieRow";
-import { MovieCard } from "@/components/phim/MovieCard";
+import { MovieRow } from "@/components/movie/MovieRow";
+import { MovieCard } from "@/components/movie/MovieCard";
 import { ChevronRight } from "lucide-react";
 import Link from "next/link";
-import { HeroSlider } from "@/components/phim/HeroSlider";
-import { CategoryShortcuts } from "@/components/phim/CategoryShortcuts";
+import { HeroSlider } from "@/components/movie/HeroSlider";
+import { CategoryShortcuts } from "@/components/movie/CategoryShortcuts";
 import { getTrendingMovies, getTMDBImageUrl } from "@/services/tmdb";
-import { BentoMovieRow } from "@/components/phim/BentoMovieRow";
+import { BentoMovieRow } from "@/components/movie/BentoMovieRow";
 export default async function Home() {
   const [latestData, phimBoData, phimLeData, hoatHinhData, trendingData] = await Promise.allSettled([
     getLatestMovies(1),

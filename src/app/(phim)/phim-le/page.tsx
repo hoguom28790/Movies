@@ -1,5 +1,5 @@
 import { getCategoryMovies } from "@/services/api/category";
-import { MovieGrid } from "@/components/phim/MovieGrid";
+import { MovieGrid } from "@/components/movie/MovieGrid";
 
 import { MovieListResponse } from "@/types/movie";
 

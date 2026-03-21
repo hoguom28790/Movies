@@ -1,6 +1,6 @@
 import { getGenreList } from "@/services/api/category";
 import { LayoutGrid } from "lucide-react";
-import { GenreGrid } from "@/components/phim/GenreGrid";
+import { GenreGrid } from "@/components/movie/GenreGrid";
 
 export default async function TheLoaiPage() {
   const genres = await getGenreList();
