@@ -31,7 +31,7 @@ export function StitchMangaCard({
         return (
             <Link 
                 href={`/truyen/${slug}`}
-                className="group flex gap-4 p-4 bg-surface border border-outline-variant transition-all hover:bg-surface-bright theme-truyen grayscale hover:grayscale-0"
+                className="group flex gap-4 p-4 bg-surface border border-outline-variant transition-all hover:bg-surface-bright theme-truyen"
             >
                 <div className="relative w-16 h-24 flex-shrink-0 overflow-hidden">
                     <Image 
@@ -58,7 +58,7 @@ export function StitchMangaCard({
         return (
             <Link 
                 href={`/truyen/${slug}`}
-                className="group relative flex flex-col bg-surface border border-outline-variant overflow-hidden p-6 editorial-shadow transition-all duration-700 hover:scale-[1.01] hover:grayscale-0 grayscale theme-truyen"
+                className="group relative flex flex-col bg-surface border border-outline-variant overflow-hidden p-6 editorial-shadow transition-all duration-700 hover:scale-[1.01] theme-truyen"
             >
                 <div className="relative aspect-[4/3] w-full mb-6 overflow-hidden">
                     <Image 
@@ -106,7 +106,7 @@ export function StitchMangaCard({
     return (
         <Link 
             href={`/truyen/${slug}`}
-            className="group relative flex flex-col bg-surface-container overflow-hidden border border-outline-variant transition-all hover:scale-[1.02] hover:grayscale-0 grayscale theme-truyen editorial-shadow"
+            className="group relative flex flex-col bg-surface-container overflow-hidden border border-outline-variant transition-all hover:scale-[1.02] theme-truyen editorial-shadow"
         >
             <div className="relative aspect-[3/4] w-full overflow-hidden">
                 <Image 

@@ -89,8 +89,8 @@ export function StitchReader({ media }: { media: Media }) {
                                 alt={`Page ${idx + 1}`} 
                                 width={1200} 
                                 height={1800} 
-                                className="w-full h-auto relative z-10 opacity-0 transition-opacity duration-700 hover:grayscale-0 grayscale-50"
-                                onLoadingComplete={(img) => img.classList.remove('opacity-0', 'grayscale-50')}
+                                className="w-full h-auto relative z-10 opacity-0 transition-opacity duration-700 hover:grayscale-0"
+                                onLoadingComplete={(img) => img.classList.remove('opacity-0')}
                                 unoptimized
                             />
                         </div>

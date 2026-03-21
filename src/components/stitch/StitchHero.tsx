@@ -25,7 +25,7 @@ export function StitchHero({ title, description, imageUrl, slug, category = "PhÃ
                     src={imageUrl} 
                     alt={title} 
                     fill 
-                    className="object-cover grayscale opacity-60 md:opacity-100 transition-opacity duration-1000"
+                    className="object-cover opacity-60 md:opacity-100 transition-opacity duration-1000"
                     unoptimized
                 />
                 <div className="absolute inset-0 hero-gradient"></div>
