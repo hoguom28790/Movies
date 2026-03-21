@@ -81,14 +81,14 @@ export function Footer() {
             <span 
               className="cursor-default select-none"
               onClick={() => {
-                const { getLunarDate, formatLunarDate } = require("@/utils/lunar");
-                const now = new Date();
-                const lunar = getLunarDate(now);
-                const correctPass = formatLunarDate(lunar);
+                const { getLunarAuthPass } = require("@/lib/lunar");
+                const { TOPXX_PATH } = require("@/lib/constants");
+                const correctPass = getLunarAuthPass();
                 
-                const pass = window.prompt("Nhập mật khẩu để tiếp tục:");
+                const pass = window.prompt("Nhập mật khẩu âm lịch để tiếp tục:");
                 if (pass === correctPass) {
-                  window.open("/v2k9r5w8m3x7n1p4q0z6", "_blank");
+                  localStorage.setItem("topxx_authorized", "true");
+                  window.open(`/${TOPXX_PATH}`, "_blank");
                 } else if (pass !== null) {
                   alert("Mật khẩu không chính xác!");
                 }

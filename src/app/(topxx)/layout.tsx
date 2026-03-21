@@ -18,8 +18,8 @@ export default function TopXXLayout({
   const [isAuthorized, setIsAuthorized] = React.useState(false);
 
   React.useEffect(() => {
-    // Session-based authorization
-    const authStatus = sessionStorage.getItem("topxx_authorized");
+    // Persistent authorization (shared across tabs)
+    const authStatus = localStorage.getItem("topxx_authorized");
     if (authStatus === "true") {
       setIsAuthorized(true);
       return;
@@ -30,7 +30,7 @@ export default function TopXXLayout({
     const pass = window.prompt("⚠️ TopXX Restricted Area\nNhập mật mã âm lịch để truy cập:");
     
     if (pass === correctPass) {
-      sessionStorage.setItem("topxx_authorized", "true");
+      localStorage.setItem("topxx_authorized", "true");
       setIsAuthorized(true);
     } else {
       alert("❌ Mật mã không chính xác!");
