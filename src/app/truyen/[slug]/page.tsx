@@ -45,10 +45,15 @@ export default async function ComicDetailsPage({ params }: { params: Promise<{ s
 
   const item = data.data.item;
   const domain_cdn = data.data.APP_DOMAIN_CDN_IMAGE || "https://otruyenapi.com/uploads/comics";
-  const poster = `${domain_cdn}/${item.thumb_url}`;
+  
+  // Clean up trailing slashes
+  const baseUrl = domain_cdn.endsWith('/uploads/comics') ? domain_cdn : `${domain_cdn}/uploads/comics`;
+  const posterPath = item.thumb_url.startsWith('/') ? item.thumb_url : `/${item.thumb_url}`;
+  
+  const poster = `${baseUrl}${posterPath}`;
   
   // They sometimes only have thumb_url, no separate backdrop. Use poster as blurred backdrop.
-  const thumb = `${domain_cdn}/${item.thumb_url}`;
+  const thumb = poster;
 
   const chapters = item.chapters?.[0]?.server_data || [];
   
@@ -123,12 +128,13 @@ export default async function ComicDetailsPage({ params }: { params: Promise<{ s
               {item.category?.length > 0 && (
                 <div className="flex flex-wrap justify-center lg:justify-start gap-1.5 mt-3">
                   {item.category.map((g: any) => (
-                    <span
+                    <Link
                       key={g.id || g.slug}
-                      className="px-2.5 py-1 rounded-md text-[11px] bg-white/5 text-white/40 font-medium"
+                      href={`/truyen?genre=${g.slug}`}
+                      className="px-2.5 py-1 rounded-md text-[11px] bg-white/5 text-white/40 font-medium hover:bg-indigo-500/20 hover:text-indigo-400 transition-colors cursor-pointer"
                     >
                       {g.name}
-                    </span>
+                    </Link>
                   ))}
                 </div>
               )}
