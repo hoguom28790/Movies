@@ -1,3 +1,4 @@
+// Updated at 2026-03-21T16:44:00+07:00 for deploy
 import type { Metadata, Viewport } from "next";
 import { Inter, Epilogue } from "next/font/google";
 import "./globals.css";
