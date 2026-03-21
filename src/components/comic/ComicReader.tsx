@@ -132,7 +132,7 @@ export function ComicReader({ slug, title, posterUrl, chapter, images: initialIm
   const handleNavigateChapter = (targetChap: string | null) => {
     if (!targetChap) return;
     setToastMsg(`Đang chuyển sang chương ${targetChap}...`);
-    router.push(`/doc/${slug}/${targetChap}?server=${currentServer}`);
+    router.push(`/doc/${slug}/${targetChap}?server=${currentServer}&source=${selectedSource}`);
   };
 
   useEffect(() => {
@@ -261,7 +261,7 @@ export function ComicReader({ slug, title, posterUrl, chapter, images: initialIm
 
           <div className="flex items-center gap-2 sm:gap-4 relative">
             <div className="hidden sm:flex items-center gap-1.5 mr-2">
-               <Link href={prevChapter ? `/doc/${slug}/${prevChapter}?server=${currentServer}` : "#"} className={!prevChapter ? "pointer-events-none opacity-30" : ""}>
+               <Link href={prevChapter ? `/doc/${slug}/${prevChapter}?server=${currentServer}&source=${selectedSource}` : "#"} className={!prevChapter ? "pointer-events-none opacity-30" : ""}>
                  <button className="p-1.5 text-white/50 hover:text-white transition-colors bg-white/5 rounded-md hover:bg-white/10" disabled={!prevChapter}>
                    <ChevronLeft className="w-4 h-4" />
                  </button>
@@ -269,7 +269,7 @@ export function ComicReader({ slug, title, posterUrl, chapter, images: initialIm
                <span className="text-[11px] sm:text-xs font-semibold px-2.5 py-1 rounded-md bg-white/10 text-white/80">
                  Ch. {chapter}
                </span>
-               <Link href={nextChapter ? `/doc/${slug}/${nextChapter}?server=${currentServer}` : "#"} className={!nextChapter ? "pointer-events-none opacity-30" : ""}>
+               <Link href={nextChapter ? `/doc/${slug}/${nextChapter}?server=${currentServer}&source=${selectedSource}` : "#"} className={!nextChapter ? "pointer-events-none opacity-30" : ""}>
                  <button className="p-1.5 text-white/50 hover:text-white transition-colors bg-white/5 rounded-md hover:bg-white/10" disabled={!nextChapter}>
                    <ChevronRight className="w-4 h-4" />
                  </button>
@@ -295,6 +295,7 @@ export function ComicReader({ slug, title, posterUrl, chapter, images: initialIm
                     onClick={() => {
                       if (src === selectedSource) return;
                       setSelectedSource(src as any);
+                      router.push(`/doc/${slug}/${chapter}?server=${currentServer}&source=${src}`);
                     }}
                     className={`px-4 py-2.5 text-[12px] font-bold text-left transition-colors border-b border-white/5 last:border-none ${
                       src === selectedSource ? "bg-primary text-white" : "text-white/60 hover:text-white hover:bg-white/5"
@@ -354,8 +355,10 @@ export function ComicReader({ slug, title, posterUrl, chapter, images: initialIm
                        <button 
                          key={src}
                          onClick={() => {
+                           if (src === selectedSource) return;
                            setSelectedSource(src as any);
                            setShowSettings(false);
+                           router.push(`/doc/${slug}/${chapter}?server=${currentServer}&source=${src}`);
                          }} 
                          className={`flex items-center justify-between px-3 py-2 rounded-lg text-[13px] font-medium transition-colors ${selectedSource === src ? "bg-primary/20 text-primary border border-primary/20" : "text-white/70 hover:bg-white/5 border border-transparent"}`}
                        >

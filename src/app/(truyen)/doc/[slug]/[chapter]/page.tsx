@@ -44,10 +44,10 @@ export default async function ComicReadingPage({
   if (otruyenData.status !== "success" || !otruyenData.data?.item) return notFound();
 
   const item = otruyenData.data.item;
-  const domain_cdn = otruyenData.data.APP_DOMAIN_CDN_IMAGE || "https://otruyenapi.com";
+  const domain_cdn = otruyenData.data.APP_DOMAIN_CDN_IMAGE || "https://img.otruyenapi.com";
   const poster = item.thumb_url.startsWith('http') 
     ? item.thumb_url 
-    : `https://otruyenapi.com/uploads/comics/${item.thumb_url.startsWith('/') ? item.thumb_url.substring(1) : item.thumb_url}`;
+    : `${domain_cdn}/uploads/comics/${item.thumb_url.startsWith('/') ? item.thumb_url.substring(1) : item.thumb_url}`;
 
   // Multi-source engine: OTruyen + MangaDex + MangaPlus
   let images: string[] = [];

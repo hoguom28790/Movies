@@ -53,9 +53,17 @@ export default function ComicHistoryPage() {
 
   const fixImageUrl = (url: string) => {
     if (!url) return "";
-    if (url.startsWith('http')) return url;
+    
+    if (url.startsWith('http')) {
+      if (url.includes('img.otruyenapi.com')) return url;
+      if (url.includes('otruyenapi.com')) {
+         return url.replace('https://otruyenapi.com', 'https://img.otruyenapi.com');
+      }
+      return url;
+    }
+    
     const path = url.startsWith('/') ? url.substring(1) : url;
-    return `https://otruyenapi.com/uploads/comics/${path}`;
+    return `https://img.otruyenapi.com/uploads/comics/${path}`;
   };
 
   return (
