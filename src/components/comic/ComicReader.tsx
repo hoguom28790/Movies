@@ -14,7 +14,8 @@ import { useRouter, useSearchParams } from "next/navigation";
 type ReadingMode = "vertical" | "horizontal";
 type ImageFit = "width" | "height" | "original";
 
-export function ComicReader({ slug, title, posterUrl, chapter, images, chaptersList, servers, currentServer }: {
+// Added MangaPlus (official Shueisha) as third source for high-quality official manga
+export function ComicReader({ slug, title, posterUrl, chapter, images, chaptersList, servers, currentServer, activeSource = "OTruyen" }: {
   slug: string;
   title: string;
   posterUrl: string;
@@ -23,10 +24,13 @@ export function ComicReader({ slug, title, posterUrl, chapter, images, chaptersL
   chaptersList: string[]; // Usually comes unsorted. We must sort it to ensure Prev/Next logic is flawless.
   servers: string[];
   currentServer: string;
+  activeSource?: "OTruyen" | "MangaDex" | "MangaPlus";
 }) {
   const { user } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
+
+  const AVAILABLE_SOURCES = ["OTruyen", "MangaDex", "MangaPlus"];
 
   // Sort chapters mathematically to ensure Prev/Next is always perfectly sequential regardless of API order
   const sortedChapters = [...chaptersList].sort((a, b) => {
@@ -234,6 +238,30 @@ export function ComicReader({ slug, title, posterUrl, chapter, images, chaptersL
             >
               {isFullscreen ? <Minimize className="w-5 h-5" /> : <Maximize className="w-5 h-5" />}
             </button>
+
+            {/* Source Switcher */}
+            <div className="relative group mr-2">
+              <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-white/80 transition-all text-[11px] font-bold border border-white/5 active:scale-95">
+                Nguồn: <span className="text-primary uppercase">{activeSource}</span>
+              </button>
+              <div className="absolute top-10 right-0 w-32 bg-[#141416]/95 backdrop-blur-xl border border-white/10 rounded-xl overflow-hidden hidden group-hover:flex flex-col z-50 shadow-2xl animate-in fade-in slide-in-from-top-2">
+                {AVAILABLE_SOURCES.map((src) => (
+                  <button 
+                    key={src}
+                    onClick={() => {
+                      if (src === activeSource) return;
+                      router.push(`/doc/${slug}/${chapter}?source=${src.toLowerCase()}`);
+                    }}
+                    className={`px-4 py-2.5 text-[12px] font-bold text-left transition-colors border-b border-white/5 last:border-none ${
+                      src === activeSource ? "bg-primary text-white" : "text-white/60 hover:text-white hover:bg-white/5"
+                    }`}
+                  >
+                    {src}
+                  </button>
+                ))}
+              </div>
+            </div>
+
             <button 
               onClick={(e) => { e.stopPropagation(); setShowSettings(!showSettings); }}
               className={`p-2 transition-colors ${showSettings ? 'text-primary' : 'text-white/60 hover:text-white'}`}
@@ -274,25 +302,23 @@ export function ComicReader({ slug, title, posterUrl, chapter, images, chaptersL
                   </div>
                 </div>
 
-                {servers.length > 1 && (
-                  <div>
-                    <h3 className="text-[11px] uppercase tracking-widest font-bold text-white/30 mb-2">Nguồn Truyện (Server)</h3>
-                    <div className="flex flex-col gap-1">
-                      {servers.map((srv) => (
-                        <button 
-                          key={srv}
-                          onClick={() => {
-                            router.push(`/doc/${slug}/${chapter}?server=${srv}`);
-                            setShowSettings(false);
-                          }} 
-                          className={`flex items-center justify-between px-3 py-2 rounded-lg text-[13px] font-medium transition-colors ${currentServer === srv ? "bg-primary/20 text-primary" : "text-white/70 hover:bg-white/5"}`}
-                        >
-                          {srv} {currentServer === srv && <Check className="w-4 h-4" />}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                )}
+                <div>
+                   <h3 className="text-[11px] uppercase tracking-widest font-bold text-white/30 mb-2 whitespace-nowrap">Nguồn Truyện (Source)</h3>
+                   <div className="flex flex-col gap-1">
+                     {AVAILABLE_SOURCES.map((src) => (
+                       <button 
+                         key={src}
+                         onClick={() => {
+                           router.push(`/doc/${slug}/${chapter}?source=${src.toLowerCase()}`);
+                           setShowSettings(false);
+                         }} 
+                         className={`flex items-center justify-between px-3 py-2 rounded-lg text-[13px] font-medium transition-colors ${activeSource === src ? "bg-primary/20 text-primary border border-primary/20" : "text-white/70 hover:bg-white/5 border border-transparent"}`}
+                       >
+                         {src} {activeSource === src && <Check className="w-4 h-4" />}
+                       </button>
+                     ))}
+                   </div>
+                </div>
               </div>
             )}
           </div>

@@ -12,9 +12,10 @@ interface Chapter {
 interface ChapterListProps {
   chapters: Chapter[];
   slug: string;
+  activeSource?: string;
 }
 
-export function ChapterList({ chapters, slug }: ChapterListProps) {
+export function ChapterList({ chapters, slug, activeSource = "otruyen" }: ChapterListProps) {
   const [isDesc, setIsDesc] = useState(true); // Default to Descending (newest first)
 
   React.useEffect(() => {
@@ -57,8 +58,8 @@ export function ChapterList({ chapters, slug }: ChapterListProps) {
       <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3 max-h-[600px] overflow-y-auto pr-2 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:bg-white/10 [&::-webkit-scrollbar-track]:bg-transparent">
         {displayChapters.map((chap: any) => (
           <Link 
-            key={chap.chapter_api_data}
-            href={`/doc/${slug}/${chap.chapter_name}`}
+            key={`${chap.chapter_api_data}-${activeSource}`}
+            href={`/doc/${slug}/${chap.chapter_name}?source=${activeSource}`}
             className="flex flex-col items-center justify-center p-3 rounded-lg bg-white/5 hover:bg-white/10 border border-white/[0.03] transition-colors"
           >
              <span className="text-white/80 font-medium text-[13px]">Chương {chap.chapter_name}</span>

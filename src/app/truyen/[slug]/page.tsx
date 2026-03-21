@@ -6,6 +6,8 @@ import { ComicFavoriteBtn } from "@/components/comic/ComicFavoriteBtn";
 import { ComicProgressDisplay } from "@/components/comic/ComicProgressDisplay";
 import { ChapterList } from "@/components/comic/ChapterList";
 
+import { MangaPlusService } from "@/services/mangaplus";
+
 export const dynamic = "force-dynamic";
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
@@ -36,13 +38,23 @@ async function fetchComicData(slug: string) {
   }
 }
 
-export default async function ComicDetailsPage({ params }: { params: Promise<{ slug: string }> }) {
+export default async function ComicDetailsPage({ 
+  params,
+  searchParams
+}: { 
+  params: Promise<{ slug: string }>;
+  searchParams: Promise<{ source?: string }>;
+}) {
   const { slug } = await params;
+  const sParams = await searchParams;
   const data = await fetchComicData(slug);
   
   if (!data || data.status !== "success" || !data.data?.item) {
     return notFound();
   }
+
+  const activeSource = (sParams.source?.toLowerCase() === "mangaplus" ? "MangaPlus" : 
+                        sParams.source?.toLowerCase() === "mangadex" ? "MangaDex" : "OTruyen");
 
   const item = data.data.item;
   const domain_cdn = data.data.APP_DOMAIN_CDN_IMAGE || "https://otruyenapi.com/uploads/comics";
@@ -50,17 +62,35 @@ export default async function ComicDetailsPage({ params }: { params: Promise<{ s
   // Clean up trailing slashes
   const baseUrl = domain_cdn.endsWith('/uploads/comics') ? domain_cdn : `${domain_cdn}/uploads/comics`;
   const posterPath = item.thumb_url.startsWith('/') ? item.thumb_url : `/${item.thumb_url}`;
-  
   const poster = `${baseUrl}${posterPath}`;
   
+  // Multi-source chapter logic
+  let chapters: any[] = item.chapters?.[0]?.server_data || [];
+  
+  if (activeSource === "MangaPlus") {
+    try {
+      // For MangaPlus search, we need absolute URL or call the logic directly since we're on server
+      // Let's assume the server can reach it.
+      const mpTitle = await MangaPlusService.searchTitle(item.name);
+      if (mpTitle) {
+        const detail = await MangaPlusService.getTitleDetail(mpTitle.id);
+        if (detail && detail.chapters.length > 0) {
+          chapters = detail.chapters.map((c: any) => ({
+            chapter_name: c.name,
+            chapter_title: c.subTitle || "",
+            chapter_api_data: c.id // Store ID to fetch pages later
+          }));
+        }
+      }
+    } catch (e) {
+      console.error("MangaPlus source fetch failed:", e);
+    }
+  }
+
+  const firstChapter = chapters[chapters.length - 1]; 
+
   // They sometimes only have thumb_url, no separate backdrop. Use poster as blurred backdrop.
   const thumb = poster;
-
-  const chapters = item.chapters?.[0]?.server_data || [];
-  
-  // Chapters often returned in descending order. Let's find chap 1 (index usually bottom if desc).
-  // But safest is to find the object with lowest number. Just use the last index as first chap often.
-  const firstChapter = chapters[chapters.length - 1]; 
 
   return (
     <div className="min-h-screen pb-safe">
@@ -87,7 +117,7 @@ export default async function ComicDetailsPage({ params }: { params: Promise<{ s
             <div className="flex flex-col items-center lg:items-stretch gap-3 mt-4">
               <div className="flex gap-2 w-full">
                 {firstChapter ? (
-                  <Link href={`/doc/${slug}/${firstChapter.chapter_name}`} className="flex-1">
+                  <Link href={`/doc/${slug}/${firstChapter.chapter_name}?source=${activeSource.toLowerCase()}`} className="flex-1">
                     <Button className="w-full h-[45px] rounded-xl gap-2 font-semibold text-[14px] bg-primary hover:bg-primary-hover transition-all">
                       <BookOpen className="w-5 h-5 fill-current" />
                       ĐỌC TỪ ĐẦU
@@ -151,7 +181,24 @@ export default async function ComicDetailsPage({ params }: { params: Promise<{ s
           </div>
 
           <div className="flex-1 min-w-0 mt-8 lg:mt-0">
-             <ChapterList chapters={chapters} slug={slug} />
+             {/* Source Switcher */}
+             <div className="flex items-center gap-3 mb-6 bg-white/5 p-1 rounded-2xl w-fit">
+               {["OTruyen", "MangaDex", "MangaPlus"].map((src) => (
+                 <Link 
+                   key={src}
+                   href={`/truyen/${slug}?source=${src.toLowerCase()}`}
+                   className={`px-5 py-2 rounded-xl text-[13px] font-bold transition-all ${
+                     activeSource === src 
+                       ? "bg-primary text-white shadow-lg shadow-primary/20" 
+                       : "text-white/40 hover:text-white hover:bg-white/5"
+                   }`}
+                 >
+                   {src}
+                 </Link>
+               ))}
+             </div>
+
+             <ChapterList chapters={chapters} slug={slug} activeSource={activeSource.toLowerCase()} />
           </div>
         </div>
       </div>
