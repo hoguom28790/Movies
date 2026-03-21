@@ -17,34 +17,59 @@ type ReadingMode = "vertical" | "horizontal";
 type ImageFit = "width" | "height" | "original";
 
 const fetchChapterImages = async (source: string, slug: string, chapter: string, server?: string) => {
-  if (source.toLowerCase() === "mangaplus") {
+  const s = source.toLowerCase();
+  
+  if (s === "mangaplus") {
     // Search by slug (Vietnamese-friendly)
     const mpTitleBySlug = await MangaPlusService.searchTitle(slug.replace(/-/g, " "), 8);
     if (mpTitleBySlug) {
       const detail = await MangaPlusService.getTitleDetail(mpTitleBySlug.id);
       if (detail && detail.chapters) {
-        // Clean chapter name. manga plus has "1176", otruyen might have "1176" or "Chương 1176"
         const cleanChap = chapter.replace("Chương ", "").trim();
         const targetChap = detail.chapters.find((c: any) => c.name === cleanChap || c.name === chapter);
-        if (targetChap) {
-          return await MangaPlusService.getPages(targetChap.id);
-        }
+        if (targetChap) return await MangaPlusService.getPages(targetChap.id);
       }
     }
-    throw new Error("MangaPlus source failed");
+    return []; // No fallback
   }
 
-  // Fallback to OTruyen API via proxy or direct
-  const res = await fetch(`https://otruyenapi.com/v1/api/truyen-tranh/${slug}`);
-  const data = await res.json();
-  const serverData = data.data.item.chapters.find((s: any) => s.server_name === (server || data.data.item.chapters[0].server_name));
-  const chapterData = serverData?.server_data.find((c: any) => c.chapter_name === chapter);
-  
-  if (chapterData) {
-    const apiRes = await fetch(chapterData.chapter_api_data);
-    const apiData = await apiRes.json();
-    const domainCdn = apiData.data.domain_cdn;
-    return apiData.data.item.chapter_image.map((img: any) => `${domainCdn}/${apiData.data.item.chapter_path}/${img.image_file}`);
+  if (s === "mangadex") {
+    try {
+      // Find MD Title
+      const searchRes = await fetch(`/api/mangadex/manga?title=${slug.replace(/-/g, " ")}&limit=1&contentRating[]=safe&contentRating[]=suggestive&includes[]=cover_art`);
+      const searchData = await searchRes.json();
+      const mangaId = searchData.data?.[0]?.id;
+      if (!mangaId) return [];
+
+      // Find Chapters in Vietnamese (vi)
+      const cleanChap = chapter.replace("Chương ", "").trim();
+      const feedRes = await fetch(`/api/mangadex/manga/${mangaId}/feed?translatedLanguage[]=vi&order[chapter]=desc&limit=100&chapter=${cleanChap}`);
+      const feedData = await feedRes.json();
+      
+      const targetChap = feedData.data?.find((c: any) => c.attributes.chapter === cleanChap);
+      if (targetChap) {
+        const atHomeRes = await fetch(`/api/mangadex/at-home/server/${targetChap.id}`);
+        const atHomeData = await atHomeRes.json();
+        const base = atHomeData.baseUrl;
+        const hash = atHomeData.chapter.hash;
+        return atHomeData.chapter.data.map((img: string) => `${base}/data/${hash}/${img}`);
+      }
+    } catch(e) { console.error("MangaDex fetch failed:", e); }
+    return [];
+  }
+
+  if (s === "otruyen") {
+    const res = await fetch(`https://otruyenapi.com/v1/api/truyen-tranh/${slug}`);
+    const data = await res.json();
+    const serverData = data.data.item.chapters.find((s: any) => s.server_name === (server || data.data.item.chapters[0].server_name));
+    const chapterData = serverData?.server_data.find((c: any) => c.chapter_name === chapter);
+    
+    if (chapterData) {
+      const apiRes = await fetch(chapterData.chapter_api_data);
+      const apiData = await apiRes.json();
+      const domainCdn = apiData.data.domain_cdn;
+      return apiData.data.item.chapter_image.map((img: any) => `${domainCdn}/${apiData.data.item.chapter_path}/${img.image_file}`);
+    }
   }
   
   return [];

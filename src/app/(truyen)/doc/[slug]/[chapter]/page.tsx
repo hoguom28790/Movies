@@ -37,38 +37,47 @@ export default async function ComicReadingPage({
   const activeSource = (sParams.source?.toLowerCase() === "mangaplus" ? "MangaPlus" : 
                         sParams.source?.toLowerCase() === "mangadex" ? "MangaDex" : "OTruyen");
 
-  // Default OTruyen fetching
-  const otruyenRes = await fetch(`https://otruyenapi.com/v1/api/truyen-tranh/${slug}`);
-  if (!otruyenRes.ok) return notFound();
-  const otruyenData = await otruyenRes.json();
-  if (otruyenData.status !== "success" || !otruyenData.data?.item) return notFound();
+  // Default values
+  let images: string[] = [];
+  let chaptersList: string[] = [];
+  let availableServers: string[] = [];
+  let activeServerName = sParams.server || "";
+  let item: any = { name: slug.replace(/-/g, " "), thumb_url: "" };
+  let poster = "";
 
-  const item = otruyenData.data.item;
-  const domain_cdn = otruyenData.data.APP_DOMAIN_CDN_IMAGE || "https://img.otruyenapi.com";
-  const poster = item.thumb_url.startsWith('http') 
-    ? item.thumb_url 
-    : `${domain_cdn}/uploads/comics/${item.thumb_url.startsWith('/') ? item.thumb_url.substring(1) : item.thumb_url}`;
+  // Fetch OTruyen data (as base meta or as primary source)
+  try {
+    const otruyenRes = await fetch(`https://otruyenapi.com/v1/api/truyen-tranh/${slug}`);
+    if (otruyenRes.ok) {
+        const otruyenData = await otruyenRes.json();
+        if (otruyenData.status === "success" && otruyenData.data?.item) {
+            item = otruyenData.data.item;
+            const domain_cdn = otruyenData.data.APP_DOMAIN_CDN_IMAGE || "https://img.otruyenapi.com";
+            poster = item.thumb_url.startsWith('http') 
+              ? item.thumb_url 
+              : `${domain_cdn}/uploads/comics/${item.thumb_url.startsWith('/') ? item.thumb_url.substring(1) : item.thumb_url}`;
+            
+            availableServers = item.chapters.map((c: any) => c.server_name);
+            chaptersList = item.chapters[0]?.server_data?.map((c: any) => c.chapter_name) || [];
+            if (!activeServerName) activeServerName = availableServers[0];
+        }
+    }
+  } catch (e) {}
+
+  if (!poster && activeSource === "OTruyen") return notFound();
 
   // Multi-source engine: OTruyen + MangaDex + MangaPlus
-  let images: string[] = [];
-  let availableServers = item.chapters.map((c: any) => c.server_name);
-  let chaptersList = item.chapters[0]?.server_data?.map((c: any) => c.chapter_name) || [];
-  let activeServerName = sParams.server || availableServers[0];
-
   try {
     if (activeSource === "MangaPlus") {
-      // Find title on MangaPlus (search by name)
       // Find title on MangaPlus. One Piece Vietnamese = 8
       const mpTitle = await MangaPlusService.searchTitle(item.name, 8);
       if (mpTitle) {
         const detail = await MangaPlusService.getTitleDetail(mpTitle.id);
         if (detail && detail.chapters.length > 0) {
-          // Find matching chapter. MangaPlus names are usually "245", "1".
           const cleanChap = chapter.replace("Chương ", "").trim();
           const mpChap = detail.chapters.find((c: any) => c.name === cleanChap || c.name === chapter);
           if (mpChap) {
             images = await MangaPlusService.getPages(mpChap.id);
-            // If images found, we use this source. Else fallback.
             if (images.length > 0) {
               chaptersList = detail.chapters.map((c: any) => c.name);
               activeServerName = "MangaPlus Official";
@@ -76,14 +85,28 @@ export default async function ComicReadingPage({
           }
         }
       }
-      
-      // If we couldn't get MangaPlus data, we fallback to OTruyen
-      if (images.length === 0) {
-        // Fallback logic implemented below by checking if (images.length === 0)
-      }
+    } else if (activeSource === "MangaDex") {
+       // Search MD
+       const mdSearch = await fetch(`https://api.mangadex.org/manga?title=${slug.replace(/-/g, " ")}&limit=1&contentRating[]=safe&contentRating[]=suggestive`);
+       const mdSearchData = await mdSearch.json();
+       const mangaId = mdSearchData.data?.[0]?.id;
+       if (mangaId) {
+          const cleanChap = chapter.replace("Chương ", "").trim();
+          const feedRes = await fetch(`https://api.mangadex.org/manga/${mangaId}/feed?translatedLanguage[]=vi&order[chapter]=desc&limit=100&chapter=${cleanChap}`);
+          const feedData = await feedRes.json();
+          const targetChap = feedData.data?.find((c: any) => c.attributes.chapter === cleanChap);
+          if (targetChap) {
+             const atHomeRes = await fetch(`https://api.mangadex.org/at-home/server/${targetChap.id}`);
+             const atHomeData = await atHomeRes.json();
+             const base = atHomeData.baseUrl;
+             const hash = atHomeData.chapter.hash;
+             images = atHomeData.chapter.data.map((img: string) => `${base}/data/${hash}/${img}`);
+             activeServerName = "MangaDex (VI)";
+          }
+       }
     }
   } catch (error) {
-    console.error("MangaPlus fetch failed:", error);
+    console.error("Multi-source fetch failed:", error);
   }
 
   // Fetch from OTruyen ONLY IF activeSource is OTruyen
