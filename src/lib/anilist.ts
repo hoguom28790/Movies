@@ -17,6 +17,7 @@ export const ANILIST_QUERIES = {
           coverImage {
             large
           }
+          averageScore
         }
       }
     }

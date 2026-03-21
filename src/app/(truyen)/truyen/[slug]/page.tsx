@@ -1,8 +1,23 @@
 import { notFound } from "next/navigation";
 import { MangaPlusService } from "@/services/mangaplus";
 import { StitchMangaDetail } from "@/components/stitch/StitchMangaDetail";
+import { fetchAniList, ANILIST_QUERIES } from "@/lib/anilist";
 
 export const dynamic = "force-dynamic";
+
+async function fetchAniListRating(name: string) {
+  try {
+     const cleanName = name.replace(/\(.*\)/g, "").trim();
+     const data = await fetchAniList(ANILIST_QUERIES.SEARCH_MANGA, { search: cleanName });
+     const media = data?.Page?.media?.[0];
+     if (media && media.averageScore) {
+        return (media.averageScore / 10).toFixed(1);
+     }
+  } catch (err) {
+    console.error("AniList Fetch Error:", err);
+  }
+  return null;
+}
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
@@ -53,6 +68,10 @@ export default async function ComicDetailsPage({
   const item = data.data.item;
   const domain_cdn = data.data.APP_DOMAIN_CDN_IMAGE || "https://otruyenapi.com/uploads/comics";
   
+  const [anilistRating] = await Promise.all([
+     fetchAniListRating(item.name)
+  ]);
+
   // Clean up trailing slashes
   const baseUrl = domain_cdn.endsWith('/uploads/comics') ? domain_cdn : `${domain_cdn}/uploads/comics`;
   const posterPath = item.thumb_url.startsWith('/') ? item.thumb_url : `/${item.thumb_url}`;
@@ -86,7 +105,7 @@ export default async function ComicDetailsPage({
         posterUrl={poster}
         author={item.author?.[0] || 'Chưa rõ'}
         status={item.status === 'ongoing' ? 'Ongoing' : 'Completed'}
-        rating={(((item.name.length * 7) % 5) / 10 + 4.5).toFixed(1)}
+        rating={anilistRating || (((item.name.length * 7) % 5) / 10 + 4.5).toFixed(1)}
         description={item.content || "Truyện chưa có mô tả..."}
         categories={item.category?.map((c: any) => ({ name: c.name, slug: c.slug })) || []}
         chapters={chapters}
