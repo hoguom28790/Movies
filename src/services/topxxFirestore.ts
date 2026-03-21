@@ -1,6 +1,6 @@
 import { db } from "@/lib/firebase";
 import { collection, doc, setDoc, deleteDoc, getDocs, query, where, getDoc } from "firebase/firestore";
-import { XXHistoryEntry, XXFavoriteEntry, XXPlaylist } from "./collectionDb";
+import { XXHistoryEntry, XXFavoriteEntry, XXPlaylist } from "./topxxDb";
 
 /**
  * Syncs Local Storage with Firestore for a specific user.
