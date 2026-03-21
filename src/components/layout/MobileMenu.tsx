@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Menu, X, ChevronDown, Heart, Search, History as HistoryIcon, Settings } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
+import { getLunarAuthPass } from "@/lib/lunar";
  
 const GENRES = [
   { name: "Hành Động", slug: "hanh-dong" },
@@ -202,16 +203,11 @@ export function MobileMenu({ mode }: MobileMenuProps) {
                         href={g.href || `/the-loai/${g.slug}`}
                         onClick={(e) => {
                           if (g.slug === "phim-18") {
-                            const now = new Date();
-                            const dd = String(now.getDate()).padStart(2, "0");
-                            const mm = String(now.getMonth() + 1).padStart(2, "0");
-                            const yyyy = now.getFullYear();
-                            const correctPass = `${dd}${mm}${yyyy}`;
-                            
-                            const pass = window.prompt(`Nhập mật khẩu để truy cập nội dung 18+:`);
+                            const correctPass = getLunarAuthPass();
+                            const pass = window.prompt(`Nhập mật khẩu để tiếp tục:`);
                             if (pass !== correctPass) {
                               e.preventDefault();
-                              alert(`Mật khẩu không chính xác!\nBạn đã nhập: ${pass || "không có gì"}\nMật khẩu hôm nay là: ${correctPass}`);
+                              alert(`Mật khẩu không chính xác! Vui lòng thử lại.`);
                               return;
                             }
                           }

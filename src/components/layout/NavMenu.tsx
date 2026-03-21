@@ -216,7 +216,7 @@ export function NavMenu({ mode }: NavMenuProps) {
                       if (item.slug === "phim-18") {
                         const correctPass = getLunarAuthPass();
                         
-                        const pass = window.prompt(`Nhập mật khẩu âm lịch để truy cập nội dung 18+:`);
+                        const pass = window.prompt(`Nhập mật khẩu để tiếp tục:`);
                         if (pass !== correctPass) {
                           e.preventDefault();
                           alert(`Mật khẩu không chính xác! Vui lòng thử lại.`);

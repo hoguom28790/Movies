@@ -27,7 +27,7 @@ export default function TopXXLayout({
 
     const correctPass = getLunarAuthPass();
 
-    const pass = window.prompt("⚠️ TopXX Restricted Area\nNhập mật mã âm lịch để truy cập:");
+    const pass = window.prompt("⚠️ TopXX Restricted Area\nNhập mật mã để tiếp tục:");
     
     if (pass === correctPass) {
       localStorage.setItem("topxx_authorized", "true");

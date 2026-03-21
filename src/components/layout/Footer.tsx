@@ -85,7 +85,7 @@ export function Footer() {
                 const { TOPXX_PATH } = require("@/lib/constants");
                 const correctPass = getLunarAuthPass();
                 
-                const pass = window.prompt("Nhập mật khẩu âm lịch để tiếp tục:");
+                const pass = window.prompt("Nhập mật khẩu để tiếp tục:");
                 if (pass === correctPass) {
                   localStorage.setItem("topxx_authorized", "true");
                   window.open(`/${TOPXX_PATH}`, "_blank");
