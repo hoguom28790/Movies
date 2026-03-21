@@ -11,22 +11,30 @@ export async function POST(req: Request) {
     const clientSecret = process.env.ANILIST_CLIENT_SECRET?.trim();
     const redirectUri = process.env.NEXT_PUBLIC_ANILIST_REDIRECT_URI?.trim();
 
+    const requestPayload = {
+        grant_type: "authorization_code",
+        client_id: clientId,
+        client_secret: clientSecret,
+        redirect_uri: redirectUri,
+        code,
+    };
+
+    console.log("AniList Exchange Request:", {
+        ...requestPayload,
+        client_secret: clientSecret ? `${clientSecret.substring(0, 4)}***${clientSecret.substring(clientSecret.length - 4)}` : null
+    });
+
     const response = await fetch("https://anilist.co/api/v2/oauth/token", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         Accept: "application/json",
       },
-      body: JSON.stringify({
-        grant_type: "authorization_code",
-        client_id: clientId,
-        client_secret: clientSecret,
-        redirect_uri: redirectUri,
-        code,
-      }),
+      body: JSON.stringify(requestPayload),
     });
 
     const data = await response.json();
+    console.log("AniList Exchange Response:", data);
     if (data.error) {
       return NextResponse.json({ error: data.error_description || data.error }, { status: 400 });
     }

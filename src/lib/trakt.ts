@@ -108,7 +108,7 @@ async function scrobbleAction(action: "start" | "pause" | "stop", accessToken: s
  * Exchange OAuth Code for Tokens
  */
 export async function exchangeTraktCode(code: string) {
-    const body = {
+    const requestPayload = {
         code,
         client_id: CLIENT_ID,
         client_secret: CLIENT_SECRET,
@@ -116,14 +116,22 @@ export async function exchangeTraktCode(code: string) {
         grant_type: "authorization_code"
     };
 
+    console.log("Trakt Exchange Request:", {
+        ...requestPayload,
+        client_secret: CLIENT_SECRET ? `${CLIENT_SECRET.substring(0, 4)}***${CLIENT_SECRET.substring(CLIENT_SECRET.length - 4)}` : null
+    });
+
     try {
         const res = await fetch(`${TRAKT_API_URL}/oauth/token`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(body)
+            body: JSON.stringify(requestPayload)
         });
-        return await res.json();
+        const data = await res.json();
+        console.log("Trakt Exchange Response:", data);
+        return data;
     } catch (e) {
+        console.error("Trakt OAuth Error:", e);
         return null;
     }
 }
