@@ -2,6 +2,7 @@
 
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { ChevronDown } from "lucide-react";
 
 const GENRES = [
@@ -94,6 +95,9 @@ export function NavMenu() {
     closeTimer.current = setTimeout(() => setOpenId(null), 200);
   }, [clearCloseTimer]);
 
+  const pathname = usePathname();
+  const isComicSection = pathname.startsWith("/truyen") || pathname.startsWith("/doc");
+
   useEffect(() => {
     const handler = (e: MouseEvent) => {
       if (navRef.current && !navRef.current.contains(e.target as Node)) {
@@ -104,9 +108,14 @@ export function NavMenu() {
     return () => document.removeEventListener("mousedown", handler);
   }, []);
 
+  const currentDropdowns = isComicSection ? [] : dropdowns;
+  const currentLinks = isComicSection ? [
+    { label: "Mới Cập Nhật", href: "/truyen" }
+  ] : directLinks;
+
   return (
     <nav ref={navRef} className="flex items-center gap-0.5">
-      {dropdowns.map((dd) => (
+      {currentDropdowns.map((dd) => (
         <div key={dd.id} className="relative">
           <button
             onClick={() => setOpenId(openId === dd.id ? null : dd.id)}
@@ -163,7 +172,7 @@ export function NavMenu() {
         </div>
       ))}
 
-      {directLinks.map((link) => (
+      {currentLinks.map((link) => (
         <Link
           key={link.href}
           href={link.href}

@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Search, UserCircle, LogOut, Heart, History as HistoryIcon, Settings, BookOpen } from "lucide-react";
+import { Search, UserCircle, LogOut, Heart, History as HistoryIcon, Settings, BookOpen, Film } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTheme } from "@/contexts/ThemeContext";
 import { AuthModal } from "@/components/auth/AuthModal";
@@ -16,6 +16,7 @@ export function Navbar() {
   const { user, logout } = useAuth();
   const { theme, setTheme } = useTheme();
   const pathname = usePathname();
+  const isComicSection = pathname.startsWith("/truyen") || pathname.startsWith("/doc");
 
   if (pathname.startsWith("/collection")) return null;
 
@@ -28,9 +29,9 @@ export function Navbar() {
           </div>
  
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-2 group md:mr-6 flex-shrink-0">
-            <span className="text-xl font-bold text-primary tracking-tight transition-transform group-hover:scale-105">
-              Hồ Phim
+          <Link href={isComicSection ? "/truyen" : "/"} className="flex items-center gap-2 group md:mr-6 flex-shrink-0">
+            <span className={`text-xl font-bold tracking-tight transition-transform group-hover:scale-105 ${isComicSection ? 'text-indigo-500' : 'text-primary'}`}>
+              Hồ {isComicSection ? 'Truyện' : 'Phim'}
             </span>
           </Link>
 
@@ -40,9 +41,15 @@ export function Navbar() {
 
           {/* Right: Search + Actions */}
           <div className="flex items-center gap-2 flex-shrink-0">
-            <Link href="/truyen" className="hidden sm:flex items-center gap-1.5 px-4 py-1.5 mr-2 rounded-lg bg-indigo-500 hover:bg-indigo-600 text-white text-[12px] font-bold transition-all shadow-lg shadow-indigo-500/20">
-              <BookOpen className="w-4 h-4" /> Đọc Truyện
-            </Link>
+            {isComicSection ? (
+              <Link href="/" className="hidden sm:flex items-center gap-1.5 px-4 py-1.5 mr-2 rounded-lg bg-white/10 hover:bg-white/20 text-white text-[12px] font-bold transition-all">
+                <Film className="w-4 h-4" /> Hồ Phim
+              </Link>
+            ) : (
+              <Link href="/truyen" className="hidden sm:flex items-center gap-1.5 px-4 py-1.5 mr-2 rounded-lg bg-indigo-500 hover:bg-indigo-600 text-white text-[12px] font-bold transition-all shadow-lg shadow-indigo-500/20">
+                <BookOpen className="w-4 h-4" /> Đọc Truyện
+              </Link>
+            )}
             <div className="hidden lg:block w-48 lg:w-64">
               <InstantSearch />
             </div>

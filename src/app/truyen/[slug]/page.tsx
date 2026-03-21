@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Share2, BookOpen } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { ComicFavoriteBtn } from "@/components/comic/ComicFavoriteBtn";
+import { ComicProgressDisplay } from "@/components/comic/ComicProgressDisplay";
 
 export const dynamic = "force-dynamic";
 
@@ -100,6 +101,8 @@ export default async function ComicDetailsPage({ params }: { params: Promise<{ s
                   Chia sẻ
                 </button>
               </div>
+
+              <ComicProgressDisplay slug={slug} />
             </div>
 
             <div className="mt-6 text-center lg:text-left">

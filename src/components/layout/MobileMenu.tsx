@@ -40,6 +40,7 @@ export function MobileMenu() {
   const [isOpen, setIsOpen] = useState(false);
   const [openSection, setOpenSection] = useState<string | null>(null);
   const pathname = usePathname();
+  const isComicSection = pathname.startsWith("/truyen") || pathname.startsWith("/doc");
   const { user } = useAuth();
  
   // Close menu on navigation
@@ -55,6 +56,10 @@ export function MobileMenu() {
       document.body.style.overflow = "unset";
     }
   }, [isOpen]);
+
+  const currentLinks = isComicSection ? [
+    { label: "Về Hồ Phim", href: "/" }
+  ] : DIRECT_LINKS;
  
   return (
     <div className="lg:hidden">
@@ -75,7 +80,7 @@ export function MobileMenu() {
       >
         {/* Header */}
         <div className="flex h-14 items-center justify-between px-4 border-b border-white/[0.06]">
-          <span className="text-xl font-bold text-primary">Hồ Phim</span>
+          <span className={`text-xl font-bold ${isComicSection ? 'text-indigo-500' : 'text-primary'}`}>Hồ {isComicSection ? 'Truyện' : 'Phim'}</span>
           <button 
             onClick={() => setIsOpen(false)}
             className="p-2 text-white/60"
@@ -97,7 +102,7 @@ export function MobileMenu() {
           
           {/* Main Links */}
           <div className="grid grid-cols-2 gap-3">
-            {DIRECT_LINKS.map(link => (
+            {currentLinks.map(link => (
               <Link 
                 key={link.href}
                 href={link.href}
@@ -108,75 +113,76 @@ export function MobileMenu() {
             ))}
           </div>
  
-          {/* Accordion Sections */}
-          <div className="space-y-2">
-            {/* Genres */}
-            <div>
-              <button 
-                onClick={() => setOpenSection(openSection === "genres" ? null : "genres")}
-                className="flex items-center justify-between w-full p-4 rounded-xl bg-white/[0.02] text-white/80 text-[14px] font-semibold"
-              >
-                Thể loại
-                <ChevronDown className={`h-4 w-4 transition-transform ${openSection === "genres" ? "rotate-180" : ""}`} />
-              </button>
-              {openSection === "genres" && (
-                <div className="grid grid-cols-2 gap-2 p-2 mt-1 animate-in fade-in slide-in-from-top-2 duration-200">
-                  {GENRES.map(g => (
-                    <Link 
-                      key={g.slug || g.href} 
-                      href={g.href || `/the-loai/${g.slug}`}
-                      onClick={(e) => {
-                        if (g.slug === "phim-18") {
-                          const now = new Date();
-                          const dd = String(now.getDate()).padStart(2, "0");
-                          const mm = String(now.getMonth() + 1).padStart(2, "0");
-                          const yyyy = now.getFullYear();
-                          const correctPass = `${dd}${mm}${yyyy}`;
-                          
-                          const pass = window.prompt(`Nhập mật khẩu để truy cập nội dung 18+:`);
-                          if (pass !== correctPass) {
-                            e.preventDefault();
-                            alert(`Mật khẩu không chính xác!\nBạn đã nhập: ${pass || "không có gì"}\nMật khẩu hôm nay là: ${correctPass}`);
-                            return;
+          {!isComicSection && (
+            <div className="space-y-2">
+              {/* Genres */}
+              <div>
+                <button 
+                  onClick={() => setOpenSection(openSection === "genres" ? null : "genres")}
+                  className="flex items-center justify-between w-full p-4 rounded-xl bg-white/[0.02] text-white/80 text-[14px] font-semibold"
+                >
+                  Thể loại
+                  <ChevronDown className={`h-4 w-4 transition-transform ${openSection === "genres" ? "rotate-180" : ""}`} />
+                </button>
+                {openSection === "genres" && (
+                  <div className="grid grid-cols-2 gap-2 p-2 mt-1 animate-in fade-in slide-in-from-top-2 duration-200">
+                    {GENRES.map(g => (
+                      <Link 
+                        key={g.slug || g.href} 
+                        href={g.href || `/the-loai/${g.slug}`}
+                        onClick={(e) => {
+                          if (g.slug === "phim-18") {
+                            const now = new Date();
+                            const dd = String(now.getDate()).padStart(2, "0");
+                            const mm = String(now.getMonth() + 1).padStart(2, "0");
+                            const yyyy = now.getFullYear();
+                            const correctPass = `${dd}${mm}${yyyy}`;
+                            
+                            const pass = window.prompt(`Nhập mật khẩu để truy cập nội dung 18+:`);
+                            if (pass !== correctPass) {
+                              e.preventDefault();
+                              alert(`Mật khẩu không chính xác!\nBạn đã nhập: ${pass || "không có gì"}\nMật khẩu hôm nay là: ${correctPass}`);
+                              return;
+                            }
                           }
-                        }
-                      }}
-                      className="p-3 text-[13px] text-white/50 hover:text-white hover:bg-white/5 rounded-lg transition-colors"
-                    >
-                      {g.name}
+                        }}
+                        className="p-3 text-[13px] text-white/50 hover:text-white hover:bg-white/5 rounded-lg transition-colors"
+                      >
+                        {g.name}
+                      </Link>
+                    ))}
+                    <Link href="/the-loai/tat-ca" className="p-3 text-[13px] text-primary font-medium hover:bg-white/5 rounded-lg transition-colors col-span-2 text-center border-t border-white/[0.03]">
+                      Xem tất cả thể loại
                     </Link>
-                  ))}
-                  <Link href="/the-loai/tat-ca" className="p-3 text-[13px] text-primary font-medium hover:bg-white/5 rounded-lg transition-colors col-span-2 text-center border-t border-white/[0.03]">
-                    Xem tất cả thể loại
-                  </Link>
-                </div>
-              )}
+                  </div>
+                )}
+              </div>
+  
+              {/* Countries */}
+              <div>
+                <button 
+                  onClick={() => setOpenSection(openSection === "countries" ? null : "countries")}
+                  className="flex items-center justify-between w-full p-4 rounded-xl bg-white/[0.02] text-white/80 text-[14px] font-semibold"
+                >
+                  Quốc gia
+                  <ChevronDown className={`h-4 w-4 transition-transform ${openSection === "countries" ? "rotate-180" : ""}`} />
+                </button>
+                {openSection === "countries" && (
+                  <div className="grid grid-cols-2 gap-2 p-2 mt-1 animate-in fade-in slide-in-from-top-2 duration-200">
+                    {COUNTRIES.map(c => (
+                      <Link 
+                        key={c.slug} 
+                        href={`/quoc-gia/${c.slug}`}
+                        className="p-3 text-[13px] text-white/50 hover:text-white hover:bg-white/5 rounded-lg transition-colors"
+                      >
+                        {c.name}
+                      </Link>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
- 
-            {/* Countries */}
-            <div>
-              <button 
-                onClick={() => setOpenSection(openSection === "countries" ? null : "countries")}
-                className="flex items-center justify-between w-full p-4 rounded-xl bg-white/[0.02] text-white/80 text-[14px] font-semibold"
-              >
-                Quốc gia
-                <ChevronDown className={`h-4 w-4 transition-transform ${openSection === "countries" ? "rotate-180" : ""}`} />
-              </button>
-              {openSection === "countries" && (
-                <div className="grid grid-cols-2 gap-2 p-2 mt-1 animate-in fade-in slide-in-from-top-2 duration-200">
-                  {COUNTRIES.map(c => (
-                    <Link 
-                      key={c.slug} 
-                      href={`/quoc-gia/${c.slug}`}
-                      className="p-3 text-[13px] text-white/50 hover:text-white hover:bg-white/5 rounded-lg transition-colors"
-                    >
-                      {c.name}
-                    </Link>
-                  ))}
-                </div>
-              )}
-            </div>
-          </div>
+          )}
  
           {/* Footer Info */}
           <div className="pt-8 pb-12 border-t border-white/[0.06] space-y-3">

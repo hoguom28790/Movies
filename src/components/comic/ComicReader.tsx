@@ -36,17 +36,27 @@ export function ComicReader({ slug, title, posterUrl, chapter, images, chaptersL
     if (currentIndex > 0) nextChapter = chaptersList[currentIndex - 1];
   }
 
+  const lastSavedProgress = useRef(-1);
+  const lastSavedTime = useRef(0);
+
   useEffect(() => {
-    // Save to history automatically
+    // Save to history automatically with throttle
     if (user?.uid) {
-      saveComicHistory(user.uid, {
-        comicSlug: slug,
-        comicTitle: title,
-        coverUrl: posterUrl,
-        chapterSlug: chapter,
-        chapterName: chapter,
-        percent: scrollProgress,
-      }).catch(console.error);
+      const now = Date.now();
+      // Only save if progress changed by >= 5% OR it's 100% OR 5 seconds passed since last save and progress changed
+      if (Math.abs(scrollProgress - lastSavedProgress.current) >= 5 || scrollProgress === 100 || (now - lastSavedTime.current > 5000 && scrollProgress !== lastSavedProgress.current)) {
+        lastSavedProgress.current = scrollProgress;
+        lastSavedTime.current = now;
+        
+        saveComicHistory(user.uid, {
+          comicSlug: slug,
+          comicTitle: title,
+          coverUrl: posterUrl,
+          chapterSlug: chapter,
+          chapterName: chapter,
+          percent: scrollProgress,
+        }).catch(console.error);
+      }
     }
   }, [scrollProgress, user, slug, chapter, title, posterUrl]);
 
