@@ -32,13 +32,13 @@ export function HeroSlider({ movies }: HeroSliderProps) {
 
   const currentMovie = movies[currentIndex];
   return (
-    <section className="relative w-full h-[50vh] min-h-[350px] sm:h-[60vh] sm:min-h-[400px] lg:h-[75vh] flex items-end mt-[-56px] group overflow-hidden">
-      {/* Background Images */}
+    <section className="relative w-full h-[751px] flex items-end overflow-hidden mt-[-64px]">
+      {/* Background Images with Zoom Animation */}
       {movies.map((movie, idx) => (
         <div 
           key={movie.slug}
           className={`absolute inset-0 z-0 transition-opacity duration-1000 ease-in-out ${
-            idx === currentIndex ? "opacity-100" : "opacity-0"
+            idx === currentIndex ? "opacity-100 scale-100" : "opacity-0 scale-110"
           }`}
         >
           <Image
@@ -46,102 +46,74 @@ export function HeroSlider({ movies }: HeroSliderProps) {
             alt={movie.title}
             fill
             sizes="100vw"
-            quality={85}
+            quality={90}
             priority={idx === 0}
-            className="object-cover"
+            className="object-cover transition-transform duration-[8000ms] ease-linear group-hover:scale-110"
             unoptimized={!movie.thumbUrl?.match(/amazon\.com|fanart\.tv|unsplash\.com|tmdb\.org/i)}
           />
         </div>
       ))}
-      <div className="absolute inset-0 z-0 bg-gradient-to-t from-[#0a0a0a] via-[#0a0a0a]/50 to-transparent pointer-events-none" />
-      <div className="absolute inset-0 z-0 bg-gradient-to-r from-[#0a0a0a]/80 via-transparent to-transparent pointer-events-none" />
 
-      {/* Content */}
-      <div className="container relative z-10 mx-auto px-4 lg:px-12 pb-20 sm:pb-16 transition-all duration-700">
+      {/* Cinematic Overlays */}
+      <div className="absolute inset-0 z-0 bg-gradient-to-t from-[#0a0a0a] via-[#0a0a0a]/40 to-transparent" />
+      <div className="absolute inset-0 z-0 bg-gradient-to-r from-[#0a0a0a]/80 via-transparent to-transparent" />
+
+      {/* Content Container */}
+      <div className="container relative z-10 mx-auto px-6 lg:px-12 pb-20 w-full transition-all duration-700">
         <div 
           key={currentIndex} 
-          className="flex flex-col items-start gap-3 sm:gap-4 animate-in slide-in-from-bottom-8 fade-in duration-700 max-w-3xl"
+          className="flex flex-col items-start gap-4 animate-in slide-in-from-bottom-12 fade-in duration-1000 max-w-[85%]"
         >
-          <h1 className="text-2xl sm:text-3xl md:text-5xl lg:text-6xl font-bold text-white leading-[1.2] tracking-tight line-clamp-2">
+          <span className="inline-block px-3 py-1 bg-primary text-white text-[10px] font-bold uppercase tracking-widest rounded-lg shadow-lg shadow-primary/20">
+            Phim Đề Cử
+          </span>
+
+          <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black font-headline leading-[0.9] tracking-tighter text-white uppercase drop-shadow-2xl">
             {currentMovie.title}
           </h1>
 
-          {currentMovie.originalTitle && currentMovie.originalTitle !== currentMovie.title && (
-            <p className="text-sm text-white/40 -mt-2">
-              {currentMovie.originalTitle}
-            </p>
-          )}
-
-          <div className="flex flex-wrap items-center gap-2 sm:gap-3">
-            {/* TMDB Rating */}
-            {(currentMovie.tmdbRating !== undefined && currentMovie.tmdbRating !== null) && (
-              <div className="flex items-center gap-1.5 px-1.5 sm:px-2 py-0.5 rounded bg-blue-500/10 border border-blue-500/20">
-                <span className="text-[9px] sm:text-[10px] font-black text-blue-400 uppercase tracking-wider">TMDB</span>
-                <div className="flex items-center gap-1">
-                  <Star className="w-2 h-2 sm:w-2.5 sm:h-2.5 text-blue-400 fill-current" />
-                  <span className="text-[11px] sm:text-[12px] font-bold text-white">
-                    {currentMovie.tmdbRating > 0 ? currentMovie.tmdbRating.toFixed(1) : "0.0"}
-                  </span>
-                </div>
-              </div>
-            )}
-
-            {/* IMDB Rating */}
-            {(currentMovie.imdbRating !== undefined && currentMovie.imdbRating !== null) && (
-              <div className="flex items-center gap-1.5 px-1.5 sm:px-2 py-0.5 rounded bg-yellow-500/10 border border-yellow-500/20">
-                <span className="text-[9px] sm:text-[10px] font-black text-yellow-500 uppercase tracking-wider">IMDB</span>
-                <div className="flex items-center gap-1">
-                  <Star className="w-2 h-2 sm:w-2.5 sm:h-2.5 text-yellow-500 fill-current" />
-                  <span className="text-[11px] sm:text-[12px] font-bold text-white">
-                    {currentMovie.imdbRating > 0 ? currentMovie.imdbRating.toFixed(1) : "0.0"}
-                  </span>
-                </div>
-              </div>
-            )}
-
-            {currentMovie.genres?.slice(0, 2).map((genre) => (
-              <Link key={genre} href={`/the-loai/${genre}`} className="px-2 py-1 rounded bg-white/5 text-[11px] text-white/50 hover:text-white transition-colors">
-                {genre}
-              </Link>
-            ))}
-          </div>
-
-          <p className="text-white/40 text-sm max-w-xl line-clamp-2 sm:line-clamp-3 leading-relaxed">
-            {currentMovie.overview ? currentMovie.overview.replace(/<[^>]*>/g, '') : "Đang cập nhật nội dung cho bộ phim này..."}
+          <p className="text-white/60 text-lg sm:text-xl font-medium tracking-wide drop-shadow-md">
+            {currentMovie.originalTitle || "Sẵn sàng để xem"} • {currentMovie.year} • {currentMovie.quality}
           </p>
 
-          <Link href={`/movie/${currentMovie.slug}`}>
-            <Button
-              size="lg"
-              className="h-12 min-h-[44px] px-8 text-[14px] sm:text-[15px] font-semibold rounded-xl gap-2 bg-primary hover:bg-primary-hover text-white transition-all hover:scale-[1.03] active:scale-[0.97]"
-            >
-              <Play className="w-5 h-5 fill-current" />
-              Xem Ngay
-            </Button>
-          </Link>
+          <div className="flex items-center gap-3 mt-4">
+            <Link href={`/movie/${currentMovie.slug}`} className="flex-1 md:flex-none">
+              <Button
+                size="lg"
+                className="h-14 px-10 text-[16px] font-black rounded-xl gap-2 bg-gradient-to-br from-primary to-primary-container text-white border-none shadow-[0_8px_25px_rgba(59,130,246,0.3)] transition-all hover:scale-105 active:scale-95 group"
+              >
+                <Play className="w-6 h-6 fill-current group-hover:animate-pulse" />
+                XEM NGAY
+              </Button>
+            </Link>
+            
+            <button className="w-14 h-14 bg-white/10 backdrop-blur-md rounded-xl flex items-center justify-center text-white border border-white/5 hover:bg-white/20 hover:scale-105 active:scale-95 transition-all">
+              <span className="text-[32px] font-light leading-none">+</span>
+            </button>
+          </div>
         </div>
       </div>
 
-      {/* Thumbnail Navigation */}
-      <div className="absolute right-8 bottom-12 z-30 hidden lg:flex items-center gap-3">
+      {/* Navigation Thumbnails (Desktop Only) */}
+      <div className="absolute right-12 bottom-12 z-30 hidden lg:flex items-center gap-4">
         {movies.map((movie, idx) => (
           <button
             key={idx}
             onClick={() => setCurrentIndex(idx)}
-            className={`relative w-16 h-10 rounded-lg overflow-hidden border-2 transition-all duration-300 ${
+            className={`relative w-20 h-28 rounded-xl overflow-hidden border-2 transition-all duration-500 hover:scale-110 ${
               idx === currentIndex 
-                ? "border-primary w-20 shadow-lg shadow-primary/20" 
-                : "border-white/10 opacity-40 hover:opacity-80 grayscale hover:grayscale-0"
+                ? "border-primary shadow-2xl shadow-primary/40 scale-105" 
+                : "border-white/10 opacity-30 hover:opacity-100 grayscale hover:grayscale-0"
             }`}
           >
             <Image
-              src={movie.thumbUrl || movie.posterUrl}
+              src={movie.posterUrl}
               alt={movie.title}
               fill
-              sizes="80px"
+              sizes="150px"
               quality={50}
-              className="absolute inset-0 w-full h-full object-cover object-top opacity-60 scale-105"
-              unoptimized={!movie.thumbUrl?.match(/amazon\.com|fanart\.tv|unsplash\.com|tmdb\.org/i)}
+              className="object-cover"
+              unoptimized={!movie.posterUrl?.match(/amazon\.com|fanart\.tv|unsplash\.com|tmdb\.org/i)}
             />
           </button>
         ))}

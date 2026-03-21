@@ -7,14 +7,34 @@ import Link from "next/link";
 import { HeroSlider } from "@/components/movie/HeroSlider";
 import { CategoryShortcuts } from "@/components/movie/CategoryShortcuts";
 import { getTrendingMovies, getTMDBImageUrl } from "@/services/tmdb";
+import { BentoMovieRow } from "@/components/movie/BentoMovieRow";
+import { HomeSearchBar } from "@/components/movie/HomeSearchBar";
+import { HomeComicGrid } from "@/components/comic/HomeComicGrid";
+
+async function getComics(type: string) {
+  try {
+    const res = await fetch(`https://otruyenapi.com/v1/api/danh-sach/${type}?page=1`, {
+      next: { revalidate: 3600 }
+    });
+    if (!res.ok) return { items: [], domain_cdn: "" };
+    const data = await res.json();
+    return { 
+      items: data?.data?.items || [], 
+      domain_cdn: data?.data?.APP_DOMAIN_CDN_IMAGE || "https://otruyenapi.com/uploads/comics" 
+    };
+  } catch (e) {
+    return { items: [], domain_cdn: "" };
+  }
+}
 
 export default async function Home() {
-  const [latestData, phimBoData, phimLeData, hoatHinhData, trendingData] = await Promise.allSettled([
+  const [latestData, phimBoData, phimLeData, hoatHinhData, trendingData, comicData] = await Promise.allSettled([
     getLatestMovies(1),
     getCategoryMovies("phim-bo", 1),
     getCategoryMovies("phim-le", 1),
     getCategoryMovies("hoat-hinh", 1),
     getTrendingMovies(1),
+    getComics("truyen-moi")
   ]);
 
   const latest = latestData.status === "fulfilled" ? latestData.value : { items: [] };
@@ -22,6 +42,7 @@ export default async function Home() {
   const phimLe = phimLeData.status === "fulfilled" ? phimLeData.value : { items: [] };
   const hoatHinh = hoatHinhData.status === "fulfilled" ? hoatHinhData.value : { items: [] };
   const trending = trendingData.status === "fulfilled" ? trendingData.value?.results || [] : [];
+  const comics = comicData.status === "fulfilled" ? comicData.value : { items: [], domain_cdn: "" };
 
   const { enrichMovies } = await import("@/services/movieEnricher");
   // Enrich first 10 for hero pool and next 20 for grid to ensure high-res coverage
@@ -35,23 +56,49 @@ export default async function Home() {
 
   return (
     <div className="flex flex-col gap-10 pb-20 min-h-screen">
-      {/* Hero */}
+      {/* Hero with Cinematic Style */}
       <HeroSlider movies={heroMovies} />
+
+      {/* Glass Search Bar */}
+      <HomeSearchBar />
 
       {/* Category Shortcuts */}
       <CategoryShortcuts />
 
+      {/* Phim Hot Nhất (Bento Style) */}
+      {trending.length > 0 && (
+        <BentoMovieRow 
+          title="Phim Hot Nhất" 
+          movies={trending.slice(0, 10).map((m: any) => ({
+            id: m.id.toString(),
+            title: m.title || m.name,
+            originalTitle: m.original_title || m.original_name || "",
+            slug: `search?q=${encodeURIComponent(m.title || m.name)}`,
+            posterUrl: getTMDBImageUrl(m.poster_path) || "",
+            thumbUrl: getTMDBImageUrl(m.backdrop_path) || "",
+            year: m.release_date?.split("-")[0] || "2025",
+            quality: "HD",
+            source: 'ophim',
+            tmdbRating: m.vote_average
+          })) as any} 
+          viewAllHref="/top-trending"
+        />
+      )}
+
       {/* Phim Mới Cập Nhật (Grid) */}
-      <section className="container mx-auto px-4 lg:px-12 relative z-10">
-        <div className="flex items-center justify-between mb-5">
-          <h3 className="text-base font-semibold text-white/90">
-            Phim Mới Cập Nhật
-          </h3>
-          <Link href="/phim-moi" className="text-[12px] text-white/40 hover:text-white transition-colors flex items-center gap-1 group">
-            Xem toàn bộ <ChevronRight className="h-3.5 w-3.5 group-hover:translate-x-0.5 transition-all" />
+      <section className="container mx-auto px-6 lg:px-12 relative z-10">
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h3 className="text-2xl font-black font-headline tracking-tight text-white uppercase">
+              Phim Mới Cập Nhật
+            </h3>
+            <div className="h-1 w-12 bg-primary mt-1 rounded-full"></div>
+          </div>
+          <Link href="/phim-moi" className="text-primary text-[12px] font-black flex items-center gap-1 uppercase tracking-widest hover:translate-x-1 transition-transform">
+            Tất cả <ChevronRight className="h-4 w-4" />
           </Link>
         </div>
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-6">
           {displayGrid.map((movie) => (
             <MovieCard 
               key={movie.slug} 
@@ -66,46 +113,22 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* Trending TMDB */}
-      {trending.length > 0 && (
-        <section className="container mx-auto px-0">
-          <MovieRow 
-            title="Phim Hot Rần Rần" 
-            movies={trending.slice(0, 20).map((m: any) => ({
-              id: m.id.toString(),
-              title: m.title || m.name,
-              originalTitle: m.original_title || m.original_name || "",
-              slug: `search?q=${encodeURIComponent(m.title || m.name)}`,
-              posterUrl: getTMDBImageUrl(m.poster_path) || "",
-              thumbUrl: getTMDBImageUrl(m.backdrop_path) || "",
-              year: m.release_date?.split("-")[0] || "2024",
-              quality: "HD",
-              source: 'ophim'
-            }))} 
-            viewAllHref="/top-trending"
-          />
-        </section>
-      )}
+      {/* Truyện Mới Cập Nhật (Premium Grid) */}
+      <HomeComicGrid 
+        title="Truyện Mới Cập Nhật"
+        comics={comics.items}
+        domainCdn={comics.domain_cdn}
+        viewAllHref="/truyen"
+      />
 
       {/* Phim Bộ */}
       {phimBo.items.length > 0 && (
-        <section className="container mx-auto px-0">
-          <MovieRow title="Phim Bộ Đang Chiếu" movies={await enrichMovies(phimBo.items.slice(0, 20))} viewAllHref="/phim-bo" />
-        </section>
+        <MovieRow title="Phim Bộ Đặc Sắc" movies={await enrichMovies(phimBo.items.slice(0, 20))} viewAllHref="/phim-bo" />
       )}
 
       {/* Phim Lẻ */}
       {phimLe.items.length > 0 && (
-        <section className="container mx-auto px-0">
-          <MovieRow title="Phim Lẻ Hay Nhất" movies={await enrichMovies(phimLe.items.slice(0, 20))} viewAllHref="/phim-le" />
-        </section>
-      )}
-
-      {/* Hoạt Hình */}
-      {hoatHinh.items.length > 0 && (
-        <section className="container mx-auto px-0">
-          <MovieRow title="Hoạt Hình Mới" movies={await enrichMovies(hoatHinh.items.slice(0, 20))} viewAllHref="/the-loai/hoat-hinh" />
-        </section>
+        <MovieRow title="Phim Lẻ Tuyển Chọn" movies={await enrichMovies(phimLe.items.slice(0, 20))} viewAllHref="/phim-le" />
       )}
     </div>
   );

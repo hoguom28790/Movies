@@ -30,9 +30,9 @@ export function Navbar() {
           </div>
  
           {/* Logo */}
-          <Link href={isComicSection ? "/truyen" : "/"} className="flex items-center gap-2 group md:mr-6 flex-shrink-0">
-            <span className={`text-xl font-bold tracking-tight transition-transform group-hover:scale-105 ${isComicSection ? 'text-indigo-500' : 'text-primary'}`}>
-              Hồ {isComicSection ? 'Truyện' : 'Phim'}
+          <Link href="/" className="flex items-center gap-2 group md:mr-6 flex-shrink-0">
+            <span className="text-xl font-black tracking-tighter bg-clip-text text-transparent bg-gradient-to-br from-primary to-primary-container font-headline transition-transform group-hover:scale-105">
+              Hồ Phim & Hồ Truyện
             </span>
           </Link>
 
