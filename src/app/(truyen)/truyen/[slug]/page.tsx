@@ -5,13 +5,26 @@ import { fetchAniList, ANILIST_QUERIES } from "@/lib/anilist";
 
 export const dynamic = "force-dynamic";
 
-async function fetchAniListRating(name: string) {
+async function fetchAniListRating(name: string, originNames: string[] = []) {
   try {
-     const cleanName = name.replace(/\(.*\)/g, "").trim();
-     const data = await fetchAniList(ANILIST_QUERIES.SEARCH_MANGA, { search: cleanName });
-     const media = data?.Page?.media?.[0];
-     if (media && media.averageScore) {
-        return (media.averageScore / 10).toFixed(1);
+     const namesToTry = [
+        name.replace(/\(.*\)/g, "").trim(),
+        ...originNames.map(n => n.replace(/\(.*\)/g, "").trim())
+     ].filter(Boolean);
+
+     for (const search of namesToTry) {
+        const data = await fetchAniList(ANILIST_QUERIES.SEARCH_MANGA, { search });
+        const media = data?.Page?.media?.find((m: any) => 
+           m.averageScore && 
+           (m.title.english?.toLowerCase() === search.toLowerCase() || 
+            m.title.romaji?.toLowerCase() === search.toLowerCase() ||
+            m.title.native?.toLowerCase() === search.toLowerCase() ||
+            search.toLowerCase().includes(m.title.english?.toLowerCase()))
+        ) || data?.Page?.media?.[0];
+
+        if (media && media.averageScore) {
+           return (media.averageScore / 10).toFixed(1);
+        }
      }
   } catch (err) {
     console.error("AniList Fetch Error:", err);
@@ -69,7 +82,7 @@ export default async function ComicDetailsPage({
   const domain_cdn = data.data.APP_DOMAIN_CDN_IMAGE || "https://otruyenapi.com/uploads/comics";
   
   const [anilistRating] = await Promise.all([
-     fetchAniListRating(item.name)
+     fetchAniListRating(item.name, item.origin_name || [])
   ]);
 
   // Clean up trailing slashes
