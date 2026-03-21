@@ -106,13 +106,16 @@ export default async function ComicReadingPage({
 
   if (images.length === 0) return notFound();
 
+  const media = {
+    id: item._id || slug,
+    title: item.name,
+    imageUrl: item.thumb_url,
+    chapters: images,
+    currentChapterIndex: chaptersList.indexOf(chapter) !== -1 ? chaptersList.indexOf(chapter) : 0,
+    slug: slug
+  };
+
   return (
-    <StitchReader 
-      slug={slug}
-      title={item.name}
-      chapter={chapter}
-      images={images}
-      chaptersList={chaptersList}
-    />
+    <StitchReader media={media} />
   );
 }
