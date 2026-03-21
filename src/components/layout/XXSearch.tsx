@@ -25,7 +25,7 @@ export function XXSearch() {
 
       setIsLoading(true);
       try {
-        const res = await fetch(`/api/topxx/search?q=${encodeURIComponent(debouncedQuery)}`);
+        const res = await fetch(`/api/v2k9r5w8m3x7n1p4q0z6/search?q=${encodeURIComponent(debouncedQuery)}`);
         const data = await res.json();
         setResults(data.items || []);
       } catch (err) {
@@ -104,7 +104,7 @@ export function XXSearch() {
               {results.map((movie) => (
                 <Link
                   key={movie.id}
-                  href={`/topxx/phim/${movie.slug}`}
+                  href={`/v2k9r5w8m3x7n1p4q0z6/phim/${movie.slug}`}
                   onClick={() => {
                     setIsOpen(false);
                     setIsExpanded(false);

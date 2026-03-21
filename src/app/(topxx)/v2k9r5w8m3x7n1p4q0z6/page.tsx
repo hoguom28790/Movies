@@ -1,4 +1,4 @@
-import { getTopXXMovies } from "@/services/api/topxx";
+import { getTopXXMovies } from "@/services/api/v2k9r5w8m3x7n1p4q0z6";
 import { XXHeroSection } from "@/components/movie/XXHeroSection";
 import { XXContinueWatching } from "@/components/movie/XXContinueWatching";
 import { XXMovieRow } from "@/components/movie/XXMovieRow";
@@ -34,25 +34,25 @@ export default async function XXHomePage() {
         <XXMovieRow 
           title="PHIM MỚI CẬP NHẬT" 
           movies={latestData.items.slice(1, 13)} 
-          viewAllLink="/topxx/the-loai/phim-moi-cap-nhat"
+          viewAllLink="/v2k9r5w8m3x7n1p4q0z6/the-loai/phim-moi-cap-nhat"
         />
         
         <XXBentoGrid 
           title="AVDB PREMIUM EXCLUSIVE" 
           movies={avdbData.items || []} 
-          viewAllLink="/topxx/nguon/avdb"
+          viewAllLink="/v2k9r5w8m3x7n1p4q0z6/nguon/avdb"
         />
 
         <XXMovieRow 
           title="SIÊU PHẨM JAV (NHẬT)" 
           movies={javData.items || []} 
-          viewAllLink="/topxx/the-loai/vQMGvwTw5G"
+          viewAllLink="/v2k9r5w8m3x7n1p4q0z6/the-loai/vQMGvwTw5G"
         />
 
         <XXMovieRow 
           title="PHIM KHÔNG CHE HOT" 
           movies={uncensoredData.items || []} 
-          viewAllLink="/topxx/the-loai/vdDkXwQsHi"
+          viewAllLink="/v2k9r5w8m3x7n1p4q0z6/the-loai/vdDkXwQsHi"
         />
 
         {/* Use grid for the rest or more categories */}

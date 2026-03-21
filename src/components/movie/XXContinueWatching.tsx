@@ -65,7 +65,7 @@ export function XXContinueWatching() {
             Xem Tiếp (18+)
           </h3>
         </div>
-        <Link href="/topxx/lich-su" className="text-yellow-500 text-[11px] font-black flex items-center gap-1 uppercase tracking-widest hover:translate-x-1 transition-all">
+        <Link href="/v2k9r5w8m3x7n1p4q0z6/lich-su" className="text-yellow-500 text-[11px] font-black flex items-center gap-1 uppercase tracking-widest hover:translate-x-1 transition-all">
           Lịch sử của bạn <ChevronRight className="h-4 w-4" />
         </Link>
       </div>

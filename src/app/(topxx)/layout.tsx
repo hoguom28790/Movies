@@ -2,8 +2,9 @@
 
 import React from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { AlertCircle, LogOut, User, Home, History as HistoryIcon, Heart, Search } from "lucide-react";
+import { TOPXX_PATH } from "@/lib/constants";
 
 export default function TopXXLayout({
   children,
@@ -11,6 +12,43 @@ export default function TopXXLayout({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
+  const router = useRouter();
+  const [isAuthorized, setIsAuthorized] = React.useState(false);
+
+  React.useEffect(() => {
+    // Session-based authorization
+    const authStatus = sessionStorage.getItem("topxx_authorized");
+    if (authStatus === "true") {
+      setIsAuthorized(true);
+      return;
+    }
+
+    // Date-based dynamic password (DDMMYYYY)
+    const now = new Date();
+    const dd = String(now.getDate()).padStart(2, "0");
+    const mm = String(now.getMonth() + 1).padStart(2, "0");
+    const yyyy = now.getFullYear();
+    const correctPass = `${dd}${mm}${yyyy}`;
+
+    const pass = window.prompt("⚠️ TopXX Restricted Area\nNhập mật mã để xác nhận bạn trên 18 tuổi:");
+    
+    if (pass === correctPass) {
+      sessionStorage.setItem("topxx_authorized", "true");
+      setIsAuthorized(true);
+    } else {
+      alert("❌ Mật mã không chính xác!");
+      router.push("/");
+    }
+  }, [router]);
+
+  if (!isAuthorized) {
+    return (
+      <div className="min-h-screen bg-black flex items-center justify-center font-black uppercase tracking-[0.4em] text-white/20 animate-pulse">
+        Lệnh cấm: Truy cập trái phép
+      </div>
+    );
+  }
+
   return (
     <div className="theme-xx min-h-screen bg-background text-primaryoreground">
       {/* 18+ Warning Banner */}
@@ -22,18 +60,18 @@ export default function TopXXLayout({
       <div className="flex flex-col">
         <header className="fixed top-9 z-[1000] w-full border-b border-white/[0.06] bg-[#0a0a0a]/90 backdrop-blur-xl transition-all duration-300 pt-safe">
           <div className="container mx-auto flex h-14 items-center justify-between px-4 lg:px-8">
-            <Link href="/topxx" className="flex items-center gap-2">
+            <Link href={`/${TOPXX_PATH}`} className="flex items-center gap-2">
               <span className="text-xl font-black tracking-tighter text-primary font-headline italic">TopXX 🎬</span>
             </Link>
             
             <nav className="flex items-center gap-2 sm:gap-4">
-              <Link href="/topxx" className={`p-2 transition-colors ${pathname === "/topxx" ? "text-primary" : "text-white/60 hover:text-primary"}`}>
+              <Link href={`/${TOPXX_PATH}`} className={`p-2 transition-colors ${pathname === `/${TOPXX_PATH}` ? "text-primary" : "text-white/60 hover:text-primary"}`}>
                 <Home className="w-5 h-5" />
               </Link>
-              <Link href="/topxx/lich-su" className={`p-2 transition-colors ${pathname === "/topxx/lich-su" ? "text-primary" : "text-white/60 hover:text-primary"}`}>
+              <Link href={`/${TOPXX_PATH}/lich-su`} className={`p-2 transition-colors ${pathname === `/${TOPXX_PATH}/lich-su` ? "text-primary" : "text-white/60 hover:text-primary"}`}>
                 <HistoryIcon className="w-5 h-5" />
               </Link>
-              <Link href="/topxx/yeu-thich" className={`p-2 transition-colors ${pathname === "/topxx/yeu-thich" ? "text-primary" : "text-white/60 hover:text-primary"}`}>
+              <Link href={`/${TOPXX_PATH}/yeu-thich`} className={`p-2 transition-colors ${pathname === `/${TOPXX_PATH}/yeu-thich` ? "text-primary" : "text-white/60 hover:text-primary"}`}>
                 <Heart className="w-5 h-5" />
               </Link>
               <Link href="/settings" className="p-2 text-white/60 hover:text-primary transition-colors hidden sm:block">

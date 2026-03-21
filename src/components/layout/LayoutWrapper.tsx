@@ -6,7 +6,7 @@ import { SyncCallbackHandler } from "@/components/auth/SyncCallbackHandler";
 
 export function LayoutWrapper({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const isXX = pathname.startsWith("/topxx");
+  const isXX = pathname.startsWith("/v2k9r5w8m3x7n1p4q0z6");
 
   return (
     <div className="min-h-screen flex flex-col">

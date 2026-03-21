@@ -1,4 +1,4 @@
-import { getTopXXMovies } from "@/services/api/topxx";
+import { getTopXXMovies } from "@/services/api/v2k9r5w8m3x7n1p4q0z6";
 import { getAVDBMovies } from "@/services/api/avdb";
 import { notFound } from "next/navigation";
 import { XXMovieRow } from "@/components/movie/XXMovieRow";
@@ -58,7 +58,7 @@ export default async function XXSourcePage({
                                   className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110" 
                                 />
                                 <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-60" />
-                                <a href={`/topxx/movie/${movie.slug}`} className="absolute inset-0" />
+                                <a href={`/v2k9r5w8m3x7n1p4q0z6/movie/${movie.slug}`} className="absolute inset-0" />
                              </div>
                              <div className="px-1 space-y-1">
                                 <h3 className="text-sm font-black text-white group-hover:text-yellow-500 transition-colors line-clamp-2 uppercase leading-tight tracking-tight">{movie.title}</h3>
@@ -72,7 +72,7 @@ export default async function XXSourcePage({
                 <div className="flex items-center justify-center gap-4 py-10">
                     {currentPage > 1 && (
                         <a 
-                           href={`/topxx/nguon/${source}?page=${currentPage - 1}`}
+                           href={`/v2k9r5w8m3x7n1p4q0z6/nguon/${source}?page=${currentPage - 1}`}
                            className="px-6 py-3 rounded-2xl bg-white/5 border border-white/10 text-white font-black uppercase text-[10px] tracking-widest hover:bg-yellow-500 hover:text-black transition-all"
                         >
                            Trang trước
@@ -81,7 +81,7 @@ export default async function XXSourcePage({
                     <span className="text-white font-black text-sm uppercase italic tracking-tighter">Trang {currentPage} / {data.pagination.totalPages}</span>
                     {currentPage < data.pagination.totalPages && (
                          <a 
-                            href={`/topxx/nguon/${source}?page=${currentPage + 1}`}
+                            href={`/v2k9r5w8m3x7n1p4q0z6/nguon/${source}?page=${currentPage + 1}`}
                             className="px-6 py-3 rounded-2xl bg-white/5 border border-white/10 text-white font-black uppercase text-[10px] tracking-widest hover:bg-yellow-500 hover:text-black transition-all"
                          >
                             Trang sau

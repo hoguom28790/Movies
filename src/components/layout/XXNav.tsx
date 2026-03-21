@@ -34,19 +34,19 @@ interface DropdownConfig {
 }
 
 const dropdowns: DropdownConfig[] = [
-  { id: "genre", label: "Thể loại", items: GENRES, basePath: "/topxx/the-loai" },
-  { id: "country", label: "Quốc gia", items: COUNTRIES, basePath: "/topxx/quoc-gia" },
+  { id: "genre", label: "Thể loại", items: GENRES, basePath: "/v2k9r5w8m3x7n1p4q0z6/the-loai" },
+  { id: "country", label: "Quốc gia", items: COUNTRIES, basePath: "/v2k9r5w8m3x7n1p4q0z6/quoc-gia" },
 ];
 
 const directLinks = [
-  { label: "Việt Sub", href: "/topxx/the-loai/NMf5df5FMg" },
-  { label: "Nhật Bản", href: "/topxx/quoc-gia/jp" },
-  { label: "Không che", href: "/topxx/the-loai/vdDkXwQsHi" },
-  { label: "Nguồn TopXX", href: "/topxx/nguon/topxx" },
-  { label: "Nguồn AVDB", href: "/topxx/nguon/avdb" },
-  { label: "Diễn viên", href: "/topxx/dien-vien" },
-  { label: "Thư viện", href: "/topxx/yeu-thich" },
-  { label: "Lịch sử", href: "/topxx/lich-su" },
+  { label: "Việt Sub", href: "/v2k9r5w8m3x7n1p4q0z6/the-loai/NMf5df5FMg" },
+  { label: "Nhật Bản", href: "/v2k9r5w8m3x7n1p4q0z6/quoc-gia/jp" },
+  { label: "Không che", href: "/v2k9r5w8m3x7n1p4q0z6/the-loai/vdDkXwQsHi" },
+  { label: "Nguồn TopXX", href: "/v2k9r5w8m3x7n1p4q0z6/nguon/v2k9r5w8m3x7n1p4q0z6" },
+  { label: "Nguồn AVDB", href: "/v2k9r5w8m3x7n1p4q0z6/nguon/avdb" },
+  { label: "Diễn viên", href: "/v2k9r5w8m3x7n1p4q0z6/dien-vien" },
+  { label: "Thư viện", href: "/v2k9r5w8m3x7n1p4q0z6/yeu-thich" },
+  { label: "Lịch sử", href: "/v2k9r5w8m3x7n1p4q0z6/lich-su" },
 ];
 
 export function XXNav() {
@@ -97,7 +97,7 @@ export function XXNav() {
       </button>
 
       <Link
-        href="/topxx"
+        href="/v2k9r5w8m3x7n1p4q0z6"
         className="px-3 py-2 text-[16px] md:text-[14px] font-black text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-orange-500 hover:opacity-80 transition-opacity uppercase italic tracking-tighter"
       >
         TOP XX

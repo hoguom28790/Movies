@@ -301,7 +301,7 @@ export default function XXLibraryPage() {
                    <Play className="w-8 h-8 text-white/10" />
                 </div>
                 <p className="text-white/20 font-black uppercase tracking-[0.2em]">Danh sách này còn trống</p>
-                <Link href="/topxx" className="mt-8">
+                <Link href="/v2k9r5w8m3x7n1p4q0z6" className="mt-8">
                    <Button variant="secondary" className="rounded-2xl border-white/10 px-8 py-6 h-auto font-black uppercase tracking-widest text-[11px]">Khám phá kho phim</Button>
                 </Link>
              </div>

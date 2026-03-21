@@ -13,6 +13,8 @@ import { MobileMenu } from "./MobileMenu";
 import { ProfileDropdown } from "./ProfileDropdown";
 import { ComicFilters } from "@/components/comic/ComicFilters";
 
+import { TOPXX_PATH } from "@/lib/constants";
+
 interface NavbarProps {
   mode?: "phim" | "truyen";
 }
@@ -26,7 +28,7 @@ export function Navbar({ mode: initialMode }: NavbarProps) {
   const isComicSection = initialMode === "truyen" || pathname.startsWith("/truyen") || pathname.startsWith("/doc");
   const mode = isComicSection ? "truyen" : "phim";
 
-  if (pathname.startsWith("/topxx")) return null;
+  if (pathname.startsWith("/v2k9r5w8m3x7n1p4q0z6") || pathname.startsWith(`/${TOPXX_PATH}`)) return null;
 
   return (
     <>

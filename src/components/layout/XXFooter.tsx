@@ -7,38 +7,38 @@ const columns = [
   {
     title: "KHÁM PHÁ",
     links: [
-      { href: "/topxx/the-loai/NMf5df5FMg", label: "Phim Việt Sub" },
-      { href: "/topxx/the-loai/vdDkXwQsHi", label: "Phim Không Che" },
-      { href: "/topxx/the-loai/vQMGvwTw5G", label: "JAV (Nhật Bản)" },
-      { href: "/topxx/the-loai/NqlIpFB5ov", label: "Hentai 18+" },
-      { href: "/topxx/the-loai/1UhBBr5pNM", label: "Phim Tập Thể" },
+      { href: "/v2k9r5w8m3x7n1p4q0z6/the-loai/NMf5df5FMg", label: "Phim Việt Sub" },
+      { href: "/v2k9r5w8m3x7n1p4q0z6/the-loai/vdDkXwQsHi", label: "Phim Không Che" },
+      { href: "/v2k9r5w8m3x7n1p4q0z6/the-loai/vQMGvwTw5G", label: "JAV (Nhật Bản)" },
+      { href: "/v2k9r5w8m3x7n1p4q0z6/the-loai/NqlIpFB5ov", label: "Hentai 18+" },
+      { href: "/v2k9r5w8m3x7n1p4q0z6/the-loai/1UhBBr5pNM", label: "Phim Tập Thể" },
     ],
   },
   {
     title: "THỂ LOẠI",
     links: [
-      { href: "/topxx/the-loai/oHJZdhXKfM", label: "Âu Mỹ" },
-      { href: "/topxx/the-loai/bXBvvD9LsZ", label: "Xnxx" },
-      { href: "/topxx/the-loai/8Vfsvu32pK", label: "Sex 3D" },
-      { href: "/topxx/dien-vien", label: "Diễn Viên" },
-      { href: "/topxx/nguon/avdb", label: "AVDB Premium" },
+      { href: "/v2k9r5w8m3x7n1p4q0z6/the-loai/oHJZdhXKfM", label: "Âu Mỹ" },
+      { href: "/v2k9r5w8m3x7n1p4q0z6/the-loai/bXBvvD9LsZ", label: "Xnxx" },
+      { href: "/v2k9r5w8m3x7n1p4q0z6/the-loai/8Vfsvu32pK", label: "Sex 3D" },
+      { href: "/v2k9r5w8m3x7n1p4q0z6/dien-vien", label: "Diễn Viên" },
+      { href: "/v2k9r5w8m3x7n1p4q0z6/nguon/avdb", label: "AVDB Premium" },
     ],
   },
   {
     title: "QUỐC GIA",
     links: [
-      { href: "/topxx/quoc-gia/jp", label: "Nhật Bản" },
-      { href: "/topxx/quoc-gia/vn", label: "Việt Nam" },
-      { href: "/topxx/quoc-gia/cn", label: "Trung Quốc" },
-      { href: "/topxx/quoc-gia/us", label: "Mỹ" },
-      { href: "/topxx/quoc-gia/KR", label: "Hàn Quốc" },
+      { href: "/v2k9r5w8m3x7n1p4q0z6/quoc-gia/jp", label: "Nhật Bản" },
+      { href: "/v2k9r5w8m3x7n1p4q0z6/quoc-gia/vn", label: "Việt Nam" },
+      { href: "/v2k9r5w8m3x7n1p4q0z6/quoc-gia/cn", label: "Trung Quốc" },
+      { href: "/v2k9r5w8m3x7n1p4q0z6/quoc-gia/us", label: "Mỹ" },
+      { href: "/v2k9r5w8m3x7n1p4q0z6/quoc-gia/KR", label: "Hàn Quốc" },
     ],
   },
   {
     title: "TÀI KHOẢN",
     links: [
-      { href: "/topxx/yeu-thich", label: "Thư Viện" },
-      { href: "/topxx/lich-su", label: "Lịch Sử Xem" },
+      { href: "/v2k9r5w8m3x7n1p4q0z6/yeu-thich", label: "Thư Viện" },
+      { href: "/v2k9r5w8m3x7n1p4q0z6/lich-su", label: "Lịch Sử Xem" },
       { href: "/", label: "Hồ Phim Chính" },
     ],
   },
@@ -80,13 +80,13 @@ export function XXFooter() {
           </div>
           
           <div className="flex items-center gap-6">
-            <Link href="/topxx" className="text-[11px] font-black text-white/30 hover:text-yellow-500 transition-colors uppercase tracking-widest italic">
+            <Link href="/v2k9r5w8m3x7n1p4q0z6" className="text-[11px] font-black text-white/30 hover:text-yellow-500 transition-colors uppercase tracking-widest italic">
               Home
             </Link>
-            <Link href="/topxx/the-loai" className="text-[11px] font-black text-white/30 hover:text-yellow-500 transition-colors uppercase tracking-widest italic">
+            <Link href="/v2k9r5w8m3x7n1p4q0z6/the-loai" className="text-[11px] font-black text-white/30 hover:text-yellow-500 transition-colors uppercase tracking-widest italic">
               Genres
             </Link>
-            <Link href="/topxx/lich-su" className="text-[11px] font-black text-white/30 hover:text-yellow-500 transition-colors uppercase tracking-widest italic">
+            <Link href="/v2k9r5w8m3x7n1p4q0z6/lich-su" className="text-[11px] font-black text-white/30 hover:text-yellow-500 transition-colors uppercase tracking-widest italic">
               History
             </Link>
           </div>

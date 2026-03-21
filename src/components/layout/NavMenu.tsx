@@ -70,12 +70,15 @@ const dropdowns: DropdownConfig[] = [
   { id: "year", label: "Năm", items: YEARS, basePath: "/nam", cols: 4 },
 ];
 
+import { TOPXX_PATH } from "@/lib/constants";
+
 const directLinks = [
   { label: "Truyện Tranh", href: "/truyen" },
   { label: "Phim Lẻ", href: "/phim-le" },
   { label: "Phim Bộ", href: "/phim-bo" },
   { label: "Hoạt Hình", href: "/hoat-hinh" },
   { label: "TV Shows", href: "/tv-shows" },
+  { label: "TopXX", href: `/${TOPXX_PATH}` },
 ];
 
 interface NavMenuProps {

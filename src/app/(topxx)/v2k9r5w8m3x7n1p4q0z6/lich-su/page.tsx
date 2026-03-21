@@ -110,7 +110,7 @@ export default function XXHistoryPage() {
              <Play className="w-10 h-10 text-white/10" />
           </div>
           <p className="text-white/20 font-black uppercase tracking-[0.3em] italic">Ký ức điện ảnh đang chờ bạn...</p>
-          <Link href="/topxx" className="mt-10">
+          <Link href="/v2k9r5w8m3x7n1p4q0z6" className="mt-10">
             <Button className="rounded-[20px] px-10 h-14 font-black uppercase tracking-widest text-xs shadow-2xl shadow-yellow-500/20">Khám phá ngay</Button>
           </Link>
         </div>
