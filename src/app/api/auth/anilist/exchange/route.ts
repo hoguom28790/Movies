@@ -7,7 +7,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Missing authorization code" }, { status: 400 });
     }
 
-    const clientId = "37601";
+    const clientId = 37601; // Integer
     const clientSecret = (process.env.ANILIST_CLIENT_SECRET || "").trim();
     const redirectUri = "https://hophim.vercel.app/api/auth/anilist/callback";
 
@@ -21,16 +21,24 @@ export async function POST(req: Request) {
 
     console.log("AniList Exchange Request:", {
         ...requestPayload,
-        client_secret: clientSecret ? `${clientSecret.substring(0, 4)}***${clientSecret.substring(clientSecret.length - 4)}` : null
+        client_secret: clientSecret ? `${clientSecret.substring(0, 4)}***` : null
     });
+
+    // Try both Content-Types (URLSearchParams is often more reliable for OAuth tokens)
+    const params = new URLSearchParams();
+    params.append('grant_type', 'authorization_code');
+    params.append('client_id', clientId.toString());
+    params.append('client_secret', clientSecret);
+    params.append('redirect_uri', redirectUri);
+    params.append('code', code);
 
     const response = await fetch("https://anilist.co/api/v2/oauth/token", {
       method: "POST",
       headers: {
-        "Content-Type": "application/json",
-        Accept: "application/json",
+        "Content-Type": "application/x-www-form-urlencoded",
+        "Accept": "application/json",
       },
-      body: JSON.stringify(requestPayload),
+      body: params,
     });
 
     const data = await response.json();
