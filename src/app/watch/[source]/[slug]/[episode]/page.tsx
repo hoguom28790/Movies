@@ -8,6 +8,7 @@ async function fetchMovieData(source: string, slug: string) {
   let url = "";
   if (source === "nguonc") url = `https://phim.nguonc.com/api/film/${slug}`;
   else if (source === "kkphim") url = `https://phimapi.com/phim/${slug}`;
+  else if (source === "vsmov") url = `https://vsmov.com/api/phim/${slug}`;
   else if (source === "ophim") url = `https://ophim1.com/phim/${slug}`;
   else return null;
 
@@ -22,6 +23,13 @@ async function fetchMovieData(source: string, slug: string) {
   }
 }
 
+// Available streaming proxies globally supported
+const AVAILABLE_SOURCES = [
+  { id: "ophim", name: "OPhim" },
+  { id: "kkphim", name: "KKPhim" },
+  { id: "vsmov", name: "VSMOV" },
+];
+
 export default async function WatchPage({
   params,
   searchParams,
@@ -33,8 +41,26 @@ export default async function WatchPage({
   const { s } = await searchParams;
  
   try {
-    const rawData = await fetchMovieData(source, slug);
-    if (!rawData || !rawData.movie) return notFound();
+    let rawData = await fetchMovieData(source, slug);
+    let activeSource = source;
+    let fallbackFlag = false;
+
+    // Automatic Fallback Engine
+    if (!rawData || !rawData.movie) {
+      const fallbacks = ["ophim", "kkphim", "vsmov"].filter(s => s !== source);
+      for (const f of fallbacks) {
+        const fbData = await fetchMovieData(f, slug);
+        if (fbData && fbData.movie) {
+          rawData = fbData;
+          activeSource = f;
+          fallbackFlag = true;
+          break;
+        }
+      }
+      
+      // If everything totally fails
+      if (!rawData || !rawData.movie) return notFound();
+    }
  
     const data = rawData.movie;
     const episodes = Array.isArray(rawData.episodes) ? rawData.episodes : (Array.isArray(rawData.movie.episodes) ? rawData.movie.episodes : []);
@@ -81,10 +107,35 @@ export default async function WatchPage({
               <span className="truncate">{data.name}</span>
             </Link>
  
-            <div className="flex items-center gap-1.5 flex-shrink-0">
+            <div className="flex items-center gap-1.5 flex-shrink-0 relative group">
+              {/* Fallback Toast Notification */}
+              {fallbackFlag && (
+                <div className="fixed top-20 left-1/2 -translate-x-1/2 z-[200] bg-orange-500 text-white px-6 py-3 rounded-full shadow-2xl shadow-orange-500/30 font-bold text-[14px] animate-in slide-in-from-top-4 fade-in duration-300">
+                  ⚠️ Nguồn bị lỗi! Đã chuyển sang {activeSource.toUpperCase()}
+                </div>
+              )}
+              
               <span className="text-[10px] font-semibold text-white/30 uppercase tracking-wider hidden sm:block">Server:</span>
+              
+              {/* Source Switcher Dropdown */}
+              <div className="relative group cursor-pointer mr-2">
+                <Button variant="secondary" size="sm" className="h-7 sm:h-8 text-[11px] px-3 font-semibold rounded-lg shadow-lg bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 uppercase tracking-wider">
+                  Nguồn: {activeSource}
+                </Button>
+                
+                {/* Dropdown Menu */}
+                <div className="absolute right-0 top-full mt-2 w-32 bg-[#1a1a1a]/95 backdrop-blur-xl border border-white/10 rounded-xl shadow-2xl opacity-0 translate-y-2 pointer-events-none group-hover:opacity-100 group-hover:translate-y-0 group-hover:pointer-events-auto transition-all duration-200 z-[100] flex flex-col p-1">
+                  {AVAILABLE_SOURCES.map((src) => (
+                    <Link key={src.id} href={`/watch/${src.id}/${slug}/${episode}`} replace scroll={false}>
+                       <button className={`w-full text-left px-3 py-2 text-[12px] font-semibold rounded-lg transition-colors ${activeSource === src.id ? "bg-primary text-white" : "text-white/60 hover:bg-white/10 hover:text-white"}`}>
+                         {src.name}
+                       </button>
+                    </Link>
+                  ))}
+                </div>
+              </div>
               {rawEmbedUrl && (
-                <Link href={`/watch/${source}/${slug}/${episode}?s=embed`} scroll={false} replace>
+                <Link href={`/watch/${activeSource}/${slug}/${episode}?s=embed`} scroll={false} replace>
                   <Button
                     variant={!isHls ? "primary" : "secondary"}
                     size="sm"
@@ -97,7 +148,7 @@ export default async function WatchPage({
                 </Link>
               )}
               {rawM3u8Url && (
-                <Link href={`/watch/${source}/${slug}/${episode}?s=hls`} scroll={false} replace>
+                <Link href={`/watch/${activeSource}/${slug}/${episode}?s=hls`} scroll={false} replace>
                   <Button
                     variant={isHls ? "primary" : "secondary"}
                     size="sm"
@@ -116,7 +167,7 @@ export default async function WatchPage({
             url={rawM3u8Url} 
             isHls={isHls} 
             rawEmbedUrl={rawEmbedUrl}
-            nextEpisodeUrl={nextEp ? `/watch/${source}/${slug}/${nextEp.slug || nextEp.name}` : undefined}
+            nextEpisodeUrl={nextEp ? `/watch/${activeSource}/${slug}/${nextEp.slug || nextEp.name}` : undefined}
             movieTitle={data.name}
             movieSlug={slug}
             episodeName={currentEp.name}
@@ -139,7 +190,7 @@ export default async function WatchPage({
  
             <div className="flex items-center gap-2 flex-shrink-0">
               {prevEp ? (
-                <Link href={`/watch/${source}/${slug}/${prevEp.slug || prevEp.name}`}>
+                <Link href={`/watch/${activeSource}/${slug}/${prevEp.slug || prevEp.name}`}>
                   <Button variant="secondary" size="sm" className="h-9 gap-1.5 font-semibold">
                     <ChevronLeft className="w-4 h-4" /> Tập trước
                   </Button>
@@ -150,7 +201,7 @@ export default async function WatchPage({
                 </Button>
               )}
               {nextEp ? (
-                <Link href={`/watch/${source}/${slug}/${nextEp.slug || nextEp.name}`}>
+                <Link href={`/watch/${activeSource}/${slug}/${nextEp.slug || nextEp.name}`}>
                   <Button variant="primary" size="sm" className="h-9 gap-1.5 font-semibold">
                     Tập tiếp <ChevronRight className="w-4 h-4" />
                   </Button>
@@ -174,7 +225,7 @@ export default async function WatchPage({
                   const epId = ep.slug || ep.name;
                   const isCurrent = sIdx === 0 && (ep.slug === episode || ep.name === episode);
                   return (
-                    <Link key={idx} href={`/watch/${source}/${slug}/${epId}`}>
+                    <Link key={idx} href={`/watch/${activeSource}/${slug}/${epId}`}>
                       <Button
                         variant={isCurrent ? "primary" : "secondary"}
                         className={`min-w-[3.5rem] px-3 sm:px-4 h-8 sm:h-9 text-[11px] sm:text-[12px] font-semibold rounded-lg transition-all ${
