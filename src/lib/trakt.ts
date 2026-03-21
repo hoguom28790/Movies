@@ -4,9 +4,9 @@
  */
 
 const TRAKT_API_URL = "https://api.trakt.tv";
-const CLIENT_ID = (process.env.NEXT_PUBLIC_TRAKT_CLIENT_ID || "").trim();
+const CLIENT_ID = "f53c708264ed8b6f1438e118e02d83c1383ec45cc1d8acd968a49463912c0812";
 const CLIENT_SECRET = (process.env.TRAKT_CLIENT_SECRET || "").trim();
-const REDIRECT_URI = (process.env.NEXT_PUBLIC_TRAKT_REDIRECT_URI || "").trim();
+const REDIRECT_URI = "https://hophim.vercel.app/api/auth/trakt/callback";
 
 export interface TraktAuth {
   access_token: string;

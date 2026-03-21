@@ -7,9 +7,9 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Missing authorization code" }, { status: 400 });
     }
 
-    const clientId = process.env.NEXT_PUBLIC_ANILIST_CLIENT_ID?.trim();
-    const clientSecret = process.env.ANILIST_CLIENT_SECRET?.trim();
-    const redirectUri = process.env.NEXT_PUBLIC_ANILIST_REDIRECT_URI?.trim();
+    const clientId = "37601";
+    const clientSecret = (process.env.ANILIST_CLIENT_SECRET || "").trim();
+    const redirectUri = "https://hophim.vercel.app/api/auth/anilist/callback";
 
     const requestPayload = {
         grant_type: "authorization_code",

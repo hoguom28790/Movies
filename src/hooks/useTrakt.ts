@@ -36,9 +36,9 @@ export function useTrakt() {
 
     const login = useCallback(() => {
         if (!user) return;
-        const clientId = process.env.NEXT_PUBLIC_TRAKT_CLIENT_ID;
-        const redirectUri = process.env.NEXT_PUBLIC_TRAKT_REDIRECT_URI;
-        window.location.href = `https://trakt.tv/oauth/authorize?response_type=code&client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri || '')}&state=trakt:${user.uid}`;
+        const clientId = "f53c708264ed8b6f1438e118e02d83c1383ec45cc1d8acd968a49463912c0812";
+        const redirectUri = "https://hophim.vercel.app/api/auth/trakt/callback";
+        window.location.href = `https://trakt.tv/oauth/authorize?response_type=code&client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&state=trakt:${user.uid}`;
     }, [user]);
 
     const isConnected = status === "connected";
