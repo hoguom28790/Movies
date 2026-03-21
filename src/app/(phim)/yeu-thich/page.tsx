@@ -5,7 +5,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import Link from "next/link";
 import { getUserPlaylists, deletePlaylist, removeMovieFromPlaylist, ensureDefaultPlaylist, createPlaylist } from "@/services/db";
 import { Playlist } from "@/types/database";
-import { MovieCard } from "@/components/movie/MovieCard";
+import { MovieCard } from "@/components/phim/MovieCard";
 import { Trash, Library, Loader2, X, Plus, Heart, Search, Film } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 
@@ -159,7 +159,7 @@ export default function MovieLibraryPage() {
         <div className="flex-1 space-y-12">
             <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6">
                 <div>
-                  <h2 className="text-3xl font-black italic uppercase tracking-tighter text-white/40">{activePlaylist?.name}</h2>
+                  <h2 className="text-primaryxl font-black italic uppercase tracking-tighter text-white/40">{activePlaylist?.name}</h2>
                   <div className="mt-2 h-1 w-24 bg-primary rounded-full"></div>
                 </div>
 

@@ -8,7 +8,7 @@ import { BottomNav } from "@/components/layout/BottomNav";
 
 export function LayoutWrapper({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const isXX = pathname.startsWith("/collection");
+  const isXX = pathname.startsWith("/topxx");
 
   return (
     <div className="min-h-screen flex flex-col">

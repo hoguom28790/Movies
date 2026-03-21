@@ -20,7 +20,7 @@ export function XXBentoGrid({ title, movies, viewAllLink }: XXBentoGridProps) {
   return (
     <div className="space-y-8 mb-20">
       <div className="flex items-center justify-between px-2">
-        <h2 className="text-2xl md:text-3xl font-black text-white uppercase italic tracking-tighter">
+        <h2 className="text-2xl md:text-primaryxl font-black text-white uppercase italic tracking-tighter">
           {title}
         </h2>
         {viewAllLink && (
@@ -71,7 +71,7 @@ export function XXBentoGrid({ title, movies, viewAllLink }: XXBentoGridProps) {
 function BentoItem({ movie, className, large = false }: { movie: Movie, className: string, large?: boolean }) {
   return (
     <Link 
-      href={`/collection/phim/${movie.slug}`}
+      href={`/topxx/phim/${movie.slug}`}
       className={`relative group overflow-hidden rounded-3xl border border-white/10 bg-surface transition-all duration-500 hover:border-xx-primary/50 hover:shadow-[0_0_40px_rgba(255,215,0,0.1)] ${className}`}
     >
       <img 
@@ -95,7 +95,7 @@ function BentoItem({ movie, className, large = false }: { movie: Movie, classNam
           )}
         </div>
         
-        <h3 className={`${large ? "text-xl md:text-3xl" : "text-lg"} font-black text-white leading-tight uppercase italic group-hover:text-xx-primary transition-colors line-clamp-2`}>
+        <h3 className={`${large ? "text-xl md:text-primaryxl" : "text-lg"} font-black text-white leading-tight uppercase italic group-hover:text-xx-primary transition-colors line-clamp-2`}>
           {movie.title}
         </h3>
         

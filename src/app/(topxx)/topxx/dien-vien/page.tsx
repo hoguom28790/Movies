@@ -43,7 +43,7 @@ export default async function XXActorsPage() {
                 {actors.map((actor: any) => (
                     <Link 
                         key={actor.slug} 
-                        href={`/collection/dien-vien/${actor.slug}`}
+                        href={`/topxx/dien-vien/${actor.slug}`}
                         className="group flex flex-col items-center gap-5 text-center"
                     >
                         <div className="relative w-full aspect-square rounded-[50px] overflow-hidden border-2 border-white/5 shadow-2xl transition-all duration-700 group-hover:border-yellow-500/30 group-hover:-translate-y-4 group-hover:rotate-3">

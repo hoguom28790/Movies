@@ -132,7 +132,7 @@ export function ComicFilters() {
                   <button
                     key={g.slug}
                     onClick={() => setSelectedGenre(selectedGenre === g.slug ? "" : g.slug)}
-                    className={`px-2.5 py-1 rounded-md text-[11px] font-bold transition-colors ${selectedGenre === g.slug ? "bg-[#00a3ff] text-white" : "bg-white/5 text-white/60 hover:bg-white/10 hover:text-white"}`}
+                    className={`px-2.5 py-1 rounded-md text-[11px] font-bold transition-colors ${selectedGenre === g.slug ? "bg-[var(--primary)] text-white" : "bg-white/5 text-white/60 hover:bg-white/10 hover:text-white"}`}
                   >
                     {g.name}
                   </button>

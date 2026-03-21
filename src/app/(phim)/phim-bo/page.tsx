@@ -1,5 +1,5 @@
 import { getCategoryMovies } from "@/services/api/category";
-import { MovieGrid } from "@/components/movie/MovieGrid";
+import { MovieGrid } from "@/components/phim/MovieGrid";
 import { MovieListResponse } from "@/types/movie";
  
 export default async function PhimBoPage({ searchParams }: { searchParams: Promise<{ page?: string }> }) {

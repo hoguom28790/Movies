@@ -34,19 +34,19 @@ interface DropdownConfig {
 }
 
 const dropdowns: DropdownConfig[] = [
-  { id: "genre", label: "Thể loại", items: GENRES, basePath: "/collection/the-loai" },
-  { id: "country", label: "Quốc gia", items: COUNTRIES, basePath: "/collection/quoc-gia" },
+  { id: "genre", label: "Thể loại", items: GENRES, basePath: "/topxx/the-loai" },
+  { id: "country", label: "Quốc gia", items: COUNTRIES, basePath: "/topxx/quoc-gia" },
 ];
 
 const directLinks = [
-  { label: "Việt Sub", href: "/collection/the-loai/NMf5df5FMg" },
-  { label: "Nhật Bản", href: "/collection/quoc-gia/jp" },
-  { label: "Không che", href: "/collection/the-loai/vdDkXwQsHi" },
-  { label: "Nguồn TopXX", href: "/collection/nguon/topxx" },
-  { label: "Nguồn AVDB", href: "/collection/nguon/avdb" },
-  { label: "Diễn viên", href: "/collection/dien-vien" },
-  { label: "Thư viện", href: "/collection/yeu-thich" },
-  { label: "Lịch sử", href: "/collection/lich-su" },
+  { label: "Việt Sub", href: "/topxx/the-loai/NMf5df5FMg" },
+  { label: "Nhật Bản", href: "/topxx/quoc-gia/jp" },
+  { label: "Không che", href: "/topxx/the-loai/vdDkXwQsHi" },
+  { label: "Nguồn TopXX", href: "/topxx/nguon/topxx" },
+  { label: "Nguồn AVDB", href: "/topxx/nguon/avdb" },
+  { label: "Diễn viên", href: "/topxx/dien-vien" },
+  { label: "Thư viện", href: "/topxx/yeu-thich" },
+  { label: "Lịch sử", href: "/topxx/lich-su" },
 ];
 
 export function XXNav() {
@@ -97,7 +97,7 @@ export function XXNav() {
       </button>
 
       <Link
-        href="/collection"
+        href="/topxx"
         className="px-3 py-2 text-[16px] md:text-[14px] font-black text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-orange-500 hover:opacity-80 transition-opacity uppercase italic tracking-tighter"
       >
         TOP XX

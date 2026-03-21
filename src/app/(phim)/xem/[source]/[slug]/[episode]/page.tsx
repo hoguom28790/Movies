@@ -2,7 +2,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/Button";
 import { ChevronLeft, ChevronRight, ArrowLeft, Play } from "lucide-react";
-import { PlayerContainer } from "@/components/movie/PlayerContainer";
+import { PlayerContainer } from "@/components/phim/PlayerContainer";
 
 async function fetchMovieData(source: string, slug: string) {
   let url = "";
@@ -101,7 +101,7 @@ export default async function WatchPage({
         <div className="w-full bg-black pt-safe">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-2 sm:py-3 flex items-center justify-between gap-2">
             <Link
-              href={`/movie/${slug}`}
+              href={`/phim/${slug}`}
               className="flex items-center gap-2 text-[13px] font-medium text-white/60 hover:text-white transition-colors min-w-0"
             >
               <ArrowLeft className="w-4 h-4 flex-shrink-0" />
@@ -167,7 +167,7 @@ export default async function WatchPage({
  
             <div className="flex items-center gap-2 flex-shrink-0">
               {prevEp ? (
-                <Link href={`/watch/${activeSource}/${slug}/${prevEp.slug || prevEp.name}?sv=${currentServerIdx}`}>
+                <Link href={`/xem/${activeSource}/${slug}/${prevEp.slug || prevEp.name}?sv=${currentServerIdx}`}>
                   <Button variant="secondary" size="sm" className="h-9 gap-1.5 font-semibold">
                     <ChevronLeft className="w-4 h-4" /> Tập trước
                   </Button>
@@ -178,7 +178,7 @@ export default async function WatchPage({
                 </Button>
               )}
               {nextEp ? (
-                <Link href={`/watch/${activeSource}/${slug}/${nextEp.slug || nextEp.name}?sv=${currentServerIdx}`}>
+                <Link href={`/xem/${activeSource}/${slug}/${nextEp.slug || nextEp.name}?sv=${currentServerIdx}`}>
                   <Button variant="primary" size="sm" className="h-9 gap-1.5 font-semibold">
                     Tập tiếp <ChevronRight className="w-4 h-4" />
                   </Button>
@@ -202,7 +202,7 @@ export default async function WatchPage({
                   const epId = ep.slug || ep.name;
                   const isCurrent = sIdx === currentServerIdx && (ep.slug === episode || ep.name === episode);
                   return (
-                    <Link key={idx} href={`/watch/${activeSource}/${slug}/${epId}?sv=${sIdx}`}>
+                    <Link key={idx} href={`/xem/${activeSource}/${slug}/${epId}?sv=${sIdx}`}>
                       <Button
                         variant={isCurrent ? "primary" : "secondary"}
                         className={`min-w-[3.5rem] px-3 sm:px-4 h-8 sm:h-9 text-[11px] sm:text-[12px] font-semibold rounded-lg transition-all ${
@@ -231,7 +231,7 @@ export default async function WatchPage({
         <p className="text-white/40 text-sm max-w-xs mb-8">
           Chúng mình không thể tải trình phát tập phim này. Vui lòng thử lại sau hoặc chọn tập khác nhé!
         </p>
-        <Link href={`/movie/${slug}`}>
+        <Link href={`/phim/${slug}`}>
           <Button className="rounded-xl px-8 h-11">
             Quay lại trang thông tin
           </Button>

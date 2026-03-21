@@ -2,9 +2,9 @@
 
 import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { saveXXHistory, getMovieXXHistory } from "@/services/collectionDb";
+import { saveXXHistory, getMovieXXHistory } from "@/services/topxxDb";
 import { useAuth } from "@/contexts/AuthContext";
-import { saveXXFirestoreHistory, getXXFirestoreHistory } from "@/services/collectionFirestore";
+import { saveXXFirestoreHistory, getXXFirestoreHistory } from "@/services/topxxFirestore";
 import { useDevice } from "@/contexts/DeviceContext";
 
 interface XXPlayerProps {

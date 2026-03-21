@@ -77,7 +77,7 @@ export default function XXMovieDetailClient({ item, slug, autoPlay }: XXMovieDet
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
              <div className="lg:col-span-2 space-y-8">
                 <div className="bg-surface border border-white/5 rounded-[40px] p-8 md:p-12 transition-all hover:border-white/10">
-                   <h1 className="text-3xl md:text-5xl font-black text-white uppercase italic tracking-tighter leading-none mb-6">
+                   <h1 className="text-primaryxl md:text-5xl font-black text-white uppercase italic tracking-tighter leading-none mb-6">
                       {title}
                    </h1>
                    <div className="flex flex-wrap items-center gap-4 mb-10 pb-10 border-b border-white/5">
@@ -122,9 +122,9 @@ export default function XXMovieDetailClient({ item, slug, autoPlay }: XXMovieDet
                      Dữ liệu chi tiết
                    </h3>
                    <ul className="space-y-10">
-                      <DetailItem icon={<Tag className="w-4 h-4 text-white/20"/>} label="Thể loại" items={isAVDB ? (Array.isArray(item.category) ? item.category.map((c: any) => ({ name: c, code: c })) : [{ name: item.category, code: item.category }]) : item.genres} path="/collection/the-loai" />
-                      <DetailItem icon={<Globe className="w-4 h-4 text-white/20"/>} label="Quốc gia" items={isAVDB ? (Array.isArray(item.country) ? item.country.map((c: any) => ({ name: c, code: c })) : [{ name: item.country, code: item.country }]) : item.countries} path="/collection/quoc-gia" />
-                      <DetailItem icon={<Users className="w-4 h-4 text-white/20"/>} label="Diễn viên" items={isAVDB ? (Array.isArray(item.actor) ? item.actor.map((a: any) => ({ trans: [{ locale: 'vi', name: a }] })) : item.actor?.split(',').map((a: any) => ({ trans: [{ locale: 'vi', name: a.trim() }] }))) : item.actors} path="/collection/dien-vien" isActor />
+                      <DetailItem icon={<Tag className="w-4 h-4 text-white/20"/>} label="Thể loại" items={isAVDB ? (Array.isArray(item.category) ? item.category.map((c: any) => ({ name: c, code: c })) : [{ name: item.category, code: item.category }]) : item.genres} path="/topxx/the-loai" />
+                      <DetailItem icon={<Globe className="w-4 h-4 text-white/20"/>} label="Quốc gia" items={isAVDB ? (Array.isArray(item.country) ? item.country.map((c: any) => ({ name: c, code: c })) : [{ name: item.country, code: item.country }]) : item.countries} path="/topxx/quoc-gia" />
+                      <DetailItem icon={<Users className="w-4 h-4 text-white/20"/>} label="Diễn viên" items={isAVDB ? (Array.isArray(item.actor) ? item.actor.map((a: any) => ({ trans: [{ locale: 'vi', name: a }] })) : item.actor?.split(',').map((a: any) => ({ trans: [{ locale: 'vi', name: a.trim() }] }))) : item.actors} path="/topxx/dien-vien" isActor />
                    </ul>
                 </div>
              </div>
@@ -214,19 +214,19 @@ export default function XXMovieDetailClient({ item, slug, autoPlay }: XXMovieDet
                   icon={<Tag className="w-4 h-4" />} 
                   label="Category" 
                   items={isAVDB ? (Array.isArray(item.category) ? item.category.map((c: any) => ({ name: c, code: c })) : [{ name: item.category, code: item.category }]) : item.genres} 
-                  path="/collection/the-loai" 
+                  path="/topxx/the-loai" 
                />
                <DetailItem 
                   icon={<Globe className="w-4 h-4" />} 
                   label="Production" 
                   items={isAVDB ? (Array.isArray(item.country) ? item.country.map((c: any) => ({ name: c, code: c })) : [{ name: item.country, code: item.country }]) : item.countries} 
-                  path="/collection/quoc-gia" 
+                  path="/topxx/quoc-gia" 
                />
                <DetailItem 
                   icon={<Users className="w-4 h-4" />} 
                   label="Starring" 
                   items={isAVDB ? (Array.isArray(item.actor) ? item.actor.map((a: any) => ({ trans: [{ locale: 'vi', name: a }] })) : item.actor?.split(',').map((a: any) => ({ trans: [{ locale: 'vi', name: a.trim() }] }))) : item.actors} 
-                  path="/collection/dien-vien" 
+                  path="/topxx/dien-vien" 
                   isActor 
                />
              </ul>

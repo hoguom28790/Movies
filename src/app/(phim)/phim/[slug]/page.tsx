@@ -3,10 +3,10 @@ import Link from "next/link";
 import Image from "next/image";
 import { Play, Heart, Share2, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/Button";
-import { WatchlistBtn } from "@/components/movie/WatchlistBtn";
+import { WatchlistBtn } from "@/components/phim/WatchlistBtn";
 import { getTMDBImageUrl, getTMDBMovieDetails, searchTMDBMovie, getTMDBCollection } from "@/services/tmdb";
-import { MovieTabs } from "@/components/movie/MovieTabs";
-import { MovieRatings } from "@/components/movie/MovieRatings";
+import { MovieTabs } from "@/components/phim/MovieTabs";
+import { MovieRatings } from "@/components/phim/MovieRatings";
  
 async function fetchMovieData(slug: string) {
   try {

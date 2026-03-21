@@ -1,5 +1,5 @@
 import { getLatestMovies } from "@/services/api";
-import { MovieGrid } from "@/components/movie/MovieGrid";
+import { MovieGrid } from "@/components/phim/MovieGrid";
 
 export default async function PhimMoiPage({ searchParams }: { searchParams: Promise<{ page?: string }> }) {
   const { page } = await searchParams;

@@ -1,5 +1,5 @@
 import { getCountryMovies } from "@/services/api/category";
-import { MovieGrid } from "@/components/movie/MovieGrid";
+import { MovieGrid } from "@/components/phim/MovieGrid";
 import { MovieListResponse } from "@/types/movie";
 import { notFound } from "next/navigation";
 

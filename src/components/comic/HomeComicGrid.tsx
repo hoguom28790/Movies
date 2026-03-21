@@ -22,7 +22,7 @@ export function HomeComicGrid({ title, comics, domainCdn, viewAllHref }: HomeCom
           <h3 className="text-2xl font-black font-headline tracking-tight text-white uppercase">
             {title}
           </h3>
-          <div className="h-1 w-12 bg-indigo-500 mt-1 rounded-full shadow-[0_0_10px_rgba(99,102,241,0.5)]"></div>
+          <div className="h-1 w-12 bg-primary mt-1 rounded-full shadow-[0_0_10px_rgba(99,102,241,0.5)]"></div>
         </div>
         {viewAllHref && (
           <Link 

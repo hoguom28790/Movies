@@ -63,7 +63,7 @@ export function WatchlistBtn({ movieSlug, movieTitle, posterUrl }: WatchlistBtnP
         onClick={handleToggle} 
         variant={isSaved ? "primary" : "secondary"} 
         size="lg" 
-        className={`rounded-full px-8 gap-2 transition-all duration-300 ${loading || authLoading ? "opacity-70" : "opacity-100"} hover:scale-105 ${isSaved ? "bg-gradient-to-r from-primary to-blue-500 shadow-[0_0_30px_rgba(0,99,229,0.5)]" : ""}`}
+        className={`rounded-full px-8 gap-2 transition-all duration-300 ${loading || authLoading ? "opacity-70" : "opacity-100"} hover:scale-105 ${isSaved ? "bg-gradient-to-r from-primary to-primary shadow-[0_0_30px_rgba(0,99,229,0.5)]" : ""}`}
       >
         {isSaved ? <BookmarkCheck className="w-5 h-5 fill-current" /> : <Bookmark className="w-5 h-5" />}
         {loading ? "Đang xử lý..." : (isSaved ? "Đã Thêm" : "Lưu Phim")}

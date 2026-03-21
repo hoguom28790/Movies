@@ -25,7 +25,7 @@ export function HomeSearchBar() {
         <Search className="w-5 h-5 text-neutral-400" />
         <input 
           name="q"
-          className="bg-transparent border-none focus:ring-0 text-white placeholder-neutral-500 w-full font-medium text-[15px]" 
+          className="bg-transparent border-none focus:ring-primary text-white placeholder-neutral-500 w-full font-medium text-[15px]" 
           placeholder="Tìm phim, truyện hoặc diễn viên..." 
           type="text"
         />

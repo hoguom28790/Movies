@@ -6,7 +6,7 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 
 const shortcuts = [
   { title: "Hot Rần Rần", href: "/phim-moi", gradient: "from-orange-500/80 to-red-800/80" },
-  { title: "Chiếu rạp", href: "/the-loai/chieu-rap", gradient: "from-blue-500/80 to-indigo-800/80" },
+  { title: "Chiếu rạp", href: "/the-loai/chieu-rap", gradient: "from-primary/80 to-indigo-800/80" },
   { title: "Lồng tiếng", href: "/the-loai/long-tieng", gradient: "from-emerald-500/80 to-teal-800/80" },
   { title: "Thuyết Minh", href: "/the-loai/thuyet-minh", gradient: "from-amber-500/80 to-orange-800/80" },
   { title: "Cổ trang", href: "/the-loai/co-trang", gradient: "from-pink-500/80 to-rose-800/80" },

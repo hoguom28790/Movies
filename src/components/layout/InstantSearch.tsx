@@ -84,11 +84,11 @@ export function InstantSearch() {
       <form 
         onSubmit={handleSearchSubmit}
         className={`relative flex items-center bg-[#111]/80 border border-white/5 rounded-lg px-4 py-2 transition-all duration-300 ${
-          isOpen ? "ring-1 ring-[#00a3ff]/30 bg-[#161616]" : "hover:bg-[#1a1a1a]"
+          isOpen ? "ring-1 ring-[var(--primary)]/30 bg-[#161616]" : "hover:bg-[#1a1a1a]"
         }`}
       >
         <button type="submit" className="outline-none" aria-label="Search">
-           <Search className={`h-4 w-4 transition-colors ${loading ? "text-[#00a3ff] animate-pulse" : "text-white/20 hover:text-white"}`} />
+           <Search className={`h-4 w-4 transition-colors ${loading ? "text-[var(--primary)] animate-pulse" : "text-white/20 hover:text-white"}`} />
         </button>
         <input
           type="text"
@@ -115,7 +115,7 @@ export function InstantSearch() {
           <div className="max-h-[70vh] overflow-y-auto scrollbar-hide py-2">
             {loading ? (
               <div className="flex flex-col items-center justify-center py-12 gap-3">
-                 <Loader2 className="h-6 w-6 text-[#00a3ff] animate-spin" />
+                 <Loader2 className="h-6 w-6 text-[var(--primary)] animate-spin" />
                  <span className="text-xs text-white/20 font-medium">Đang tìm kiếm...</span>
               </div>
             ) : (
@@ -138,7 +138,7 @@ export function InstantSearch() {
                     </div>
                   </div>
                   <div className="flex flex-col gap-1 overflow-hidden">
-                    <h4 className="text-[13px] font-bold text-white group-hover:text-[#00a3ff] transition-colors truncate">
+                    <h4 className="text-[13px] font-bold text-white group-hover:text-[var(--primary)] transition-colors truncate">
                       {item.title}
                     </h4>
                     <p className="text-[11px] text-white/40 font-medium truncate italic opacity-80">
@@ -155,7 +155,7 @@ export function InstantSearch() {
             <Link
               href={isComicSection ? `/truyen/search?q=${encodeURIComponent(query)}` : `/search?q=${encodeURIComponent(query)}`}
               onClick={() => setIsOpen(false)}
-              className="block w-full py-3 bg-[#161616] text-center text-[11px] font-black text-white/30 hover:text-[#00a3ff] hover:bg-[#1a1a1a] transition-all border-t border-white/5 uppercase tracking-widest"
+              className="block w-full py-3 bg-[#161616] text-center text-[11px] font-black text-white/30 hover:text-[var(--primary)] hover:bg-[#1a1a1a] transition-all border-t border-white/5 uppercase tracking-widest"
             >
               Toàn bộ kết quả
             </Link>

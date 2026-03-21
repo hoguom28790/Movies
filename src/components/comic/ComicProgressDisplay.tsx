@@ -28,7 +28,7 @@ export function ComicProgressDisplay({ slug }: { slug: string }) {
         <span className="text-[11px] font-black text-primary">{Math.round(percent)}%</span>
       </div>
       <div className="w-full h-1.5 bg-black rounded-full overflow-hidden">
-        <div className="h-full bg-gradient-to-r from-primary to-blue-500 rounded-full transition-all duration-1000" style={{ width: `${percent}%` }} />
+        <div className="h-full bg-gradient-to-r from-primary to-primary rounded-full transition-all duration-1000" style={{ width: `${percent}%` }} />
       </div>
     </div>
   );

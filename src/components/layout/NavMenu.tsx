@@ -163,7 +163,7 @@ export function NavMenu({ mode }: NavMenuProps) {
                 {dd.items.map((item) => (
                   <Link
                     key={item.slug}
-                    href={`${dd.basePath}/${item.slug}`}
+                    href={isComicSection ? `/truyen?genre=${item.slug}` : `${dd.basePath}/${item.slug}`}
                     onClick={(e) => {
                       if (item.slug === "phim-18") {
                         const now = new Date();

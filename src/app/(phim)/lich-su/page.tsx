@@ -4,7 +4,7 @@ import React, { useEffect, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { getUserHistory, deleteFromHistory } from "@/services/db";
 import { HistoryEntry } from "@/types/database";
-import { MovieCard } from "@/components/movie/MovieCard";
+import { MovieCard } from "@/components/phim/MovieCard";
 import { X, Film } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 
@@ -55,7 +55,7 @@ export default function MovieHistoryPage() {
   return (
     <div className="container mx-auto px-4 py-8 mt-16 min-h-screen">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12">
-        <h1 className="text-3xl font-black italic tracking-tighter uppercase border-l-4 border-primary pl-4">Lịch Sử Xem Phim</h1>
+        <h1 className="text-primaryxl font-black italic tracking-tighter uppercase border-l-4 border-primary pl-4">Lịch Sử Xem Phim</h1>
         <div className="flex items-center gap-2 px-4 py-2 bg-primary/10 rounded-xl border border-primary/20">
           <Film className="w-4 h-4 text-primary" />
           <span className="text-xs font-bold text-primary uppercase tracking-widest">{items.length} Bộ phim</span>

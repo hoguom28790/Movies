@@ -1,4 +1,4 @@
-import { MovieRowSkeleton } from "@/components/movie/MovieSkeleton";
+import { MovieRowSkeleton } from "@/components/phim/MovieSkeleton";
 
 export default function Loading() {
   return (

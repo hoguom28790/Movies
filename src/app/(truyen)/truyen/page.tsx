@@ -60,7 +60,7 @@ export default async function ComicHomePage({
            <div className="flex items-center gap-3 relative">
               <div className="absolute -left-4 md:-left-8 -top-8 w-24 h-24 bg-primary/20 blur-[50px] rounded-full" />
               <BookOpen className="w-8 h-8 md:w-10 md:h-10 text-primary drop-shadow-[0_0_15px_rgba(255,255,255,0.3)] z-10" />
-              <h2 className="text-3xl md:text-5xl font-black text-white italic tracking-tighter uppercase relative z-10">
+              <h2 className="text-primaryxl md:text-5xl font-black text-white italic tracking-tighter uppercase relative z-10">
                 Kết Quả Lọc
               </h2>
            </div>

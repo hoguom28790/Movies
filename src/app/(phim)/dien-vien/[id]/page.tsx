@@ -2,7 +2,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { Film, CalendarDays } from "lucide-react";
 import { getTMDBActorDetails, getTMDBImageUrl } from "@/services/tmdb";
-import { FavoriteActorBtn } from "@/components/movie/FavoriteActorBtn";
+import { FavoriteActorBtn } from "@/components/phim/FavoriteActorBtn";
 import { BackButton } from "@/components/ui/BackButton";
 
 export default async function ActorPage({ params }: { params: Promise<{ id: string }> }) {

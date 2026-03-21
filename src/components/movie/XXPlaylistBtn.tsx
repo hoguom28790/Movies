@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { ListPlus, Plus, Check, MoreVertical, Trash2 } from "lucide-react";
-import { getXXPlaylists, createXXPlaylist, addMovieToXXPlaylist, isMovieInPlaylist } from "@/services/collectionDb";
+import { getXXPlaylists, createXXPlaylist, addMovieToXXPlaylist, isMovieInPlaylist } from "@/services/topxxDb";
 import { Button } from "@/components/ui/Button";
 
 interface XXPlaylistBtnProps {

@@ -30,32 +30,32 @@ export default async function XXHomePage() {
         <XXMovieRow 
           title="PHIM MỚI CẬP NHẬT" 
           movies={latestData.items.slice(1, 13)} 
-          viewAllLink="/collection/the-loai/phim-moi-cap-nhat"
+          viewAllLink="/topxx/the-loai/phim-moi-cap-nhat"
         />
         
         <XXBentoGrid 
           title="AVDB PREMIUM EXCLUSIVE" 
           movies={avdbData.items || []} 
-          viewAllLink="/collection/nguon/avdb"
+          viewAllLink="/topxx/nguon/avdb"
         />
 
         <XXMovieRow 
           title="SIÊU PHẨM JAV (NHẬT)" 
           movies={javData.items || []} 
-          viewAllLink="/collection/the-loai/vQMGvwTw5G"
+          viewAllLink="/topxx/the-loai/vQMGvwTw5G"
         />
 
         <XXMovieRow 
           title="PHIM KHÔNG CHE HOT" 
           movies={uncensoredData.items || []} 
-          viewAllLink="/collection/the-loai/vdDkXwQsHi"
+          viewAllLink="/topxx/the-loai/vdDkXwQsHi"
         />
 
         {/* Use grid for the rest or more categories */}
         <XXMovieGrid 
           initialMovies={latestData.items.slice(13) || []} 
           title="KHÁM PHÁ THÊM" 
-          fetchUrl="/api/collection?slug=phim-moi-cap-nhat"
+          fetchUrl="/api/topxx?slug=phim-moi-cap-nhat"
           initialPage={1}
           totalPages={latestData.pagination?.totalPages || 1}
         />

@@ -64,7 +64,7 @@ export function XXMovieGrid({ initialMovies, title, fetchUrl, initialPage, total
     <div className="py-12 md:py-20 animate-in fade-in duration-1000">
       <div className="flex flex-col gap-2 mb-12 px-2">
         <div className="h-1 w-12 bg-yellow-500 rounded-full animate-pulse" />
-        <h1 className="text-3xl md:text-6xl font-black text-white uppercase italic tracking-tighter leading-none">
+        <h1 className="text-primaryxl md:text-6xl font-black text-white uppercase italic tracking-tighter leading-none">
           {title}
         </h1>
       </div>

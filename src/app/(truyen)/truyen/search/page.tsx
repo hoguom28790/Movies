@@ -77,7 +77,7 @@ export default async function ComicSearchPage({
             />
             <button
               type="submit"
-              className="absolute right-1.5 top-1.5 bottom-1.5 px-4 rounded-lg bg-indigo-500 hover:bg-indigo-600 shadow-lg shadow-indigo-500/20 text-white text-[12px] font-bold transition-all"
+              className="absolute right-1.5 top-1.5 bottom-1.5 px-4 rounded-lg bg-primary hover:bg-primary-hover shadow-lg shadow-indigo-500/20 text-white text-[12px] font-bold transition-all"
             >
               Tìm Truyện
             </button>

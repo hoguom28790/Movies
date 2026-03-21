@@ -24,16 +24,16 @@ const menuItems = [
 ];
 
 const mobileItems = [
-  { icon: Home, label: "Trang chủ", href: "/", xxHref: "/collection" },
-  { icon: LayoutGrid, label: "Duyệt Tìm", href: "/the-loai", xxHref: "/collection/the-loai" },
-  { icon: History, label: "Lịch sử", href: "/history", xxHref: "/collection/lich-su" },
-  { icon: Heart, label: "Yêu thích", href: "/watchlist", xxHref: "/collection/yeu-thich" },
-  { icon: BookOpen, label: "Hồ Truyện", href: "/truyen", xxHref: "/collection/truyen" },
+  { icon: Home, label: "Trang chủ", href: "/", xxHref: "/topxx" },
+  { icon: LayoutGrid, label: "Duyệt Tìm", href: "/the-loai", xxHref: "/topxx/the-loai" },
+  { icon: History, label: "Lịch sử", href: "/history", xxHref: "/topxx/lich-su" },
+  { icon: Heart, label: "Yêu thích", href: "/watchlist", xxHref: "/topxx/yeu-thich" },
+  { icon: BookOpen, label: "Hồ Truyện", href: "/truyen", xxHref: "/topxx/truyen" },
 ];
 
 export function Sidebar({ hideDesktop }: { hideDesktop?: boolean } = {}) {
   const pathname = usePathname();
-  const isXX = pathname.startsWith("/collection");
+  const isXX = pathname.startsWith("/topxx");
 
   const isActive = (href: string) => 
     href === "/" ? pathname === "/" : pathname.startsWith(href);
@@ -45,10 +45,10 @@ export function Sidebar({ hideDesktop }: { hideDesktop?: boolean } = {}) {
         <aside className="fixed left-0 top-0 z-40 hidden h-screen w-[72px] flex-col items-center border-r border-white/[0.06] bg-[#0a0a0a] pt-20 md:flex">
           <nav className="flex flex-1 flex-col items-center gap-6 pt-4">
             {(isXX ? [
-              { icon: Home, label: "Home", href: "/collection" },
-              { icon: LayoutGrid, label: "Thể loại", href: "/collection/the-loai" },
-              { icon: History, label: "Lịch sử", href: "/collection/lich-su" },
-              { icon: Heart, label: "Thư viện", href: "/collection/yeu-thich" },
+              { icon: Home, label: "Home", href: "/topxx" },
+              { icon: LayoutGrid, label: "Thể loại", href: "/topxx/the-loai" },
+              { icon: History, label: "Lịch sử", href: "/topxx/lich-su" },
+              { icon: Heart, label: "Thư viện", href: "/topxx/yeu-thich" },
             ] : menuItems).map((item) => {
               const active = isActive(item.href);
               return (

@@ -7,7 +7,7 @@ import {
   getXXPlaylists, deleteXXPlaylist, removeMovieFromXXPlaylist, 
   createXXPlaylist, XXPlaylist, getXXFavorites, toggleXXFavorite, 
   renameXXPlaylist, XXFavoriteEntry 
-} from "@/services/collectionDb";
+} from "@/services/topxxDb";
 import { useAuth } from "@/contexts/AuthContext";
 import { 
   getXXFirestoreFavorites, 
@@ -15,7 +15,7 @@ import {
   saveXXFirestorePlaylist, 
   deleteXXFirestorePlaylist,
   toggleXXFirestoreFavorite
-} from "@/services/collectionFirestore";
+} from "@/services/topxxFirestore";
 import { Button } from "@/components/ui/Button";
 import { XXMovieCard } from "@/components/movie/XXMovieCard";
 
@@ -263,7 +263,7 @@ export default function XXLibraryPage() {
                       </form>
                     ) : (
                       <>
-                        <h2 className="text-3xl md:text-5xl font-black text-white tracking-tighter uppercase italic">
+                        <h2 className="text-primaryxl md:text-5xl font-black text-white tracking-tighter uppercase italic">
                            {activeTab === "favorites" ? "Phim Đã Lưu" : (activePlaylist?.name || "Chọn Playlist")}
                         </h2>
                         {activeTab === "playlist" && (
@@ -301,7 +301,7 @@ export default function XXLibraryPage() {
                    <Play className="w-8 h-8 text-white/10" />
                 </div>
                 <p className="text-white/20 font-black uppercase tracking-[0.2em]">Danh sách này còn trống</p>
-                <Link href="/collection" className="mt-8">
+                <Link href="/topxx" className="mt-8">
                    <Button variant="secondary" className="rounded-2xl border-white/10 px-8 py-6 h-auto font-black uppercase tracking-widest text-[11px]">Khám phá kho phim</Button>
                 </Link>
              </div>

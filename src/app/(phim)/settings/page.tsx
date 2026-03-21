@@ -22,7 +22,7 @@ export default function SettingsPage() {
   return (
     <div className="min-h-screen bg-black pt-24 px-4 pb-12">
       <div className="container mx-auto max-w-2xl">
-        <h1 className="text-3xl font-black text-white mb-8 border-b border-white/10 pb-4">
+        <h1 className="text-primaryxl font-black text-white mb-8 border-b border-white/10 pb-4">
           Cài Đặt Tài Khoản
         </h1>
         

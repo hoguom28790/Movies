@@ -65,7 +65,7 @@ export default function ComicFavoritePage() {
         <div className="space-y-4">
            <h1 className="text-5xl md:text-7xl font-black text-white italic tracking-tighter uppercase leading-[0.8] select-none">Tủ Yêu Thích</h1>
            <div className="flex items-center gap-3">
-              <span className="px-3 py-1 rounded bg-indigo-500/20 text-indigo-400 text-[10px] font-black uppercase tracking-widest">
+              <span className="px-3 py-1 rounded bg-primary/20 text-indigo-400 text-[10px] font-black uppercase tracking-widest">
                  {filteredItems.length} TRUYỆN
               </span>
            </div>
@@ -90,7 +90,7 @@ export default function ComicFavoritePage() {
               <p className="text-white/20 font-black uppercase tracking-[0.2em] text-sm italic">Bạn chưa nhấn Thích truyện nào cả</p>
            </div>
            <Link href="/truyen">
-             <Button className="px-10 py-6 rounded-2xl font-black text-xs uppercase tracking-widest bg-indigo-500 hover:bg-indigo-600 transition-all shadow-xl shadow-indigo-500/20">Khám Phá Truyện Ngay</Button>
+             <Button className="px-10 py-6 rounded-2xl font-black text-xs uppercase tracking-widest bg-primary hover:bg-primary-hover transition-all shadow-xl shadow-indigo-500/20">Khám Phá Truyện Ngay</Button>
            </Link>
         </div>
       ) : (

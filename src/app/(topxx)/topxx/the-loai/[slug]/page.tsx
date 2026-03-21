@@ -16,7 +16,7 @@ export default async function XXCategoryPage({ params }: { params: Promise<{ slu
         <XXMovieGrid 
           initialMovies={initialData.items} 
           title={`THỂ LOẠI: ${title}`} 
-          fetchUrl={`/api/collection?type=the-loai&slug=${slug}`}
+          fetchUrl={`/api/topxx?type=the-loai&slug=${slug}`}
           initialPage={1}
           totalPages={initialData.pagination.totalPages}
         />

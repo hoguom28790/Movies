@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Play, Trash2, ListMusic, Plus, ChevronRight } from "lucide-react";
-import { getXXPlaylists, deleteXXPlaylist, removeMovieFromXXPlaylist, createXXPlaylist, XXPlaylist } from "@/services/collectionDb";
+import { getXXPlaylists, deleteXXPlaylist, removeMovieFromXXPlaylist, createXXPlaylist, XXPlaylist } from "@/services/topxxDb";
 import { Button } from "@/components/ui/Button";
 
 export default function XXPlaylistsPage() {
@@ -137,7 +137,7 @@ export default function XXPlaylistsPage() {
                       <Play className="w-8 h-8 text-white/10" />
                    </div>
                    <p className="text-white/20 font-black uppercase tracking-[0.2em]">Playlist này còn trống</p>
-                   <Link href="/collection" className="mt-8">
+                   <Link href="/topxx" className="mt-8">
                       <Button variant="secondary" className="rounded-2xl border-white/10 px-8 py-6 h-auto font-black uppercase tracking-widest text-xs">Đi tìm phim ngay</Button>
                    </Link>
                 </div>
@@ -158,13 +158,13 @@ export default function XXPlaylistsPage() {
                              </button>
                           </div>
 
-                          <Link href={`/collection/phim/${movie.movieCode}`} className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                          <Link href={`/topxx/phim/${movie.movieCode}`} className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                              <div className="w-12 h-12 rounded-full bg-yellow-500 text-black flex items-center justify-center shadow-2xl scale-75 group-hover:scale-100 transition-transform duration-500">
                                 <Play className="w-6 h-6 fill-current ml-1" />
                              </div>
                           </Link>
                        </div>
-                       <Link href={`/collection/phim/${movie.movieCode}`}>
+                       <Link href={`/topxx/phim/${movie.movieCode}`}>
                           <h3 className="text-[13px] font-bold text-white group-hover:text-yellow-500 transition-colors line-clamp-2 uppercase leading-snug">{movie.movieTitle}</h3>
                        </Link>
                     </div>

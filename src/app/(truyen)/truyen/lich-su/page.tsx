@@ -54,8 +54,8 @@ export default function ComicHistoryPage() {
   return (
     <div className="container mx-auto px-4 py-8 mt-16 min-h-screen">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12">
-        <h1 className="text-3xl font-black italic tracking-tighter uppercase border-l-4 border-indigo-500 pl-4">Lịch Sử Đọc Truyện</h1>
-        <div className="flex items-center gap-2 px-4 py-2 bg-indigo-500/10 rounded-xl border border-indigo-500/20">
+        <h1 className="text-primaryxl font-black italic tracking-tighter uppercase border-l-4 border-indigo-500 pl-4">Lịch Sử Đọc Truyện</h1>
+        <div className="flex items-center gap-2 px-4 py-2 bg-primary/10 rounded-xl border border-indigo-500/20">
           <BookOpen className="w-4 h-4 text-indigo-500" />
           <span className="text-xs font-bold text-indigo-200 uppercase tracking-widest">{items.length} Truyện</span>
         </div>
@@ -84,7 +84,7 @@ export default function ComicHistoryPage() {
                     <span className="text-[10px] font-bold text-indigo-400">{item.percent}%</span>
                  </div>
                  <div className="w-full h-1.5 bg-white/10 rounded-full overflow-hidden">
-                   <div className="h-full bg-indigo-500 transition-all rounded-full" style={{ width: `${item.percent}%` }} />
+                   <div className="h-full bg-primary transition-all rounded-full" style={{ width: `${item.percent}%` }} />
                  </div>
               </div>
 

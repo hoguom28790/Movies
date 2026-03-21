@@ -88,7 +88,7 @@ export function Footer() {
                 
                 const pass = window.prompt("Nhập mật khẩu để tiếp tục:");
                 if (pass === correctPass) {
-                  window.open("/collection", "_blank");
+                  window.open("/topxx", "_blank");
                 } else if (pass !== null) {
                   alert("Mật khẩu không chính xác!");
                 }
