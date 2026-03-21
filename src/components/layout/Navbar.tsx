@@ -10,6 +10,7 @@ import { AuthModal } from "@/components/auth/AuthModal";
 import { InstantSearch } from "./InstantSearch";
 import { NavMenu } from "./NavMenu";
 import { MobileMenu } from "./MobileMenu";
+import { ComicFilters } from "@/components/comic/ComicFilters";
 
 export function Navbar() {
   const [isAuthOpen, setIsAuthOpen] = useState(false);
@@ -50,6 +51,13 @@ export function Navbar() {
                 <BookOpen className="w-4 h-4" /> Đọc Truyện
               </Link>
             )}
+            
+            {isComicSection && (
+              <div className="hidden sm:block mr-2">
+                <ComicFilters />
+              </div>
+            )}
+            
             <div className="hidden lg:block w-48 lg:w-64">
               <InstantSearch />
             </div>

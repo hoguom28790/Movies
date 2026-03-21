@@ -28,6 +28,24 @@ const COUNTRIES = [
   { name: "Thái Lan", slug: "thai-lan" },
 ];
  
+const COMIC_GENRES = [
+  { name: "Hành Động", slug: "action" },
+  { name: "Chuyển Sinh", slug: "chuyen-sinh" },
+  { name: "Comedy", slug: "comedy" },
+  { name: "Fantasy", slug: "fantasy" },
+  { name: "Horror", slug: "horror" },
+  { name: "Isekai", slug: "isekai" },
+  { name: "Manhwa", slug: "manhwa" },
+  { name: "Romance", slug: "romance" },
+  { name: "Slice of life", slug: "slice-of-life" },
+];
+
+const COMIC_STATUSES = [
+  { name: "Tất cả", slug: "all" },
+  { name: "Đang ra", slug: "dang-phat-hanh" },
+  { name: "Hoàn thành", slug: "hoan-thanh" },
+];
+
 const DIRECT_LINKS = [
   { label: "Truyện Tranh", href: "/truyen" },
   { label: "Phim Lẻ", href: "/phim-le" },
@@ -173,6 +191,58 @@ export function MobileMenu() {
                       <Link 
                         key={c.slug} 
                         href={`/quoc-gia/${c.slug}`}
+                        className="p-3 text-[13px] text-white/50 hover:text-white hover:bg-white/5 rounded-lg transition-colors"
+                      >
+                        {c.name}
+                      </Link>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+          
+          {isComicSection && (
+            <div className="space-y-2">
+              {/* Comic Genres */}
+              <div>
+                <button 
+                  onClick={() => setOpenSection(openSection === "comic_genres" ? null : "comic_genres")}
+                  className="flex items-center justify-between w-full p-4 rounded-xl bg-white/[0.02] text-white/80 text-[14px] font-semibold"
+                >
+                  Thể loại Truyện
+                  <ChevronDown className={`h-4 w-4 transition-transform ${openSection === "comic_genres" ? "rotate-180" : ""}`} />
+                </button>
+                {openSection === "comic_genres" && (
+                  <div className="grid grid-cols-2 gap-2 p-2 mt-1 animate-in fade-in slide-in-from-top-2 duration-200">
+                    {COMIC_GENRES.map(g => (
+                      <Link 
+                        key={g.slug} 
+                        href={`/truyen?genre=${g.slug}`}
+                        className="p-3 text-[13px] text-white/50 hover:text-white hover:bg-white/5 rounded-lg transition-colors"
+                      >
+                        {g.name}
+                      </Link>
+                    ))}
+                  </div>
+                )}
+              </div>
+  
+              {/* Comic Status */}
+              <div>
+                <button 
+                  onClick={() => setOpenSection(openSection === "comic_status" ? null : "comic_status")}
+                  className="flex items-center justify-between w-full p-4 rounded-xl bg-white/[0.02] text-white/80 text-[14px] font-semibold"
+                >
+                  Trạng thái
+                  <ChevronDown className={`h-4 w-4 transition-transform ${openSection === "comic_status" ? "rotate-180" : ""}`} />
+                </button>
+                {openSection === "comic_status" && (
+                  <div className="grid grid-cols-2 gap-2 p-2 mt-1 animate-in fade-in slide-in-from-top-2 duration-200">
+                    {COMIC_STATUSES.map(c => (
+                      <Link 
+                        key={c.slug} 
+                        href={`/truyen?status=${c.slug}`}
                         className="p-3 text-[13px] text-white/50 hover:text-white hover:bg-white/5 rounded-lg transition-colors"
                       >
                         {c.name}
