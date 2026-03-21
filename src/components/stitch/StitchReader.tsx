@@ -69,9 +69,6 @@ export function StitchReader({ media }: { media: Media }) {
                 </div>
 
                 <div className="flex items-center gap-4">
-                    <button className="bg-primary-container p-2 md:p-3 text-on-primary-container editorial-shadow hover:scale-110 transition-transform">
-                        <Share2 size={20} />
-                    </button>
                 </div>
             </header>
 
@@ -83,15 +80,15 @@ export function StitchReader({ media }: { media: Media }) {
             >
                 <div className="max-w-[1000px] mx-auto flex flex-col">
                     {media.chapters.map((img, idx) => (
-                        <div key={idx} className="relative w-full min-h-[50vh] bg-surface-container-low animate-pulse overflow-hidden">
+                        <div key={idx} className="relative w-full min-h-[50vh] bg-surface-container-low overflow-hidden">
                             <Image 
                                 src={img} 
                                 alt={`Page ${idx + 1}`} 
                                 width={1200} 
                                 height={1800} 
-                                className="w-full h-auto relative z-10 opacity-0 transition-opacity duration-700 hover:grayscale-0"
-                                onLoadingComplete={(img) => img.classList.remove('opacity-0')}
+                                className="w-full h-auto relative z-10 hover:grayscale-0"
                                 unoptimized
+                                priority={idx < 2}
                             />
                         </div>
                     ))}

@@ -237,10 +237,6 @@ export default async function MovieDetailsPage({ params }: { params: Promise<{ s
                     movieTitle={safeData.name}
                     posterUrl={poster}
                   />
-                  <button className="flex items-center gap-1.5 text-[12px] text-white/40 hover:text-white transition-colors">
-                    <Share2 className="w-4 h-4" />
-                    Chia sẻ
-                  </button>
                 </div>
               </div>
  

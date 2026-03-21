@@ -2,6 +2,7 @@ import React from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { ComicFavoriteBtn } from "@/components/comic/ComicFavoriteBtn";
+import { ComicContinueBtn } from "@/components/comic/ComicContinueBtn";
 
 interface Chapter {
     chapter_name: string;
@@ -112,12 +113,15 @@ export function StitchMangaDetail({
 
                         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 md:gap-6">
                             {chapters.length > 0 ? (
-                                <Link 
-                                    href={`/doc/${slug}/${chapters[chapters.length - 1].chapter_name}?source=${activeSource}`}
-                                    className="flex-1 sm:flex-none px-10 py-5 bg-gradient-to-r from-primary to-primary-hover text-white rounded-full font-label text-xs font-bold uppercase tracking-[0.2em] shadow-xl shadow-primary/20 hover:scale-105 active:scale-95 transition-all text-center"
-                                >
-                                    Đọc Ngay
-                                </Link>
+                                <div className="flex gap-3 items-center">
+                                  <Link 
+                                      href={`/doc/${slug}/${chapters[chapters.length - 1].chapter_name}?source=${activeSource}`}
+                                      className="flex-1 sm:flex-none px-10 py-5 bg-gradient-to-r from-primary to-primary-hover text-white rounded-full font-label text-xs font-bold uppercase tracking-[0.2em] shadow-xl shadow-primary/20 hover:scale-105 active:scale-95 transition-all text-center"
+                                  >
+                                      Đọc Ngay
+                                  </Link>
+                                  <ComicContinueBtn slug={slug} activeSource={activeSource} />
+                                </div>
                             ) : (
                                 <button disabled className="flex-1 sm:flex-none px-10 py-5 bg-surface-container-low text-on-surface-variant/40 rounded-full font-label text-xs font-bold uppercase tracking-[0.2em] text-center">
                                     Đang cập nhật
@@ -125,9 +129,6 @@ export function StitchMangaDetail({
                             )}
                             <div className="flex gap-4 justify-center">
                                 <ComicFavoriteBtn slug={slug} title={title} posterUrl={posterUrl} />
-                                <button className="flex-1 sm:w-14 h-14 rounded-full flex items-center justify-center border border-outline-variant/30 text-on-surface-variant hover:bg-surface-container-high hover:text-primary transition-all active:scale-90">
-                                    <span className="material-symbols-outlined">share</span>
-                                </button>
                             </div>
                         </div>
                     </div>

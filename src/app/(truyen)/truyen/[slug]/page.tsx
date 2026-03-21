@@ -86,7 +86,7 @@ export default async function ComicDetailsPage({
         posterUrl={poster}
         author={item.author?.[0] || 'Chưa rõ'}
         status={item.status === 'ongoing' ? 'Ongoing' : 'Completed'}
-        rating="4.9"
+        rating={(((item.name.length * 7) % 5) / 10 + 4.5).toFixed(1)}
         description={item.content || "Truyện chưa có mô tả..."}
         categories={item.category?.map((c: any) => ({ name: c.name, slug: c.slug })) || []}
         chapters={chapters}
