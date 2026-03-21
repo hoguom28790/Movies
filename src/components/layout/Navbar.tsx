@@ -12,12 +12,18 @@ import { NavMenu } from "./NavMenu";
 import { MobileMenu } from "./MobileMenu";
 import { ComicFilters } from "@/components/comic/ComicFilters";
 
-export function Navbar() {
+interface NavbarProps {
+  mode?: "phim" | "truyen";
+}
+
+export function Navbar({ mode: initialMode }: NavbarProps) {
   const [isAuthOpen, setIsAuthOpen] = useState(false);
   const { user, logout } = useAuth();
-  const { theme, setTheme } = useTheme();
   const pathname = usePathname();
-  const isComicSection = pathname.startsWith("/truyen") || pathname.startsWith("/doc");
+  
+  // Use prop if provided, otherwise detect from pathname (for safety)
+  const isComicSection = initialMode === "truyen" || pathname.startsWith("/truyen") || pathname.startsWith("/doc");
+  const mode = isComicSection ? "truyen" : "phim";
 
   if (pathname.startsWith("/collection")) return null;
 
@@ -26,29 +32,29 @@ export function Navbar() {
       <header className="fixed top-0 z-50 w-full border-b border-white/[0.06] bg-[#0a0a0a]/90 backdrop-blur-xl transition-all duration-300 pt-safe">
         <div className="container mx-auto flex h-14 items-center justify-between px-4 lg:px-8">
           <div className="lg:hidden">
-            <MobileMenu />
+            <MobileMenu mode={mode as any} />
           </div>
  
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-2 group md:mr-6 flex-shrink-0">
+          <Link href={isComicSection ? "/truyen" : "/"} className="flex items-center gap-2 group md:mr-6 flex-shrink-0">
             <span className="text-xl font-black tracking-tighter bg-clip-text text-transparent bg-gradient-to-br from-primary to-primary-container font-headline transition-transform group-hover:scale-105">
-              Hồ Phim & Hồ Truyện
+              {isComicSection ? "Hồ Truyện" : "Hồ Phim"}
             </span>
           </Link>
 
           <div className="hidden lg:flex items-center gap-1 flex-1 justify-center">
-            <NavMenu />
+            <NavMenu mode={mode as any} />
           </div>
 
           {/* Right: Search + Actions */}
           <div className="flex items-center gap-2 flex-shrink-0">
             {isComicSection ? (
               <Link href="/" className="hidden sm:flex items-center gap-1.5 px-4 py-1.5 mr-2 rounded-lg bg-white/10 hover:bg-white/20 text-white text-[12px] font-bold transition-all">
-                <Film className="w-4 h-4" /> Hồ Phim
+                <Film className="w-4 h-4" /> Sang Hồ Phim
               </Link>
             ) : (
               <Link href="/truyen" className="hidden sm:flex items-center gap-1.5 px-4 py-1.5 mr-2 rounded-lg bg-indigo-500 hover:bg-indigo-600 text-white text-[12px] font-bold transition-all shadow-lg shadow-indigo-500/20">
-                <BookOpen className="w-4 h-4" /> Đọc Truyện
+                <BookOpen className="w-4 h-4" /> Sang Hồ Truyện
               </Link>
             )}
             
@@ -64,18 +70,18 @@ export function Navbar() {
             
             <div className="flex items-center gap-1 sm:gap-1.5">
               <Link
-                href="/watchlist"
+                href={isComicSection ? "/truyen/yeu-thich" : "/yeu-thich"}
                 className={`flex items-center gap-1.5 px-2 sm:px-3 py-1.5 rounded-lg transition-all text-[11px] sm:text-[12px] font-medium ${
-                  pathname === "/watchlist" ? "bg-primary text-white shadow-lg shadow-primary/20" : "bg-white/5 text-white/50 hover:bg-white/10 hover:text-white"
+                  (pathname === "/yeu-thich" || pathname === "/truyen/yeu-thich") ? "bg-primary text-white shadow-lg shadow-primary/20" : "bg-white/5 text-white/50 hover:bg-white/10 hover:text-white"
                 }`}
               >
-                <Heart className={`h-3.5 w-3.5 ${pathname === "/watchlist" ? "fill-current" : ""}`} />
+                <Heart className={`h-3.5 w-3.5 ${ (pathname === "/yeu-thich" || pathname === "/truyen/yeu-thich") ? "fill-current" : ""}`} />
                 <span className="hidden xs:inline">Yêu thích</span>
               </Link>
               <Link
-                href="/history"
+                href={isComicSection ? "/truyen/lich-su" : "/lich-su"}
                 className={`flex items-center gap-1.5 px-2 sm:px-3 py-1.5 rounded-lg transition-all text-[11px] sm:text-[12px] font-medium ${
-                  pathname === "/history" ? "bg-primary text-white shadow-lg shadow-primary/20" : "bg-white/5 text-white/50 hover:bg-white/10 hover:text-white"
+                  (pathname === "/lich-su" || pathname === "/truyen/lich-su") ? "bg-primary text-white shadow-lg shadow-primary/20" : "bg-white/5 text-white/50 hover:bg-white/10 hover:text-white"
                 }`}
               >
                 <HistoryIcon className="h-3.5 w-3.5" />
@@ -96,7 +102,7 @@ export function Navbar() {
             </div>
 
             <Link
-              href="/search"
+              href={isComicSection ? "/truyen/search" : "/search"}
               className="lg:hidden p-2 text-white/50 hover:text-white transition-colors"
             >
               <Search className="h-5 w-5" />

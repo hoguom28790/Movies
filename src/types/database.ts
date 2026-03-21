@@ -24,6 +24,7 @@ export interface HistoryEntry {
   episodeSlug: string;
   posterUrl: string;
   progressSeconds: number;
+  durationSeconds?: number;
   updatedAt: number;
 }
 

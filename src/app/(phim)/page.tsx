@@ -8,33 +8,13 @@ import { HeroSlider } from "@/components/movie/HeroSlider";
 import { CategoryShortcuts } from "@/components/movie/CategoryShortcuts";
 import { getTrendingMovies, getTMDBImageUrl } from "@/services/tmdb";
 import { BentoMovieRow } from "@/components/movie/BentoMovieRow";
-import { HomeSearchBar } from "@/components/movie/HomeSearchBar";
-import { HomeComicGrid } from "@/components/comic/HomeComicGrid";
-
-async function getComics(type: string) {
-  try {
-    const res = await fetch(`https://otruyenapi.com/v1/api/danh-sach/${type}?page=1`, {
-      next: { revalidate: 3600 }
-    });
-    if (!res.ok) return { items: [], domain_cdn: "" };
-    const data = await res.json();
-    return { 
-      items: data?.data?.items || [], 
-      domain_cdn: data?.data?.APP_DOMAIN_CDN_IMAGE || "https://otruyenapi.com/uploads/comics" 
-    };
-  } catch (e) {
-    return { items: [], domain_cdn: "" };
-  }
-}
-
 export default async function Home() {
-  const [latestData, phimBoData, phimLeData, hoatHinhData, trendingData, comicData] = await Promise.allSettled([
+  const [latestData, phimBoData, phimLeData, hoatHinhData, trendingData] = await Promise.allSettled([
     getLatestMovies(1),
     getCategoryMovies("phim-bo", 1),
     getCategoryMovies("phim-le", 1),
     getCategoryMovies("hoat-hinh", 1),
-    getTrendingMovies(1),
-    getComics("truyen-moi")
+    getTrendingMovies(1)
   ]);
 
   const latest = latestData.status === "fulfilled" ? latestData.value : { items: [] };
@@ -42,7 +22,6 @@ export default async function Home() {
   const phimLe = phimLeData.status === "fulfilled" ? phimLeData.value : { items: [] };
   const hoatHinh = hoatHinhData.status === "fulfilled" ? hoatHinhData.value : { items: [] };
   const trending = trendingData.status === "fulfilled" ? trendingData.value?.results || [] : [];
-  const comics = comicData.status === "fulfilled" ? comicData.value : { items: [], domain_cdn: "" };
 
   const { enrichMovies } = await import("@/services/movieEnricher");
   // Enrich first 10 for hero pool and next 20 for grid to ensure high-res coverage
@@ -59,8 +38,6 @@ export default async function Home() {
       {/* Hero with Cinematic Style */}
       <HeroSlider movies={heroMovies} />
 
-      {/* Glass Search Bar */}
-      <HomeSearchBar />
 
       {/* Category Shortcuts */}
       <CategoryShortcuts />
@@ -112,14 +89,6 @@ export default async function Home() {
           ))}
         </div>
       </section>
-
-      {/* Truyện Mới Cập Nhật (Premium Grid) */}
-      <HomeComicGrid 
-        title="Truyện Mới Cập Nhật"
-        comics={comics.items}
-        domainCdn={comics.domain_cdn}
-        viewAllHref="/truyen"
-      />
 
       {/* Phim Bộ */}
       {phimBo.items.length > 0 && (

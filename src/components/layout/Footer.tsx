@@ -2,6 +2,7 @@
 
 import React from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 const columns = [
   {
@@ -46,6 +47,9 @@ const columns = [
 ];
 
 export function Footer() {
+  const pathname = usePathname();
+  const isComicSection = pathname.startsWith("/truyen") || pathname.startsWith("/doc");
+
   return (
     <footer className="border-t border-white/[0.06] bg-[#0a0a0a] mt-20">
       <div className="container mx-auto px-4 lg:px-12 py-12">
@@ -73,7 +77,7 @@ export function Footer() {
 
         <div className="border-t border-white/[0.06] mt-10 pt-6 flex flex-col md:flex-row items-center justify-between gap-4">
           <div className="text-[12px] text-white/20">
-            © {new Date().getFullYear()} Hồ Phim - All Rights 
+            © {new Date().getFullYear()} Hồ {isComicSection ? "Truyện" : "Phim"} - All Rights 
             <span 
               className="cursor-default select-none"
               onClick={() => {
@@ -94,16 +98,16 @@ export function Footer() {
             </span>.
           </div>
           <div className="flex items-center gap-4">
-            <Link href="/" className="text-[12px] text-white/30 hover:text-white transition-colors">
+            <Link href={isComicSection ? "/truyen" : "/"} className="text-[12px] text-white/30 hover:text-white transition-colors">
               Trang Chủ
             </Link>
-            <Link href="/the-loai" className="text-[12px] text-white/30 hover:text-white transition-colors">
+            <Link href={isComicSection ? "/truyen" : "/the-loai"} className="text-[12px] text-white/30 hover:text-white transition-colors">
               Duyệt Tìm
             </Link>
-            <Link href="/history" className="text-[12px] text-white/30 hover:text-white transition-colors">
+            <Link href={isComicSection ? "/truyen/lich-su" : "/lich-su"} className="text-[12px] text-white/30 hover:text-white transition-colors">
               Lịch Sử
             </Link>
-            <Link href="/watchlist" className="text-[12px] text-white/30 hover:text-white transition-colors">
+            <Link href={isComicSection ? "/truyen/yeu-thich" : "/yeu-thich"} className="text-[12px] text-white/30 hover:text-white transition-colors">
               Yêu Thích
             </Link>
           </div>

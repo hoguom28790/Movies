@@ -54,11 +54,15 @@ const DIRECT_LINKS = [
   { label: "TV Shows", href: "/tv-shows" },
 ];
  
-export function MobileMenu() {
+interface MobileMenuProps {
+  mode?: "phim" | "truyen";
+}
+
+export function MobileMenu({ mode }: MobileMenuProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [openSection, setOpenSection] = useState<string | null>(null);
   const pathname = usePathname();
-  const isComicSection = pathname.startsWith("/truyen") || pathname.startsWith("/doc");
+  const isComicSection = mode === "truyen" || pathname.startsWith("/truyen") || pathname.startsWith("/doc");
   const { user } = useAuth();
  
   // Close menu on navigation
@@ -77,7 +81,10 @@ export function MobileMenu() {
 
   const currentLinks = isComicSection ? [
     { label: "Về Hồ Phim", href: "/" }
-  ] : DIRECT_LINKS;
+  ] : [
+    { label: "Đọc Truyện", href: "/truyen" },
+    ...DIRECT_LINKS.filter(l => l.href !== "/truyen")
+  ];
  
   return (
     <div className="lg:hidden">
@@ -257,20 +264,20 @@ export function MobileMenu() {
           {/* Footer Info */}
           <div className="pt-8 pb-12 border-t border-white/[0.06] space-y-3">
             <Link 
-              href="/watchlist"
+              href={isComicSection ? "/truyen/yeu-thich" : "/watchlist"}
               className="flex items-center gap-3 p-4 rounded-xl bg-primary/10 border border-primary/20 text-primary"
             >
               <Heart className="h-5 w-5 fill-current" />
               <span className="font-bold text-[14px]">Danh sách yêu thích</span>
             </Link>
             <Link 
-              href="/history"
+              href={isComicSection ? "/truyen/lich-su" : "/history"}
               className="flex items-center gap-3 p-4 rounded-xl bg-white/5 border border-white/[0.06] text-white/80"
             >
               <HistoryIcon className="h-5 w-5" />
-              <span className="font-bold text-[14px]">Lịch sử xem phim</span>
+              <span className="font-bold text-[14px]">Lịch sử {isComicSection ? 'đọc truyện' : 'xem phim'}</span>
             </Link>
-            {user && (
+            {user && !isComicSection && (
               <Link 
                 href="/settings"
                 className="flex items-center gap-3 p-4 rounded-xl bg-white/5 border border-white/[0.06] text-white/80"
@@ -280,7 +287,7 @@ export function MobileMenu() {
               </Link>
             )}
             <p className="text-[12px] text-white/20 text-center mt-8">
-              &copy; 2026 Hồ Phim. All rights reserved.
+              &copy; 2026 Hồ {isComicSection ? 'Truyện' : 'Phim'}. All rights reserved.
             </p>
           </div>
         </div>

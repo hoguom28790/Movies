@@ -1,0 +1,109 @@
+"use client";
+
+import React, { useEffect, useState } from "react";
+import { useAuth } from "@/contexts/AuthContext";
+import { getUserHistory, deleteFromHistory } from "@/services/db";
+import { HistoryEntry } from "@/types/database";
+import { MovieCard } from "@/components/movie/MovieCard";
+import { X, Film } from "lucide-react";
+import { Button } from "@/components/ui/Button";
+
+// Separate movie history page in Hồ Phim
+export default function MovieHistoryPage() {
+  const { user, loading: authLoading } = useAuth();
+  const [items, setItems] = useState<HistoryEntry[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const handleDelete = async (movieSlug: string, e: React.MouseEvent) => {
+    e.preventDefault();
+    if (!user) return;
+    try {
+      await deleteFromHistory(user.uid, movieSlug);
+      setItems(prev => prev.filter(item => item.movieSlug !== movieSlug));
+    } catch (err) {
+      console.error("Lỗi khi xóa phim:", err);
+    }
+  };
+
+  useEffect(() => {
+    if (authLoading) return;
+    if (!user) {
+      setLoading(false);
+      return;
+    }
+
+    getUserHistory(user.uid)
+      .then(setItems)
+      .catch(() => setItems([]))
+      .finally(() => setLoading(false));
+
+  }, [user, authLoading]);
+
+  if (authLoading || loading) return <div className="p-8 text-center text-neutral-400 mt-24">Đang tải lịch sử xem phim...</div>;
+
+  if (!user) {
+    return (
+      <div className="container mx-auto px-4 py-24 text-center mt-12 flex flex-col items-center">
+        <Film className="w-16 h-16 text-white/10 mb-6" />
+        <h2 className="text-2xl font-bold mb-4">Bạn chưa đăng nhập</h2>
+        <p className="text-neutral-400 mb-8">Vui lòng đăng nhập để xem lịch sử xem phim của bạn.</p>
+        <Button onClick={() => window.location.href='/login'} className="px-8 py-3 rounded-2xl font-bold">Đăng Nhập Ngay</Button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="container mx-auto px-4 py-8 mt-16 min-h-screen">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12">
+        <h1 className="text-3xl font-black italic tracking-tighter uppercase border-l-4 border-primary pl-4">Lịch Sử Xem Phim</h1>
+        <div className="flex items-center gap-2 px-4 py-2 bg-primary/10 rounded-xl border border-primary/20">
+          <Film className="w-4 h-4 text-primary" />
+          <span className="text-xs font-bold text-primary uppercase tracking-widest">{items.length} Bộ phim</span>
+        </div>
+      </div>
+      
+      {items.length === 0 ? (
+        <div className="text-center py-20 bg-white/[0.02] border border-dashed border-white/10 rounded-[30px] flex flex-col items-center">
+          <Film className="w-12 h-12 text-white/5 mb-4" />
+          <p className="text-neutral-500 font-bold uppercase tracking-widest text-sm">Bạn chưa xem bộ phim nào gần đây.</p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-2 xs:grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6 sm:gap-8 animate-in fade-in duration-700">
+          {items.map(item => {
+            // Calculate progress percentage
+            const progressPercent = item.durationSeconds && item.durationSeconds > 0 
+              ? Math.min(100, Math.round((item.progressSeconds / item.durationSeconds) * 100))
+              : item.progressSeconds > 0 ? 50 : 0; // Fallback to 50 if duration unknown but progress exists
+
+            return (
+              <div key={item.id} className="relative group">
+                <MovieCard 
+                  title={item.movieTitle}
+                  slug={item.movieSlug}
+                  posterUrl={item.posterUrl}
+                />
+                <div className="absolute top-2 right-2 bg-black/80 text-white text-[10px] font-bold px-2 py-0.5 rounded backdrop-blur-md border border-white/10 pointer-events-none z-10 shadow-lg line-clamp-1">
+                  Tập {item.episodeName}
+                </div>
+                
+                {progressPercent > 0 && (
+                   <div className="absolute bottom-[3.5rem] left-2 right-2 h-1 bg-white/20 rounded-full overflow-hidden pointer-events-none z-10 shadow-lg">
+                     <div className="h-full bg-primary" style={{ width: `${progressPercent}%` }} />
+                   </div>
+                )}
+
+                <button 
+                  onClick={(e) => handleDelete(item.movieSlug, e)}
+                  className="absolute -top-3 -left-3 z-20 bg-black/60 hover:bg-red-500 backdrop-blur-xl text-white rounded-full p-2 transition-all shadow-lg hover:scale-110 border border-white/20 opacity-0 group-hover:opacity-100"
+                  title="Xóa khỏi lịch sử"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}

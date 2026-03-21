@@ -122,7 +122,7 @@ export function InstantSearch() {
               results.map((item) => (
                 <Link
                   key={item.slug}
-                  href={isComicSection ? `/truyen/${item.slug}` : `/movie/${item.slug}`}
+                  href={isComicSection ? `/truyen/${item.slug}` : `/phim/${item.slug}`}
                   onClick={() => setIsOpen(false)}
                   className="flex items-center gap-4 px-4 py-2 hover:bg-white/5 transition-colors group"
                 >
@@ -151,9 +151,9 @@ export function InstantSearch() {
             )}
           </div>
 
-          {!loading && results.length > 0 && !isComicSection && (
+          {!loading && results.length > 0 && (
             <Link
-              href={`/search?q=${encodeURIComponent(query)}`}
+              href={isComicSection ? `/truyen/search?q=${encodeURIComponent(query)}` : `/search?q=${encodeURIComponent(query)}`}
               onClick={() => setIsOpen(false)}
               className="block w-full py-3 bg-[#161616] text-center text-[11px] font-black text-white/30 hover:text-[#00a3ff] hover:bg-[#1a1a1a] transition-all border-t border-white/5 uppercase tracking-widest"
             >

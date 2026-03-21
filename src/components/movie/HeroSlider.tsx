@@ -77,7 +77,7 @@ export function HeroSlider({ movies }: HeroSliderProps) {
           </p>
 
           <div className="flex items-center gap-3 mt-4">
-            <Link href={`/movie/${currentMovie.slug}`} className="flex-1 md:flex-none">
+            <Link href={`/phim/${currentMovie.slug}`} className="flex-1 md:flex-none">
               <Button
                 size="lg"
                 className="h-14 px-10 text-[16px] font-black rounded-xl gap-2 bg-gradient-to-br from-primary to-primary-container text-white border-none shadow-[0_8px_25px_rgba(59,130,246,0.3)] transition-all hover:scale-105 active:scale-95 group"

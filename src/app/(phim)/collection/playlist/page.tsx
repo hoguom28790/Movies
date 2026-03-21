@@ -158,13 +158,13 @@ export default function XXPlaylistsPage() {
                              </button>
                           </div>
 
-                          <Link href={`/collection/movie/${movie.movieCode}`} className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                          <Link href={`/collection/phim/${movie.movieCode}`} className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                              <div className="w-12 h-12 rounded-full bg-yellow-500 text-black flex items-center justify-center shadow-2xl scale-75 group-hover:scale-100 transition-transform duration-500">
                                 <Play className="w-6 h-6 fill-current ml-1" />
                              </div>
                           </Link>
                        </div>
-                       <Link href={`/collection/movie/${movie.movieCode}`}>
+                       <Link href={`/collection/phim/${movie.movieCode}`}>
                           <h3 className="text-[13px] font-bold text-white group-hover:text-yellow-500 transition-colors line-clamp-2 uppercase leading-snug">{movie.movieTitle}</h3>
                        </Link>
                     </div>

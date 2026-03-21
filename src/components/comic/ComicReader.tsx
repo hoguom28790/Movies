@@ -10,12 +10,47 @@ import type { Swiper as SwiperType } from "swiper";
 import "swiper/css";
 
 import { useRouter, useSearchParams } from "next/navigation";
+import { useQuery } from "@tanstack/react-query";
+import { MangaPlusService } from "@/services/mangaplus";
 
 type ReadingMode = "vertical" | "horizontal";
 type ImageFit = "width" | "height" | "original";
 
-// Added MangaPlus (official Shueisha) as third source for high-quality official manga
-export function ComicReader({ slug, title, posterUrl, chapter, images, chaptersList, servers, currentServer, activeSource = "OTruyen" }: {
+const fetchChapterImages = async (source: string, slug: string, chapter: string, server?: string) => {
+  if (source.toLowerCase() === "mangaplus") {
+    const mpTitle = await MangaPlusService.searchTitle(""); // We'll need item name here or pass it
+    // Actually, on client we can just use the slug or search by slug
+    const mpTitleBySlug = await MangaPlusService.searchTitle(slug.replace(/-/g, " "));
+    if (mpTitleBySlug) {
+      const detail = await MangaPlusService.getTitleDetail(mpTitleBySlug.id);
+      if (detail && detail.chapters) {
+        const targetChap = detail.chapters.find((c: any) => c.name === chapter);
+        if (targetChap) {
+          return await MangaPlusService.getPages(targetChap.id);
+        }
+      }
+    }
+    throw new Error("MangaPlus source failed");
+  }
+
+  // Fallback to OTruyen API via proxy or direct
+  const res = await fetch(`https://otruyenapi.com/v1/api/truyen-tranh/${slug}`);
+  const data = await res.json();
+  const serverData = data.data.item.chapters.find((s: any) => s.server_name === (server || data.data.item.chapters[0].server_name));
+  const chapterData = serverData?.server_data.find((c: any) => c.chapter_name === chapter);
+  
+  if (chapterData) {
+    const apiRes = await fetch(chapterData.chapter_api_data);
+    const apiData = await apiRes.json();
+    const domainCdn = apiData.data.domain_cdn;
+    return apiData.data.item.chapter_image.map((img: any) => `${domainCdn}/${apiData.data.item.chapter_path}/${img.image_file}`);
+  }
+  
+  return [];
+};
+
+// Fixed source switching: dynamic queryKey with selectedSource triggers auto-refetch
+export function ComicReader({ slug, title, posterUrl, chapter, images: initialImages, chaptersList, servers, currentServer, activeSource: initialSource = "OTruyen" }: {
   slug: string;
   title: string;
   posterUrl: string;
@@ -28,7 +63,15 @@ export function ComicReader({ slug, title, posterUrl, chapter, images, chaptersL
 }) {
   const { user } = useAuth();
   const router = useRouter();
-  const searchParams = useSearchParams();
+  const [selectedSource, setSelectedSource] = useState(initialSource);
+
+  const { data: images = initialImages, isLoading, isFetching } = useQuery({
+    queryKey: ['chapter-content', selectedSource, slug, chapter],
+    queryFn: () => fetchChapterImages(selectedSource, slug, chapter, currentServer),
+    initialData: selectedSource === initialSource ? initialImages : undefined,
+    staleTime: 5 * 60 * 1000,
+    enabled: !!slug && !!chapter,
+  });
 
   const AVAILABLE_SOURCES = ["OTruyen", "MangaDex", "MangaPlus"];
 
@@ -242,7 +285,7 @@ export function ComicReader({ slug, title, posterUrl, chapter, images, chaptersL
             {/* Source Switcher */}
             <div className="relative group mr-2">
               <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-white/80 transition-all text-[11px] font-bold border border-white/5 active:scale-95">
-                Nguồn: <span className="text-primary uppercase">{activeSource}</span>
+                Nguồn: <span className="text-primary uppercase">{selectedSource}</span>
               </button>
               <div className="absolute top-full right-0 pt-2 w-36 hidden group-hover:block z-50">
                 <div className="bg-[#141416]/95 backdrop-blur-3xl border border-white/10 rounded-xl overflow-hidden shadow-2xl animate-in fade-in slide-in-from-top-2 flex flex-col">
@@ -250,11 +293,11 @@ export function ComicReader({ slug, title, posterUrl, chapter, images, chaptersL
                   <button 
                     key={src}
                     onClick={() => {
-                      if (src === activeSource) return;
-                      router.push(`/doc/${slug}/${chapter}?source=${src.toLowerCase()}`);
+                      if (src === selectedSource) return;
+                      setSelectedSource(src as any);
                     }}
                     className={`px-4 py-2.5 text-[12px] font-bold text-left transition-colors border-b border-white/5 last:border-none ${
-                      src === activeSource ? "bg-primary text-white" : "text-white/60 hover:text-white hover:bg-white/5"
+                      src === selectedSource ? "bg-primary text-white" : "text-white/60 hover:text-white hover:bg-white/5"
                     }`}
                   >
                     {src}
@@ -311,12 +354,12 @@ export function ComicReader({ slug, title, posterUrl, chapter, images, chaptersL
                        <button 
                          key={src}
                          onClick={() => {
-                           router.push(`/doc/${slug}/${chapter}?source=${src.toLowerCase()}`);
+                           setSelectedSource(src as any);
                            setShowSettings(false);
                          }} 
-                         className={`flex items-center justify-between px-3 py-2 rounded-lg text-[13px] font-medium transition-colors ${activeSource === src ? "bg-primary/20 text-primary border border-primary/20" : "text-white/70 hover:bg-white/5 border border-transparent"}`}
+                         className={`flex items-center justify-between px-3 py-2 rounded-lg text-[13px] font-medium transition-colors ${selectedSource === src ? "bg-primary/20 text-primary border border-primary/20" : "text-white/70 hover:bg-white/5 border border-transparent"}`}
                        >
-                         {src} {activeSource === src && <Check className="w-4 h-4" />}
+                         {src} {selectedSource === src && <Check className="w-4 h-4" />}
                        </button>
                      ))}
                    </div>
@@ -372,7 +415,7 @@ export function ComicReader({ slug, title, posterUrl, chapter, images, chaptersL
           className="w-full mx-auto pt-14 pb-24 min-h-screen flex flex-col items-center bg-[#050505] overflow-x-hidden"
           onClick={() => { setShowNav(!showNav); setShowSettings(false); }}
         >
-          {images.map((imgUrl, idx) => (
+          {images.map((imgUrl: string, idx: number) => (
             <img 
               key={idx}
               src={imgUrl}
@@ -417,7 +460,7 @@ export function ComicReader({ slug, title, posterUrl, chapter, images, chaptersL
             spaceBetween={10}
             className="w-full h-full flex"
           >
-            {images.map((imgUrl, idx) => (
+            {images.map((imgUrl: string, idx: number) => (
               <SwiperSlide key={idx} className="flex items-center justify-center relative w-full h-full overflow-hidden">
                 <div className="w-full h-full flex overflow-auto scrollbar-hide">
                   <img 

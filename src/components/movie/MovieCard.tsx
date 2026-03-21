@@ -18,7 +18,7 @@ export function MovieCard({ title, slug, posterUrl, year, quality, episodeText, 
   return (
     <div className="group relative flex flex-col gap-2 transition-all duration-300">
       <Link 
-        href={`/movie/${slug}`} 
+        href={`/phim/${slug}`} 
         className="relative aspect-[2/3] w-full overflow-hidden rounded-xl bg-surface transition-all duration-300 md:group-hover:-translate-y-1 md:group-hover:shadow-2xl md:group-hover:shadow-black/50 active:scale-[0.98] md:active:scale-100"
       >
         <Image 
@@ -63,7 +63,7 @@ export function MovieCard({ title, slug, posterUrl, year, quality, episodeText, 
       
       <div className="flex flex-col gap-0.5 px-0.5 mt-1">
         <Link 
-          href={`/movie/${slug}`} 
+          href={`/phim/${slug}`} 
           className="text-[14px] sm:text-[15px] md:text-[16px] font-semibold text-white/90 hover:text-white line-clamp-2 transition-colors leading-[1.4]" 
           title={title}
         >

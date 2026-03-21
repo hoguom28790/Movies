@@ -217,7 +217,7 @@ export default async function MovieDetailsPage({ params }: { params: Promise<{ s
  
               <div className="flex flex-col items-center lg:items-stretch gap-3 mt-4">
                 {firstEp ? (
-                  <Link href={`/watch/${source}/${slug}/${firstEp.slug || firstEp.name}`} className="w-full">
+                  <Link href={`/xem/${source}/${slug}/${firstEp.slug || firstEp.name}`} className="w-full">
                     <Button className="w-full h-11 rounded-xl gap-2 font-semibold text-[14px] bg-primary hover:bg-primary-hover transition-all">
                       <Play className="w-5 h-5 fill-current" />
                       XEM NGAY

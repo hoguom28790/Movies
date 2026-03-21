@@ -87,6 +87,7 @@ export function PlayerContainer({ url, isHls, rawEmbedUrl, nextEpisodeUrl, movie
       // Handle continuous progress updates
       if (event.data.type === 'UPDATE_PROGRESS' && user && movieSlug) {
         const currentTime = event.data.time;
+        const duration = event.data.duration;
         const now = Date.now();
         // Throttle Firestore saves to every 10 seconds
         if (now - lastSaveTime > 10000) {
@@ -98,7 +99,8 @@ export function PlayerContainer({ url, isHls, rawEmbedUrl, nextEpisodeUrl, movie
             episodeName: episodeName || "",
             episodeSlug: episodeSlug || "",
             posterUrl: posterUrl || "",
-            progressSeconds: currentTime
+            progressSeconds: currentTime,
+            durationSeconds: duration
           }).catch(console.error);
         }
       }

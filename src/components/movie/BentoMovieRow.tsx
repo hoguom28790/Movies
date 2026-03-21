@@ -46,7 +46,7 @@ export function BentoMovieRow({ title, movies, viewAllHref }: BentoMovieRowProps
         {/* Featured Large Card */}
         <div className="flex-shrink-0 w-72 snap-start">
           <Link 
-            href={`/movie/${featured.slug}`}
+            href={`/phim/${featured.slug}`}
             className="relative group rounded-2xl overflow-hidden aspect-[3/4] bg-surface shadow-2xl block"
           >
             <Image 
@@ -75,7 +75,7 @@ export function BentoMovieRow({ title, movies, viewAllHref }: BentoMovieRowProps
         {others.map((movie) => (
           <div key={movie.slug} className="flex-shrink-0 w-44 snap-start">
             <Link 
-              href={`/movie/${movie.slug}`}
+              href={`/phim/${movie.slug}`}
               className="relative group rounded-2xl overflow-hidden aspect-[2/3] bg-surface block border border-white/5 shadow-xl hover:border-primary/30 transition-all"
             >
               <Image 

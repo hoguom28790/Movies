@@ -71,7 +71,7 @@ export function XXBentoGrid({ title, movies, viewAllLink }: XXBentoGridProps) {
 function BentoItem({ movie, className, large = false }: { movie: Movie, className: string, large?: boolean }) {
   return (
     <Link 
-      href={`/collection/movie/${movie.slug}`}
+      href={`/collection/phim/${movie.slug}`}
       className={`relative group overflow-hidden rounded-3xl border border-white/10 bg-surface transition-all duration-500 hover:border-xx-primary/50 hover:shadow-[0_0_40px_rgba(255,215,0,0.1)] ${className}`}
     >
       <img 

@@ -78,7 +78,11 @@ const directLinks = [
   { label: "TV Shows", href: "/tv-shows" },
 ];
 
-export function NavMenu() {
+interface NavMenuProps {
+  mode?: "phim" | "truyen";
+}
+
+export function NavMenu({ mode }: NavMenuProps) {
   const [openId, setOpenId] = useState<string | null>(null);
   const navRef = useRef<HTMLElement>(null);
   const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -96,7 +100,7 @@ export function NavMenu() {
   }, [clearCloseTimer]);
 
   const pathname = usePathname();
-  const isComicSection = pathname.startsWith("/truyen") || pathname.startsWith("/doc");
+  const isComicSection = mode === "truyen" || pathname.startsWith("/truyen") || pathname.startsWith("/doc");
 
   useEffect(() => {
     const handler = (e: MouseEvent) => {
@@ -108,10 +112,26 @@ export function NavMenu() {
     return () => document.removeEventListener("mousedown", handler);
   }, []);
 
-  const currentDropdowns = isComicSection ? [] : dropdowns;
+  const currentDropdowns = isComicSection ? [
+    { id: "truyen-the-loai", label: "Thể loại Truyện", items: [
+      { name: "Manga", slug: "manga" },
+      { name: "Manhua", slug: "manhua" },
+      { name: "Manhwa", slug: "manhwa" },
+      { name: "Action", slug: "action" },
+      { name: "Adventure", slug: "adventure" },
+      { name: "Comedy", slug: "comedy" },
+      { name: "Drama", slug: "drama" },
+      { name: "Fantasy", slug: "fantasy" },
+      { name: "Romance", slug: "romance" },
+      { name: "Shounen", slug: "shounen" },
+    ], basePath: "/truyen/the-loai", cols: 2 },
+  ] : dropdowns;
+  
   const currentLinks = isComicSection ? [
-    { label: "Mới Cập Nhật", href: "/truyen" }
-  ] : directLinks;
+    { label: "Trang Chủ Truyện", href: "/truyen" },
+    { label: "Mới Cập Nhật", href: "/truyen" },
+    { label: "Bảng Xếp Hạng", href: "/truyen" },
+  ] : directLinks.filter(l => l.href !== "/truyen");
 
   return (
     <nav ref={navRef} className="flex items-center gap-0.5">

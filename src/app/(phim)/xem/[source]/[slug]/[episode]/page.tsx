@@ -116,51 +116,27 @@ export default async function WatchPage({
                 </div>
               )}
               
-              <span className="text-[10px] font-semibold text-white/30 uppercase tracking-wider hidden sm:block">Server:</span>
+              <span className="text-[10px] font-semibold text-white/30 uppercase tracking-wider hidden sm:block">Nguồn phim:</span>
               
-              {/* Source Switcher Dropdown */}
+              {/* Source Switcher Dropdown - Fixed hover gap */}
               <div className="relative group cursor-pointer mr-2">
-                <Button variant="secondary" size="sm" className="h-7 sm:h-8 text-[11px] px-3 font-semibold rounded-lg shadow-lg bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 uppercase tracking-wider">
-                  Nguồn: {activeSource}
+                <Button variant="secondary" size="sm" className="h-7 sm:h-8 text-[11px] px-3 font-semibold rounded-lg shadow-lg bg-primary/20 text-primary border border-primary/30 uppercase tracking-wider">
+                  {activeSource}
                 </Button>
                 
-                {/* Dropdown Menu */}
-                <div className="absolute right-0 top-full mt-2 w-32 bg-[#1a1a1a]/95 backdrop-blur-xl border border-white/10 rounded-xl shadow-2xl opacity-0 translate-y-2 pointer-events-none group-hover:opacity-100 group-hover:translate-y-0 group-hover:pointer-events-auto transition-all duration-200 z-[100] flex flex-col p-1">
-                  {AVAILABLE_SOURCES.map((src) => (
-                    <Link key={src.id} href={`/watch/${src.id}/${slug}/${episode}`} replace scroll={false}>
-                       <button className={`w-full text-left px-3 py-2 text-[12px] font-semibold rounded-lg transition-colors ${activeSource === src.id ? "bg-primary text-white" : "text-white/60 hover:bg-white/10 hover:text-white"}`}>
-                         {src.name}
-                       </button>
-                    </Link>
-                  ))}
+                {/* Dropdown Menu with Bridge */}
+                <div className="absolute right-0 top-full pt-2 w-36 opacity-0 translate-y-2 pointer-events-none group-hover:opacity-100 group-hover:translate-y-0 group-hover:pointer-events-auto transition-all duration-200 z-[100]">
+                  <div className="bg-[#1a1a1a]/95 backdrop-blur-3xl border border-white/10 rounded-xl shadow-2xl flex flex-col p-1 overflow-hidden">
+                    {AVAILABLE_SOURCES.map((src) => (
+                      <Link key={src.id} href={`/xem/${src.id}/${slug}/${episode}`} replace scroll={false}>
+                         <button className={`w-full text-left px-3 py-2.5 text-[12px] font-bold rounded-lg transition-colors border-b border-white/5 last:border-none ${activeSource === src.id ? "bg-primary text-white" : "text-white/60 hover:bg-white/5 hover:text-white"}`}>
+                           {src.name}
+                         </button>
+                      </Link>
+                    ))}
+                  </div>
                 </div>
               </div>
-              {rawEmbedUrl && (
-                <Link href={`/watch/${activeSource}/${slug}/${episode}?s=embed&sv=${currentServerIdx}`} scroll={false} replace>
-                  <Button
-                    variant={!isHls ? "primary" : "secondary"}
-                    size="sm"
-                    className={`h-7 sm:h-8 text-[10px] sm:text-[11px] px-3 sm:px-4 rounded-lg font-semibold transition-all ${
-                      !isHls ? "shadow-lg shadow-primary/30" : "bg-white/5 border-white/5"
-                    }`}
-                  >
-                    VIP 1
-                  </Button>
-                </Link>
-              )}
-              {rawM3u8Url && (
-                <Link href={`/watch/${activeSource}/${slug}/${episode}?s=hls&sv=${currentServerIdx}`} scroll={false} replace>
-                  <Button
-                    variant={isHls ? "primary" : "secondary"}
-                    size="sm"
-                    className={`h-7 sm:h-8 text-[10px] sm:text-[11px] px-3 sm:px-4 rounded-lg font-semibold transition-all ${
-                      isHls ? "shadow-lg shadow-primary/30" : "bg-white/5 border-white/5"
-                    }`}
-                  >
-                    VIP 2
-                  </Button>
-                </Link>
-              )}
             </div>
           </div>
  
@@ -168,7 +144,7 @@ export default async function WatchPage({
             url={rawM3u8Url} 
             isHls={isHls} 
             rawEmbedUrl={rawEmbedUrl}
-            nextEpisodeUrl={nextEp ? `/watch/${activeSource}/${slug}/${nextEp.slug || nextEp.name}?sv=${currentServerIdx}` : undefined}
+            nextEpisodeUrl={nextEp ? `/xem/${activeSource}/${slug}/${nextEp.slug || nextEp.name}?sv=${currentServerIdx}` : undefined}
             movieTitle={data.name}
             movieSlug={slug}
             episodeName={currentEp.name}

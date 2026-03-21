@@ -28,21 +28,27 @@ export const viewport: Viewport = {
 
 import { LayoutWrapper } from "@/components/layout/LayoutWrapper";
 
+import QueryProvider from "@/providers/QueryProvider";
+
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="vi" className={inter.variable}>
+    <html lang="vi" className={inter.variable} suppressHydrationWarning>
       <body className="bg-[#0a0a0a] text-white selection:bg-primary/30 antialiased font-sans transition-colors duration-300">
-        <DeviceProvider>
-          <ThemeProvider>
-            <AuthProvider>
-              <LayoutWrapper>{children}</LayoutWrapper>
-            </AuthProvider>
-          </ThemeProvider>
-        </DeviceProvider>
+        <QueryProvider>
+          <DeviceProvider>
+            <ThemeProvider>
+              <AuthProvider>
+                <LayoutWrapper>
+                 {children}
+              </LayoutWrapper>
+              </AuthProvider>
+            </ThemeProvider>
+          </DeviceProvider>
+        </QueryProvider>
       </body>
     </html>
   );
