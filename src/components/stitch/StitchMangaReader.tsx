@@ -165,8 +165,14 @@ export function StitchMangaReader({ media }: StitchMangaReaderProps) {
   const prevChapter = currentIndex < media.chapters.length - 1 ? media.chapters[currentIndex + 1] : null;
   const nextChapter = currentIndex > 0 ? media.chapters[currentIndex - 1] : null;
 
-  const navigateToChapter = (chapter: ChapterInfo) => {
-    router.push(`/doc/${media.slug}/${chapter.slug}?source=${media.activeSource}`);
+  const navigateToChapter = useCallback((chapterSlug: string) => {
+    router.push(`/doc/${media.slug}/${chapterSlug}?source=${media.activeSource}`);
+  }, [router, media.slug, media.activeSource]);
+
+  const switchSource = (newSource: string) => {
+    // Try to find the same chapter name in the current list of chapters
+    // and navigate to it on the new source
+    router.push(`/doc/${media.slug}/${media.chapterName}?source=${newSource}`);
   };
 
   return (
@@ -186,17 +192,41 @@ export function StitchMangaReader({ media }: StitchMangaReaderProps) {
                 <ChevronLeft size={24} />
               </Link>
               <div className="flex flex-col">
-                <h1 className="font-headline font-black text-sm md:text-xl uppercase tracking-tighter truncate max-w-[150px] md:max-w-md">
+                <h1 className="font-headline font-black text-[12px] md:text-xl uppercase tracking-tighter truncate max-w-[120px] md:max-w-md">
                   {media.title}
                 </h1>
-                <span className="text-[10px] uppercase tracking-[0.3em] font-bold text-primary">
-                  {media.chapterName}
-                </span>
+                <div className="flex items-center gap-2">
+                   {/* Chapter Jump Dropdown */}
+                    <select 
+                        value={media.chapterName}
+                        onChange={(e) => navigateToChapter(e.target.value)}
+                        className="bg-transparent text-[10px] uppercase tracking-[0.2em] font-black text-primary p-0 border-none focus:outline-none cursor-pointer hover:bg-white/5 rounded px-1 transition-colors"
+                    >
+                        {media.chapters.map(c => (
+                            <option key={c.slug} value={c.slug} className="bg-surface text-on-surface">Ch. {c.name}</option>
+                        ))}
+                    </select>
+                </div>
               </div>
             </div>
 
-            <div className="flex items-center gap-2 md:gap-6">
-                    <div className="hidden lg:flex items-center gap-1.5 p-1 bg-white/[0.03] rounded-xl border border-white/5">
+            <div className="flex items-center gap-2 md:gap-4 lg:gap-6">
+                {/* Source Quick Switcher */}
+                <div className="hidden sm:flex items-center gap-1.5 p-1 bg-white/[0.03] rounded-xl border border-white/5">
+                    {['otruyen', 'mangadex', 'mangaplus'].map(src => (
+                        <button 
+                            key={src}
+                            onClick={() => switchSource(src)}
+                            className={`px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all ${
+                                media.activeSource === src ? 'bg-primary text-white shadow-lg' : 'text-white/40 hover:text-white/70'
+                            }`}
+                        >
+                            {src.slice(0, 3)}
+                        </button>
+                    ))}
+                </div>
+
+                <div className="hidden lg:flex items-center gap-1.5 p-1 bg-white/[0.03] rounded-xl border border-white/5">
                         <select 
                             value={currentPage}
                             onChange={(e) => {
@@ -218,15 +248,15 @@ export function StitchMangaReader({ media }: StitchMangaReaderProps) {
                     <div className="flex items-center gap-1 bg-white/10 p-1 rounded-xl">
                 <button 
                   disabled={!prevChapter}
-                  onClick={() => prevChapter && navigateToChapter(prevChapter)}
+                  onClick={() => prevChapter && navigateToChapter(prevChapter.slug)}
                   className="p-2 hover:bg-white/10 rounded-lg disabled:opacity-30 disabled:cursor-not-allowed group transition-all"
                 >
                   <ChevronLeft className="w-5 h-5 group-active:-translate-x-1 transition-transform" />
                 </button>
-                <span className="px-3 text-[10px] font-black uppercase tracking-widest hidden sm:block">Chapter Selection</span>
+                <span className="px-3 text-[10px] font-black uppercase tracking-widest hidden sm:block">NAV</span>
                 <button 
                   disabled={!nextChapter}
-                  onClick={() => nextChapter && navigateToChapter(nextChapter)}
+                  onClick={() => nextChapter && navigateToChapter(nextChapter.slug)}
                   className="p-2 hover:bg-white/10 rounded-lg disabled:opacity-30 disabled:cursor-not-allowed group transition-all"
                 >
                   <ChevronRight className="w-5 h-5 group-active:translate-x-1 transition-transform" />

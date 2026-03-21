@@ -3,6 +3,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { ComicFavoriteBtn } from "@/components/comic/ComicFavoriteBtn";
 import { ComicContinueBtn } from "@/components/comic/ComicContinueBtn";
+import { ComicSourceSelector } from "@/components/comic/ComicSourceSelector";
 
 interface Chapter {
     chapter_name: string;
@@ -111,7 +112,9 @@ export function StitchMangaDetail({
                             dangerouslySetInnerHTML={{ __html: description }}
                         />
 
-                        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 md:gap-6">
+                        <ComicSourceSelector activeSource={activeSource} />
+
+                        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 md:gap-6 mt-12 mb-2">
                             {chapters.length > 0 ? (
                                 <div className="flex gap-3 items-center">
                                   <Link 
