@@ -87,9 +87,15 @@ export default function MovieHistoryPage() {
                 </div>
                 
                 {progressPercent > 0 && (
-                   <div className="absolute bottom-[3.5rem] left-2 right-2 h-1 bg-white/20 rounded-full overflow-hidden pointer-events-none z-10 shadow-lg">
-                     <div className="h-full bg-primary" style={{ width: `${progressPercent}%` }} />
-                   </div>
+                  <div className="w-full mt-3 px-1">
+                    <div className="flex justify-between items-center mb-1.5">
+                      <span className="text-[10px] font-bold text-white/40 uppercase tracking-wider">Tiến độ</span>
+                      <span className="text-[10px] font-bold text-primary">{progressPercent}%</span>
+                    </div>
+                    <div className="w-full h-1.5 bg-white/10 rounded-full overflow-hidden">
+                      <div className="h-full bg-primary transition-all rounded-full" style={{ width: `${progressPercent}%` }} />
+                    </div>
+                  </div>
                 )}
 
                 <button 

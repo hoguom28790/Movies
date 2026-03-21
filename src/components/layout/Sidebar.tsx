@@ -78,26 +78,6 @@ export function Sidebar({ hideDesktop }: { hideDesktop?: boolean } = {}) {
           </nav>
         </aside>
       )}
-
-      {/* Mobile Bottom Bar */}
-      <div className="fixed bottom-0 left-0 right-0 z-50 flex h-[calc(3.5rem+env(safe-area-inset-bottom))] items-start pt-1.5 justify-around border-t border-white/[0.06] bg-[#0a0a0a]/95 backdrop-blur-xl pb-[env(safe-area-inset-bottom)] md:hidden">
-        {mobileItems.map((item) => {
-          const targetHref = isXX ? item.xxHref : item.href;
-          const active = isActive(targetHref);
-          return (
-            <Link
-              key={item.href}
-              href={targetHref}
-              className={`flex flex-col items-center gap-0.5 transition-colors ${
-                active ? "text-yellow-500" : "text-white/40"
-              }`}
-            >
-              <item.icon className="h-5 w-5" strokeWidth={1.8} />
-              <span className="text-[9px] font-medium">{item.label}</span>
-            </Link>
-          );
-        })}
-      </div>
     </>
   );
 }

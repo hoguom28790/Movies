@@ -5,22 +5,25 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { 
   Home, 
-  Film, 
-  BookOpen, 
   History, 
-  User,
+  LayoutGrid,
+  Heart,
+  BookOpen, 
   Zap
 } from "lucide-react";
 
 export function BottomNav() {
   const pathname = usePathname();
 
+  const isXX = pathname.startsWith("/topxx");
+  const isComic = pathname.startsWith("/truyen") || pathname.startsWith("/doc");
+
   const navItems = [
-    { label: "Trang chủ", icon: Home, href: "/", activeRegex: /^\/$/ },
-    { label: "Phim", icon: Film, href: "/phim-moi", activeRegex: /^\/(phim|watch|movie|top-trending|the-loai|quoc-gia|nam|phim-le|phim-bo|hoat-hinh|tv-shows)/ },
-    { label: "Truyện", icon: BookOpen, href: "/truyen", activeRegex: /^\/(truyen|doc)/ },
-    { label: "Lịch sử", icon: History, href: "/history", activeRegex: /^\/history/ },
-    { label: "Cá nhân", icon: User, href: "/profile", activeRegex: /^\/profile/ },
+    { label: "Trang chủ", icon: Home, href: isXX ? "/topxx" : (isComic ? "/truyen" : "/"), activeRegex: isXX ? /^\/topxx$/ : (isComic ? /^\/truyen$/ : /^\/$/) },
+    { label: "Duyệt Tìm", icon: LayoutGrid, href: isXX ? "/topxx/the-loai" : (isComic ? "/truyen?genre=all" : "/the-loai"), activeRegex: /\/(the-loai|search|truyen\?genre)/ },
+    { label: "Lịch sử", icon: History, href: isXX ? "/topxx/lich-su" : (isComic ? "/truyen/lich-su" : "/history"), activeRegex: /\/(history|lich-su)/ },
+    { label: "Yêu thích", icon: Heart, href: isXX ? "/topxx/yeu-thich" : (isComic ? "/truyen/yeu-thich" : "/watchlist"), activeRegex: /\/(watchlist|yeu-thich)/ },
+    { label: isComic ? "Hồ Phim" : "Hồ Truyện", icon: BookOpen, href: isComic ? "/" : "/truyen", activeRegex: isComic ? /^\/(?!truyen|doc|topxx).*/ : /^\/(truyen|doc)/ },
   ];
 
   return (

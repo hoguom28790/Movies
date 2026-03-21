@@ -18,7 +18,7 @@ export function LayoutWrapper({ children }: { children: React.ReactNode }) {
       </main>
       {!isXX && <BottomNav />}
       {!isXX && <Footer />}
-      {!isXX && <Sidebar hideDesktop />}
+      {!isXX && <Sidebar />}
     </div>
   );
 }

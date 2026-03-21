@@ -129,8 +129,8 @@ export function NavMenu({ mode }: NavMenuProps) {
   
   const currentLinks = isComicSection ? [
     { label: "Trang Chủ Truyện", href: "/truyen" },
-    { label: "Mới Cập Nhật", href: "/truyen" },
-    { label: "Bảng Xếp Hạng", href: "/truyen" },
+    { label: "Mới Cập Nhật", href: "/truyen?status=truyen-moi" },
+    { label: "Bảng Xếp Hạng", href: "/truyen?status=hoan-thanh" },
   ] : directLinks.filter(l => l.href !== "/truyen");
 
   return (
@@ -175,7 +175,7 @@ export function NavMenu({ mode }: NavMenuProps) {
                         const pass = window.prompt(`Nhập mật khẩu để truy cập nội dung 18+:`);
                         if (pass !== correctPass) {
                           e.preventDefault();
-                          alert(`Mật khẩu không chính xác!\nBạn đã nhập: ${pass || "không có gì"}\nMật khẩu hôm nay là: ${correctPass}`);
+                          alert(`Mật khẩu không chính xác! Vui lòng thử lại.`);
                           return;
                         }
                       }

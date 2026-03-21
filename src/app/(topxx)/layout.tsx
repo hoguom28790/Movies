@@ -1,12 +1,16 @@
+"use client";
+
 import React from "react";
 import Link from "next/link";
-import { AlertCircle, LogOut, User, Home } from "lucide-react";
+import { usePathname } from "next/navigation";
+import { AlertCircle, LogOut, User, Home, History as HistoryIcon, Heart, Search } from "lucide-react";
 
 export default function TopXXLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const pathname = usePathname();
   return (
     <div className="theme-xx min-h-screen bg-background text-primaryoreground">
       {/* 18+ Warning Banner */}
@@ -22,15 +26,21 @@ export default function TopXXLayout({
               <span className="text-xl font-black tracking-tighter text-primary font-headline italic">TopXX 🎬</span>
             </Link>
             
-            <nav className="flex items-center gap-4">
-              <Link href="/topxx" className="p-2 text-white/60 hover:text-primary transition-colors">
+            <nav className="flex items-center gap-2 sm:gap-4">
+              <Link href="/topxx" className={`p-2 transition-colors ${pathname === "/topxx" ? "text-primary" : "text-white/60 hover:text-primary"}`}>
                 <Home className="w-5 h-5" />
               </Link>
-              <Link href="/settings" className="p-2 text-white/60 hover:text-primary transition-colors">
+              <Link href="/topxx/lich-su" className={`p-2 transition-colors ${pathname === "/topxx/lich-su" ? "text-primary" : "text-white/60 hover:text-primary"}`}>
+                <HistoryIcon className="w-5 h-5" />
+              </Link>
+              <Link href="/topxx/yeu-thich" className={`p-2 transition-colors ${pathname === "/topxx/yeu-thich" ? "text-primary" : "text-white/60 hover:text-primary"}`}>
+                <Heart className="w-5 h-5" />
+              </Link>
+              <Link href="/settings" className="p-2 text-white/60 hover:text-primary transition-colors hidden sm:block">
                 <User className="w-5 h-5" />
               </Link>
-              <Link href="/" className="px-4 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-white/60 hover:text-white text-[12px] font-bold transition-all border border-white/5">
-                Quay về Hồ Phim
+              <Link href="/" className="px-3 sm:px-4 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-white/60 hover:text-white text-[11px] sm:text-[12px] font-bold transition-all border border-white/5 whitespace-nowrap">
+                Sang Hồ Phim
               </Link>
             </nav>
           </div>

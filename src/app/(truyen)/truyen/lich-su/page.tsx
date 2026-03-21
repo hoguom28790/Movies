@@ -51,13 +51,20 @@ export default function ComicHistoryPage() {
     );
   }
 
+  const fixImageUrl = (url: string) => {
+    if (!url) return "";
+    if (url.startsWith('http')) return url;
+    const path = url.startsWith('/') ? url.substring(1) : url;
+    return `https://otruyenapi.com/uploads/comics/${path}`;
+  };
+
   return (
     <div className="container mx-auto px-4 py-8 mt-16 min-h-screen">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12">
         <h1 className="text-primaryxl font-black italic tracking-tighter uppercase border-l-4 border-indigo-500 pl-4">Lịch Sử Đọc Truyện</h1>
-        <div className="flex items-center gap-2 px-4 py-2 bg-primary/10 rounded-xl border border-indigo-500/20">
+        <div className="flex items-center gap-2 px-4 py-2 bg-indigo-500/10 rounded-xl border border-indigo-500/20">
           <BookOpen className="w-4 h-4 text-indigo-500" />
-          <span className="text-xs font-bold text-indigo-200 uppercase tracking-widest">{items.length} Truyện</span>
+          <span className="text-xs font-bold text-indigo-500 uppercase tracking-widest">{items.length} Truyện</span>
         </div>
       </div>
       
@@ -73,7 +80,7 @@ export default function ComicHistoryPage() {
               <ComicCard 
                 title={item.comicTitle}
                 slug={item.comicSlug}
-                posterUrl={item.coverUrl}
+                posterUrl={fixImageUrl(item.coverUrl)}
                 latestChapter={`Đã đọc: Ch. ${item.chapterName}`}
               />
               

@@ -45,10 +45,9 @@ export default async function ComicReadingPage({
 
   const item = otruyenData.data.item;
   const domain_cdn = otruyenData.data.APP_DOMAIN_CDN_IMAGE || "https://otruyenapi.com";
-  // Standardize poster URL for history
-  const baseUrl = domain_cdn.endsWith('/uploads/comics') ? domain_cdn : `${domain_cdn}/uploads/comics`;
-  const posterPath = item.thumb_url.startsWith('/') ? item.thumb_url : `/${item.thumb_url}`;
-  const poster = item.thumb_url.startsWith('http') ? item.thumb_url : `${baseUrl}${posterPath}`;
+  const poster = item.thumb_url.startsWith('http') 
+    ? item.thumb_url 
+    : `https://otruyenapi.com/uploads/comics/${item.thumb_url.startsWith('/') ? item.thumb_url.substring(1) : item.thumb_url}`;
 
   // Multi-source engine: OTruyen + MangaDex + MangaPlus
   let images: string[] = [];

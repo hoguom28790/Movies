@@ -126,28 +126,30 @@ export default function XXHistoryPage() {
               
               {/* Progress Bar Over Card */}
               {item.durationSeconds > 0 && (
-                 <div className="absolute top-[calc(66.6%)] left-0 right-0 h-1 bg-white/10 backdrop-blur-md z-10 mx-3 pointer-events-none rounded-full overflow-hidden">
+                <div className="w-full mt-3 px-1">
+                  <div className="flex justify-between items-center mb-1.5">
+                    <span className="text-[10px] font-bold text-white/40 uppercase tracking-wider">Tiến độ</span>
+                    <span className="text-[10px] font-bold text-yellow-500">
+                      {Math.min(100, Math.round((item.progressSeconds / item.durationSeconds) * 100))}%
+                    </span>
+                  </div>
+                  <div className="w-full h-1.5 bg-white/10 rounded-full overflow-hidden">
                     <div 
-                      className="h-full bg-yellow-500 shadow-[0_0_10px_rgba(234,179,8,0.5)] transition-all duration-1000" 
+                      className="h-full bg-yellow-500 transition-all rounded-full" 
                       style={{ width: `${Math.min(100, (item.progressSeconds / item.durationSeconds) * 100)}%` }} 
                     />
-                 </div>
+                  </div>
+                </div>
               )}
 
-              {/* Individual Remove Button - Always visible on mobile, slightly smaller */}
+              {/* Individual Remove Button */}
               <button 
                 onClick={(e) => handleRemoveItem(item.movieCode, e)}
-                className="absolute -top-2 -right-2 z-30 w-8 h-8 rounded-xl bg-black/60 backdrop-blur-xl text-white border border-white/10 flex items-center justify-center hover:bg-red-500 hover:scale-110 transition-all shadow-xl group-hover:opacity-100 opacity-100 sm:opacity-0 sm:group-hover:opacity-100"
+                className="absolute -top-3 -right-3 z-30 w-8 h-8 rounded-full bg-black/60 backdrop-blur-xl text-white border border-white/10 flex items-center justify-center hover:bg-red-500 hover:scale-110 transition-all shadow-xl opacity-0 group-hover:opacity-100"
                 title="Xóa khỏi lịch sử"
               >
                  <X className="w-4 h-4" />
               </button>
-
-              <div className="absolute bottom-[24.5%] left-3 right-3 pointer-events-none z-10 flex justify-between items-center">
-                 <div className="bg-black/60 backdrop-blur-md text-[9px] font-black text-white px-2 py-0.5 rounded-lg border border-white/5 uppercase italic tracking-widest">
-                    {formatProgress(item.progressSeconds, item.durationSeconds)}
-                 </div>
-              </div>
             </div>
           ))}
         </div>
