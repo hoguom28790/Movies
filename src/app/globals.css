@@ -26,6 +26,9 @@
   
   /* Typography */
   --font-sans: var(--font-inter);
+  --font-headline: var(--font-epilogue);
+  --font-body: var(--font-inter);
+  --font-label: var(--font-inter);
 }
 
 :root {
@@ -44,8 +47,18 @@
 }
 
 .theme-truyen {
-  --primary: oklch(60% 0.2 25);
-  --primary-hover: oklch(50% 0.2 25);
+  --primary: #b02c2f;
+  --primary-hover: #d24545;
+  --surface: #f9f9ff;
+  --on-surface: #101c2e;
+  --on-surface-variant: #59413f;
+  --outline-variant: #e1bfbc;
+  --surface-container-low: #f0f3ff;
+  --surface-container-highest: #d8e3fc;
+  --background: #f9f9ff;
+  --font-headline: "Epilogue", sans-serif;
+  --font-body: "Inter", sans-serif;
+  --font-label: "Inter", sans-serif;
 }
 
 .theme-xx {
@@ -162,3 +175,42 @@ body {
 .delete-btn-premium:active {
   transform: scale(0.95);
 }
+
+/* Stitch Design Custom Utilities */
+.theme-truyen .crimson-pulse {
+  background: linear-gradient(135deg, #b02c2f 0%, #d24545 100%);
+}
+
+.theme-truyen .editorial-shadow {
+  box-shadow: 0 24px 48px -12px rgba(16, 28, 46, 0.08);
+}
+
+.theme-truyen .font-headline {
+  font-family: var(--font-headline);
+}
+
+.theme-truyen .font-body {
+  font-family: var(--font-body);
+}
+
+.theme-truyen .font-label {
+  font-family: var(--font-label);
+}
+
+.theme-truyen header.backdrop-blur-xl {
+  background-color: rgba(255, 255, 255, 0.8);
+}
+
+.dark .theme-truyen header.backdrop-blur-xl {
+  background-color: rgba(19, 28, 39, 0.8);
+}
+
+.theme-truyen .bg-surface { background-color: var(--surface); }
+.theme-truyen .text-on-surface { color: var(--on-surface); }
+.theme-truyen .text-on-surface-variant { color: var(--on-surface-variant); }
+.theme-truyen .bg-primary { background-color: var(--primary); }
+.theme-truyen .text-primary { color: var(--primary); }
+.theme-truyen .border-primary { border-color: var(--primary); }
+.theme-truyen .bg-surface-container-low { background-color: var(--surface-container-low); }
+.theme-truyen .bg-surface-container-highest { background-color: var(--surface-container-highest); }
+.theme-truyen .border-outline-variant { border-color: var(--outline-variant); }

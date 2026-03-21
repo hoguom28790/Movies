@@ -1,7 +1,7 @@
-import { ComicCard } from "@/components/comic/ComicCard";
-import { ComicRow } from "@/components/comic/ComicRow";
-import { ComicContinueReading } from "@/components/comic/ComicContinueReading";
-import { BookOpen, Flame } from "lucide-react";
+import { StitchHero } from "@/components/stitch/StitchHero";
+import { StitchMangaGrid } from "@/components/stitch/StitchMangaGrid";
+import { StitchMangaCard } from "@/components/stitch/StitchMangaCard";
+import { BookOpen } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 export const metadata = {
@@ -34,8 +34,10 @@ export default async function ComicHomePage({
   
   const isFiltering = !!(genre || (status && status !== "all"));
 
+  const { items: newComics, domain_cdn } = await getComics("truyen-moi");
+  const { items: hotComics, domain_cdn: hotCdn } = await getComics("dang-phat-hanh");
+
   if (isFiltering) {
-    // Determine the primary API to call. Genre takes priority because it's narrower.
     let items: any[] = [];
     let domain: string = "";
     
@@ -44,7 +46,6 @@ export default async function ComicHomePage({
       items = res.items;
       domain = res.domain_cdn;
       
-      // If status is also selected, filter locally (best effort mapping since API doesn't support dual filtering natively)
       if (status && status !== "all") {
         const localStatusKey = status === "dang-phat-hanh" ? "Ongoing" : "Completed";
         items = items.filter((item: any) => item.status === localStatusKey || item.status === status);
@@ -56,31 +57,29 @@ export default async function ComicHomePage({
     }
 
     return (
-      <div className="flex flex-col gap-16 pb-20 mt-[-20px] max-w-7xl mx-auto px-4 md:px-0">
-        <section className="space-y-6 pt-10">
-           <div className="flex items-center gap-3 relative">
-              <div className="absolute -left-4 md:-left-8 -top-8 w-24 h-24 bg-primary/20 blur-[50px] rounded-full" />
-              <BookOpen className="w-8 h-8 md:w-10 md:h-10 text-primary drop-shadow-[0_0_15px_rgba(255,255,255,0.3)] z-10" />
-              <h2 className="text-primaryxl md:text-5xl font-black text-white italic tracking-tighter uppercase relative z-10">
+      <div className="flex flex-col gap-16 pb-20 max-w-[1440px] mx-auto px-6 theme-truyen">
+        <section className="space-y-8 pt-10">
+           <div className="flex items-center justify-between mb-8">
+              <h2 className="text-3xl md:text-5xl font-black font-headline text-on-surface uppercase tracking-tighter">
                 Kết Quả Lọc
               </h2>
            </div>
            
            {items.length > 0 ? (
-             <div className="grid grid-cols-2 xs:grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 sm:gap-4 md:gap-5">
+             <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6">
                 {items.map((comic: any) => (
-                  <ComicCard
+                  <StitchMangaCard
                     key={comic._id}
                     title={comic.name}
                     slug={comic.slug}
-                    posterUrl={`${domain}/uploads/comics/${comic.thumb_url}`}
+                    imageUrl={`${domain}/uploads/comics/${comic.thumb_url}`}
                     latestChapter={comic.chaptersLatest?.[0]?.chapter_name ? `Ch. ${comic.chaptersLatest[0].chapter_name}` : ""}
-                    originalTitle={comic.origin_name?.[0] || ""}
+                    tags={comic.category?.map((c: any) => c.name) || []}
                   />
                 ))}
              </div>
            ) : (
-             <div className="py-20 text-center text-white/50 bg-white/5 rounded-2xl border border-white/10">
+             <div className="py-20 text-center text-on-surface-variant/60 bg-surface-container-low rounded-2xl border border-outline-variant/10 font-body">
                Không tìm thấy truyện nào khớp với bộ lọc của bạn.
              </div>
            )}
@@ -90,32 +89,66 @@ export default async function ComicHomePage({
   }
 
   // Default Home Page View
-  const { items: newComics, domain_cdn } = await getComics("truyen-moi");
-  const { items: ongoingComics, domain_cdn: ongoingCdn } = await getComics("dang-phat-hanh");
+  const heroComic = hotComics[0];
+  const featuredComic = newComics[0];
+  const secondaryComics = newComics.slice(1, 3);
+  const trendComics = newComics.slice(3, 13);
 
   return (
-    <div className="flex flex-col gap-16 pb-20 mt-[-20px] max-w-7xl mx-auto md:px-0">
+    <div className="flex flex-col gap-0 pb-20 theme-truyen">
       
-      {/* Đọc Tiếp */}
-      <ComicContinueReading />
+      {heroComic && (
+        <StitchHero 
+           title={heroComic.name}
+           description="Một hành trình đơn độc qua những tầng địa ngục của ký ức, nơi ranh giới giữa thực tại và ảo mộng bị xóa nhòa bởi sắc đỏ của mặt trăng."
+           imageUrl={`${hotCdn}/uploads/comics/${heroComic.thumb_url}`}
+           slug={heroComic.slug}
+        />
+      )}
 
-      {/* Mới Cập Nhật */}
-      <ComicRow 
-        title="Mới Cập Nhật"
-        comics={newComics.slice(0, 24)}
-        domainCdn={domain_cdn}
-        icon="flame"
-        viewAllHref="/truyen?status=all"
-      />
+      {featuredComic && (
+        <StitchMangaGrid 
+          title="Mới Cập Nhật"
+          featuredComic={{
+            title: featuredComic.name,
+            slug: featuredComic.slug,
+            imageUrl: `${domain_cdn}/uploads/comics/${featuredComic.thumb_url}`,
+            latestChapter: featuredComic.chaptersLatest?.[0]?.chapter_name ? `Ch. ${featuredComic.chaptersLatest[0].chapter_name}` : "",
+            tags: ["Hành Động", "Giả Tưởng"],
+            isHot: true
+          }}
+          secondaryComics={secondaryComics.map((c: any) => ({
+            title: c.name,
+            slug: c.slug,
+            imageUrl: `${domain_cdn}/uploads/comics/${c.thumb_url}`,
+            tags: ["Tâm Lý", "Drama"]
+          }))}
+        />
+      )}
 
-      {/* Đang Phát Hành */}
-      <ComicRow 
-        title="Đang Phát Hành"
-        comics={ongoingComics.slice(0, 24)}
-        domainCdn={ongoingCdn}
-        icon="book"
-        viewAllHref="/truyen?status=dang-phat-hanh"
-      />
+      {/* Trends Section */}
+      <section className="py-24 bg-surface-container-low px-6 lg:px-24">
+        <div className="max-w-[1440px] mx-auto">
+          <div className="mb-16">
+            <span className="text-primary font-headline text-[10px] font-black tracking-[0.3em] uppercase block mb-2">Curated Collection</span>
+            <h3 className="text-3xl md:text-5xl font-black font-headline text-on-surface uppercase tracking-tighter">Xu Hướng</h3>
+          </div>
+          
+          <div className="flex overflow-x-auto md:grid md:grid-cols-4 lg:grid-cols-5 gap-y-16 gap-x-8 pb-8 md:pb-0 scrollbar-hide">
+            {trendComics.map((comic: any, idx: number) => (
+              <StitchMangaCard 
+                key={comic._id}
+                title={comic.name}
+                slug={comic.slug}
+                imageUrl={`${domain_cdn}/uploads/comics/${comic.thumb_url}`}
+                variant="gallery"
+                className={idx % 2 === 1 ? "md:mt-8" : idx % 4 === 3 ? "md:mt-12" : ""}
+                tags={["Romance"]}
+              />
+            ))}
+          </div>
+        </div>
+      </section>
 
     </div>
   );

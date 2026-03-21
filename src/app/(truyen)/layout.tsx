@@ -1,15 +1,16 @@
-import { Navbar } from "@/components/layout/Navbar";
-import { Footer } from "@/components/layout/Footer";
+import { StitchNavbar } from "@/components/stitch/StitchNavbar";
+import { StitchFooter } from "@/components/stitch/StitchFooter";
+import { StitchBottomBar } from "@/components/stitch/StitchBottomBar";
 
-// Separated Phim and Truyen using route groups for independent layouts & navbars
 export default function TruyenLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="theme-truyen">
-      <Navbar mode="truyen" />
-      <div className="pt-safe">
+    <div className="theme-truyen bg-surface min-h-screen font-body text-on-surface">
+      <StitchNavbar />
+      <div className="md:pt-0">
         {children}
       </div>
-      <Footer />
+      <StitchFooter />
+      <StitchBottomBar />
     </div>
   );
 }
