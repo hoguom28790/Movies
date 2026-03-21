@@ -174,7 +174,7 @@ export function NavMenu({ mode }: NavMenuProps) {
   const currentLinks = isComicSection ? [
     { label: "Trang Chủ Truyện", href: "/truyen" },
     { label: "Mới Cập Nhật", href: "/truyen?status=truyen-moi" },
-    { label: "Bảng Xếp Hạng", href: "/truyen?status=hoan-thanh" },
+    { label: "Bộ Sưu Tập", href: "/truyen/yeu-thich" },
   ] : directLinks.filter(l => l.href !== "/truyen");
 
   return (

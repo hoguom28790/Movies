@@ -91,3 +91,85 @@ export async function isComicFavorite(userId: string, comicSlug: string): Promis
   const snap = await getDoc(doc(db, "comic_favorites", docId));
   return snap.exists();
 }
+
+// ================= COMIC PLAYLISTS =================
+
+export interface ComicPlaylist {
+  id: string;
+  name: string;
+  userId: string;
+  comics: {
+    comicSlug: string;
+    comicTitle: string;
+    coverUrl: string;
+    addedAt: number;
+  }[];
+  createdAt: number;
+  updatedAt: number;
+}
+
+export async function createComicPlaylist(userId: string, name: string): Promise<string> {
+  const colRef = collection(db, "comic_playlists");
+  const newDoc = doc(colRef);
+  await setDoc(newDoc, {
+    id: newDoc.id,
+    name,
+    userId,
+    comics: [],
+    createdAt: Date.now(),
+    updatedAt: Date.now()
+  });
+  return newDoc.id;
+}
+
+export async function getUserComicPlaylists(userId: string): Promise<ComicPlaylist[]> {
+  const q = query(collection(db, "comic_playlists"), where("userId", "==", userId));
+  const snap = await getDocs(q);
+  const list = snap.docs.map(d => d.data() as ComicPlaylist);
+  return list.sort((a, b) => b.createdAt - a.createdAt);
+}
+
+export async function addComicToPlaylist(playlistId: string, comic: { comicSlug: string; comicTitle: string; coverUrl: string }) {
+  const docRef = doc(db, "comic_playlists", playlistId);
+  const snap = await getDoc(docRef);
+  if (!snap.exists()) return;
+
+  const data = snap.data() as ComicPlaylist;
+  const exists = data.comics.some(c => c.comicSlug === comic.comicSlug);
+  if (exists) return;
+
+  await setDoc(docRef, {
+    ...data,
+    comics: [...data.comics, { ...comic, addedAt: Date.now() }],
+    updatedAt: Date.now()
+  });
+}
+
+export async function removeComicFromPlaylist(playlistId: string, comicSlug: string) {
+  const docRef = doc(db, "comic_playlists", playlistId);
+  const snap = await getDoc(docRef);
+  if (!snap.exists()) return;
+
+  const data = snap.data() as ComicPlaylist;
+  await setDoc(docRef, {
+    ...data,
+    comics: data.comics.filter(c => c.comicSlug !== comicSlug),
+    updatedAt: Date.now()
+  });
+}
+
+export async function deleteComicPlaylist(playlistId: string) {
+  await deleteDoc(doc(db, "comic_playlists", playlistId));
+}
+
+export async function renameComicPlaylist(playlistId: string, newName: string) {
+  const docRef = doc(db, "comic_playlists", playlistId);
+  await setDoc(docRef, { name: newName, updatedAt: Date.now() }, { merge: true });
+}
+
+export async function ensureDefaultComicPlaylist(userId: string) {
+  const playlists = await getUserComicPlaylists(userId);
+  if (playlists.length === 0) {
+    await createComicPlaylist(userId, "Truyện cần đọc");
+  }
+}

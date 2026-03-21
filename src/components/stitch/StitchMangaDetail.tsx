@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { ComicFavoriteBtn } from "@/components/comic/ComicFavoriteBtn";
 import { ComicContinueBtn } from "@/components/comic/ComicContinueBtn";
 import { ComicSourceSelector } from "@/components/comic/ComicSourceSelector";
+import { ComicPlaylistBtn } from "@/components/comic/ComicPlaylistBtn";
 
 interface Chapter {
     chapter_name: string;
@@ -153,8 +154,9 @@ export function StitchMangaDetail({
                                     Đang cập nhật
                                 </button>
                             )}
-                            <div className="flex gap-4 justify-center">
+                            <div className="flex flex-wrap gap-4 justify-center md:justify-start">
                                 <ComicFavoriteBtn slug={slug} title={title} posterUrl={posterUrl} />
+                                <ComicPlaylistBtn comicSlug={slug} comicTitle={title} coverUrl={posterUrl} />
                             </div>
                         </div>
                     </div>
