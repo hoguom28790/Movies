@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import { MangaPlusService } from "@/services/mangaplus";
-import { StitchReader } from "@/components/stitch/StitchReader";
+import { StitchMangaReader } from "@/components/stitch/StitchMangaReader";
 
 export const dynamic = "force-dynamic";
 
@@ -110,12 +110,17 @@ export default async function ComicReadingPage({
     id: item._id || slug,
     title: item.name,
     imageUrl: item.thumb_url,
-    chapters: images,
-    currentChapterIndex: chaptersList.indexOf(chapter) !== -1 ? chaptersList.indexOf(chapter) : 0,
-    slug: slug
+    images: images,
+    chapterName: chapter,
+    slug: slug,
+    chapters: item.chapters?.[0]?.server_data?.map((c: any) => ({
+      name: c.chapter_name,
+      slug: c.chapter_name
+    })) || [],
+    activeSource: activeSource.toLowerCase()
   };
 
   return (
-    <StitchReader media={media} />
+    <StitchMangaReader media={media} />
   );
 }
