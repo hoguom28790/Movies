@@ -35,10 +35,11 @@ export default async function WatchPage({
   searchParams,
 }: {
   params: Promise<{ source: string; slug: string; episode: string }>;
-  searchParams: Promise<{ s?: string }>;
+  searchParams: Promise<{ s?: string; sv?: string }>;
 }) {
   const { source, slug, episode } = await params;
-  const { s } = await searchParams;
+  const { s, sv } = await searchParams;
+  const currentServerIdx = sv ? parseInt(sv) : 0;
  
   try {
     let rawData = await fetchMovieData(source, slug);
@@ -73,17 +74,17 @@ export default async function WatchPage({
  
     if (allServers.length === 0) return notFound();
  
-    const defaultServer = allServers[0]?.items || [];
-    const currentEpIdx = defaultServer.findIndex(
+    const activeServerGroup = (allServers[currentServerIdx] || allServers[0])?.items || [];
+    const currentEpIdx = activeServerGroup.findIndex(
       (e: any) => e.slug === episode || e.name === episode
     );
     const currentEp =
-      currentEpIdx >= 0 ? defaultServer[currentEpIdx] : defaultServer[0];
+      currentEpIdx >= 0 ? activeServerGroup[currentEpIdx] : activeServerGroup[0];
     
     if (!currentEp) return notFound();
  
-    const prevEp = currentEpIdx > 0 ? defaultServer[currentEpIdx - 1] : null;
-    const nextEp = currentEpIdx < defaultServer.length - 1 ? defaultServer[currentEpIdx + 1] : null;
+    const prevEp = currentEpIdx > 0 ? activeServerGroup[currentEpIdx - 1] : null;
+    const nextEp = currentEpIdx < activeServerGroup.length - 1 ? activeServerGroup[currentEpIdx + 1] : null;
  
     const rawM3u8Url = currentEp.link_m3u8 || currentEp.m3u8 || "";
     const rawEmbedUrl = currentEp.link_embed || currentEp.embed || "";
@@ -135,7 +136,7 @@ export default async function WatchPage({
                 </div>
               </div>
               {rawEmbedUrl && (
-                <Link href={`/watch/${activeSource}/${slug}/${episode}?s=embed`} scroll={false} replace>
+                <Link href={`/watch/${activeSource}/${slug}/${episode}?s=embed&sv=${currentServerIdx}`} scroll={false} replace>
                   <Button
                     variant={!isHls ? "primary" : "secondary"}
                     size="sm"
@@ -148,7 +149,7 @@ export default async function WatchPage({
                 </Link>
               )}
               {rawM3u8Url && (
-                <Link href={`/watch/${activeSource}/${slug}/${episode}?s=hls`} scroll={false} replace>
+                <Link href={`/watch/${activeSource}/${slug}/${episode}?s=hls&sv=${currentServerIdx}`} scroll={false} replace>
                   <Button
                     variant={isHls ? "primary" : "secondary"}
                     size="sm"
@@ -167,7 +168,7 @@ export default async function WatchPage({
             url={rawM3u8Url} 
             isHls={isHls} 
             rawEmbedUrl={rawEmbedUrl}
-            nextEpisodeUrl={nextEp ? `/watch/${activeSource}/${slug}/${nextEp.slug || nextEp.name}` : undefined}
+            nextEpisodeUrl={nextEp ? `/watch/${activeSource}/${slug}/${nextEp.slug || nextEp.name}?sv=${currentServerIdx}` : undefined}
             movieTitle={data.name}
             movieSlug={slug}
             episodeName={currentEp.name}
@@ -190,7 +191,7 @@ export default async function WatchPage({
  
             <div className="flex items-center gap-2 flex-shrink-0">
               {prevEp ? (
-                <Link href={`/watch/${activeSource}/${slug}/${prevEp.slug || prevEp.name}`}>
+                <Link href={`/watch/${activeSource}/${slug}/${prevEp.slug || prevEp.name}?sv=${currentServerIdx}`}>
                   <Button variant="secondary" size="sm" className="h-9 gap-1.5 font-semibold">
                     <ChevronLeft className="w-4 h-4" /> Tập trước
                   </Button>
@@ -201,7 +202,7 @@ export default async function WatchPage({
                 </Button>
               )}
               {nextEp ? (
-                <Link href={`/watch/${activeSource}/${slug}/${nextEp.slug || nextEp.name}`}>
+                <Link href={`/watch/${activeSource}/${slug}/${nextEp.slug || nextEp.name}?sv=${currentServerIdx}`}>
                   <Button variant="primary" size="sm" className="h-9 gap-1.5 font-semibold">
                     Tập tiếp <ChevronRight className="w-4 h-4" />
                   </Button>
@@ -223,9 +224,9 @@ export default async function WatchPage({
               <div className="flex gap-1.5 flex-wrap max-h-60 overflow-y-auto p-3 bg-white/[0.02] rounded-xl border border-white/[0.06]">
                 {server.items.map((ep: any, idx: number) => {
                   const epId = ep.slug || ep.name;
-                  const isCurrent = sIdx === 0 && (ep.slug === episode || ep.name === episode);
+                  const isCurrent = sIdx === currentServerIdx && (ep.slug === episode || ep.name === episode);
                   return (
-                    <Link key={idx} href={`/watch/${activeSource}/${slug}/${epId}`}>
+                    <Link key={idx} href={`/watch/${activeSource}/${slug}/${epId}?sv=${sIdx}`}>
                       <Button
                         variant={isCurrent ? "primary" : "secondary"}
                         className={`min-w-[3.5rem] px-3 sm:px-4 h-8 sm:h-9 text-[11px] sm:text-[12px] font-semibold rounded-lg transition-all ${
