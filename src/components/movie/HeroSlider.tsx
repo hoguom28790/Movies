@@ -49,7 +49,7 @@ export function HeroSlider({ movies }: HeroSliderProps) {
             quality={85}
             priority={idx === 0}
             className="object-cover"
-            unoptimized={!movie.thumbUrl?.includes('tmdb.org')}
+            unoptimized={!movie.thumbUrl?.match(/amazon\.com|fanart\.tv|unsplash\.com|tmdb\.org/i)}
           />
         </div>
       ))}
@@ -141,7 +141,7 @@ export function HeroSlider({ movies }: HeroSliderProps) {
               sizes="80px"
               quality={50}
               className="absolute inset-0 w-full h-full object-cover object-top opacity-60 scale-105"
-              unoptimized={!movie.thumbUrl?.includes('tmdb.org')}
+              unoptimized={!movie.thumbUrl?.match(/amazon\.com|fanart\.tv|unsplash\.com|tmdb\.org/i)}
             />
           </button>
         ))}

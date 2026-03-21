@@ -27,7 +27,7 @@ export function MovieCard({ title, slug, posterUrl, year, quality, episodeText, 
           fill
           sizes="(max-width: 640px) 50vw, (max-width: 1024px) 25vw, 15vw"
           className="object-cover transition-transform duration-500 md:group-hover:scale-105"
-          unoptimized={!posterUrl?.includes('tmdb.org')}
+          unoptimized={!posterUrl?.match(/amazon\.com|fanart\.tv|unsplash\.com|tmdb\.org/i)}
           priority={false}
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 md:group-hover:opacity-100 transition-opacity duration-300" />
