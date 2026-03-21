@@ -1,28 +1,33 @@
 "use client";
 
-import { useEffect, Suspense } from 'react';
+import { useEffect, useRef, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { db } from '@/lib/firebase';
 import { doc, updateDoc } from 'firebase/firestore';
-import { useAniList } from '@/hooks/useAniList';
-import { useTrakt } from '@/hooks/useTrakt';
 
 function CallbackHandlerInner() {
     const searchParams = useSearchParams();
     const router = useRouter();
     const { user } = useAuth();
+    const isProcessing = useRef(false);
     
     useEffect(() => {
         const code = searchParams.get('code');
         const state = searchParams.get('state');
         
-        if (!code || !state || !user) return;
+        if (!code || !state || !user || isProcessing.current) return;
         
         const processCallback = async () => {
+            isProcessing.current = true;
+            console.log("Processing Auth Callback:", { state });
+
             if (state.startsWith('anilist:')) {
                 const userIdInState = state.replace('anilist:', '');
-                if (userIdInState !== user.uid) return;
+                if (userIdInState !== user.uid) {
+                    console.error("User mismatch in AniList state");
+                    return;
+                }
                 
                 try {
                     const res = await fetch("/api/auth/anilist/exchange", {
@@ -39,21 +44,33 @@ function CallbackHandlerInner() {
                             anilist_expires_at: Date.now() + (data.expires_in * 1000),
                             anilist_connected_at: Date.now()
                         });
-                        // Clean URL but stay on page
-                        router.replace('/truyen');
+                        console.log("AniList Connected Successfully");
+                        router.replace(window.location.pathname);
+                    } else {
+                        console.error("AniList Exchange Error:", data.error);
                     }
-                } catch (err) {}
+                } catch (err) {
+                    console.error("AniList Exchange Failure:", err);
+                }
             } else if (state.startsWith('trakt:')) {
                 const userIdInState = state.replace('trakt:', '');
-                if (userIdInState !== user.uid) return;
+                if (userIdInState !== user.uid) {
+                    console.error("User mismatch in Trakt state");
+                    return;
+                }
                 
-                // Trakt callback (handled via API route usually, but here we can hit the API route manually)
                 try {
                      const res = await fetch(`/api/auth/trakt/callback?code=${code}&state=${user.uid}`);
+                     const data = await res.json().catch(() => ({}));
                      if (res.ok) {
-                         router.replace('/truyen');
+                         console.log("Trakt Connected Successfully");
+                         router.replace(window.location.pathname);
+                     } else {
+                         console.error("Trakt Callback Error");
                      }
-                } catch (err) {}
+                } catch (err) {
+                    console.error("Trakt Callback Failure:", err);
+                }
             }
         };
         

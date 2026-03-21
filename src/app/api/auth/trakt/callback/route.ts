@@ -33,10 +33,20 @@ export async function GET(req: NextRequest) {
     const userId = state.startsWith('trakt:') ? state.replace('trakt:', '') : state;
     await saveTraktTokens(userId, enrichedTokens);
 
-    // 4. Redirect back to settings page
+    // 4. Handle Response based on request type
+    const isJsonRequest = req.headers.get("accept")?.includes("application/json") || searchParams.has("json");
+    if (isJsonRequest) {
+        return NextResponse.json({ success: true, username: enrichedTokens.username });
+    }
+
+    // Default: Redirect back to settings page
     return NextResponse.redirect(new URL("/settings", req.url));
-  } catch (error) {
+  } catch (error: any) {
     console.error("Trakt OAuth Error:", error);
+    const isJsonRequest = req.headers.get("accept")?.includes("application/json") || searchParams.has("json");
+    if (isJsonRequest) {
+        return NextResponse.json({ error: error.message || "Trakt OAuth Error" }, { status: 500 });
+    }
     return NextResponse.redirect(new URL("/settings?error=trakt", req.url));
   }
 }
