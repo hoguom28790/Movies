@@ -17,8 +17,15 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   return { title: `Đọc Chương ${chapter} - Hồ Truyện` };
 }
 
-export default async function ComicReadingPage({ params }: { params: Promise<{ slug: string, chapter: string }> }) {
+export default async function ComicReadingPage({ 
+  params,
+  searchParams
+}: { 
+  params: Promise<{ slug: string, chapter: string }>;
+  searchParams: Promise<{ server?: string }>;
+}) {
   const { slug, chapter } = await params;
+  const sParams = await searchParams;
   
   // Fetch comic info to get the chapter_api_data URL 
   const res = await fetch(`https://otruyenapi.com/v1/api/truyen-tranh/${slug}`);
@@ -31,7 +38,13 @@ export default async function ComicReadingPage({ params }: { params: Promise<{ s
   const domain_cdn = data.data.APP_DOMAIN_CDN_IMAGE || "https://otruyenapi.com/uploads/comics";
   const poster = `${domain_cdn}/${item.thumb_url}`;
 
-  const chaptersParams = item.chapters[0].server_data || [];
+  // Process servers
+  const availableServers = item.chapters.map((c: any) => c.server_name);
+  const requestedServer = sParams.server;
+  const activeServerInfo = item.chapters.find((c: any) => c.server_name === requestedServer) || item.chapters[0];
+  const activeServerName = activeServerInfo.server_name;
+  
+  const chaptersParams = activeServerInfo.server_data || [];
   
   // Find current chapter info
   const currentChapterInfo = chaptersParams.find((c: any) => c.chapter_name === chapter);
@@ -55,6 +68,8 @@ export default async function ComicReadingPage({ params }: { params: Promise<{ s
       chapter={chapter}
       images={images}
       chaptersList={chaptersParams.map((c: any) => c.chapter_name)}
+      servers={availableServers}
+      currentServer={activeServerName}
     />
   );
 }

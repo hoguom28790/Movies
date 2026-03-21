@@ -9,18 +9,24 @@ import { Swiper, SwiperSlide } from "swiper/react";
 import type { Swiper as SwiperType } from "swiper";
 import "swiper/css";
 
+import { useRouter, useSearchParams } from "next/navigation";
+
 type ReadingMode = "vertical" | "horizontal";
 type ImageFit = "width" | "height" | "original";
 
-export function ComicReader({ slug, title, posterUrl, chapter, images, chaptersList }: {
+export function ComicReader({ slug, title, posterUrl, chapter, images, chaptersList, servers, currentServer }: {
   slug: string;
   title: string;
   posterUrl: string;
   chapter: string;
   images: string[];
   chaptersList: string[]; // Order depends on API, ascending or descending
+  servers: string[];
+  currentServer: string;
 }) {
   const { user } = useAuth();
+  const router = useRouter();
+  const searchParams = useSearchParams();
   
   // Settings State
   const [readingMode, setReadingMode] = useState<ReadingMode>("vertical");
@@ -182,9 +188,21 @@ export function ComicReader({ slug, title, posterUrl, chapter, images, chaptersL
           </Link>
 
           <div className="flex items-center gap-2 sm:gap-4 relative">
-            <span className="text-[11px] sm:text-xs font-semibold px-2.5 py-1 rounded-md bg-white/10 text-white/80 hidden sm:block">
-              Ch. {chapter}
-            </span>
+            <div className="hidden sm:flex items-center gap-1.5 mr-2">
+               <Link href={prevChapter ? `/doc/${slug}/${prevChapter}?server=${currentServer}` : "#"} className={!prevChapter ? "pointer-events-none opacity-30" : ""}>
+                 <button className="p-1.5 text-white/50 hover:text-white transition-colors bg-white/5 rounded-md hover:bg-white/10" disabled={!prevChapter}>
+                   <ChevronLeft className="w-4 h-4" />
+                 </button>
+               </Link>
+               <span className="text-[11px] sm:text-xs font-semibold px-2.5 py-1 rounded-md bg-white/10 text-white/80">
+                 Ch. {chapter}
+               </span>
+               <Link href={nextChapter ? `/doc/${slug}/${nextChapter}?server=${currentServer}` : "#"} className={!nextChapter ? "pointer-events-none opacity-30" : ""}>
+                 <button className="p-1.5 text-white/50 hover:text-white transition-colors bg-white/5 rounded-md hover:bg-white/10" disabled={!nextChapter}>
+                   <ChevronRight className="w-4 h-4" />
+                 </button>
+               </Link>
+            </div>
             <button 
               onClick={toggleFullscreen}
               className="p-2 text-white/60 hover:text-white transition-colors"
@@ -230,6 +248,26 @@ export function ComicReader({ slug, title, posterUrl, chapter, images, chaptersL
                     </button>
                   </div>
                 </div>
+
+                {servers.length > 1 && (
+                  <div>
+                    <h3 className="text-[11px] uppercase tracking-widest font-bold text-white/30 mb-2">Nguồn Truyện (Server)</h3>
+                    <div className="flex flex-col gap-1">
+                      {servers.map((srv) => (
+                        <button 
+                          key={srv}
+                          onClick={() => {
+                            router.push(`/doc/${slug}/${chapter}?server=${srv}`);
+                            setShowSettings(false);
+                          }} 
+                          className={`flex items-center justify-between px-3 py-2 rounded-lg text-[13px] font-medium transition-colors ${currentServer === srv ? "bg-primary/20 text-primary" : "text-white/70 hover:bg-white/5"}`}
+                        >
+                          {srv} {currentServer === srv && <Check className="w-4 h-4" />}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
             )}
           </div>
@@ -256,7 +294,7 @@ export function ComicReader({ slug, title, posterUrl, chapter, images, chaptersL
           {/* End of chapter controls */}
           <div className="w-full mt-10 p-6 flex flex-col items-center justify-center gap-4 border-t border-white/[0.06] pb-24">
              {nextChapter ? (
-               <Link href={`/doc/${slug}/${nextChapter}`}>
+               <Link href={`/doc/${slug}/${nextChapter}?server=${currentServer}`}>
                   <button className="px-8 py-3 rounded-xl bg-primary hover:bg-primary-hover text-white text-[15px] font-bold transition-all shadow-lg shadow-primary/20 hover:scale-105 active:scale-95">
                     Chương Phía Sau
                   </button>
@@ -313,7 +351,7 @@ export function ComicReader({ slug, title, posterUrl, chapter, images, chaptersL
           {currentPage === images.length && (
             <div className="absolute right-4 top-1/2 -translate-y-1/2 z-20 animate-in slide-in-from-right-10 fade-in">
                {nextChapter ? (
-                 <Link href={`/doc/${slug}/${nextChapter}`}>
+                 <Link href={`/doc/${slug}/${nextChapter}?server=${currentServer}`}>
                     <button className="flex items-center gap-2 px-6 py-3 rounded-l-full bg-primary hover:bg-primary-hover text-white text-[14px] font-bold transition-all shadow-xl shadow-primary/30">
                       Chương Tiếp <ChevronRight className="w-5 h-5" />
                     </button>
@@ -345,7 +383,7 @@ export function ComicReader({ slug, title, posterUrl, chapter, images, chaptersL
            </Link>
 
            <div className="flex items-center gap-1 sm:gap-5">
-             <Link href={prevChapter ? `/doc/${slug}/${prevChapter}` : "#"} className={!prevChapter ? "pointer-events-none opacity-30" : ""}>
+             <Link href={prevChapter ? `/doc/${slug}/${prevChapter}?server=${currentServer}` : "#"} className={!prevChapter ? "pointer-events-none opacity-30" : ""}>
                <button className="p-2 text-white/80 hover:text-white transition-colors bg-white/5 rounded-full" disabled={!prevChapter}>
                  <ChevronLeft className="w-5 h-5" />
                </button>
@@ -357,7 +395,7 @@ export function ComicReader({ slug, title, posterUrl, chapter, images, chaptersL
                <span className="text-[13px] font-medium text-white/50">{images.length}</span>
              </div>
 
-             <Link href={nextChapter ? `/doc/${slug}/${nextChapter}` : "#"} className={!nextChapter ? "pointer-events-none opacity-30" : ""}>
+             <Link href={nextChapter ? `/doc/${slug}/${nextChapter}?server=${currentServer}` : "#"} className={!nextChapter ? "pointer-events-none opacity-30" : ""}>
                <button className="p-2 text-white/80 hover:text-white transition-colors bg-white/5 rounded-full" disabled={!nextChapter}>
                  <ChevronRight className="w-5 h-5" />
                </button>
