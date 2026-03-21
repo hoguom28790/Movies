@@ -45,8 +45,11 @@ export function HeroSlider({ movies }: HeroSliderProps) {
             src={movie.thumbUrl || movie.posterUrl}
             alt={movie.title}
             fill
+            sizes="100vw"
+            quality={85}
             priority={idx === 0}
             className="object-cover"
+            unoptimized={!movie.thumbUrl?.includes('tmdb.org')}
           />
         </div>
       ))}
@@ -131,10 +134,14 @@ export function HeroSlider({ movies }: HeroSliderProps) {
                 : "border-white/10 opacity-40 hover:opacity-80 grayscale hover:grayscale-0"
             }`}
           >
-            <img
+            <Image
               src={movie.thumbUrl || movie.posterUrl}
               alt={movie.title}
+              fill
+              sizes="80px"
+              quality={50}
               className="absolute inset-0 w-full h-full object-cover object-top opacity-60 scale-105"
+              unoptimized={!movie.thumbUrl?.includes('tmdb.org')}
             />
           </button>
         ))}

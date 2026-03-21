@@ -5,7 +5,8 @@ const nextConfig: NextConfig = {
     remotePatterns: [
       { protocol: "https", hostname: "**" },
     ],
-    unoptimized: true, // For movie sites with random image sources
+    formats: ['image/avif', 'image/webp'],
+    unoptimized: false, // Turned back on to allow next/image to optimize TMDB high-res pictures
   },
   cleanDistDir: true,
   output: "standalone",

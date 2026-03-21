@@ -90,21 +90,21 @@ export default async function Home() {
       {/* Phim Bộ */}
       {phimBo.items.length > 0 && (
         <section className="container mx-auto px-0">
-          <MovieRow title="Phim Bộ Đang Chiếu" movies={phimBo.items.slice(0, 20)} viewAllHref="/phim-bo" />
+          <MovieRow title="Phim Bộ Đang Chiếu" movies={await enrichMovies(phimBo.items.slice(0, 20))} viewAllHref="/phim-bo" />
         </section>
       )}
 
       {/* Phim Lẻ */}
       {phimLe.items.length > 0 && (
         <section className="container mx-auto px-0">
-          <MovieRow title="Phim Lẻ Hay Nhất" movies={phimLe.items.slice(0, 20)} viewAllHref="/phim-le" />
+          <MovieRow title="Phim Lẻ Hay Nhất" movies={await enrichMovies(phimLe.items.slice(0, 20))} viewAllHref="/phim-le" />
         </section>
       )}
 
       {/* Hoạt Hình */}
       {hoatHinh.items.length > 0 && (
         <section className="container mx-auto px-0">
-          <MovieRow title="Hoạt Hình Mới" movies={hoatHinh.items.slice(0, 20)} viewAllHref="/the-loai/hoat-hinh" />
+          <MovieRow title="Hoạt Hình Mới" movies={await enrichMovies(hoatHinh.items.slice(0, 20))} viewAllHref="/the-loai/hoat-hinh" />
         </section>
       )}
     </div>
