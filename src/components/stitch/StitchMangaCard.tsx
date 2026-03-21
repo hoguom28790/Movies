@@ -9,6 +9,7 @@ export interface StitchMangaCardProps {
     latestChapter?: string;
     tags?: string[];
     isHot?: boolean;
+    isSynced?: boolean;
     variant?: 'featured' | 'secondary' | 'gallery';
     className?: string;
 }
@@ -20,6 +21,7 @@ export function StitchMangaCard({
     latestChapter, 
     tags = [], 
     isHot = false, 
+    isSynced = false,
     variant = 'gallery',
     className = ""
 }: StitchMangaCardProps) {
@@ -39,6 +41,11 @@ export function StitchMangaCard({
                              {latestChapter && <span className="px-2 py-1 bg-on-tertiary-fixed text-white text-[9px] font-bold uppercase tracking-widest">{latestChapter}</span>}
                              {isHot && <span className="px-2 py-1 bg-primary text-white text-[9px] font-bold uppercase tracking-widest">Hot</span>}
                         </div>
+                        {isSynced && (
+                            <div className="absolute top-4 right-4 w-8 h-8 bg-[#3DB4F2]/80 backdrop-blur-md rounded-full flex items-center justify-center border border-white/20 shadow-lg shadow-[#3DB4F2]/20">
+                                <span className="material-symbols-outlined text-white text-lg">sync</span>
+                            </div>
+                        )}
                     </div>
                     <div className="flex justify-between items-start">
                         <div>
@@ -87,6 +94,11 @@ export function StitchMangaCard({
                     <div className="absolute bottom-0 left-0 w-full p-3 md:p-4 translate-y-full md:group-hover:translate-y-0 transition-transform duration-500 bg-primary/90 text-white">
                         <p className="text-[9px] md:text-[10px] font-bold uppercase tracking-widest">Đọc Ngay</p>
                     </div>
+                    {isSynced && (
+                        <div className="absolute top-2 right-2 w-6 h-6 bg-[#3DB4F2]/80 backdrop-blur-md rounded-full flex items-center justify-center border border-white/20 shadow-lg shadow-[#3DB4F2]/20">
+                            <span className="material-symbols-outlined text-white text-[12px]">sync</span>
+                        </div>
+                    )}
                 </div>
                 <h5 className="font-bold text-on-surface font-headline uppercase text-sm tracking-tight mb-1">{title}</h5>
                 <p className="text-[9px] md:text-[10px] text-on-surface-variant uppercase tracking-widest">{tags[0] || 'Manga'}</p>

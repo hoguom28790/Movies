@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
+import { useAniList } from '@/hooks/useAniList';
 
 interface StitchReaderProps {
     slug: string;
@@ -16,13 +16,19 @@ interface StitchReaderProps {
 export function StitchReader({ slug, title, chapter, images, chaptersList }: StitchReaderProps) {
     const [progress, setProgress] = useState(0);
     const [currentPage, setCurrentPage] = useState(1);
+    const { scrobble } = useAniList();
 
+    useEffect(() => {
+        if (progress > 90) {
+            scrobble(slug, title, chapter);
+        }
+    }, [progress, slug, title, chapter, scrobble]);
     useEffect(() => {
         const handleScroll = () => {
             const totalHeight = document.documentElement.scrollHeight - window.innerHeight;
             const currentScroll = window.scrollY;
-            const progress = (currentScroll / totalHeight) * 100;
-            setProgress(progress);
+            const scrollProgress = (currentScroll / totalHeight) * 100;
+            setProgress(scrollProgress);
 
             // Estimate current page
             const pageHeight = document.documentElement.scrollHeight / images.length;

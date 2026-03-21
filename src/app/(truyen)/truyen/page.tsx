@@ -1,6 +1,7 @@
 import { StitchHero } from "@/components/stitch/StitchHero";
 import { StitchMangaGrid } from "@/components/stitch/StitchMangaGrid";
 import { StitchMangaCard } from "@/components/stitch/StitchMangaCard";
+import { StitchAniListSync } from "@/components/stitch/StitchAniListSync";
 import { BookOpen } from "lucide-react";
 
 export const dynamic = "force-dynamic";
@@ -148,6 +149,13 @@ export default async function ComicHomePage({
             ))}
           </div>
         </div>
+      </section>
+
+      {/* Sync Section */}
+      <section className="py-12 px-6 lg:px-24 bg-surface-container-highest">
+          <div className="max-w-[1440px] mx-auto">
+              <StitchAniListSync />
+          </div>
       </section>
 
     </div>
