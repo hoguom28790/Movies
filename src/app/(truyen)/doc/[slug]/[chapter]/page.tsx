@@ -58,12 +58,14 @@ export default async function ComicReadingPage({
   try {
     if (activeSource === "MangaPlus") {
       // Find title on MangaPlus (search by name)
-      const mpTitle = await MangaPlusService.searchTitle(item.name);
+      // Find title on MangaPlus. One Piece Vietnamese = 8
+      const mpTitle = await MangaPlusService.searchTitle(item.name, 8);
       if (mpTitle) {
         const detail = await MangaPlusService.getTitleDetail(mpTitle.id);
         if (detail && detail.chapters.length > 0) {
           // Find matching chapter. MangaPlus names are usually "245", "1".
-          const mpChap = detail.chapters.find((c: any) => c.name === chapter || c.name === chapter.replace("Chương ", ""));
+          const cleanChap = chapter.replace("Chương ", "").trim();
+          const mpChap = detail.chapters.find((c: any) => c.name === cleanChap || c.name === chapter);
           if (mpChap) {
             images = await MangaPlusService.getPages(mpChap.id);
             // If images found, we use this source. Else fallback.

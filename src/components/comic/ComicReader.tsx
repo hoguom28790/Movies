@@ -18,13 +18,14 @@ type ImageFit = "width" | "height" | "original";
 
 const fetchChapterImages = async (source: string, slug: string, chapter: string, server?: string) => {
   if (source.toLowerCase() === "mangaplus") {
-    const mpTitle = await MangaPlusService.searchTitle(""); // We'll need item name here or pass it
-    // Actually, on client we can just use the slug or search by slug
-    const mpTitleBySlug = await MangaPlusService.searchTitle(slug.replace(/-/g, " "));
+    // Search by slug (Vietnamese-friendly)
+    const mpTitleBySlug = await MangaPlusService.searchTitle(slug.replace(/-/g, " "), 8);
     if (mpTitleBySlug) {
       const detail = await MangaPlusService.getTitleDetail(mpTitleBySlug.id);
       if (detail && detail.chapters) {
-        const targetChap = detail.chapters.find((c: any) => c.name === chapter);
+        // Clean chapter name. manga plus has "1176", otruyen might have "1176" or "Chương 1176"
+        const cleanChap = chapter.replace("Chương ", "").trim();
+        const targetChap = detail.chapters.find((c: any) => c.name === cleanChap || c.name === chapter);
         if (targetChap) {
           return await MangaPlusService.getPages(targetChap.id);
         }

@@ -131,7 +131,7 @@ export class MangaPlusService {
   /**
    * Search for a title on MangaPlus (Local filter because MangaPlus doesn't have a direct search API)
    */
-  static async searchTitle(query: string) {
+  static async searchTitle(query: string, language: number = 8) {
     const res = await fetch(`${this.PROXY_BASE}/title_list/all`);
     if (!res.ok) return null;
     
@@ -141,16 +141,35 @@ export class MangaPlusService {
     const list = this.decodeField(success[1][0], 0, success[1][0].length);
     
     const titles = list[1] || [];
+    let bestMatch = null;
+    
+    // Normalize query
+    const q = query.toLowerCase().trim();
+    const isOnePiece = q.includes("one piece") || q.includes("onepice") || q.includes("dao hai tac") || q.includes("vua hai tac");
+
     for (const titleRaw of titles) {
         const title = this.decodeField(titleRaw, 0, titleRaw.length);
         const name = title[2][0];
-        if (typeof name === 'string' && name.toLowerCase().includes(query.toLowerCase())) {
-            return {
-                id: title[1][0].toString(),
-                name: name
-            };
+        const titleLang = title[11] ? title[11][0] : -1;
+        
+        if (typeof name === 'string') {
+            const lowName = name.toLowerCase();
+            
+            // Special Case for One Piece
+            if (isOnePiece && lowName === "one piece" && titleLang === language) {
+                return { id: title[1][0].toString(), name };
+            }
+
+            if (lowName.includes(q) && (titleLang === language || language === -1)) {
+                return { id: title[1][0].toString(), name };
+            }
+            
+            // Fallback: If title matches but language is 0 (English) and we haven't found a better match
+            if (lowName.includes(q) && titleLang === 0 && !bestMatch) {
+                bestMatch = { id: title[1][0].toString(), name };
+            }
         }
     }
-    return null;
+    return bestMatch;
   }
 }
