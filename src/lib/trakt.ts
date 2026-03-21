@@ -184,6 +184,21 @@ export async function checkWatchedStatus(accessToken: string, type: TraktType, i
 }
 
 /**
+ * Get Ratings for a Content
+ */
+export async function getTraktRatings(type: TraktType, id: string | number) {
+    try {
+        const res = await fetch(`${TRAKT_API_URL}/${type === "movie" ? "movies" : "shows"}/${id}/ratings`, {
+            headers: getHeaders()
+        });
+        if (!res.ok) return null;
+        return await res.json();
+    } catch (e) {
+        return null;
+    }
+}
+
+/**
  * Get Current Trakt Profile
  */
 export async function getTraktProfile(accessToken: string) {

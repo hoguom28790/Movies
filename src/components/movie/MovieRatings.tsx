@@ -9,10 +9,11 @@ interface MovieRatingsProps {
   imdbRating?: number | null;
   rottenRating?: number | null;
   audienceScore?: number | null;
+  traktRating?: number | null;
   className?: string;
 }
 
-export function MovieRatings({ tmdbRating, imdbId, imdbRating, rottenRating, audienceScore, className = "" }: MovieRatingsProps) {
+export function MovieRatings({ tmdbRating, imdbId, imdbRating, rottenRating, audienceScore, traktRating, className = "" }: MovieRatingsProps) {
   if (!tmdbRating && !imdbRating) return null;
 
   const imdbScore = imdbRating ? imdbRating.toFixed(1) : (tmdbRating ? tmdbRating.toFixed(1) : "N/A");
@@ -55,6 +56,19 @@ export function MovieRatings({ tmdbRating, imdbId, imdbRating, rottenRating, aud
           <span className="text-[10px] text-white/30 uppercase tracking-tighter mt-1 font-bold">Audience</span>
         </div>
       </div>
+
+      {/* Trakt Rating */}
+      {traktRating && (
+        <div className="flex items-center gap-2 group transition-transform hover:scale-105">
+          <div className="flex items-center justify-center w-8 h-8 rounded bg-[#ed1c24] text-white shadow-lg shadow-[#ed1c24]/20 font-black text-[10px]">
+            T
+          </div>
+          <div className="flex flex-col text-left">
+            <span className="text-white font-black text-sm leading-none">{Math.round(traktRating * 10)}%</span>
+            <span className="text-[10px] text-white/30 uppercase tracking-tighter mt-1 font-bold">Trakt</span>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

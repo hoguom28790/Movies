@@ -3,6 +3,7 @@
 import React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { TOPXX_PATH } from "@/lib/constants";
 
 const columns = [
   {
@@ -109,6 +110,13 @@ export function Footer() {
             </Link>
             <Link href={isComicSection ? "/truyen/yeu-thich" : "/yeu-thich"} className="text-[12px] text-white/30 hover:text-white transition-colors">
               Yêu Thích
+            </Link>
+            <Link 
+              href={`/${TOPXX_PATH}`}
+              className="w-1 h-1 bg-transparent text-transparent cursor-default select-none opacity-0"
+              aria-hidden="true"
+            >
+              TopXX
             </Link>
           </div>
         </div>

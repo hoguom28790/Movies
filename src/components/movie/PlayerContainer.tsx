@@ -5,6 +5,12 @@ import { useTheme } from "@/contexts/ThemeContext";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
 import { useDevice } from "@/contexts/DeviceContext";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { SkipForward, X } from "lucide-react";
+import { Button } from "@/components/ui/Button";
+import { getCombinedSkipTimes, SkipTime } from "@/services/skipService";
+import { getUserSettings, saveUserSettings } from "@/services/db";
+import { motion, AnimatePresence } from "framer-motion";
 
 interface PlayerContainerProps {
   url: string;
@@ -23,9 +29,29 @@ export function PlayerContainer({ url, isHls, rawEmbedUrl, nextEpisodeUrl, movie
   const router = useRouter();
   const { user } = useAuth();
   const { isIOS } = useDevice();
+  const queryClient = useQueryClient();
   
   const [isPseudoFS, setIsPseudoFS] = useState(false);
   const [isPortrait, setIsPortrait] = useState(false);
+  const [currentTime, setCurrentTime] = useState(0);
+  const [skipShow, setSkipShow] = useState<SkipTime | null>(null);
+  const [isAnime, setIsAnime] = useState(false);
+  const [malId, setMalId] = useState<number | null>(null);
+  const [toast, setToast] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (toast) {
+      const timer = setTimeout(() => setToast(null), 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [toast]);
+
+  useEffect(() => {
+    // Detect if anime from title or genres
+    if (movieTitle?.toLowerCase().includes("anime") || movieTitle?.toLowerCase().includes("hoạt hình")) {
+      setIsAnime(true);
+    }
+  }, [movieTitle]);
 
   useEffect(() => {
     const handleResize = () => setIsPortrait(window.innerHeight > window.innerWidth);
@@ -57,6 +83,16 @@ export function PlayerContainer({ url, isHls, rawEmbedUrl, nextEpisodeUrl, movie
           if (match) {
             setTraktMatch(match);
             console.log("Trakt Match Found:", match.title);
+
+            // If Anime, resolve MAL ID using Malsync API
+            if (isAnime && match.ids?.tmdb) {
+              fetch(`https://api.malsync.moe/mal/anime/tmdb/${match.ids.tmdb}`)
+                .then(r => r.json())
+                .then(data => {
+                  if (data?.id) setMalId(data.id);
+                })
+                .catch(() => {});
+            }
           }
         }
       } catch (e) {
@@ -131,9 +167,10 @@ export function PlayerContainer({ url, isHls, rawEmbedUrl, nextEpisodeUrl, movie
 
       // Handle continuous progress updates
       if (event.data.type === 'UPDATE_PROGRESS' && user && movieSlug) {
-        const currentTime = event.data.time;
+        const time = event.data.time;
+        setCurrentTime(time);
         const duration = event.data.duration;
-        const percent = duration > 0 ? (currentTime / duration) * 100 : 0;
+        const percent = duration > 0 ? (time / duration) * 100 : 0;
         const now = Date.now();
 
         // Trakt Start: Triggers at 1% or when resumed from pause
@@ -185,6 +222,76 @@ export function PlayerContainer({ url, isHls, rawEmbedUrl, nextEpisodeUrl, movie
     return () => window.removeEventListener('message', handleMessage);
   }, [nextEpisodeUrl, router, user, movieSlug, episodeSlug, movieTitle, episodeName, posterUrl, traktMatch]);
 
+  // --- Skip Intro Data Fetching ---
+  const seasonNum = 1; // Default
+  const episodeNum = parseInt(episodeSlug?.replace(/\D/g, "") || "1");
+
+  const { data: skipTimes } = useQuery({
+    queryKey: ["skip-intro", traktMatch?.ids?.tmdb, malId, episodeNum],
+    queryFn: async () => {
+      return getCombinedSkipTimes({
+        tmdbId: traktMatch?.ids?.tmdb,
+        malId: malId || undefined,
+        season: seasonNum,
+        episode: episodeNum,
+        isAnime
+      });
+    },
+    enabled: !!traktMatch?.ids?.tmdb,
+    staleTime: 1000 * 60 * 60 * 24, // Cache for 1 day
+  });
+
+  const { data: userSettings } = useQuery({
+    queryKey: ["user-settings", user?.uid],
+    queryFn: () => (user ? getUserSettings(user.uid) : null),
+    enabled: !!user,
+  });
+
+  const autoSkipMutation = useMutation({
+    mutationFn: (autoSkip: boolean) => 
+      user ? saveUserSettings(user.uid, { autoSkipIntro: autoSkip }) : Promise.resolve(),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["user-settings", user?.uid] });
+    }
+  });
+
+  // --- Skip Logic & Auto-skip ---
+  useEffect(() => {
+    if (!skipTimes || skipTimes.length === 0) return;
+    
+    const currentSkip = skipTimes.find(s => currentTime >= s.startTime && currentTime <= s.endTime);
+    
+    if (currentSkip) {
+      if (userSettings?.autoSkipIntro) {
+        handleSeek(currentSkip.endTime + 0.5);
+      } else {
+        setSkipShow(currentSkip);
+      }
+    } else {
+      setSkipShow(null);
+    }
+  }, [currentTime, skipTimes, userSettings?.autoSkipIntro]);
+
+  const handleSeek = (time: number) => {
+    const iframeRef = document.getElementById('main-player') as HTMLIFrameElement;
+    if (iframeRef && iframeRef.contentWindow) {
+      iframeRef.contentWindow.postMessage({ type: 'SEEK', time }, '*');
+      setSkipShow(null);
+      setToast("Đã bỏ qua phần mở đầu ⏩");
+    }
+  };
+
+  // Keyboard Shortcut 'S' listener
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if (e.key.toLowerCase() === 's' && skipShow) {
+        handleSeek(skipShow.endTime + 0.5);
+      }
+    };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, [skipShow]);
+
   useEffect(() => {
     if (isPseudoFS) {
       document.body.style.overflow = "hidden";
@@ -214,6 +321,51 @@ export function PlayerContainer({ url, isHls, rawEmbedUrl, nextEpisodeUrl, movie
         className="w-full h-full border-0 absolute inset-0 rounded-[var(--radius)]"
         allowFullScreen
       />
+
+      {/* Skip Intro Overlay */}
+      <AnimatePresence>
+        {skipShow && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.9, y: 20 }}
+            className="absolute bottom-16 right-6 z-[100] flex flex-col gap-2 pointer-events-auto"
+          >
+            <Button
+              onClick={() => handleSeek(skipShow.endTime + 0.5)}
+              className="bg-primary/90 backdrop-blur-md text-white border border-primary/20 shadow-2xl px-6 py-6 h-12 gap-3 hover:scale-105 transition-all text-sm font-bold tracking-wide uppercase"
+            >
+              <SkipForward className="w-5 h-5 fill-current" />
+              Bỏ qua phần mở đầu
+            </Button>
+            
+            <div className="flex items-center justify-between px-2">
+              <label className="flex items-center gap-2 cursor-pointer group">
+                <input
+                  type="checkbox"
+                  checked={!!userSettings?.autoSkipIntro}
+                  onChange={(e) => autoSkipMutation.mutate(e.target.checked)}
+                  className="w-4 h-4 rounded border-white/20 bg-black/40 text-primary focus:ring-primary accent-primary"
+                />
+                <span className="text-[11px] font-bold text-white/50 group-hover:text-white transition-colors uppercase tracking-widest">Tự động bỏ qua</span>
+              </label>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {toast && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9, y: -20, x: "-50%" }}
+            animate={{ opacity: 1, scale: 1, y: 0, x: "-50%" }}
+            exit={{ opacity: 0, scale: 0.9, y: -20, x: "-50%" }}
+            className="absolute top-20 left-1/2 z-[200] bg-white/10 backdrop-blur-xl border border-white/10 text-white px-6 py-3 rounded-full shadow-2xl font-bold text-sm tracking-wide pointer-events-none"
+          >
+            {toast}
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

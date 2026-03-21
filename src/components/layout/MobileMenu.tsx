@@ -7,7 +7,7 @@ import { usePathname } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
 import { getLunarAuthPass } from "@/lib/lunar";
  
-const GENRES = [
+const GENRES: { name: string; slug?: string; href?: string }[] = [
   { name: "Hành Động", slug: "hanh-dong" },
   { name: "Viễn Tưởng", slug: "vien-tuong" },
   { name: "Kinh Dị", slug: "kinh-di" },
@@ -17,7 +17,6 @@ const GENRES = [
   { name: "Hoạt Hình", slug: "hoat-hinh" },
   { name: "Cổ Trang", slug: "co-trang" },
   { name: "Phim 18+", slug: "phim-18" },
-  { name: "TopXX 🎬", href: "/v2k9r5w8m3x7n1p4q0z6" },
 ];
  
 const COUNTRIES = [

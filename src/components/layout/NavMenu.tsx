@@ -79,7 +79,6 @@ const directLinks = [
   { label: "Phim Bộ", href: "/phim-bo" },
   { label: "Hoạt Hình", href: "/hoat-hinh" },
   { label: "TV Shows", href: "/tv-shows" },
-  { label: "TopXX", href: `/${TOPXX_PATH}` },
 ];
 
 interface NavMenuProps {

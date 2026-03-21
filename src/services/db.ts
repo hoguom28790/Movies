@@ -158,6 +158,26 @@ export async function disconnectTrakt(userId: string) {
   await setDoc(docRef, { trakt: null }, { merge: true });
 }
 
+// ================= USER SETTINGS =================
+export interface UserSettings {
+  autoSkipIntro?: boolean;
+  theme?: "phim" | "truyen" | "topxx";
+}
+
+export async function saveUserSettings(userId: string, settings: Partial<UserSettings>) {
+  const docRef = doc(db, "users", userId);
+  await setDoc(docRef, { settings }, { merge: true });
+}
+
+export async function getUserSettings(userId: string): Promise<UserSettings | null> {
+  const docRef = doc(db, "users", userId);
+  const snap = await getDoc(docRef);
+  if (snap.exists()) {
+    return snap.data()?.settings || null;
+  }
+  return null;
+}
+
 // ================= FAVORITE ACTORS =================
 export async function toggleFavoriteActor(userId: string, actor: { id: number; name: string; profilePath: string | null }) {
   const docId = `${userId}_${actor.id}`;

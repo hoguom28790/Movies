@@ -136,10 +136,23 @@ export default async function MovieDetailsPage({ params }: { params: Promise<{ s
       }
     }
     
+    // Extended Ratings fetching (Trakt, RT, IMDb, TMDB)
     const { getIMDbRating } = await import("@/services/imdb");
-    const [realImdbRating] = await Promise.all([
+    const { matchTraktContent, getTraktRatings } = await import("@/lib/trakt");
+    const { getRTRating } = await import("@/services/rottenTomatoes");
+
+    const traktType: any = mediaType === "tv" ? "show" : "movie";
+
+    const [realImdbRating, traktMatch, rtData] = await Promise.all([
       imdbId ? getIMDbRating(imdbId).catch(() => null) : Promise.resolve(null),
+      matchTraktContent(safeData.name, parseInt(safeData.year.toString()), traktType).catch(() => null),
+      imdbId ? getRTRating(imdbId).catch(() => null) : Promise.resolve(null),
     ]);
+
+    let traktRatings = null;
+    if (traktMatch?.ids?.trakt) {
+      traktRatings = await getTraktRatings(traktType, traktMatch.ids.trakt).catch(() => null);
+    }
     
     const tmdbPoster = tmdbData?.poster_path ? getTMDBImageUrl(tmdbData.poster_path, 'w780') : null;
     const tmdbThumb = tmdbData?.backdrop_path ? getTMDBImageUrl(tmdbData.backdrop_path, 'w1280') : null;
@@ -277,28 +290,15 @@ export default async function MovieDetailsPage({ params }: { params: Promise<{ s
                 )}
               </div>
  
-              <div className="mt-6 grid grid-cols-2 gap-2">
-                {imdbId && (
-                  <a 
-                    href={`https://www.imdb.com/title/${imdbId}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="p-3 rounded-xl bg-white/[0.03] border border-white/[0.06] hover:border-yellow-500/40 hover:bg-white/[0.05] transition-all flex flex-col gap-1.5 group/card"
-                  >
-                    <span className="text-[10px] font-black text-yellow-500 uppercase tracking-wider">IMDB</span>
-                    <p className="text-[13px] font-bold text-white mt-0.5 group-hover/card:text-yellow-500 transition-colors">
-                      {realImdbRating || safeData.imdb?.vote_average || "0.0"}{" "}
-                      <span className="text-[10px] text-white/30 font-normal">/ 10</span>
-                    </p>
-                  </a>
-                )}
-                <div className="p-3 rounded-xl bg-white/[0.03] border border-white/[0.06] flex flex-col gap-1.5">
-                  <span className="text-[10px] font-black text-primary uppercase tracking-wider">TMDB</span>
-                  <p className="text-[13px] font-bold text-white mt-0.5">
-                    {tmdbData?.vote_average?.toFixed(1) || safeData.tmdb?.vote_average || "0.0"} <span className="text-[10px] text-white/30 font-normal">/ 10</span>
-                  </p>
-                </div>
-              </div>
+              <MovieRatings 
+                tmdbRating={tmdbData?.vote_average || safeData.tmdb?.vote_average}
+                imdbId={imdbId}
+                imdbRating={realImdbRating || safeData.imdb?.vote_average}
+                rottenRating={rtData?.criticScore}
+                audienceScore={rtData?.audienceScore}
+                traktRating={traktRatings?.rating}
+                className="mt-6"
+              />
  
               <div className="mt-5">
                 <h3 className="text-[13px] font-semibold text-white/60 mb-2">Giới thiệu:</h3>
