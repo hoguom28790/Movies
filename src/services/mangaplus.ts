@@ -6,7 +6,7 @@
 // Added MangaPlus (official Shueisha) as third source for high-quality official manga
 
 export class MangaPlusService {
-  private static PROXY_BASE = "/api/mangaplus";
+  private static PROXY_BASE = typeof window !== 'undefined' ? "/api/mangaplus" : "https://jumpg-webapi.tokyo-cdn.com/api";
 
   /**
    * Decodes a length-delimited field (Type 2) recursively or as string/buffer

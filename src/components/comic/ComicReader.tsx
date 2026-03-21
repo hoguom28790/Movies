@@ -423,7 +423,27 @@ export function ComicReader({ slug, title, posterUrl, chapter, images: initialIm
       </div>
 
       {/* Reader Images Container */}
-      {readingMode === "vertical" ? (
+      {images.length === 0 ? (
+        <div className="w-full h-screen flex flex-col items-center justify-center bg-[#050505] text-center px-4">
+          <div className="w-20 h-20 mb-6 bg-white/5 rounded-full flex items-center justify-center text-white/20">
+            <Check className="w-8 h-8 opacity-0" />
+            <ListMenu className="w-8 h-8 absolute" />
+          </div>
+          <h2 className="text-xl font-bold text-white/80 mb-2">Không tìm thấy truyện</h2>
+          <p className="text-white/40 max-w-sm mb-8 text-[13px]">
+            Nguồn <span className="text-primary uppercase font-bold">{selectedSource}</span> hiện chưa có dữ liệu cho truyện hoặc chương này. Vui lòng thử chuyển sang nguồn khác (ví dụ: OTruyen).
+          </p>
+          <button 
+            onClick={() => {
+               setSelectedSource("OTruyen");
+               router.push(`/doc/${slug}/${chapter}?server=${currentServer}&source=OTruyen`);
+            }}
+            className="px-6 py-3 rounded-xl bg-primary text-white font-bold text-[14px] shadow-lg shadow-primary/20 hover:scale-105 transition-all"
+          >
+            Trở về OTruyen
+          </button>
+        </div>
+      ) : readingMode === "vertical" ? (
         <div 
           ref={containerRef}
           className="w-full mx-auto pt-14 pb-24 min-h-screen flex flex-col items-center bg-[#050505] overflow-x-hidden"

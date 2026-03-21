@@ -84,8 +84,8 @@ export default async function ComicReadingPage({
     console.error("MangaPlus fetch failed:", error);
   }
 
-  // Final Fallback to OTruyen if no images yet
-  if (images.length === 0) {
+  // Fetch from OTruyen ONLY IF activeSource is OTruyen
+  if (activeSource === "OTruyen") {
     const activeServerInfo = item.chapters.find((c: any) => c.server_name === activeServerName) || item.chapters[0];
     const serverData = activeServerInfo.server_data || [];
     const currentChapterInfo = serverData.find((c: any) => c.chapter_name === chapter);
@@ -101,7 +101,7 @@ export default async function ComicReadingPage({
     }
   }
 
-  if (images.length === 0) return notFound();
+  if (images.length === 0 && activeSource === "OTruyen") return notFound();
 
   return (
     <ComicReader 
