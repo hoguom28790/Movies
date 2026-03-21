@@ -10,7 +10,7 @@ import { AuthModal } from "@/components/auth/AuthModal";
 import { InstantSearch } from "./InstantSearch";
 import { NavMenu } from "./NavMenu";
 import { MobileMenu } from "./MobileMenu";
-import { SettingsDropdown } from "./SettingsDropdown";
+import { ProfileDropdown } from "./ProfileDropdown";
 import { ComicFilters } from "@/components/comic/ComicFilters";
 
 interface NavbarProps {
@@ -71,52 +71,48 @@ export function Navbar({ mode: initialMode }: NavbarProps) {
               <InstantSearch />
             </div>
             
-            <div className="flex items-center gap-1 sm:gap-1.5">
+            <div className="flex items-center gap-1 sm:gap-2">
               <Link
-                href={isComicSection ? "/truyen/yeu-thich" : "/yeu-thich"}
-                className={`flex items-center gap-1.5 px-2 sm:px-3 py-1.5 rounded-lg transition-all text-[11px] sm:text-[12px] font-medium ${
-                  (pathname === "/yeu-thich" || pathname === "/truyen/yeu-thich") ? "bg-primary text-white shadow-lg shadow-primary/20" : "bg-white/5 text-white/50 hover:bg-white/10 hover:text-white"
-                }`}
+                href={isComicSection ? "/truyen/search" : "/search"}
+                className="p-2 text-white/50 hover:text-white hover:bg-white/10 rounded-full transition-all"
+                title="Tìm kiếm"
               >
-                <Heart className={`h-3.5 w-3.5 ${ (pathname === "/yeu-thich" || pathname === "/truyen/yeu-thich") ? "fill-current" : ""}`} />
-                <span className="hidden xs:inline">Yêu thích</span>
+                <Search className="h-5 w-5" />
               </Link>
+              
               <Link
                 href={isComicSection ? "/truyen/lich-su" : "/lich-su"}
-                className={`flex items-center gap-1.5 px-2 sm:px-3 py-1.5 rounded-lg transition-all text-[11px] sm:text-[12px] font-medium ${
-                  (pathname === "/lich-su" || pathname === "/truyen/lich-su") ? "bg-primary text-white shadow-lg shadow-primary/20" : "bg-white/5 text-white/50 hover:bg-white/10 hover:text-white"
+                className={`p-2 rounded-full transition-all ${
+                  (pathname === "/lich-su" || pathname === "/truyen/lich-su") ? "bg-primary text-white shadow-lg shadow-primary/20" : "text-white/50 hover:bg-white/10 hover:text-white"
                 }`}
+                title="Lịch sử"
               >
-                <HistoryIcon className="h-3.5 w-3.5" />
-                <span className="hidden xs:inline">Lịch sử</span>
+                <HistoryIcon className="h-5 w-5" />
               </Link>
-              {user && (
-                <SettingsDropdown />
+
+              <Link
+                href={isComicSection ? "/truyen/yeu-thich" : "/yeu-thich"}
+                className={`p-2 rounded-full transition-all ${
+                  (pathname === "/yeu-thich" || pathname === "/truyen/yeu-thich") ? "bg-primary text-white shadow-lg shadow-primary/20" : "text-white/50 hover:bg-white/10 hover:text-white"
+                }`}
+                title="Yêu thích"
+              >
+                <Heart className={`h-5 w-5 ${ (pathname === "/yeu-thich" || pathname === "/truyen/yeu-thich") ? "fill-current" : ""}`} />
+              </Link>
+
+              {user ? (
+                 <div className="ml-1 pl-1 border-l border-white/5">
+                    <ProfileDropdown />
+                 </div>
+              ) : (
+                <button
+                  onClick={() => setIsAuthOpen(true)}
+                  className="ml-2 px-5 py-2 rounded-full bg-primary hover:bg-primary-hover text-white text-[12px] font-bold transition-all shadow-lg shadow-primary/20"
+                >
+                  Đăng nhập
+                </button>
               )}
             </div>
-
-            <Link
-              href={isComicSection ? "/truyen/search" : "/search"}
-              className="lg:hidden p-2 text-white/50 hover:text-white transition-colors"
-            >
-              <Search className="h-5 w-5" />
-            </Link>
-
-            {user ? (
-              <button
-                onClick={logout}
-                className="p-2 text-white/40 hover:text-white transition-colors ml-1"
-              >
-                <LogOut className="h-4 w-4" />
-              </button>
-            ) : (
-              <button
-                onClick={() => setIsAuthOpen(true)}
-                className="ml-1 px-4 py-1.5 rounded-lg bg-primary hover:bg-primary-hover text-white text-[12px] font-semibold transition-all"
-              >
-                Đăng nhập
-              </button>
-            )}
           </div>
         </div>
       </header>
