@@ -2,7 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { Search, History, Heart } from 'lucide-react';
+import { Search, History, Heart, Film } from 'lucide-react';
 import { InstantSearch } from '../layout/InstantSearch';
 import { ProfileDropdown } from '../layout/ProfileDropdown';
 import { useAuth } from '@/contexts/AuthContext';
@@ -36,6 +36,10 @@ export function StitchNavbar() {
                 </div>
                 
                 <div className="flex items-center gap-2">
+                    <Link href="/" className="hidden sm:flex items-center gap-1.5 px-4 py-1.5 mr-2 rounded-lg bg-white/5 hover:bg-white/10 text-white/60 hover:text-white text-[11px] font-black uppercase tracking-widest transition-all border border-white/5">
+                        <Film className="w-3.5 h-3.5" /> Sang Hồ Phim
+                    </Link>
+
                     <div className="hidden lg:block w-48 xl:w-64 mr-2">
                         <InstantSearch />
                     </div>
