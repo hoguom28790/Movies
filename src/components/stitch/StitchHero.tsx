@@ -10,9 +10,11 @@ interface StitchHeroProps {
     imageUrl: string;
     slug: string;
     category?: string;
+    priority?: boolean;
+    posterColor?: string; // Added posterColor property
 }
 
-export function StitchHero({ title, description, imageUrl, slug, category = "Phát hành mới" }: StitchHeroProps) {
+export function StitchHero({ title, description, imageUrl, slug, category = "Phát hành mới", priority = true, posterColor }: StitchHeroProps) {
     // Split title for effect if possible, or just use it
     const words = title.split(' ');
     const firstWord = words[0];
@@ -27,6 +29,7 @@ export function StitchHero({ title, description, imageUrl, slug, category = "Ph�
                     fill 
                     className="object-cover opacity-60 md:opacity-100 transition-opacity duration-1000"
                     unoptimized
+                    priority={priority}
                 />
                 <div className="absolute inset-0 hero-gradient"></div>
                 <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent"></div>

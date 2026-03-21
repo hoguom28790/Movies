@@ -14,6 +14,8 @@ export interface StitchMangaCardProps {
     category?: string;
     variant?: 'vertical' | 'horizontal' | 'list';
     isSynced?: boolean;
+    posterColor?: string;
+    priority?: boolean;
 }
 
 export function StitchMangaCard({ 
@@ -24,7 +26,9 @@ export function StitchMangaCard({
     lastChapter, 
     category = "Truyện mới", 
     variant = 'vertical',
-    isSynced = false
+    isSynced = false,
+    posterColor = '#ffffff',
+    priority = false
 }: StitchMangaCardProps) {
     
     if (variant === 'list') {
@@ -59,14 +63,21 @@ export function StitchMangaCard({
             <Link 
                 href={`/truyen/${slug}`}
                 className="group relative flex flex-col bg-surface border border-outline-variant overflow-hidden p-6 editorial-shadow transition-all duration-700 hover:scale-[1.01] theme-truyen"
+                style={posterColor ? { boxShadow: `0 0 60px -20px ${posterColor}30` } : {}}
             >
-                <div className="relative aspect-[4/3] w-full mb-6 overflow-hidden">
+                <div className="relative aspect-[4/3] w-full mb-6 overflow-hidden rounded-xl">
+                     {/* Backdrop Glow */}
+                     <div 
+                        className="absolute inset-0 z-0 opacity-0 group-hover:opacity-20 blur-3xl transition-opacity duration-1000"
+                        style={{ backgroundColor: posterColor }}
+                    />
                     <Image 
                         src={imageUrl} 
                         alt={title} 
                         fill 
-                        className="object-cover transition-transform duration-1000 group-hover:scale-110"
+                        className="object-cover relative z-10 transition-transform duration-1000 group-hover:scale-110"
                         unoptimized
+                        priority={priority}
                     />
                     
                     {isSynced && (
@@ -106,7 +117,8 @@ export function StitchMangaCard({
     return (
         <Link 
             href={`/truyen/${slug}`}
-            className="group relative flex flex-col bg-surface-container overflow-hidden border border-outline-variant transition-all hover:scale-[1.02] theme-truyen editorial-shadow"
+            className="group relative flex flex-col bg-surface-container overflow-hidden border border-outline-variant transition-all hover:scale-[1.02] theme-truyen editorial-shadow rounded-2xl"
+            style={posterColor ? { boxShadow: `0 0 50px -15px ${posterColor}20` } : {}}
         >
             <div className="relative aspect-[3/4] w-full overflow-hidden">
                 <Image 
@@ -115,6 +127,7 @@ export function StitchMangaCard({
                     fill 
                     className="object-cover transition-transform duration-1000 group-hover:scale-110"
                     unoptimized
+                    priority={priority}
                 />
                 
                 {isSynced && (

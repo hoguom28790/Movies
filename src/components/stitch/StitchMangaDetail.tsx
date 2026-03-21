@@ -24,6 +24,8 @@ interface StitchMangaDetailProps {
     categories: { name: string, slug: string }[];
     chapters: Chapter[];
     activeSource: string;
+    anilistChapterImages?: string[];
+    posterColor?: string;
 }
 
 export function StitchMangaDetail({
@@ -36,7 +38,9 @@ export function StitchMangaDetail({
     description,
     categories,
     chapters,
-    activeSource
+    activeSource,
+    anilistChapterImages = [],
+    posterColor = '#ffffff'
 }: StitchMangaDetailProps) {
     const [sortOrder, setSortOrder] = useState<'newest' | 'oldest'>('newest');
 
@@ -60,13 +64,22 @@ export function StitchMangaDetail({
             {/* Hero Section */}
             <section className="flex flex-col md:grid md:grid-cols-12 gap-8 md:gap-16 items-start mb-16 md:mb-24">
                 {/* Left: Cover Image */}
-                <div className="w-full md:col-span-5 lg:col-span-4 md:sticky md:top-32">
-                    <div className="relative aspect-[3/4] overflow-hidden rounded-xl md:rounded-none shadow-2xl md:shadow-none">
+                <div className="w-full md:col-span-5 lg:col-span-4 md:sticky md:top-32 group">
+                    <div 
+                        className="relative aspect-[3/4] overflow-hidden rounded-xl md:rounded-3xl shadow-2xl transition-all duration-700 hover:scale-[1.02] border border-white/5"
+                        style={posterColor ? { boxShadow: `0 0 80px -20px ${posterColor}40` } : {}}
+                    >
+                        {/* Glow Effect */}
+                        <div 
+                            className="absolute -inset-20 z-0 opacity-20 blur-[100px] rounded-full pointer-events-none transition-opacity duration-1000 group-hover:opacity-40"
+                            style={{ backgroundColor: posterColor }}
+                        />
+                        
                         <Image 
                             src={posterUrl} 
                             alt={title} 
                             fill 
-                            className="object-cover"
+                            className="object-cover relative z-10"
                             priority
                             unoptimized
                         />
@@ -183,15 +196,15 @@ export function StitchMangaDetail({
                             className="group relative bg-surface hover:bg-surface-container-low active:bg-surface-container-highest transition-all duration-300 min-h-[160px] overflow-hidden"
                         >
                             {/* Chapter Thumbnail (Bg) */}
-                            <div className="absolute inset-0 z-0 opacity-20 group-hover:opacity-50 transition-all duration-700 bg-black">
+                            <div className="absolute inset-0 z-0 opacity-30 group-hover:opacity-60 transition-all duration-700 bg-black">
                                 <Image 
-                                    src={posterUrl} 
+                                    src={anilistChapterImages.length > 0 ? (anilistChapterImages[idx % anilistChapterImages.length]) : posterUrl} 
                                     alt={chapter.chapter_name}
                                     fill
-                                    className="object-cover scale-150 group-hover:scale-110 transition-transform duration-[4000ms] blur-[2px] group-hover:blur-0"
+                                    className="object-cover scale-150 group-hover:scale-110 transition-transform duration-[4000ms] blur-[1px] group-hover:blur-0"
                                     unoptimized
                                 />
-                                <div className="absolute inset-0 bg-gradient-to-t from-background via-background/40 to-transparent" />
+                                <div className="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-transparent" />
                             </div>
 
                             <div className="relative z-10 p-6 md:p-8 flex flex-col justify-center h-full">

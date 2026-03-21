@@ -1,11 +1,11 @@
 import { notFound } from "next/navigation";
 import { MangaPlusService } from "@/services/mangaplus";
 import { StitchMangaDetail } from "@/components/stitch/StitchMangaDetail";
-import { fetchAniList, ANILIST_QUERIES } from "@/lib/anilist";
+import { fetchAniList, ANILIST_QUERIES, getPremiumMangaInfo } from "@/lib/anilist";
 
 export const dynamic = "force-dynamic";
 
-async function fetchAniListRating(name: string, originNames: string[] = []) {
+async function fetchAniListManga(name: string, originNames: string[] = []) {
   try {
      const namesToTry = [
         name.replace(/\(.*\)/g, "").trim(),
@@ -18,16 +18,39 @@ async function fetchAniListRating(name: string, originNames: string[] = []) {
            m.averageScore && 
            (m.title.english?.toLowerCase() === search.toLowerCase() || 
             m.title.romaji?.toLowerCase() === search.toLowerCase() ||
-            m.title.native?.toLowerCase() === search.toLowerCase() ||
-            search.toLowerCase().includes(m.title.english?.toLowerCase()))
+            m.title.native?.toLowerCase() === search.toLowerCase())
         ) || data?.Page?.media?.[0];
 
-        if (media && media.averageScore) {
-           return (media.averageScore / 10).toFixed(1);
+        if (media) {
+           return {
+              rating: (media.averageScore / 10).toFixed(1),
+              posterUrl: media.coverImage?.extraLarge || media.coverImage?.large,
+              posterColor: media.coverImage?.color,
+              bannerImage: media.bannerImage || media.coverImage?.large,
+              characters: media.characters?.nodes || []
+           };
         }
      }
   } catch (err) {
     console.error("AniList Fetch Error:", err);
+  }
+  return null;
+}
+
+async function fetchMangaDexPoster(slug: string) {
+  try {
+     const title = slug.replace(/-/g, " ");
+     const res = await fetch(`https://api.mangadex.org/manga?title=${encodeURIComponent(title)}&limit=1&includes[]=cover_art`);
+     const data = await res.json();
+     const manga = data.data?.[0];
+     if (manga) {
+        const coverFileName = manga.relationships?.find((r: any) => r.type === "cover_art")?.attributes?.fileName;
+        if (coverFileName) {
+           return `https://uploads.mangadex.org/covers/${manga.id}/${coverFileName}`;
+        }
+     }
+  } catch (e) {
+     console.error("MangaDex Poster Fetch Error:", e);
   }
   return null;
 }
@@ -81,15 +104,23 @@ export default async function ComicDetailsPage({
   const item = data.data.item;
   const domain_cdn = data.data.APP_DOMAIN_CDN_IMAGE || "https://otruyenapi.com/uploads/comics";
   
-  const [anilistRating] = await Promise.all([
-     fetchAniListRating(item.name, item.origin_name || [])
+  const [anilistData] = await Promise.all([
+     getPremiumMangaInfo(item.name, item.origin_name || [])
   ]);
 
-  // Clean up trailing slashes
-  const baseUrl = domain_cdn.endsWith('/uploads/comics') ? domain_cdn : `${domain_cdn}/uploads/comics`;
-  const posterPath = item.thumb_url.startsWith('/') ? item.thumb_url : `/${item.thumb_url}`;
-  const poster = `${baseUrl}${posterPath}`;
-  
+  // Fallback to MangaDex for HQ poster if AniList fails
+  let poster = anilistData?.posterUrl;
+  if (!poster) {
+     poster = await fetchMangaDexPoster(slug);
+  }
+
+  // Final fallback to OTruyen
+  if (!poster) {
+    const baseUrl = domain_cdn.endsWith('/uploads/comics') ? domain_cdn : `${domain_cdn}/uploads/comics`;
+    const posterPath = item.thumb_url.startsWith('/') ? item.thumb_url : `/${item.thumb_url}`;
+    poster = `${baseUrl}${posterPath}`;
+  }
+
   // Multi-source chapter logic
   let chapters: any[] = item.chapters?.[0]?.server_data || [];
   
@@ -115,14 +146,16 @@ export default async function ComicDetailsPage({
     <StitchMangaDetail 
         title={item.name}
         slug={slug}
-        posterUrl={poster}
+        posterUrl={poster || ""}
         author={item.author?.[0] || 'Chưa rõ'}
         status={item.status === 'ongoing' ? 'Ongoing' : 'Completed'}
-        rating={anilistRating || (((item.name.length * 7) % 5) / 10 + 4.5).toFixed(1)}
+        rating={anilistData?.rating || (((item.name.length * 7) % 5) / 10 + 4.5).toFixed(1)}
         description={item.content || "Truyện chưa có mô tả..."}
         categories={item.category?.map((c: any) => ({ name: c.name, slug: c.slug })) || []}
         chapters={chapters}
         activeSource={activeSource.toLowerCase()}
+        anilistChapterImages={(anilistData?.characters || []).map((c: any) => c.image?.large).filter(Boolean)}
+        posterColor={anilistData?.posterColor}
     />
   );
 }

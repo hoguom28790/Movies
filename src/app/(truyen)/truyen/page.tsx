@@ -4,6 +4,7 @@ import { StitchMangaCard } from "@/components/stitch/StitchMangaCard";
 import { StitchAniListSync } from "@/components/stitch/StitchAniListSync";
 import { SyncCallbackHandler } from "@/components/auth/SyncCallbackHandler";
 import { BookOpen } from "lucide-react";
+import { getPremiumMangaInfo } from "@/lib/anilist";
 
 export const dynamic = "force-dynamic";
 export const metadata = {
@@ -96,20 +97,29 @@ export default async function ComicHomePage({
   // Default Home Page View
   const heroComic = hotComics[0];
   const featuredComic = newComics[0];
+  
+  // Fetch HQ info for Hero and Featured
+  const [heroHq, featuredHq] = await Promise.all([
+     heroComic ? getPremiumMangaInfo(heroComic.name) : Promise.resolve(null),
+     featuredComic ? getPremiumMangaInfo(featuredComic.name) : Promise.resolve(null)
+  ]);
+
   const secondaryComics = newComics.slice(1, 3);
   const trendComics = newComics.slice(3, 11);
 
   return (
-    <div className="flex flex-col gap-0 pb-20 theme-truyen bg-background overflow-x-hidden">
+    <div className="flex flex-col gap-0 pb-20 theme-truyen bg-background overflow-x-hidden text-on-background">
       <SyncCallbackHandler />
       {/* Editorial Hero */}
       {heroComic && (
         <StitchHero 
            title={heroComic.name}
-           description="Một câu chuyện đầy kịch tính và chiều sâu, đưa người đọc vào thế giới của những bí ẩn chưa có lời giải và những cảm xúc mãnh liệt nhất."
-           imageUrl={`${hotCdn}/uploads/comics/${heroComic.thumb_url}`}
+           description="Khám phá siêu phẩm đang thịnh hành nhất trên Hồ Truyện, với cốt truyện lôi cuốn và hình ảnh sắc nét chuẩn 4K cho trải nghiệm máy chiếu tốt nhất."
+           imageUrl={heroHq?.posterUrl || `${hotCdn}/uploads/comics/${heroComic.thumb_url}`}
            slug={heroComic.slug}
            category="Nổi bật"
+           posterColor={heroHq?.posterColor}
+           priority={true}
         />
       )}
 
@@ -120,10 +130,12 @@ export default async function ComicHomePage({
           featuredComic={{
             title: featuredComic.name,
             slug: featuredComic.slug,
-            imageUrl: `${domain_cdn}/uploads/comics/${featuredComic.thumb_url}`,
+            imageUrl: featuredHq?.posterUrl || `${domain_cdn}/uploads/comics/${featuredComic.thumb_url}`,
             lastChapter: featuredComic.chaptersLatest?.[0]?.chapter_name ? `Ch. ${featuredComic.chaptersLatest[0].chapter_name}` : "",
             category: featuredComic.category?.[0]?.name || "Manga",
-            description: "Khám phá siêu phẩm mới nhất được cập nhật trên Hồ Truyện, câu chuyện hứa hẹn sẽ đưa bạn đi từ bất ngờ này đến bất ngờ khác."
+            description: "Khám phá siêu phẩm mới nhất được cập nhật, tối ưu hóa hiển thị cho màn hình lớn.",
+            posterColor: featuredHq?.posterColor,
+            priority: true
           }}
           secondaryComics={secondaryComics.map((c: any) => ({
             title: c.name,

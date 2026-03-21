@@ -15,9 +15,21 @@ export const ANILIST_QUERIES = {
           status
           description
           coverImage {
+            extraLarge
             large
+            color
           }
           averageScore
+          characters(sort: ROLE, perPage: 10) {
+            nodes {
+              image {
+                large
+              }
+              name {
+                full
+              }
+            }
+          }
         }
       }
     }
@@ -85,12 +97,44 @@ export async function fetchAniList(query: string, variables: any, token?: string
       variables,
     }),
   });
-
   const data = await response.json();
   if (data.errors) {
     throw new Error(data.errors[0].message);
   }
   return data.data;
+}
+
+export async function getPremiumMangaInfo(name: string, originNames: string[] = []) {
+  try {
+     const namesToTry = [
+        name.replace(/\(.*\)/g, "").trim(),
+        ...originNames.map(n => n.replace(/\(.*\)/g, "").trim())
+     ].filter(Boolean);
+
+     for (const search of namesToTry) {
+        const data = await fetchAniList(ANILIST_QUERIES.SEARCH_MANGA, { search });
+        const media = data?.Page?.media?.find((m: any) => 
+           (m.title.english?.toLowerCase() === search.toLowerCase() || 
+            m.title.romaji?.toLowerCase() === search.toLowerCase() ||
+            m.title.native?.toLowerCase() === search.toLowerCase())
+        ) || data?.Page?.media?.[0];
+
+        if (media) {
+           return {
+              id: media.id,
+              rating: media.averageScore ? (media.averageScore / 10).toFixed(1) : null,
+              posterUrl: media.coverImage?.extraLarge || media.coverImage?.large,
+              posterColor: media.coverImage?.color,
+              bannerImage: media.bannerImage || media.coverImage?.large,
+              characters: media.characters?.nodes || [],
+              title: media.title
+           };
+        }
+     }
+  } catch (err) {
+    console.error("AniList Fetch Error:", err);
+  }
+  return null;
 }
 
 export const getAniListAuthUrl = (state: string) => {
