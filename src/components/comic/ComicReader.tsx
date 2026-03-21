@@ -93,6 +93,7 @@ export function ComicReader({ slug, title, posterUrl, chapter, images: initialIm
   const [currentPage, setCurrentPage] = useState(1);
   const [showNav, setShowNav] = useState(true);
   const [showSettings, setShowSettings] = useState(false);
+  const [showSource, setShowSource] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
   
   const containerRef = useRef<HTMLDivElement>(null);
@@ -202,6 +203,7 @@ export function ComicReader({ slug, title, posterUrl, chapter, images: initialIm
       if (top > lastScrollTopRef.current && top > 100) {
         setShowNav(false);
         setShowSettings(false);
+        setShowSource(false);
       } else if (top < lastScrollTopRef.current) {
         setShowNav(true);
       }
@@ -283,33 +285,42 @@ export function ComicReader({ slug, title, posterUrl, chapter, images: initialIm
             </button>
 
             {/* Source Switcher */}
-            <div className="relative group mr-2">
-              <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-white/80 transition-all text-[11px] font-bold border border-white/5 active:scale-95">
+            <div className="relative mr-2">
+              <button 
+                onClick={(e) => { e.stopPropagation(); setShowSource(!showSource); setShowSettings(false); }}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-white/80 transition-all text-[11px] font-bold border border-white/5 active:scale-95"
+              >
                 Nguồn: <span className="text-primary uppercase">{selectedSource}</span>
               </button>
-              <div className="absolute top-full right-0 pt-2 w-36 hidden group-hover:block z-50">
-                <div className="bg-[#141416]/95 backdrop-blur-3xl border border-white/10 rounded-xl overflow-hidden shadow-2xl animate-in fade-in slide-in-from-top-2 flex flex-col">
-                {AVAILABLE_SOURCES.map((src) => (
-                  <button 
-                    key={src}
-                    onClick={() => {
-                      if (src === selectedSource) return;
-                      setSelectedSource(src as any);
-                      router.push(`/doc/${slug}/${chapter}?server=${currentServer}&source=${src}`);
-                    }}
-                    className={`px-4 py-2.5 text-[12px] font-bold text-left transition-colors border-b border-white/5 last:border-none ${
-                      src === selectedSource ? "bg-primary text-white" : "text-white/60 hover:text-white hover:bg-white/5"
-                    }`}
-                  >
-                    {src}
-                  </button>
-                ))}
+              {showSource && (
+                <div 
+                  className="absolute top-full right-0 pt-2 w-36 z-50"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <div className="bg-[#141416]/95 backdrop-blur-3xl border border-white/10 rounded-xl overflow-hidden shadow-2xl animate-in fade-in slide-in-from-top-2 flex flex-col">
+                  {AVAILABLE_SOURCES.map((src) => (
+                    <button 
+                      key={src}
+                      onClick={() => {
+                        if (src === selectedSource) return;
+                        setSelectedSource(src as any);
+                        setShowSource(false);
+                        router.push(`/doc/${slug}/${chapter}?server=${currentServer}&source=${src}`);
+                      }}
+                      className={`px-4 py-2.5 text-[12px] font-bold text-left transition-colors border-b border-white/5 last:border-none ${
+                        src === selectedSource ? "bg-primary text-white" : "text-white/60 hover:text-white hover:bg-white/5"
+                      }`}
+                    >
+                      {src}
+                    </button>
+                  ))}
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
 
             <button 
-              onClick={(e) => { e.stopPropagation(); setShowSettings(!showSettings); }}
+              onClick={(e) => { e.stopPropagation(); setShowSettings(!showSettings); setShowSource(false); }}
               className={`p-2 transition-colors ${showSettings ? 'text-primary' : 'text-white/60 hover:text-white'}`}
             >
               <Settings2 className="w-5 h-5" />
@@ -416,7 +427,7 @@ export function ComicReader({ slug, title, posterUrl, chapter, images: initialIm
         <div 
           ref={containerRef}
           className="w-full mx-auto pt-14 pb-24 min-h-screen flex flex-col items-center bg-[#050505] overflow-x-hidden"
-          onClick={() => { setShowNav(!showNav); setShowSettings(false); }}
+          onClick={() => { setShowNav(!showNav); setShowSettings(false); setShowSource(false); }}
         >
           {images.map((imgUrl: string, idx: number) => (
             <img 
@@ -451,7 +462,7 @@ export function ComicReader({ slug, title, posterUrl, chapter, images: initialIm
       ) : (
         <div 
           className="w-full h-full pt-14 pb-14 bg-[#050505] flex items-center justify-center relative touch-pan-x"
-          onClick={() => { setShowNav(!showNav); setShowSettings(false); }}
+          onClick={() => { setShowNav(!showNav); setShowSettings(false); setShowSource(false); }}
         >
           <Swiper
             onSwiper={(s) => swiperRef.current = s}
