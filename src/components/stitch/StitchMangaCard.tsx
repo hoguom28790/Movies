@@ -1,108 +1,147 @@
-import React from 'react';
-import Image from 'next/image';
-import Link from 'next/link';
+"use client";
 
-export interface StitchMangaCardProps {
+import React from 'react';
+import Link from 'next/link';
+import Image from 'next/image';
+import { SyncIcon } from "@/components/icons/SyncIcon";
+
+interface StitchMangaCardProps {
     title: string;
-    slug: string;
+    description?: string;
     imageUrl: string;
-    latestChapter?: string;
-    tags?: string[];
-    isHot?: boolean;
+    slug: string;
+    lastChapter?: string;
+    category?: string;
+    variant?: 'vertical' | 'horizontal' | 'list';
     isSynced?: boolean;
-    variant?: 'featured' | 'secondary' | 'gallery';
-    className?: string;
 }
 
 export function StitchMangaCard({ 
     title, 
-    slug, 
+    description, 
     imageUrl, 
-    latestChapter, 
-    tags = [], 
-    isHot = false, 
-    isSynced = false,
-    variant = 'gallery',
-    className = ""
+    slug, 
+    lastChapter, 
+    category = "Truyện mới", 
+    variant = 'vertical',
+    isSynced = false
 }: StitchMangaCardProps) {
-    if (variant === 'featured') {
+    
+    if (variant === 'list') {
         return (
-            <div className={`md:col-span-8 group cursor-pointer ${className}`}>
-                <Link href={`/truyen/${slug}`}>
-                    <div className="relative aspect-[16/9] mb-4 md:mb-6 overflow-hidden bg-surface-container-low">
-                        <Image 
-                            src={imageUrl} 
-                            alt={title} 
-                            fill 
-                            className="object-cover transition-transform duration-700 md:group-hover:scale-105"
-                            unoptimized
-                        />
-                        <div className="absolute top-4 left-4 flex gap-2">
-                             {latestChapter && <span className="px-2 py-1 bg-on-tertiary-fixed text-white text-[9px] font-bold uppercase tracking-widest">{latestChapter}</span>}
-                             {isHot && <span className="px-2 py-1 bg-primary text-white text-[9px] font-bold uppercase tracking-widest">Hot</span>}
-                        </div>
-                        {isSynced && (
-                            <div className="absolute top-4 right-4 w-8 h-8 bg-[#3DB4F2]/80 backdrop-blur-md rounded-full flex items-center justify-center border border-white/20 shadow-lg shadow-[#3DB4F2]/20">
-                                <span className="material-symbols-outlined text-white text-lg">sync</span>
-                            </div>
-                        )}
-                    </div>
-                    <div className="flex justify-between items-start">
-                        <div>
-                            <h4 className="text-xl md:text-2xl font-bold font-headline text-on-surface uppercase tracking-tight md:group-hover:text-primary transition-colors">{title}</h4>
-                            <p className="text-[10px] md:text-xs text-on-surface-variant font-label uppercase tracking-widest mt-1">{tags.join(' • ')}</p>
-                        </div>
-                        <span className="material-symbols-outlined text-primary">bolt</span>
-                    </div>
-                </Link>
-            </div>
-        );
-    }
-
-    if (variant === 'secondary') {
-        return (
-            <div className={`group cursor-pointer ${className}`}>
-                <Link href={`/truyen/${slug}`}>
-                    <div className="relative aspect-[4/3] mb-4 bg-surface-container-low overflow-hidden">
-                        <Image 
-                            src={imageUrl} 
-                            alt={title} 
-                            fill 
-                            className="object-cover transition-transform duration-700 md:group-hover:scale-105"
-                            unoptimized
-                        />
-                    </div>
-                    <h4 className="text-lg font-bold font-headline text-on-surface uppercase tracking-tight md:group-hover:text-primary transition-colors">{title}</h4>
-                    <p className="text-[10px] text-on-surface-variant font-label uppercase tracking-widest mt-1">{tags.join(' • ')}</p>
-                </Link>
-            </div>
-        );
-    }
-
-    // Default: Gallery
-    return (
-        <div className={`group flex-shrink-0 w-[200px] md:w-auto ${className}`}>
-            <Link href={`/truyen/${slug}`}>
-                <div className="relative aspect-[2/3] mb-4 md:mb-6 overflow-hidden bg-white editorial-shadow transition-transform duration-500 md:group-hover:-translate-y-2">
+            <Link 
+                href={`/truyen/${slug}`}
+                className="group flex gap-4 p-4 bg-surface border border-outline-variant transition-all hover:bg-surface-bright theme-truyen grayscale hover:grayscale-0"
+            >
+                <div className="relative w-16 h-24 flex-shrink-0 overflow-hidden">
                     <Image 
                         src={imageUrl} 
                         alt={title} 
                         fill 
-                        className="object-cover grayscale md:group-hover:grayscale-0 transition-all duration-700"
+                        className="object-cover transition-transform duration-700 group-hover:scale-110"
                         unoptimized
                     />
-                    <div className="absolute bottom-0 left-0 w-full p-3 md:p-4 translate-y-full md:group-hover:translate-y-0 transition-transform duration-500 bg-primary/90 text-white">
-                        <p className="text-[9px] md:text-[10px] font-bold uppercase tracking-widest">Đọc Ngay</p>
-                    </div>
+                </div>
+                <div className="flex flex-col justify-center min-w-0">
+                    <h3 className="font-headline font-bold text-base truncate mb-1">
+                        {title}
+                    </h3>
+                    <p className="font-label text-primary text-[10px] uppercase font-bold">
+                        {lastChapter || "Mới nhất"}
+                    </p>
+                </div>
+            </Link>
+        );
+    }
+    
+    if (variant === 'horizontal') {
+        return (
+            <Link 
+                href={`/truyen/${slug}`}
+                className="group relative flex flex-col bg-surface border border-outline-variant overflow-hidden p-6 editorial-shadow transition-all duration-700 hover:scale-[1.01] hover:grayscale-0 grayscale theme-truyen"
+            >
+                <div className="relative aspect-[4/3] w-full mb-6 overflow-hidden">
+                    <Image 
+                        src={imageUrl} 
+                        alt={title} 
+                        fill 
+                        className="object-cover transition-transform duration-1000 group-hover:scale-110"
+                        unoptimized
+                    />
+                    
                     {isSynced && (
-                        <div className="absolute top-2 right-2 w-6 h-6 bg-[#3DB4F2]/80 backdrop-blur-md rounded-full flex items-center justify-center border border-white/20 shadow-lg shadow-[#3DB4F2]/20">
-                            <span className="material-symbols-outlined text-white text-[12px]">sync</span>
+                        <div className="absolute top-4 left-4 z-20">
+                            <div className="bg-primary-container p-2 rounded-full shadow-lg">
+                                <SyncIcon className="w-4 h-4 text-on-primary-container animate-pulse" />
+                            </div>
                         </div>
                     )}
                 </div>
-                <h5 className="font-bold text-on-surface font-headline uppercase text-sm tracking-tight mb-1">{title}</h5>
-                <p className="text-[9px] md:text-[10px] text-on-surface-variant uppercase tracking-widest">{tags[0] || 'Manga'}</p>
+
+                <div className="flex flex-col gap-2">
+                    <div className="flex items-center gap-3">
+                        <span className="font-label text-primary uppercase tracking-widest text-[9px] font-bold">
+                            {category}
+                        </span>
+                        <div className="h-[1px] flex-grow bg-outline-variant opacity-30"></div>
+                    </div>
+                    <h3 className="font-headline font-black text-2xl md:text-3xl leading-[0.9] uppercase tracking-tighter truncate md:whitespace-normal group-hover:text-primary transition-colors">
+                        {title}
+                    </h3>
+                    <p className="font-body text-on-surface-variant text-xs line-clamp-2 opacity-60">
+                        {description || "Khám phá câu chuyện hấp dẫn trong tác phẩm này."}
+                    </p>
+                    <div className="mt-4 flex items-center justify-between">
+                         <span className="font-headline font-black text-4xl opacity-5">#01</span>
+                         <span className="font-label text-xs uppercase tracking-[0.3em] font-bold group-hover:text-primary transition-colors">
+                            BẮT ĐẦU ĐỌC
+                         </span>
+                    </div>
+                </div>
             </Link>
-        </div>
+        );
+    }
+
+    // Default Vertical Card (Noir Grid Item)
+    return (
+        <Link 
+            href={`/truyen/${slug}`}
+            className="group relative flex flex-col bg-surface-container overflow-hidden border border-outline-variant transition-all hover:scale-[1.02] hover:grayscale-0 grayscale theme-truyen editorial-shadow"
+        >
+            <div className="relative aspect-[3/4] w-full overflow-hidden">
+                <Image 
+                    src={imageUrl} 
+                    alt={title} 
+                    fill 
+                    className="object-cover transition-transform duration-1000 group-hover:scale-110"
+                    unoptimized
+                />
+                
+                {isSynced && (
+                    <div className="absolute top-3 left-3 z-20">
+                        <div className="bg-primary-container p-1.5 rounded-full shadow-lg backdrop-blur-md border border-on-primary-container/20">
+                            <SyncIcon className="w-3.5 h-3.5 text-on-primary-container" />
+                        </div>
+                    </div>
+                )}
+                
+                <div className="absolute inset-0 bg-gradient-to-t from-surface via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                 {/* Badge */}
+                 {lastChapter && (
+                    <div className="absolute bottom-4 right-4 bg-primary px-3 py-1 font-headline font-bold text-[10px] text-white tracking-widest uppercase">
+                        {lastChapter}
+                    </div>
+                )}
+            </div>
+            
+            <div className="p-5 flex flex-col gap-1 bg-surface">
+                <span className="font-label text-primary uppercase tracking-widest text-[9px] font-bold opacity-60 group-hover:opacity-100 transition-all">
+                    {category}
+                </span>
+                <h3 className="font-headline font-black text-xl leading-[0.9] uppercase tracking-tighter truncate group-hover:text-primary transition-all">
+                    {title}
+                </h3>
+            </div>
+        </Link>
     );
 }

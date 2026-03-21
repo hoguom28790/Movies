@@ -48,17 +48,52 @@
 
 .theme-truyen {
   --primary: #b02c2f;
-  --primary-hover: #d24545;
+  --on-primary: #ffffff;
+  --primary-container: #d24545;
+  --on-primary-container: #140001;
+  --secondary: #465d93;
+  --on-secondary: #ffffff;
+  --secondary-container: #a9c0fd;
+  --on-secondary-container: #364d83;
   --surface: #f9f9ff;
   --on-surface: #101c2e;
+  --surface-variant: #d8e3fc;
   --on-surface-variant: #59413f;
+  --outline: #8d706e;
   --outline-variant: #e1bfbc;
-  --surface-container-low: #f0f3ff;
-  --surface-container-highest: #d8e3fc;
   --background: #f9f9ff;
-  --font-headline: "Epilogue", sans-serif;
-  --font-body: "Inter", sans-serif;
-  --font-label: "Inter", sans-serif;
+  --on-background: #101c2e;
+  --surface-container-low: #f0f3ff;
+  --surface-container: #e8eeff;
+  --surface-container-high: #dfe8ff;
+  --surface-container-highest: #d8e3fc;
+  --surface-bright: #f9f9ff;
+  --surface-dim: #cfdaf4;
+}
+
+.dark .theme-truyen {
+  --primary: #ffb3ae;
+  --on-primary: #68000c;
+  --primary-container: #d24545;
+  --on-primary-container: #140001;
+  --secondary: #c8c6c5;
+  --on-secondary: #313030;
+  --secondary-container: #4a4949;
+  --on-secondary-container: #bab8b7;
+  --surface: #131313;
+  --on-surface: #e2e2e2;
+  --surface-variant: #353535;
+  --on-surface-variant: #e1bfbc;
+  --outline: #a88a87;
+  --outline-variant: #59413f;
+  --background: #131313;
+  --on-background: #e2e2e2;
+  --surface-container-low: #1b1b1b;
+  --surface-container: #1f1f1f;
+  --surface-container-high: #2a2a2a;
+  --surface-container-highest: #353535;
+  --surface-bright: #393939;
+  --surface-dim: #131313;
 }
 
 .theme-xx {
@@ -80,16 +115,6 @@ body {
 .pb-safe { padding-bottom: max(1rem, env(safe-area-inset-bottom, 0px)); }
 .pt-safe { padding-top: max(1rem, env(safe-area-inset-top, 0px)); }
 
-/* iPhone Optimizations */
-.is-iphone .container {
-  padding-left: 1.25rem;
-  padding-right: 1.25rem;
-}
-
-.is-iphone [class*="grid-cols-2"] {
-  gap: 0.75rem !important;
-}
-
 /* Premium Card Glass Effect */
 .glass {
   background: oklch(100% 0 0 / 5%);
@@ -97,27 +122,6 @@ body {
   -webkit-backdrop-filter: blur(24px);
   border: 1px solid oklch(100% 0 0 / 10%);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.glass:hover {
-  background: oklch(100% 0 0 / 8%);
-  border-color: oklch(100% 0 0 / 15%);
-}
-
-/* Hero Section Overlay Gradients */
-.hero-gradient-t {
-  background: linear-gradient(to top, var(--background) 0%, transparent 100%);
-}
-
-.hero-gradient-r {
-  background: linear-gradient(to right, oklch(14% 0 0 / 80%) 0%, transparent 100%);
-}
-
-/* Lucide Icon Styling */
-.lucide {
-  stroke-width: 1.75;
-  stroke-linecap: round;
-  stroke-linejoin: round;
 }
 
 /* Custom Scrollbar */
@@ -135,82 +139,38 @@ body {
 }
 .scrollbar-hide::-webkit-scrollbar { display: none; }
 
-/* Premium Delete Button Standard */
-.delete-btn-premium {
-  position: absolute;
-  top: -12px;
-  right: -12px;
-  z-index: 30;
-  width: 40px;
-  height: 40px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 9999px;
-  background: rgba(0, 0, 0, 0.8);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  color: white;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  opacity: 1; /* Visible by default on touch */
+/* Noir Custom Utilities */
+.theme-truyen .text-stroke-red {
+    -webkit-text-stroke: 1px #D24545;
+    color: transparent;
 }
 
-@media (min-width: 1025px) {
-  .delete-btn-premium {
-    opacity: 0;
-  }
-  .group:hover .delete-btn-premium {
-    opacity: 1;
-  }
+.theme-truyen .noir-gradient-overlay {
+    background: linear-gradient(to top, var(--background) 10%, rgba(19,19,19,0.4) 50%, rgba(19,19,19,0.1) 100%);
 }
 
-.delete-btn-premium:hover {
-  background: oklch(60% 0.2 25); /* Primary red-ish */
-  transform: scale(1.1);
-  color: white;
-}
-
-.delete-btn-premium:active {
-  transform: scale(0.95);
-}
-
-/* Stitch Design Custom Utilities */
-.theme-truyen .crimson-pulse {
-  background: linear-gradient(135deg, #b02c2f 0%, #d24545 100%);
+.theme-truyen .hero-gradient {
+    background: linear-gradient(90deg, var(--background) 10%, rgba(19,19,19,0.4) 50%, rgba(19,19,19,0) 100%);
 }
 
 .theme-truyen .editorial-shadow {
-  box-shadow: 0 24px 48px -12px rgba(16, 28, 46, 0.08);
+    box-shadow: 0 24px 48px -12px rgba(16, 28, 46, 0.12);
 }
 
-.theme-truyen .font-headline {
-  font-family: var(--font-headline);
+.dark .theme-truyen .editorial-shadow {
+    box-shadow: 0 24px 48px -12px rgba(0, 0, 0, 0.5);
 }
 
-.theme-truyen .font-body {
-  font-family: var(--font-body);
+.theme-truyen .crimson-pulse {
+    background: linear-gradient(135deg, #b02c2f 0%, #d24545 100%);
 }
 
-.theme-truyen .font-label {
-  font-family: var(--font-label);
+.theme-truyen .drop-cap::first-letter {
+    float: left;
+    font-family: var(--font-headline);
+    font-size: 3.5rem;
+    line-height: 1;
+    padding-right: 0.75rem;
+    color: #D24545;
+    font-weight: 900;
 }
-
-.theme-truyen header.backdrop-blur-xl {
-  background-color: rgba(255, 255, 255, 0.8);
-}
-
-.dark .theme-truyen header.backdrop-blur-xl {
-  background-color: rgba(19, 28, 39, 0.8);
-}
-
-.theme-truyen .bg-surface { background-color: var(--surface); }
-.theme-truyen .text-on-surface { color: var(--on-surface); }
-.theme-truyen .text-on-surface-variant { color: var(--on-surface-variant); }
-.theme-truyen .bg-primary { background-color: var(--primary); }
-.theme-truyen .text-primary { color: var(--primary); }
-.theme-truyen .border-primary { border-color: var(--primary); }
-.theme-truyen .bg-surface-container-low { background-color: var(--surface-container-low); }
-.theme-truyen .bg-surface-container-highest { background-color: var(--surface-container-highest); }
-.theme-truyen .border-outline-variant { border-color: var(--outline-variant); }

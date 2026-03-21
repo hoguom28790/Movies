@@ -1,159 +1,137 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
-import { useAniList } from '@/hooks/useAniList';
+import Image from 'next/image';
+import { ChevronLeft, ChevronRight, Settings, Info, List, Home, Share2 } from 'lucide-react';
+import { useAniList } from "@/hooks/useAniList";
 
-interface StitchReaderProps {
-    slug: string;
+interface Media {
+    id: string;
     title: string;
-    chapter: string;
-    images: string[];
-    chaptersList: string[];
-    onNextChapter?: () => void;
+    imageUrl: string;
+    chapters: string[];
+    currentChapterIndex: number;
+    slug: string;
 }
 
-export function StitchReader({ slug, title, chapter, images, chaptersList }: StitchReaderProps) {
+export function StitchReader({ media }: { media: Media }) {
     const [progress, setProgress] = useState(0);
-    const [currentPage, setCurrentPage] = useState(1);
+    const [showToolbar, setShowToolbar] = useState(true);
+    const [scrolledPast90, setScrolledPast90] = useState(false);
+    const scrollContainerRef = useRef<HTMLDivElement>(null);
     const { scrobble } = useAniList();
+    const lastScrollTop = useRef(0);
 
-    useEffect(() => {
-        if (progress > 90) {
-            scrobble(slug, title, chapter);
+    const handleScroll = () => {
+        if (!scrollContainerRef.current) return;
+        
+        const { scrollTop, scrollHeight, clientHeight } = scrollContainerRef.current;
+        const totalHeight = scrollHeight - clientHeight;
+        const currentProgress = (scrollTop / totalHeight) * 100;
+        setProgress(currentProgress);
+        
+        // Hide/Show Toolbar on Scroll
+        if (scrollTop > lastScrollTop.current && scrollTop > 50) {
+            setShowToolbar(false);
+        } else {
+            setShowToolbar(true);
         }
-    }, [progress, slug, title, chapter, scrobble]);
-    useEffect(() => {
-        const handleScroll = () => {
-            const totalHeight = document.documentElement.scrollHeight - window.innerHeight;
-            const currentScroll = window.scrollY;
-            const scrollProgress = (currentScroll / totalHeight) * 100;
-            setProgress(scrollProgress);
+        lastScrollTop.current = scrollTop;
 
-            // Estimate current page
-            const pageHeight = document.documentElement.scrollHeight / images.length;
-            const page = Math.ceil(currentScroll / pageHeight) + 1;
-            setCurrentPage(Math.min(page, images.length));
-        };
-
-        window.addEventListener('scroll', handleScroll);
-        return () => window.removeEventListener('scroll', handleScroll);
-    }, [images.length]);
-
-    const nextChapIndex = chaptersList.indexOf(chapter) - 1; // Assuming list is descending
-    const nextChap = nextChapIndex >= 0 ? chaptersList[nextChapIndex] : null;
+        // AniList Scrobbling (Hồ Truyện Logic)
+        if (currentProgress > 90 && !scrolledPast90) {
+            setScrolledPast90(true);
+            const chapterMatch = media.chapters[media.currentChapterIndex]?.match(/\d+/);
+            const chapterNum = chapterMatch ? parseInt(chapterMatch[0]) : (media.currentChapterIndex + 1);
+            scrobble(media.slug, media.title, chapterNum);
+        }
+    };
 
     return (
-        <div className="theme-truyen bg-[#0F1721] text-on-tertiary-container font-body overflow-x-hidden min-h-screen">
-            {/* Optimized Mobile Top Bar */}
-            <header className="fixed top-0 w-full z-50 flex justify-between items-center px-5 py-4 glass-nav border-b border-white/5 transition-all duration-300">
-                <div className="flex items-center gap-4">
-                    <Link href={`/truyen/${slug}`} className="flex items-center group/home">
-                        <span className="material-symbols-outlined text-surface-variant text-2xl">arrow_back_ios</span>
+        <div className="fixed inset-0 bg-background theme-truyen z-50 overflow-hidden flex flex-col">
+            {/* Noir Reader Toolbar */}
+            <header className={`fixed top-0 left-0 right-0 z-50 bg-surface/80 backdrop-blur-xl border-b border-outline-variant px-6 py-4 flex items-center justify-between transition-all duration-500 ${showToolbar ? 'translate-y-0 opacity-100' : '-translate-y-full opacity-0'}`}>
+                <div className="flex items-center gap-6">
+                    <Link href={`/truyen/${media.slug}`} className="hover:text-primary transition-colors">
+                        <ChevronLeft size={24} />
                     </Link>
                     <div className="flex flex-col">
-                        <span className="font-headline text-[11px] font-black tracking-[0.15em] uppercase text-white leading-tight">{title}</span>
-                        <span className="text-[10px] font-medium text-surface-variant/70 tracking-wide truncate max-w-[180px]">Ch {chapter}</span>
+                        <h1 className="font-headline font-black text-xl md:text-2xl uppercase tracking-tighter leading-none">{media.title}</h1>
+                        <span className="font-label text-primary uppercase text-[10px] tracking-[0.4em] font-bold">Chapter {media.currentChapterIndex + 1}</span>
                     </div>
                 </div>
-                <div className="flex items-center gap-5 text-white/70">
-                    <button className="material-symbols-outlined hover:text-primary transition-colors">settings</button>
-                    <button className="material-symbols-outlined hover:text-primary transition-colors">share</button>
+
+                <div className="hidden md:flex items-center gap-10">
+                    <button className="font-label text-xs font-bold uppercase tracking-widest hover:text-primary transition-all">Thông tin</button>
+                    <button className="font-label text-xs font-bold uppercase tracking-widest hover:text-primary transition-all">Định dạng</button>
+                    <button className="font-label text-xs font-bold uppercase tracking-widest hover:text-primary transition-all">Tương tác</button>
+                </div>
+
+                <div className="flex items-center gap-4">
+                    <button className="bg-primary-container p-2 md:p-3 text-on-primary-container editorial-shadow hover:scale-110 transition-transform">
+                        <Share2 size={20} />
+                    </button>
                 </div>
             </header>
 
-            {/* Reader Canvas */}
-            <main className="relative w-full flex flex-col items-center pt-16 pb-24 overflow-y-auto custom-scrollbar">
-                <div className="w-full flex flex-col gap-0 max-w-4xl mx-auto shadow-[0_0_100px_rgba(0,0,0,0.5)]">
-                    {images.map((img, idx) => (
-                        <div key={idx} className="relative w-full bg-[#0a0a0a]">
-                            <img 
+            {/* Reading Content */}
+            <div 
+                ref={scrollContainerRef}
+                onScroll={handleScroll}
+                className="flex-1 overflow-y-auto overflow-x-hidden scrollbar-hide pt-24"
+            >
+                <div className="max-w-[1000px] mx-auto flex flex-col">
+                    {media.chapters.map((img, idx) => (
+                        <div key={idx} className="relative w-full min-h-[50vh] bg-surface-container-low animate-pulse overflow-hidden">
+                            <Image 
                                 src={img} 
                                 alt={`Page ${idx + 1}`} 
-                                className="w-full h-auto block"
-                                loading={idx < 3 ? "eager" : "lazy"}
+                                width={1200} 
+                                height={1800} 
+                                className="w-full h-auto relative z-10 opacity-0 transition-opacity duration-700 hover:grayscale-0 grayscale-50"
+                                onLoadingComplete={(img) => img.classList.remove('opacity-0', 'grayscale-50')}
+                                unoptimized
                             />
                         </div>
                     ))}
                     
-                    {/* Loading/Next Chap Placeholder if any... or just Footer action */}
-                    <div className="w-full py-16 flex flex-col items-center justify-center bg-[#0F1721]">
-                        <div className="w-16 h-[1px] bg-primary/20"></div>
-                        <span className="my-6 font-headline text-[9px] tracking-[0.4em] uppercase text-surface-variant/30 font-bold">End of Chapter</span>
-                        <div className="w-16 h-[1px] bg-primary/20"></div>
+                    {/* Chapter End Noir Screen */}
+                    <div className="h-screen w-full flex flex-col items-center justify-center p-12 bg-surface text-center gap-10">
+                         <div className="h-[2px] w-24 bg-primary mx-auto"></div>
+                         <h2 className="font-headline font-black text-5xl md:text-8xl uppercase tracking-tighter leading-none max-w-2xl mx-auto drop-cap">
+                            Bạn Đã Hoàn Thành Chương Này
+                         </h2>
+                         <div className="flex flex-col md:flex-row gap-6">
+                            <button className="crimson-pulse px-12 py-5 font-headline font-bold text-white uppercase tracking-widest editorial-shadow hover:scale-105 transition-all">
+                                Chương Tiếp Theo
+                            </button>
+                            <Link href="/truyen" className="border border-outline px-12 py-5 font-headline font-bold text-on-surface uppercase tracking-widest hover:bg-surface-variant transition-all">
+                                Quay Lại Thư Viện
+                            </Link>
+                         </div>
                     </div>
                 </div>
+            </div>
 
-                {/* Mobile Footer Action */}
-                <div className="w-full px-6 py-16 flex flex-col items-center gap-8">
-                    {nextChap ? (
-                        <Link 
-                            href={`/doc/${slug}/${nextChap}`}
-                            className="w-full max-w-sm py-5 rounded-lg bg-primary text-white font-headline text-[13px] font-black tracking-[0.25em] uppercase shadow-2xl shadow-primary/30 active:scale-[0.98] transition-all text-center"
-                        >
-                            Next Chapter
-                        </Link>
-                    ) : (
-                        <span className="text-white/30 uppercase tracking-widest text-xs">No more chapters</span>
-                    )}
-                    <div className="flex items-center gap-4 text-surface-variant/30 text-[9px] uppercase tracking-[0.3em] font-bold">
-                        <span>End of Chapter {chapter}</span>
-                    </div>
+            {/* Noir Progress Bar */}
+            <div className="fixed bottom-0 left-0 right-0 h-1 bg-outline-variant/30 z-[60]">
+                <div 
+                    className="h-full bg-primary transition-all duration-300 ease-out relative shadow-[0_0_15px_rgba(210,69,69,0.5)]"
+                    style={{ width: `${progress}%` }}
+                >
+                    <div className="absolute right-0 top-1/2 -translate-y-1/2 w-4 h-4 bg-white rounded-full border-2 border-primary editorial-shadow hidden md:block"></div>
                 </div>
-            </main>
+            </div>
 
-            {/* Floating HUD */}
-            <nav className="fixed bottom-0 left-0 w-full z-50 flex flex-col gap-4 pointer-events-none pb-safe">
-                {/* Progress Indicator */}
-                <div className="w-full px-4 pointer-events-auto max-w-7xl mx-auto">
-                    <div className="glass-nav border border-white/5 rounded-xl p-5 shadow-2xl flex flex-col gap-3">
-                        <div className="flex justify-between items-center">
-                            <span className="text-[9px] font-black text-primary tracking-[0.1em] uppercase">Reading Progress</span>
-                            <span className="text-[10px] font-bold text-white/90 tracking-wider">PAGE {currentPage} / {images.length}</span>
-                        </div>
-                        <div className="relative w-full h-1 bg-white/10 rounded-full overflow-hidden">
-                            <div 
-                                className="absolute top-0 left-0 h-full bg-primary transition-all duration-300 shadow-[0_0_8px_rgba(210,69,69,0.5)]" 
-                                style={{ width: `${progress}%` }}
-                            />
-                        </div>
-                    </div>
-                </div>
-
-                {/* Bottom Navigation Bar */}
-                <div className="w-full glass-nav flex justify-around items-center pt-4 pb-6 px-6 border-t border-white/5 pointer-events-auto shadow-[0_-8px_32px_rgba(0,0,0,0.3)] md:hidden">
-                    <Link href="/truyen" className="flex flex-col items-center justify-center text-surface-variant/50 hover:text-primary transition-colors cursor-pointer group">
-                        <span className="material-symbols-outlined text-[26px]">home</span>
-                        <span className="font-body text-[9px] font-bold uppercase tracking-[0.1em] mt-1.5">Trang chủ</span>
-                    </Link>
-                    <Link href="/truyen" className="flex flex-col items-center justify-center text-surface-variant/50 hover:text-primary transition-colors cursor-pointer group">
-                        <span className="material-symbols-outlined text-[26px]">category</span>
-                        <span className="font-body text-[9px] font-bold uppercase tracking-[0.1em] mt-1.5">Thể loại</span>
-                    </Link>
-                    <div className="flex flex-col items-center justify-center text-primary cursor-pointer group">
-                        <span className="material-symbols-outlined text-[28px] fill-[1]">auto_stories</span>
-                        <span className="font-body text-[9px] font-bold uppercase tracking-[0.1em] mt-1.5">Đang đọc</span>
-                    </div>
-                    <Link href="/truyen" className="flex flex-col items-center justify-center text-surface-variant/50 hover:text-primary transition-colors cursor-pointer group">
-                        <span className="material-symbols-outlined text-[26px]">leaderboard</span>
-                        <span className="font-body text-[9px] font-bold uppercase tracking-[0.1em] mt-1.5">Xếp hạng</span>
-                    </Link>
-                </div>
-            </nav>
-
-            {/* Subtle Vignette for Focus */}
-            <div className="fixed inset-0 pointer-events-none shadow-[inset_0_0_120px_rgba(0,0,0,0.6)] z-10"></div>
-            
-            <style jsx>{`
-                .glass-nav {
-                    background: rgba(15, 23, 33, 0.85);
-                    backdrop-filter: blur(16px);
-                    -webkit-backdrop-filter: blur(16px);
-                }
-                .custom-scrollbar::-webkit-scrollbar {
-                    width: 0px;
-                }
-            `}</style>
+            {/* Minimal Mobile Controls */}
+            <div className={`fixed bottom-8 left-1/2 -translate-x-1/2 flex items-center gap-4 bg-surface/90 backdrop-blur-xl border border-outline-variant px-6 py-3 shadow-2xl z-[70] transition-all duration-500 md:hidden ${showToolbar ? 'translate-y-0 opacity-100' : 'translate-y-24 opacity-0'}`}>
+                <ChevronLeft className="opacity-40" />
+                <span className="font-label font-bold text-xs uppercase tracking-widest px-4 border-l border-r border-outline-variant">
+                    P. {Math.round(progress)}%
+                </span>
+                <ChevronRight className="text-primary" />
+            </div>
         </div>
     );
 }

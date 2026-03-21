@@ -6,8 +6,8 @@ import { BookOpen } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 export const metadata = {
-  title: "Hồ Truyện - Đọc Truyện Tranh",
-  description: "Web đọc truyện tranh cá nhân, cập nhật liên tục.",
+  title: "Hồ Truyện - Noir Edition",
+  description: "Web đọc truyện tranh cá nhân, phong cách Noir Editorial.",
 };
 
 async function getComics(type: string, isGenre = false) {
@@ -58,30 +58,33 @@ export default async function ComicHomePage({
     }
 
     return (
-      <div className="flex flex-col gap-16 pb-20 max-w-[1440px] mx-auto px-6 theme-truyen">
-        <section className="space-y-8 pt-10">
-           <div className="flex items-center justify-between mb-8">
-              <h2 className="text-3xl md:text-5xl font-black font-headline text-on-surface uppercase tracking-tighter">
-                Kết Quả Lọc
+      <div className="flex flex-col gap-16 pb-20 max-w-7xl mx-auto px-6 md:px-24 theme-truyen pt-24 min-h-screen">
+        <section className="space-y-12">
+           <div className="flex flex-col gap-4">
+              <span className="font-label text-primary uppercase tracking-[0.4em] font-bold text-xs opacity-60">Kết Phẩm Tuyển Chọn</span>
+              <h2 className="text-5xl md:text-8xl font-black font-headline text-on-surface uppercase tracking-tighter leading-[0.8]">
+                 Lọc Truyện
               </h2>
            </div>
            
            {items.length > 0 ? (
-             <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6">
+             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12">
                 {items.map((comic: any) => (
                   <StitchMangaCard
                     key={comic._id}
                     title={comic.name}
                     slug={comic.slug}
                     imageUrl={`${domain}/uploads/comics/${comic.thumb_url}`}
-                    latestChapter={comic.chaptersLatest?.[0]?.chapter_name ? `Ch. ${comic.chaptersLatest[0].chapter_name}` : ""}
-                    tags={comic.category?.map((c: any) => c.name) || []}
+                    lastChapter={comic.chaptersLatest?.[0]?.chapter_name ? `Chapter ${comic.chaptersLatest[0].chapter_name}` : ""}
+                    category={comic.category?.[0]?.name || "Manga"}
+                    variant="horizontal"
                   />
                 ))}
              </div>
            ) : (
-             <div className="py-20 text-center text-on-surface-variant/60 bg-surface-container-low rounded-2xl border border-outline-variant/10 font-body">
-               Không tìm thấy truyện nào khớp với bộ lọc của bạn.
+             <div className="py-24 text-center text-on-surface-variant/40 border-2 border-dashed border-outline-variant/10 rounded-2xl flex flex-col items-center gap-6">
+                <BookOpen size={48} className="opacity-20" />
+                <p className="font-headline font-black text-3xl uppercase tracking-tighter opacity-50">Không có truyện nào ở đây</p>
              </div>
            )}
         </section>
@@ -93,71 +96,82 @@ export default async function ComicHomePage({
   const heroComic = hotComics[0];
   const featuredComic = newComics[0];
   const secondaryComics = newComics.slice(1, 3);
-  const trendComics = newComics.slice(3, 13);
+  const trendComics = newComics.slice(3, 11);
 
   return (
-    <div className="flex flex-col gap-0 pb-20 theme-truyen">
+    <div className="flex flex-col gap-0 pb-20 theme-truyen bg-background overflow-x-hidden">
       
+      {/* Editorial Hero */}
       {heroComic && (
         <StitchHero 
            title={heroComic.name}
-           description="Một hành trình đơn độc qua những tầng địa ngục của ký ức, nơi ranh giới giữa thực tại và ảo mộng bị xóa nhòa bởi sắc đỏ của mặt trăng."
+           description="Một câu chuyện đầy kịch tính và chiều sâu, đưa người đọc vào thế giới của những bí ẩn chưa có lời giải và những cảm xúc mãnh liệt nhất."
            imageUrl={`${hotCdn}/uploads/comics/${heroComic.thumb_url}`}
            slug={heroComic.slug}
+           category="Nổi bật"
         />
       )}
 
+      {/* Editorial Grid */}
       {featuredComic && (
         <StitchMangaGrid 
-          title="Mới Cập Nhật"
+          title="Mới Phát Hành"
           featuredComic={{
             title: featuredComic.name,
             slug: featuredComic.slug,
             imageUrl: `${domain_cdn}/uploads/comics/${featuredComic.thumb_url}`,
-            latestChapter: featuredComic.chaptersLatest?.[0]?.chapter_name ? `Ch. ${featuredComic.chaptersLatest[0].chapter_name}` : "",
-            tags: ["Hành Động", "Giả Tưởng"],
-            isHot: true
+            lastChapter: featuredComic.chaptersLatest?.[0]?.chapter_name ? `Ch. ${featuredComic.chaptersLatest[0].chapter_name}` : "",
+            category: featuredComic.category?.[0]?.name || "Manga",
+            description: "Khám phá siêu phẩm mới nhất được cập nhật trên Hồ Truyện, câu chuyện hứa hẹn sẽ đưa bạn đi từ bất ngờ này đến bất ngờ khác."
           }}
           secondaryComics={secondaryComics.map((c: any) => ({
             title: c.name,
             slug: c.slug,
             imageUrl: `${domain_cdn}/uploads/comics/${c.thumb_url}`,
-            tags: ["Tâm Lý", "Drama"]
+            lastChapter: c.chaptersLatest?.[0]?.chapter_name ? `Ch. ${c.chaptersLatest[0].chapter_name}` : "",
+            category: c.category?.[0]?.name || "Manga"
           }))}
         />
       )}
 
-      {/* Trends Section */}
-      <section className="py-24 bg-surface-container-low px-6 lg:px-24">
-        <div className="max-w-[1440px] mx-auto">
-          <div className="mb-16">
-            <span className="text-primary font-headline text-[10px] font-black tracking-[0.3em] uppercase block mb-2">Curated Collection</span>
-            <h3 className="text-3xl md:text-5xl font-black font-headline text-on-surface uppercase tracking-tighter">Xu Hướng</h3>
+      {/* Trending Horizontal List (Bento-ish) */}
+      <section className="py-24 bg-surface px-6 md:px-24">
+        <div className="max-w-7xl mx-auto">
+          <div className="mb-16 flex flex-col gap-4">
+             <span className="font-label text-primary uppercase tracking-[0.4em] font-bold text-xs opacity-60">Trending Now</span>
+             <h3 className="text-5xl md:text-7xl font-black font-headline text-on-surface uppercase tracking-tighter leading-[0.85]">
+                Đang Thịnh Hành
+             </h3>
           </div>
           
-          <div className="flex overflow-x-auto md:grid md:grid-cols-4 lg:grid-cols-5 gap-y-16 gap-x-8 pb-8 md:pb-0 scrollbar-hide">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
             {trendComics.map((comic: any, idx: number) => (
               <StitchMangaCard 
                 key={comic._id}
                 title={comic.name}
                 slug={comic.slug}
                 imageUrl={`${domain_cdn}/uploads/comics/${comic.thumb_url}`}
-                variant="gallery"
-                className={idx % 2 === 1 ? "md:mt-8" : idx % 4 === 3 ? "md:mt-12" : ""}
-                tags={["Romance"]}
+                variant="vertical"
+                lastChapter={comic.chaptersLatest?.[0]?.chapter_name ? `Ch. ${comic.chaptersLatest[0].chapter_name}` : ""}
+                category={comic.category?.[0]?.name || "Manga"}
               />
             ))}
           </div>
         </div>
       </section>
 
-      {/* Sync Section */}
-      <section className="py-12 px-6 lg:px-24 bg-surface-container-highest">
-          <div className="max-w-[1440px] mx-auto">
+      {/* AniList Integration Banner */}
+      <section className="py-24 px-6 md:px-24 bg-surface-container overflow-hidden group">
+          <div className="max-w-7xl mx-auto relative">
+              <div className="absolute top-0 right-0 font-headline font-black text-9xl opacity-[0.02] tracking-tighter translate-x-1/2 -translate-y-1/2 select-none group-hover:scale-110 transition-transform duration-1000">ANILIST</div>
               <StitchAniListSync />
           </div>
       </section>
 
+      {/* Bottom Visual Accent */}
+      <div className="h-64 bg-background flex items-center justify-center overflow-hidden border-t border-outline-variant/10">
+          <span className="font-headline font-black text-[15vw] leading-none opacity-5 tracking-tighter select-none whitespace-nowrap">HO TRUYEN NOIR EDITION 2024</span>
+      </div>
     </div>
   );
 }
