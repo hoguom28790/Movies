@@ -16,9 +16,9 @@ export function Button({ variant = 'primary', size = 'md', className = '', child
   };
   
   const sizes = {
-    sm: 'h-9 px-3 text-sm',
-    md: 'h-10 px-4 py-2',
-    lg: 'h-11 px-8 text-lg'
+    sm: 'min-h-[44px] md:min-h-[36px] px-4 md:px-3 py-2 md:py-1.5 text-[14px] md:text-sm',
+    md: 'min-h-[44px] px-4 py-3 md:py-2 text-[15px] md:text-sm',
+    lg: 'min-h-[48px] md:min-h-[44px] px-6 md:px-8 py-3.5 md:py-2.5 text-[16px] md:text-[15px]'
   };
 
   return (

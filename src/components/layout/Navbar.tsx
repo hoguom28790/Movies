@@ -23,8 +23,7 @@ export function Navbar() {
     <>
       <header className="fixed top-0 z-50 w-full border-b border-white/[0.06] bg-[#0a0a0a]/90 backdrop-blur-xl transition-all duration-300 pt-safe">
         <div className="container mx-auto flex h-14 items-center justify-between px-4 lg:px-8">
-          {/* Mobile Menu Toggle (Left on Mobile) */}
-          <div className="md:hidden">
+          <div className="lg:hidden">
             <MobileMenu />
           </div>
  
@@ -35,8 +34,7 @@ export function Navbar() {
             </span>
           </Link>
 
-          {/* Center: NavMenu (dropdowns + direct links) */}
-          <div className="hidden md:flex items-center gap-1 flex-1 justify-center">
+          <div className="hidden lg:flex items-center gap-1 flex-1 justify-center">
             <NavMenu />
           </div>
 
@@ -45,7 +43,7 @@ export function Navbar() {
             <Link href="/truyen" className="hidden sm:flex items-center gap-1.5 px-4 py-1.5 mr-2 rounded-lg bg-indigo-500 hover:bg-indigo-600 text-white text-[12px] font-bold transition-all shadow-lg shadow-indigo-500/20">
               <BookOpen className="w-4 h-4" /> Đọc Truyện
             </Link>
-            <div className="hidden md:block w-48 lg:w-64">
+            <div className="hidden lg:block w-48 lg:w-64">
               <InstantSearch />
             </div>
             
@@ -84,7 +82,7 @@ export function Navbar() {
 
             <Link
               href="/search"
-              className="md:hidden p-2 text-white/50 hover:text-white transition-colors"
+              className="lg:hidden p-2 text-white/50 hover:text-white transition-colors"
             >
               <Search className="h-5 w-5" />
             </Link>

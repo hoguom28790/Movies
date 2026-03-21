@@ -33,7 +33,7 @@ export default async function ComicHomePage() {
             <h2 className="text-3xl md:text-5xl font-black text-white italic tracking-tighter uppercase relative z-10">Mới Cập Nhật</h2>
          </div>
          
-         <div className="grid grid-cols-2 xs:grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-4 md:gap-6">
+         <div className="grid grid-cols-2 xs:grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 sm:gap-4 md:gap-5">
             {newComics.slice(0, 12).map((comic: any) => (
               <ComicCard
                 key={comic._id}
@@ -54,7 +54,7 @@ export default async function ComicHomePage() {
             <h2 className="text-3xl md:text-5xl font-black text-white italic tracking-tighter uppercase relative z-10">Đang Phát Hành</h2>
          </div>
          
-         <div className="grid grid-cols-2 xs:grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-4 md:gap-6">
+         <div className="grid grid-cols-2 xs:grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 sm:gap-4 md:gap-5">
             {ongoingComics.slice(0, 12).map((comic: any) => (
               <ComicCard
                 key={comic._id}

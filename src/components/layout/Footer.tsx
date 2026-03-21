@@ -49,7 +49,7 @@ export function Footer() {
   return (
     <footer className="border-t border-white/[0.06] bg-[#0a0a0a] mt-20">
       <div className="container mx-auto px-4 lg:px-12 py-12">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8">
           {columns.map((col) => (
             <div key={col.title}>
               <h3 className="text-[11px] font-bold text-white/30 uppercase tracking-[0.15em] mb-4">
@@ -60,7 +60,7 @@ export function Footer() {
                   <li key={link.href}>
                     <Link
                       href={link.href}
-                      className="text-[13px] text-white/40 hover:text-white transition-colors"
+                      className="flex items-center min-h-[32px] sm:min-h-[28px] text-[14px] sm:text-[15px] text-white/40 hover:text-white transition-colors"
                     >
                       {link.label}
                     </Link>

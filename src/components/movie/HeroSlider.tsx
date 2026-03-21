@@ -7,7 +7,6 @@ import { Play, ChevronLeft, ChevronRight, Star, Film } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 
 import type { Movie } from "@/types/movie";
-import { useDevice } from "@/contexts/DeviceContext";
  
 interface HeroSliderProps {
   movies: Movie[];
@@ -32,13 +31,8 @@ export function HeroSlider({ movies }: HeroSliderProps) {
   if (!movies.length) return null;
 
   const currentMovie = movies[currentIndex];
-  // eslint-disable-next-line react-hooks/rules-of-hooks
-  const { isIPhone, isIPad } = useDevice();
- 
   return (
-    <section className={`relative w-full ${
-      isIPhone ? "h-[50vh] min-h-[350px]" : "h-[60vh] sm:h-[70vh] lg:h-[75vh] min-h-[400px]"
-    } flex items-end mt-[-56px] group overflow-hidden`}>
+    <section className="relative w-full h-[50vh] min-h-[350px] sm:h-[60vh] sm:min-h-[400px] lg:h-[75vh] flex items-end mt-[-56px] group overflow-hidden">
       {/* Background Images */}
       {movies.map((movie, idx) => (
         <div 
@@ -65,9 +59,7 @@ export function HeroSlider({ movies }: HeroSliderProps) {
           key={currentIndex} 
           className="flex flex-col items-start gap-3 sm:gap-4 animate-in slide-in-from-bottom-8 fade-in duration-700 max-w-3xl"
         >
-          <h1 className={`${
-            isIPhone ? "text-lg" : "text-xl sm:text-3xl"
-          } md:text-5xl lg:text-6xl font-bold text-white leading-[1.2] tracking-tight line-clamp-2`}>
+          <h1 className="text-2xl sm:text-3xl md:text-5xl lg:text-6xl font-bold text-white leading-[1.2] tracking-tight line-clamp-2">
             {currentMovie.title}
           </h1>
 
@@ -118,9 +110,9 @@ export function HeroSlider({ movies }: HeroSliderProps) {
           <Link href={`/movie/${currentMovie.slug}`}>
             <Button
               size="lg"
-              className="h-11 px-8 text-[13px] font-semibold rounded-lg gap-2 bg-primary hover:bg-primary-hover text-white transition-all hover:scale-[1.03] active:scale-[0.97]"
+              className="h-12 min-h-[44px] px-8 text-[14px] sm:text-[15px] font-semibold rounded-xl gap-2 bg-primary hover:bg-primary-hover text-white transition-all hover:scale-[1.03] active:scale-[0.97]"
             >
-              <Play className="w-4 h-4 fill-current" />
+              <Play className="w-5 h-5 fill-current" />
               Xem Ngay
             </Button>
           </Link>
