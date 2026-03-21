@@ -100,12 +100,15 @@ export function XXPlayer({
           durationSeconds: event.data.duration || 0
         };
 
-        if (now - lastSaveTime.current > 5000) {
+        const localHist = getMovieXXHistory(movieCode);
+        const isInitialDuration = entryData.durationSeconds > 0 && (!localHist || !localHist.durationSeconds);
+        
+        if (now - lastSaveTime.current > 5000 || isInitialDuration) {
           lastSaveTime.current = now;
           saveXXHistory(entryData);
         }
         
-        if (user && now - lastCloudSaveTime.current > 15000) {
+        if (user && (now - lastCloudSaveTime.current > 10000 || isInitialDuration)) {
           lastCloudSaveTime.current = now;
           saveXXFirestoreHistory(user.uid, entryData);
         }
