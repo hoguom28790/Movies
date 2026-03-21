@@ -218,7 +218,7 @@ export default function XXLibraryPage() {
                     <ListMusic className={`w-4 h-4 ${activePlaylistId === pl.id ? "text-black" : "text-white/20"}`} />
                     <span className="text-sm font-bold truncate">{pl.name}</span>
                   </div>
-                  <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <div className="flex items-center gap-2 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity">
                      <span className="text-[10px] font-black uppercase tracking-widest">{pl.movies.length}</span>
                      <button 
                        onClick={(e) => handleDeletePlaylist(pl.id, e)}

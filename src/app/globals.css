@@ -144,7 +144,7 @@ body {
   opacity: 1; /* Visible by default on touch */
 }
 
-@media (min-width: 768px) {
+@media (min-width: 1025px) {
   .delete-btn-premium {
     opacity: 0;
   }

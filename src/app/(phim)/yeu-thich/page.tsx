@@ -142,7 +142,7 @@ export default function MovieLibraryPage() {
                       <span className="text-[10px] font-black opacity-40">{p.movies.length}</span>
                    </div>
                    
-                   <div className="absolute right-3 top-3 opacity-0 group-hover:opacity-100 transition-opacity">
+                   <div className="absolute right-3 top-3 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity">
                       <button 
                         onClick={(e) => { e.stopPropagation(); handleDeletePlaylist(p.id, p.name); }}
                         className="p-2 rounded-xl bg-red-500/20 text-red-500 hover:bg-red-500 hover:text-white transition-all shadow-xl"
