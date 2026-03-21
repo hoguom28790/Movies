@@ -1,5 +1,6 @@
 "use client";
 
+import { getAniListAuthUrl } from "@/lib/anilist";
 import { useAuth } from "@/contexts/AuthContext";
 import { db } from "@/lib/firebase";
 import { doc, getDoc, setDoc } from "firebase/firestore";
@@ -93,10 +94,15 @@ export function useAniList() {
         return null;
     }, [aniListToken]);
 
-    const scrobble = useCallback(async (slug: string, title: string, chapter: string) => {
+    const scrobble = useCallback(async (slug: string, title: string, chapter: string | number) => {
         if (!aniListToken) return;
 
-        const chapterNum = parseInt(chapter.replace(/[^0-9]/g, ""));
+        let chapterNum: number;
+        if (typeof chapter === "string") {
+            chapterNum = parseInt(chapter.replace(/[^0-9]/g, ""));
+        } else {
+            chapterNum = chapter;
+        }
         if (isNaN(chapterNum)) return;
 
         const mediaId = await findMediaId(title, slug);
@@ -143,5 +149,13 @@ export function useAniList() {
         }
     }, [aniListToken, findMediaId, userList]);
 
-    return { status, scrobble, getProgress, aniListToken, userList };
+    const login = useCallback(() => {
+        if (!user) return;
+        const authUrl = getAniListAuthUrl(user.uid);
+        window.location.href = authUrl;
+    }, [user]);
+
+    const isConnected = status === "connected";
+
+    return { status, isConnected, login, scrobble, getProgress, aniListToken, userList };
 }

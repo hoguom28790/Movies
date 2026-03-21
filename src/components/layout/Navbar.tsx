@@ -3,13 +3,14 @@
 import React, { useState, Suspense } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Search, UserCircle, LogOut, Heart, History as HistoryIcon, Settings, BookOpen, Film } from "lucide-react";
+import { Search, UserCircle, LogOut, Heart, History as HistoryIcon, BookOpen, Film } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTheme } from "@/contexts/ThemeContext";
 import { AuthModal } from "@/components/auth/AuthModal";
 import { InstantSearch } from "./InstantSearch";
 import { NavMenu } from "./NavMenu";
 import { MobileMenu } from "./MobileMenu";
+import { SettingsDropdown } from "./SettingsDropdown";
 import { ComicFilters } from "@/components/comic/ComicFilters";
 
 interface NavbarProps {
@@ -90,16 +91,7 @@ export function Navbar({ mode: initialMode }: NavbarProps) {
                 <span className="hidden xs:inline">Lịch sử</span>
               </Link>
               {user && (
-                <Link
-                  href="/settings"
-                  className={`flex items-center gap-1.5 px-2 sm:px-3 py-1.5 rounded-lg transition-all text-[11px] sm:text-[12px] font-medium ${
-                    pathname === "/settings" ? "bg-primary text-white shadow-lg shadow-primary/20" : "bg-white/5 text-white/50 hover:bg-white/10 hover:text-white"
-                  }`}
-                  title="Cài đặt"
-                >
-                  <Settings className="h-3.5 w-3.5" />
-                  <span className="hidden xs:inline">Cài đặt</span>
-                </Link>
+                <SettingsDropdown />
               )}
             </div>
 

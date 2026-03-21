@@ -13,6 +13,7 @@
     "clean:all": "powershell -Command \"Remove-Item -Path .next, .turbo, node_modules -Recurse -Force -ErrorAction SilentlyContinue\""
   },
   "dependencies": {
+    "@headlessui/react": "^2.2.9",
     "@tanstack/react-query": "^5.91.3",
     "firebase": "^12.10.0",
     "lucide-react": "^0.577.0",

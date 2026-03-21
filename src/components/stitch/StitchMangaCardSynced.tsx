@@ -19,9 +19,9 @@ export function StitchMangaCardSynced(props: StitchMangaCardProps) {
     const displayProps = {
         ...props,
         isSynced: !!progressInfo,
-        latestChapter: progressInfo 
+        lastChapter: progressInfo 
             ? `Ch. ${progressInfo.progress}${progressInfo.media.chapters ? ` / ${progressInfo.media.chapters}` : ''}`
-            : props.latestChapter
+            : props.lastChapter
     };
 
     return <StitchMangaCard {...displayProps} />;

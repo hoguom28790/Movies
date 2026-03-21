@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { useAniList } from "@/hooks/useAniList";
-import { SyncIcon } from "@/components/icons/SyncIcon";
+import { RotateCw } from 'lucide-react';
 
 export function StitchAniListSync() {
     const { isConnected, login } = useAniList();
@@ -21,7 +21,7 @@ export function StitchAniListSync() {
                 
                 <div className="flex items-center gap-6 z-10">
                     <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center text-primary group-hover:scale-110 transition-transform duration-500">
-                        <SyncIcon className="w-8 h-8 animate-spin-slow" />
+                        <RotateCw className="w-8 h-8 animate-spin-slow" />
                     </div>
                 </div>
             </div>
@@ -43,7 +43,7 @@ export function StitchAniListSync() {
                 onClick={login}
                 className="z-10 bg-primary-container px-12 py-5 font-headline font-bold text-on-primary-container uppercase tracking-[0.4em] text-sm hover:brightness-110 hover:scale-105 transition-all editorial-shadow flex items-center gap-4 group/btn"
             >
-                <SyncIcon className="w-5 h-5 group-hover/btn:rotate-180 transition-transform duration-700" />
+                <RotateCw className="w-5 h-5 group-hover/btn:rotate-180 transition-transform duration-700" />
                 Liên Kết Ngay
             </button>
             

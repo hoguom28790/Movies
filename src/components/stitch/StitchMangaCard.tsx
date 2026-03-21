@@ -3,9 +3,9 @@
 import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { SyncIcon } from "@/components/icons/SyncIcon";
+import { RotateCw } from 'lucide-react';
 
-interface StitchMangaCardProps {
+export interface StitchMangaCardProps {
     title: string;
     description?: string;
     imageUrl: string;
@@ -72,7 +72,7 @@ export function StitchMangaCard({
                     {isSynced && (
                         <div className="absolute top-4 left-4 z-20">
                             <div className="bg-primary-container p-2 rounded-full shadow-lg">
-                                <SyncIcon className="w-4 h-4 text-on-primary-container animate-pulse" />
+                                <RotateCw className="w-4 h-4 text-on-primary-container animate-pulse" />
                             </div>
                         </div>
                     )}
@@ -120,7 +120,7 @@ export function StitchMangaCard({
                 {isSynced && (
                     <div className="absolute top-3 left-3 z-20">
                         <div className="bg-primary-container p-1.5 rounded-full shadow-lg backdrop-blur-md border border-on-primary-container/20">
-                            <SyncIcon className="w-3.5 h-3.5 text-on-primary-container" />
+                            <RotateCw className="w-3.5 h-3.5 text-on-primary-container" />
                         </div>
                     </div>
                 )}
