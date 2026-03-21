@@ -34,19 +34,19 @@ interface DropdownConfig {
 }
 
 const dropdowns: DropdownConfig[] = [
-  { id: "genre", label: "Thể loại", items: GENRES, basePath: "/xx/the-loai" },
-  { id: "country", label: "Quốc gia", items: COUNTRIES, basePath: "/xx/quoc-gia" },
+  { id: "genre", label: "Thể loại", items: GENRES, basePath: "/collection/the-loai" },
+  { id: "country", label: "Quốc gia", items: COUNTRIES, basePath: "/collection/quoc-gia" },
 ];
 
 const directLinks = [
-  { label: "Việt Sub", href: "/xx/the-loai/NMf5df5FMg" },
-  { label: "Nhật Bản", href: "/xx/quoc-gia/jp" },
-  { label: "Không che", href: "/xx/the-loai/vdDkXwQsHi" },
-  { label: "Nguồn TopXX", href: "/xx/nguon/topxx" },
-  { label: "Nguồn AVDB", href: "/xx/nguon/avdb" },
-  { label: "Diễn viên", href: "/xx/dien-vien" },
-  { label: "Thư viện", href: "/xx/yeu-thich" },
-  { label: "Lịch sử", href: "/xx/lich-su" },
+  { label: "Việt Sub", href: "/collection/the-loai/NMf5df5FMg" },
+  { label: "Nhật Bản", href: "/collection/quoc-gia/jp" },
+  { label: "Không che", href: "/collection/the-loai/vdDkXwQsHi" },
+  { label: "Nguồn TopXX", href: "/collection/nguon/topxx" },
+  { label: "Nguồn AVDB", href: "/collection/nguon/avdb" },
+  { label: "Diễn viên", href: "/collection/dien-vien" },
+  { label: "Thư viện", href: "/collection/yeu-thich" },
+  { label: "Lịch sử", href: "/collection/lich-su" },
 ];
 
 export function XXNav() {
@@ -97,7 +97,7 @@ export function XXNav() {
       </button>
 
       <Link
-        href="/xx"
+        href="/collection"
         className="px-3 py-2 text-[16px] md:text-[14px] font-black text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-orange-500 hover:opacity-80 transition-opacity uppercase italic tracking-tighter"
       >
         TOP XX
@@ -161,7 +161,7 @@ export function XXNav() {
 
       {/* Mobile Menu Overlay */}
       <div 
-        className={`fixed inset-0 z-[100] bg-black/95 backdrop-blur-2xl transition-all duration-500 ease-in-out md:hidden ${
+        className={`fixed inset-0 z-[1000] bg-black transition-all duration-500 ease-in-out md:hidden ${
           isMobileMenuOpen ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-full pointer-events-none"
         }`}
       >

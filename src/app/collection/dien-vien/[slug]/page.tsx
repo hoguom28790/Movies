@@ -16,7 +16,7 @@ export default async function XXActorPage({ params }: { params: Promise<{ slug: 
       <XXMovieGrid 
         initialMovies={initialData.items || []} 
         title={`DIỄN VIÊN: ${actorName}`} 
-        fetchUrl={`/api/xx?type=dien-vien&slug=${slug}`}
+        fetchUrl={`/api/collection?type=dien-vien&slug=${slug}`}
         initialPage={1}
         totalPages={initialData.pagination?.totalPages || 1}
       />

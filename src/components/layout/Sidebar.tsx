@@ -22,15 +22,15 @@ const menuItems = [
 ];
 
 const mobileItems = [
-  { icon: Home, label: "Trang chủ", href: "/", xxHref: "/xx" },
-  { icon: LayoutGrid, label: "Duyệt Tìm", href: "/the-loai", xxHref: "/xx/the-loai" },
-  { icon: History, label: "Lịch sử", href: "/history", xxHref: "/xx/lich-su" },
-  { icon: Heart, label: "Yêu thích", href: "/watchlist", xxHref: "/xx/yeu-thich" },
+  { icon: Home, label: "Trang chủ", href: "/", xxHref: "/collection" },
+  { icon: LayoutGrid, label: "Duyệt Tìm", href: "/the-loai", xxHref: "/collection/the-loai" },
+  { icon: History, label: "Lịch sử", href: "/history", xxHref: "/collection/lich-su" },
+  { icon: Heart, label: "Yêu thích", href: "/watchlist", xxHref: "/collection/yeu-thich" },
 ];
 
 export function Sidebar() {
   const pathname = usePathname();
-  const isXX = pathname.startsWith("/xx");
+  const isXX = pathname.startsWith("/collection");
 
   const isActive = (href: string) => 
     href === "/" ? pathname === "/" : pathname.startsWith(href);
@@ -41,10 +41,10 @@ export function Sidebar() {
       <aside className="fixed left-0 top-0 z-40 hidden h-screen w-[72px] flex-col items-center border-r border-white/[0.06] bg-[#0a0a0a] pt-20 md:flex">
         <nav className="flex flex-1 flex-col items-center gap-6 pt-4">
           {(isXX ? [
-            { icon: Home, label: "Home", href: "/xx" },
-            { icon: LayoutGrid, label: "Thể loại", href: "/xx/the-loai" },
-            { icon: History, label: "Lịch sử", href: "/xx/lich-su" },
-            { icon: Heart, label: "Thư viện", href: "/xx/yeu-thich" },
+            { icon: Home, label: "Home", href: "/collection" },
+            { icon: LayoutGrid, label: "Thể loại", href: "/collection/the-loai" },
+            { icon: History, label: "Lịch sử", href: "/collection/lich-su" },
+            { icon: Heart, label: "Thư viện", href: "/collection/yeu-thich" },
           ] : menuItems).map((item) => {
             const active = isActive(item.href);
             return (

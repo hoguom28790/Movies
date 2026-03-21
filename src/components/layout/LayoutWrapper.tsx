@@ -6,7 +6,7 @@ import { Footer } from "@/components/layout/Footer";
 
 export function LayoutWrapper({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const isXX = pathname.startsWith("/xx");
+  const isXX = pathname.startsWith("/collection");
 
   return (
     <div className="min-h-screen flex flex-col">

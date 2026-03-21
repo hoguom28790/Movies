@@ -122,9 +122,9 @@ export default function XXMovieDetailClient({ item, slug, autoPlay }: XXMovieDet
                      Dữ liệu chi tiết
                    </h3>
                    <ul className="space-y-10">
-                      <DetailItem icon={<Tag className="w-4 h-4 text-white/20"/>} label="Thể loại" items={isAVDB ? (Array.isArray(item.category) ? item.category.map((c: any) => ({ name: c, code: c })) : [{ name: item.category, code: item.category }]) : item.genres} path="/xx/the-loai" />
-                      <DetailItem icon={<Globe className="w-4 h-4 text-white/20"/>} label="Quốc gia" items={isAVDB ? (Array.isArray(item.country) ? item.country.map((c: any) => ({ name: c, code: c })) : [{ name: item.country, code: item.country }]) : item.countries} path="/xx/quoc-gia" />
-                      <DetailItem icon={<Users className="w-4 h-4 text-white/20"/>} label="Diễn viên" items={isAVDB ? (Array.isArray(item.actor) ? item.actor.map((a: any) => ({ trans: [{ locale: 'vi', name: a }] })) : item.actor?.split(',').map((a: any) => ({ trans: [{ locale: 'vi', name: a.trim() }] }))) : item.actors} path="/xx/dien-vien" isActor />
+                      <DetailItem icon={<Tag className="w-4 h-4 text-white/20"/>} label="Thể loại" items={isAVDB ? (Array.isArray(item.category) ? item.category.map((c: any) => ({ name: c, code: c })) : [{ name: item.category, code: item.category }]) : item.genres} path="/collection/the-loai" />
+                      <DetailItem icon={<Globe className="w-4 h-4 text-white/20"/>} label="Quốc gia" items={isAVDB ? (Array.isArray(item.country) ? item.country.map((c: any) => ({ name: c, code: c })) : [{ name: item.country, code: item.country }]) : item.countries} path="/collection/quoc-gia" />
+                      <DetailItem icon={<Users className="w-4 h-4 text-white/20"/>} label="Diễn viên" items={isAVDB ? (Array.isArray(item.actor) ? item.actor.map((a: any) => ({ trans: [{ locale: 'vi', name: a }] })) : item.actor?.split(',').map((a: any) => ({ trans: [{ locale: 'vi', name: a.trim() }] }))) : item.actors} path="/collection/dien-vien" isActor />
                    </ul>
                 </div>
              </div>
@@ -214,19 +214,19 @@ export default function XXMovieDetailClient({ item, slug, autoPlay }: XXMovieDet
                   icon={<Tag className="w-4 h-4" />} 
                   label="Category" 
                   items={isAVDB ? (Array.isArray(item.category) ? item.category.map((c: any) => ({ name: c, code: c })) : [{ name: item.category, code: item.category }]) : item.genres} 
-                  path="/xx/the-loai" 
+                  path="/collection/the-loai" 
                />
                <DetailItem 
                   icon={<Globe className="w-4 h-4" />} 
                   label="Production" 
                   items={isAVDB ? (Array.isArray(item.country) ? item.country.map((c: any) => ({ name: c, code: c })) : [{ name: item.country, code: item.country }]) : item.countries} 
-                  path="/xx/quoc-gia" 
+                  path="/collection/quoc-gia" 
                />
                <DetailItem 
                   icon={<Users className="w-4 h-4" />} 
                   label="Starring" 
                   items={isAVDB ? (Array.isArray(item.actor) ? item.actor.map((a: any) => ({ trans: [{ locale: 'vi', name: a }] })) : item.actor?.split(',').map((a: any) => ({ trans: [{ locale: 'vi', name: a.trim() }] }))) : item.actors} 
-                  path="/xx/dien-vien" 
+                  path="/collection/dien-vien" 
                   isActor 
                />
              </ul>

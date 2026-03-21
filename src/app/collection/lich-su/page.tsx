@@ -3,12 +3,12 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Play, Trash2, Clock, X } from "lucide-react";
-import { getXXHistory, clearXXHistory, XXHistoryEntry, removeXXHistoryItem } from "@/services/xxDb";
+import { getXXHistory, clearXXHistory, XXHistoryEntry, removeXXHistoryItem } from "@/services/collectionDb";
 import { useAuth } from "@/contexts/AuthContext";
 import { 
   getXXFirestoreHistory, 
   deleteXXFirestoreHistoryItem 
-} from "@/services/xxFirestore";
+} from "@/services/collectionFirestore";
 import { db } from "@/lib/firebase";
 import { doc, deleteDoc, collection, query, where, getDocs } from "firebase/firestore";
 
@@ -110,7 +110,7 @@ export default function XXHistoryPage() {
              <Play className="w-10 h-10 text-white/10" />
           </div>
           <p className="text-white/20 font-black uppercase tracking-[0.3em] italic">Ký ức điện ảnh đang chờ bạn...</p>
-          <Link href="/xx" className="mt-10">
+          <Link href="/collection" className="mt-10">
             <Button className="rounded-[20px] px-10 h-14 font-black uppercase tracking-widest text-xs shadow-2xl shadow-yellow-500/20">Khám phá ngay</Button>
           </Link>
         </div>

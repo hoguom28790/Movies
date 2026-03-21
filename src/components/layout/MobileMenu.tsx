@@ -16,7 +16,7 @@ const GENRES = [
   { name: "Hoạt Hình", slug: "hoat-hinh" },
   { name: "Cổ Trang", slug: "co-trang" },
   { name: "Phim 18+", slug: "phim-18" },
-  { name: "TopXX 🎬", href: "/xx" },
+  { name: "TopXX 🎬", href: "/collection" },
 ];
  
 const COUNTRIES = [

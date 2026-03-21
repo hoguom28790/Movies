@@ -2,14 +2,14 @@
 
 import { useEffect, useRef } from "react";
 import { useAuth } from "@/contexts/AuthContext";
-import { getXXHistory, getXXFavorites, getXXPlaylists, saveXXHistory, XXFavoriteEntry } from "@/services/xxDb";
+import { getXXHistory, getXXFavorites, getXXPlaylists, saveXXHistory, XXFavoriteEntry } from "@/services/collectionDb";
 import { 
   syncXXLocalToFirestore, 
   getXXFirestoreFavorites, 
   getXXFirestoreHistory,
   syncXXPlaylistsToFirestore,
   getUserXXFirestorePlaylists 
-} from "@/services/xxFirestore";
+} from "@/services/collectionFirestore";
 
 export function XXSyncManager() {
   const { user } = useAuth();

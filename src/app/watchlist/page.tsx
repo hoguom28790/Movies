@@ -219,7 +219,7 @@ export default function LibraryPage() {
                           />
                           <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent opacity-80" />
                           
-                          <div className="absolute top-5 left-5 opacity-0 group-hover:opacity-100 transition-all duration-500 translate-x-[-10px] group-hover:translate-x-0">
+                          <div className="absolute top-5 left-5 md:opacity-0 md:group-hover:opacity-100 transition-all duration-500 md:translate-x-[-10px] md:group-hover:translate-x-0">
                              <button 
                                onClick={(e) => handleRemoveMovie(activePlaylistId!, movie.movieSlug, e)}
                                className="w-12 h-12 rounded-2xl bg-black/60 backdrop-blur-2xl text-red-500 border border-white/10 flex items-center justify-center hover:bg-red-500 hover:text-white transition-all shadow-2xl"

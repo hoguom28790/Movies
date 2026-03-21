@@ -17,7 +17,7 @@ export function Navbar() {
   const { theme, setTheme } = useTheme();
   const pathname = usePathname();
 
-  if (pathname.startsWith("/xx")) return null;
+  if (pathname.startsWith("/collection")) return null;
 
   return (
     <>

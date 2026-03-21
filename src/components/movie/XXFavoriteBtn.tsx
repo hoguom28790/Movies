@@ -2,9 +2,9 @@
 
 import { useState, useEffect } from "react";
 import { Heart, Loader2 } from "lucide-react";
-import { isXXFavorite, toggleXXFavorite } from "@/services/xxDb";
+import { isXXFavorite, toggleXXFavorite } from "@/services/collectionDb";
 import { useAuth } from "@/contexts/AuthContext";
-import { toggleXXFirestoreFavorite, isXXFirestoreFavorite } from "@/services/xxFirestore";
+import { toggleXXFirestoreFavorite, isXXFirestoreFavorite } from "@/services/collectionFirestore";
 
 interface XXFavoriteBtnProps {
   movieCode: string;

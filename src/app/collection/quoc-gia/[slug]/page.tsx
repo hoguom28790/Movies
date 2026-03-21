@@ -15,7 +15,7 @@ export default async function XXCountryPage({ params }: { params: Promise<{ slug
         <XXMovieGrid 
           initialMovies={initialData.items || []} 
           title={`QUỐC GIA: ${slug.toUpperCase()}`} 
-          fetchUrl={`/api/xx?type=quoc-gia&slug=${slug}`}
+          fetchUrl={`/api/collection?type=quoc-gia&slug=${slug}`}
           initialPage={1}
           totalPages={initialData.pagination?.totalPages || 1}
         />

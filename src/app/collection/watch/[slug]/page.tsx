@@ -37,7 +37,7 @@ export default async function XXWatchPage({
         <div className="w-full bg-black pt-safe">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
             <Link
-              href={`/xx/movie/${slug}`}
+              href={`/collection/movie/${slug}`}
               className="flex items-center gap-3 text-sm font-bold text-white/40 hover:text-white transition-all group"
             >
               <div className="p-2 rounded-full bg-white/5 group-hover:bg-yellow-500 group-hover:text-black transition-colors">
@@ -49,7 +49,7 @@ export default async function XXWatchPage({
             <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-2 md:pb-0">
               <span className="text-[10px] font-black text-white/20 uppercase tracking-[0.3em] mr-2">Servers</span>
               {sources.map((src: any, idx: number) => (
-                <Link key={idx} href={`/xx/watch/${slug}?s=${idx}`} scroll={false} replace>
+                <Link key={idx} href={`/collection/watch/${slug}?s=${idx}`} scroll={false} replace>
                   <Button
                     variant={currentIdx === idx ? "primary" : "secondary"}
                     size="sm"
@@ -94,7 +94,7 @@ export default async function XXWatchPage({
 
               <div className="flex items-center gap-3">
                  {prevSourceIdx !== null ? (
-                   <Link href={`/xx/watch/${slug}?s=${prevSourceIdx}`}>
+                   <Link href={`/collection/watch/${slug}?s=${prevSourceIdx}`}>
                      <Button variant="secondary" className="h-12 gap-3 font-black uppercase italic text-[11px] tracking-widest px-6 rounded-2xl border-white/10 bg-white/5">
                        <ChevronLeft className="w-5 h-5" /> Prev
                      </Button>
@@ -106,7 +106,7 @@ export default async function XXWatchPage({
                  )}
                  
                  {nextSourceIdx !== null ? (
-                   <Link href={`/xx/watch/${slug}?s=${nextSourceIdx}`}>
+                   <Link href={`/collection/watch/${slug}?s=${nextSourceIdx}`}>
                      <Button variant="primary" className="h-12 gap-3 font-black uppercase italic text-[11px] tracking-widest px-6 rounded-2xl bg-yellow-500 text-black">
                        Next <ChevronRight className="w-5 h-5" />
                      </Button>
@@ -146,7 +146,7 @@ export default async function XXWatchPage({
         <p className="text-white/40 text-sm max-w-xs mb-8">
           Chúng tôi không thể tải phim này ngay bây giờ. Thử lại sau nhé!
         </p>
-        <Link href={`/xx/movie/${slug}`}>
+        <Link href={`/collection/movie/${slug}`}>
           <Button className="rounded-xl px-8 h-11 bg-yellow-500 text-black">
             Quay lại trang thông tin
           </Button>
