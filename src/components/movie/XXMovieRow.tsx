@@ -28,11 +28,11 @@ export function XXMovieRow({ title, movies, viewAllLink }: XXMovieRowProps) {
   return (
     <div className="space-y-6 mb-16 animate-in fade-in duration-700">
       <div className="flex items-center justify-between px-2">
-        <h2 className="text-xl md:text-2xl font-black text-white uppercase italic tracking-tighter">
+        <h2 className="text-xl md:text-2xl font-black text-foreground uppercase italic tracking-tighter">
           {title}
         </h2>
         {viewAllLink && (
-          <Link href={viewAllLink} className="text-sm font-bold text-white/40 hover:text-yellow-500 transition-colors uppercase tracking-[0.2em] italic">
+          <Link href={viewAllLink} className="text-sm font-bold text-foreground/40 hover:text-primary transition-colors uppercase tracking-[0.2em] italic">
             Xem Tất Cả
           </Link>
         )}
@@ -42,14 +42,14 @@ export function XXMovieRow({ title, movies, viewAllLink }: XXMovieRowProps) {
         {/* Navigation Buttons */}
         <button 
           onClick={() => scroll("left")}
-          className="absolute left-[-20px] top-1/2 -translate-y-1/2 z-10 w-12 h-12 rounded-full bg-white/5 backdrop-blur-3xl border border-white/10 flex items-center justify-center text-white/40 hover:text-white hover:bg-yellow-500 hover:text-black opacity-0 group-hover:opacity-100 transition-all shadow-2xl"
+          className="absolute left-[-20px] top-1/2 -translate-y-1/2 z-10 w-12 h-12 rounded-full bg-foreground/5 backdrop-blur-3xl border border-foreground/10 flex items-center justify-center text-foreground/40 hover:text-primary-foreground hover:bg-primary opacity-0 group-hover:opacity-100 transition-all shadow-2xl"
         >
           <ChevronLeft className="w-6 h-6" />
         </button>
         
         <button 
           onClick={() => scroll("right")}
-          className="absolute right-[-20px] top-1/2 -translate-y-1/2 z-10 w-12 h-12 rounded-full bg-white/5 backdrop-blur-3xl border border-white/10 flex items-center justify-center text-white/40 hover:text-white hover:bg-yellow-500 hover:text-black opacity-0 group-hover:opacity-100 transition-all shadow-2xl"
+          className="absolute right-[-20px] top-1/2 -translate-y-1/2 z-10 w-12 h-12 rounded-full bg-foreground/5 backdrop-blur-3xl border border-foreground/10 flex items-center justify-center text-foreground/40 hover:text-primary-foreground hover:bg-primary opacity-0 group-hover:opacity-100 transition-all shadow-2xl"
         >
           <ChevronRight className="w-6 h-6" />
         </button>

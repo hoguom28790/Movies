@@ -41,7 +41,7 @@ export default function TopXXLayout({
 
   if (!isAuthorized) {
     return (
-      <div className="min-h-screen bg-black flex items-center justify-center font-black uppercase tracking-[0.4em] text-white/20 animate-pulse">
+      <div className="min-h-screen bg-background flex items-center justify-center font-black uppercase tracking-[0.4em] text-foreground/20 animate-pulse">
         Lệnh cấm: Truy cập trái phép
       </div>
     );
@@ -56,27 +56,27 @@ export default function TopXXLayout({
       </div>
 
       <div className="flex flex-col">
-        <header className="fixed top-9 z-[1000] w-full border-b border-white/[0.06] bg-[#0a0a0a]/90 backdrop-blur-xl transition-all duration-300 pt-safe">
+        <header className="fixed top-9 z-[1000] w-full border-b border-foreground/[0.06] bg-surface/90 backdrop-blur-xl transition-all duration-300 pt-safe font-black italic">
           <div className="container mx-auto flex h-14 items-center justify-between px-4 lg:px-8">
             <Link href={`/${TOPXX_PATH}`} className="flex items-center gap-2">
               <span className="text-xl font-black tracking-tighter text-primary font-headline italic">TopXX 🎬</span>
             </Link>
             
             <nav className="flex items-center gap-2 sm:gap-4">
-              <Link href={`/${TOPXX_PATH}`} className={`p-2 transition-colors ${pathname === `/${TOPXX_PATH}` ? "text-primary" : "text-white/60 hover:text-primary"}`}>
+              <Link href={`/${TOPXX_PATH}`} className={`p-2 transition-colors ${pathname === `/${TOPXX_PATH}` ? "text-primary" : "text-foreground/60 hover:text-primary"}`}>
                 <Home className="w-5 h-5" />
               </Link>
-              <Link href={`/${TOPXX_PATH}/lich-su`} className={`p-2 transition-colors ${pathname === `/${TOPXX_PATH}/lich-su` ? "text-primary" : "text-white/60 hover:text-primary"}`}>
+              <Link href={`/${TOPXX_PATH}/lich-su`} className={`p-2 transition-colors ${pathname === `/${TOPXX_PATH}/lich-su` ? "text-primary" : "text-foreground/60 hover:text-primary"}`}>
                 <HistoryIcon className="w-5 h-5" />
               </Link>
-              <Link href={`/${TOPXX_PATH}/yeu-thich`} className={`p-2 transition-colors ${pathname === `/${TOPXX_PATH}/yeu-thich` ? "text-primary" : "text-white/60 hover:text-primary"}`}>
+              <Link href={`/${TOPXX_PATH}/yeu-thich`} className={`p-2 transition-colors ${pathname === `/${TOPXX_PATH}/yeu-thich` ? "text-primary" : "text-foreground/60 hover:text-primary"}`}>
                 <Heart className="w-5 h-5" />
               </Link>
-              <Link href="/settings" className="p-2 text-white/60 hover:text-primary transition-colors hidden sm:block">
+              <Link href="/settings" className="p-2 text-foreground/60 hover:text-primary transition-colors hidden sm:block">
                 <User className="w-5 h-5" />
               </Link>
               <ThemeToggle />
-              <Link href="/" className="px-3 sm:px-4 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-white/60 hover:text-white text-[11px] sm:text-[12px] font-bold transition-all border border-white/5 whitespace-nowrap">
+              <Link href="/" className="px-3 sm:px-4 py-1.5 rounded-lg bg-foreground/5 hover:bg-primary hover:text-primary-foreground text-foreground/60 text-[11px] sm:text-[12px] font-bold transition-all border border-foreground/5 whitespace-nowrap">
                 Sang Hồ Phim
               </Link>
             </nav>
@@ -87,10 +87,10 @@ export default function TopXXLayout({
           {children}
         </main>
         
-        <footer className="py-20 border-t border-white/[0.06] bg-[#050505] text-center">
+        <footer className="py-20 border-t border-foreground/[0.06] bg-surface text-center">
           <div className="container mx-auto px-4">
              <span className="text-xl font-black italic tracking-tighter text-primary mb-4 block">TopXX</span>
-             <p className="text-white/20 text-[12px] max-w-md mx-auto mb-8">
+             <p className="text-foreground/20 text-[12px] max-w-md mx-auto mb-8 font-black uppercase tracking-widest">
                Nội dung được cung cấp chỉ dành cho mục đích cá nhân. Vui lòng không chia sẻ cho người dưới 18 tuổi.
              </p>
              <Link href="/" className="text-primary hover:text-primary-hover font-bold text-sm underline underline-offset-4">

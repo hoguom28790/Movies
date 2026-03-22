@@ -28,16 +28,16 @@ export function XXHeroSection({ movie }: XXHeroSectionProps) {
   return (
     <div className={`relative w-full ${
       isIPhone ? "h-[65vh] min-h-[450px] rounded-[48px]" : "h-[75vh] md:h-[85vh] min-h-[600px] rounded-[64px]"
-    } overflow-hidden mb-16 group shadow-2xl shadow-black`}>
+    } overflow-hidden mb-16 group shadow-2xl shadow-primary/20 bg-surface`}>
       {/* Background Image with Parallax & Gradients */}
       <div className="absolute inset-0 scale-105 group-hover:scale-110 transition-transform duration-[4000ms] ease-out">
         <img 
           src={movie.posterUrl} 
           alt={movie.title} 
-          className="w-full h-full object-cover opacity-60" 
+          className="w-full h-full object-cover opacity-60 dark:opacity-40" 
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/30 to-transparent" />
-        <div className="absolute inset-0 bg-gradient-to-r from-black via-black/40 to-transparent md:hidden" />
+        <div className="absolute inset-0 bg-gradient-to-t from-background via-background/30 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-r from-background via-background/40 to-transparent md:hidden" />
       </div>
 
       {/* Hero Content */}
@@ -54,25 +54,25 @@ export function XXHeroSection({ movie }: XXHeroSectionProps) {
               <Play className="w-3 h-3 fill-current" />
               TOP RATED
             </div>
-            <div className="flex items-center gap-2 text-white/40 text-[11px] font-black uppercase tracking-[0.2em] italic">
+            <div className="flex items-center gap-2 text-foreground/40 text-[11px] font-black uppercase tracking-[0.2em] italic">
               <Calendar className="w-3.5 h-3.5" />
               {movie.year || "2025"}
             </div>
             {!isIPhone && (
-              <div className="px-3 py-1 bg-white/5 border border-white/5 backdrop-blur-md rounded-lg text-white/60 font-black text-[10px] uppercase italic tracking-[0.2em]">{movie.quality || "ULTRA HD"}</div>
+            <div className="px-3 py-1 bg-foreground/5 border border-foreground/5 backdrop-blur-md rounded-lg text-foreground/60 font-black text-[10px] uppercase italic tracking-[0.2em]">{movie.quality || "ULTRA HD"}</div>
             )}
           </div>
 
           <div className="space-y-4 md:space-y-6">
             <h1 className={`${
               isIPhone ? "text-5xl" : "text-7xl md:text-[140px]"
-            } font-black text-white leading-[0.85] tracking-tighter uppercase italic select-none drop-shadow-[0_10px_10px_rgba(0,0,0,0.5)]`}>
+            } font-black text-foreground leading-[0.85] tracking-tighter uppercase italic select-none drop-shadow-[0_10px_10px_rgba(0,0,0,0.1)] dark:drop-shadow-[0_10px_10px_rgba(0,0,0,0.5)]`}>
               {movie.title}
             </h1>
 
             <p className={`${
               isIPhone ? "text-[13px]" : "text-lg md:text-2xl"
-            } text-white/40 font-medium italic line-clamp-2 md:line-clamp-3 leading-relaxed max-w-2xl`}>
+            } text-foreground/40 font-medium italic line-clamp-2 md:line-clamp-3 leading-relaxed max-w-2xl`}>
               {movie.originalTitle && <span className="text-yellow-500/80 block mb-2 not-italic font-black text-[10px] uppercase tracking-[0.3em]">{movie.originalTitle}</span>}
               Siêu phẩm điện ảnh độc quyền chỉ có tại TopXX. Khám phá những câu chuyện hấp dẫn và hình ảnh sống động đỉnh cao ngay bây giờ.
             </p>
@@ -93,7 +93,7 @@ export function XXHeroSection({ movie }: XXHeroSectionProps) {
                 <Button 
                   variant="secondary" 
                   size="lg" 
-                  className={`${isIPhone ? "h-16 text-[11px]" : "h-20 px-10 text-xs"} w-full rounded-[28px] bg-white/5 backdrop-blur-3xl border-white/10 font-black uppercase tracking-[0.2em] italic hover:bg-white/10 transition-all border-dashed`}
+                  className={`${isIPhone ? "h-16 text-[11px]" : "h-20 px-10 text-xs"} w-full rounded-[28px] bg-foreground/5 backdrop-blur-3xl border-foreground/10 text-foreground font-black uppercase tracking-[0.2em] italic hover:bg-foreground/10 transition-all border-dashed`}
                 >
                   <Info className={`${isIPhone ? "w-4 h-4 mr-2" : "w-6 h-6 mr-3"}`} /> Details
                 </Button>

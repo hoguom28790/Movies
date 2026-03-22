@@ -39,14 +39,14 @@ export default function MovieHistoryPage() {
 
   }, [user, authLoading]);
 
-  if (authLoading || loading) return <div className="p-8 text-center text-neutral-400 mt-24">Đang tải lịch sử xem phim...</div>;
+  if (authLoading || loading) return <div className="p-8 text-center text-foreground/40 mt-24">Đang tải lịch sử xem phim...</div>;
 
   if (!user) {
     return (
       <div className="container mx-auto px-4 py-24 text-center mt-12 flex flex-col items-center">
-        <Film className="w-16 h-16 text-white/10 mb-6" />
-        <h2 className="text-2xl font-bold mb-4">Bạn chưa đăng nhập</h2>
-        <p className="text-neutral-400 mb-8">Vui lòng đăng nhập để xem lịch sử xem phim của bạn.</p>
+        <Film className="w-16 h-16 text-foreground/10 mb-6" />
+        <h2 className="text-2xl font-bold mb-4 text-foreground">Bạn chưa đăng nhập</h2>
+        <p className="text-foreground/40 mb-8">Vui lòng đăng nhập để xem lịch sử xem phim của bạn.</p>
         <Button onClick={() => window.location.href='/login'} className="px-8 py-3 rounded-2xl font-bold">Đăng Nhập Ngay</Button>
       </div>
     );
@@ -55,7 +55,7 @@ export default function MovieHistoryPage() {
   return (
     <div className="container mx-auto px-4 py-8 mt-16 min-h-screen">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12">
-        <h1 className="text-primaryxl font-black italic tracking-tighter uppercase border-l-4 border-primary pl-4">Lịch Sử Xem Phim</h1>
+        <h1 className="text-4xl font-black italic tracking-tighter uppercase border-l-4 border-primary pl-4 text-foreground">Lịch Sử Xem Phim</h1>
         <div className="flex items-center gap-2 px-4 py-2 bg-primary/10 rounded-xl border border-primary/20">
           <Film className="w-4 h-4 text-primary" />
           <span className="text-xs font-bold text-primary uppercase tracking-widest">{items.length} Bộ phim</span>
@@ -63,9 +63,9 @@ export default function MovieHistoryPage() {
       </div>
       
       {items.length === 0 ? (
-        <div className="text-center py-20 bg-white/[0.02] border border-dashed border-white/10 rounded-[30px] flex flex-col items-center">
-          <Film className="w-12 h-12 text-white/5 mb-4" />
-          <p className="text-neutral-500 font-bold uppercase tracking-widest text-sm">Bạn chưa xem bộ phim nào gần đây.</p>
+        <div className="text-center py-20 bg-foreground/[0.02] border border-dashed border-foreground/10 rounded-[30px] flex flex-col items-center">
+          <Film className="w-12 h-12 text-foreground/5 mb-4" />
+          <p className="text-foreground/50 font-bold uppercase tracking-widest text-sm">Bạn chưa xem bộ phim nào gần đây.</p>
         </div>
       ) : (
         <div className="grid grid-cols-2 xs:grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6 sm:gap-8 animate-in fade-in duration-700">
@@ -89,10 +89,10 @@ export default function MovieHistoryPage() {
                 {progressPercent > 0 && (
                   <div className="w-full mt-3 px-1">
                     <div className="flex justify-between items-center mb-1.5">
-                      <span className="text-[10px] font-bold text-white/40 uppercase tracking-wider">Tiến độ</span>
+                      <span className="text-[10px] font-bold text-foreground/40 uppercase tracking-wider">Tiến độ</span>
                       <span className="text-[10px] font-bold text-primary">{progressPercent}%</span>
                     </div>
-                    <div className="w-full h-1.5 bg-white/10 rounded-full overflow-hidden">
+                    <div className="w-full h-1.5 bg-foreground/10 rounded-full overflow-hidden">
                       <div className="h-full bg-primary transition-all rounded-full" style={{ width: `${progressPercent}%` }} />
                     </div>
                   </div>

@@ -97,12 +97,12 @@ export default async function WatchPage({
       : `https://img.ophim.live/uploads/movies/${poster}`;
  
     return (
-      <div className={`min-h-screen bg-black pt-14 pb-safe md:pb-0`}>
-        <div className="w-full bg-black pt-safe">
+      <div className={`min-h-screen bg-background pt-14 pb-safe md:pb-0`}>
+        <div className="w-full bg-background pt-safe">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-2 sm:py-3 flex items-center justify-between gap-2">
             <Link
               href={`/phim/${slug}`}
-              className="flex items-center gap-2 text-[13px] font-medium text-white/60 hover:text-white transition-colors min-w-0"
+              className="flex items-center gap-2 text-[13px] font-medium text-foreground/60 hover:text-primary transition-colors min-w-0"
             >
               <ArrowLeft className="w-4 h-4 flex-shrink-0" />
               <span className="truncate">{data.name}</span>
@@ -116,7 +116,7 @@ export default async function WatchPage({
                 </div>
               )}
               
-              <span className="text-[10px] font-semibold text-white/30 uppercase tracking-wider hidden sm:block">Nguồn phim:</span>
+              <span className="text-[10px] font-semibold text-foreground/30 uppercase tracking-wider hidden sm:block">Nguồn phim:</span>
               
               {/* Source Switcher Dropdown - Fixed hover gap */}
               <div className="relative group cursor-pointer mr-2">
@@ -126,10 +126,10 @@ export default async function WatchPage({
                 
                 {/* Dropdown Menu with Bridge */}
                 <div className="absolute right-0 top-full pt-2 w-36 opacity-0 translate-y-2 pointer-events-none group-hover:opacity-100 group-hover:translate-y-0 group-hover:pointer-events-auto transition-all duration-200 z-[100]">
-                  <div className="bg-[#1a1a1a]/95 backdrop-blur-3xl border border-white/10 rounded-xl shadow-2xl flex flex-col p-1 overflow-hidden">
+                  <div className="bg-surface/95 backdrop-blur-3xl border border-foreground/10 rounded-xl shadow-2xl flex flex-col p-1 overflow-hidden">
                     {AVAILABLE_SOURCES.map((src) => (
                       <Link key={src.id} href={`/xem/${src.id}/${slug}/${episode}`} replace scroll={false}>
-                         <button className={`w-full text-left px-3 py-2.5 text-[12px] font-bold rounded-lg transition-colors border-b border-white/5 last:border-none ${activeSource === src.id ? "bg-primary text-white" : "text-white/60 hover:bg-white/5 hover:text-white"}`}>
+                         <button className={`w-full text-left px-3 py-2.5 text-[12px] font-bold rounded-lg transition-colors border-b border-foreground/5 last:border-none ${activeSource === src.id ? "bg-primary text-primary-foreground" : "text-foreground/60 hover:bg-foreground/5 hover:text-foreground"}`}>
                            {src.name}
                          </button>
                       </Link>
@@ -156,12 +156,12 @@ export default async function WatchPage({
         <div className="container mx-auto px-3 sm:px-4 lg:px-8 py-5 flex flex-col gap-6">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
-              <h1 className="text-lg sm:text-2xl md:text-3xl font-bold text-white">
+              <h1 className="text-lg sm:text-2xl md:text-3xl font-bold text-foreground">
                 {data.name}
                 <span className="text-primary ml-2 text-base sm:text-2xl">- Tập {currentEp.name}</span>
               </h1>
               {(data.origin_name || data.original_name) && (
-                <p className="text-sm text-white/40 mt-1">{data.origin_name || data.original_name}</p>
+                <p className="text-sm text-foreground/40 mt-1">{data.origin_name || data.original_name}</p>
               )}
             </div>
  
@@ -193,11 +193,11 @@ export default async function WatchPage({
  
           {allServers.map((server, sIdx) => (
             <section key={sIdx}>
-              <h3 className="text-base font-bold mb-3 text-white/50 uppercase tracking-wider flex items-center gap-2">
+              <h3 className="text-base font-bold mb-3 text-foreground/50 uppercase tracking-wider flex items-center gap-2">
                 <span className="w-1 h-4 bg-primary rounded-full" />
                 {allServers.length > 1 ? server.name : "Chọn Tập"}
               </h3>
-              <div className="flex gap-1.5 flex-wrap max-h-60 overflow-y-auto p-3 bg-white/[0.02] rounded-xl border border-white/[0.06]">
+              <div className="flex gap-1.5 flex-wrap max-h-60 overflow-y-auto p-3 bg-foreground/[0.02] rounded-xl border border-foreground/[0.06]">
                 {server.items.map((ep: any, idx: number) => {
                   const epId = ep.slug || ep.name;
                   const isCurrent = sIdx === currentServerIdx && (ep.slug === episode || ep.name === episode);
@@ -206,7 +206,7 @@ export default async function WatchPage({
                       <Button
                         variant={isCurrent ? "primary" : "secondary"}
                         className={`min-w-[3.5rem] px-3 sm:px-4 h-8 sm:h-9 text-[11px] sm:text-[12px] font-semibold rounded-lg transition-all ${
-                          isCurrent ? "shadow-lg shadow-primary/30" : "bg-white/5 border-white/5 hover:bg-white/10"
+                          isCurrent ? "shadow-lg shadow-primary/30" : "bg-foreground/5 border-foreground/5 hover:bg-foreground/10 hover:text-foreground"
                         }`}
                       >
                         {ep.name}

@@ -38,6 +38,7 @@ export function PlayerContainer({ url, isHls, rawEmbedUrl, nextEpisodeUrl, movie
   const [isAnime, setIsAnime] = useState(false);
   const [malId, setMalId] = useState<number | null>(null);
   const [toast, setToast] = useState<React.ReactNode | null>(null);
+  const lastProcessedSkip = useRef<number | null>(null);
 
   useEffect(() => {
     if (toast) {
@@ -262,6 +263,9 @@ export function PlayerContainer({ url, isHls, rawEmbedUrl, nextEpisodeUrl, movie
     const currentSkip = skipTimes.find(s => currentTime >= s.startTime && currentTime <= s.endTime);
     
     if (currentSkip) {
+      if (lastProcessedSkip.current === currentSkip.startTime) return;
+      lastProcessedSkip.current = currentSkip.startTime;
+
       if (userSettings?.autoSkipIntro) {
         handleSeek(currentSkip.endTime + 0.5);
         setToast(
@@ -269,7 +273,7 @@ export function PlayerContainer({ url, isHls, rawEmbedUrl, nextEpisodeUrl, movie
             <span>Đã tự động bỏ qua mở đầu ⏩</span>
             <button 
               onClick={handleDisableAutoSkip}
-              className="px-2 py-0.5 rounded bg-primary text-[10px] font-black uppercase hover:bg-primary-hover transition-colors"
+              className="px-2 py-0.5 rounded bg-primary text-primary-foreground text-[10px] font-black uppercase hover:bg-primary-hover transition-colors shadow-lg"
             >
               Tắt tự động
             </button>
@@ -279,6 +283,7 @@ export function PlayerContainer({ url, isHls, rawEmbedUrl, nextEpisodeUrl, movie
         setSkipShow(currentSkip);
       }
     } else {
+      lastProcessedSkip.current = null;
       setSkipShow(null);
     }
   }, [currentTime, skipTimes, userSettings?.autoSkipIntro]);
@@ -374,18 +379,6 @@ export function PlayerContainer({ url, isHls, rawEmbedUrl, nextEpisodeUrl, movie
         )}
       </AnimatePresence>
 
-      <AnimatePresence>
-        {toast && (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9, y: -20, x: "-50%" }}
-            animate={{ opacity: 1, scale: 1, y: 0, x: "-50%" }}
-            exit={{ opacity: 0, scale: 0.9, y: -20, x: "-50%" }}
-            className="absolute top-20 left-1/2 z-[200] bg-white/10 backdrop-blur-xl border border-white/10 text-white px-6 py-3 rounded-full shadow-2xl font-bold text-sm tracking-wide pointer-events-none"
-          >
-            {toast}
-          </motion.div>
-        )}
-      </AnimatePresence>
       {/* Toast Notification */}
       <AnimatePresence>
         {toast && (
@@ -393,7 +386,7 @@ export function PlayerContainer({ url, isHls, rawEmbedUrl, nextEpisodeUrl, movie
             initial={{ opacity: 0, y: -20, scale: 0.9 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -20, scale: 0.9 }}
-            className="absolute top-12 left-1/2 -translate-x-1/2 z-[200] px-5 py-3 rounded-2xl bg-black/80 backdrop-blur-xl border border-white/10 text-white text-[13px] font-bold shadow-2xl flex items-center gap-3 whitespace-nowrap"
+            className="absolute top-12 left-1/2 -translate-x-1/2 z-[200] px-5 py-3 rounded-2xl bg-black/80 backdrop-blur-xl border border-white/10 text-white text-[13px] font-bold shadow-2xl flex items-center gap-3 whitespace-nowrap pointer-events-auto"
           >
             {toast}
           </motion.div>

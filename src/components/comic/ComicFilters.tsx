@@ -89,17 +89,17 @@ export function ComicFilters() {
     <div className="relative" ref={dropdownRef}>
       <button 
         onClick={() => setIsOpen(!isOpen)}
-        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[12px] font-bold transition-all shadow-lg ${activeFiltersCount > 0 ? "bg-primary text-white shadow-primary/20" : "bg-white/10 hover:bg-white/20 text-white shadow-black/20"}`}
+        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[12px] font-bold transition-all shadow-lg ${activeFiltersCount > 0 ? "bg-primary text-primary-foreground shadow-primary/20" : "bg-foreground/10 hover:bg-foreground/20 text-foreground"}`}
       >
         <Filter className="w-3.5 h-3.5" />
         Bộ Lọc {activeFiltersCount > 0 && `(${activeFiltersCount})`}
       </button>
 
       {isOpen && (
-        <div className="absolute top-full right-0 mt-2 w-[320px] bg-[#141416]/95 backdrop-blur-xl border border-white/[0.08] shadow-2xl shadow-black/80 rounded-xl p-4 z-50 animate-in fade-in slide-in-from-top-2">
+        <div className="absolute top-full right-0 mt-2 w-[320px] bg-surface/95 backdrop-blur-xl border border-foreground/[0.08] shadow-2xl shadow-black/20 rounded-xl p-4 z-50 animate-in fade-in slide-in-from-top-2">
           
           <div className="flex items-center justify-between mb-4">
-             <h3 className="text-[13px] font-bold uppercase tracking-widest text-white/50">Lọc Truyện Tranh</h3>
+             <h3 className="text-[13px] font-bold uppercase tracking-widest text-foreground/50">Lọc Truyện Tranh</h3>
              {activeFiltersCount > 0 && (
                <button onClick={clearFilters} className="text-[11px] text-red-400 hover:text-red-300 font-bold transition-colors">
                  Xóa Lọc
@@ -110,13 +110,13 @@ export function ComicFilters() {
           <div className="space-y-4">
             {/* Status */}
             <div>
-              <span className="text-[11px] font-bold text-white/40 mb-2 block uppercase">Trạng Thái</span>
+              <span className="text-[11px] font-bold text-foreground/40 mb-2 block uppercase">Trạng Thái</span>
               <div className="flex flex-wrap gap-2">
                 {STATUSES.map(s => (
                   <button
                     key={s.slug}
                     onClick={() => setSelectedStatus(s.slug)}
-                    className={`px-3 py-1.5 rounded-md text-[11px] font-bold transition-colors ${selectedStatus === s.slug ? "bg-primary text-white" : "bg-white/5 text-white/60 hover:bg-white/10 hover:text-white"}`}
+                    className={`px-3 py-1.5 rounded-md text-[11px] font-bold transition-colors ${selectedStatus === s.slug ? "bg-primary text-primary-foreground" : "bg-foreground/5 text-foreground/60 hover:bg-foreground/10 hover:text-foreground"}`}
                   >
                     {s.name}
                   </button>
@@ -126,13 +126,13 @@ export function ComicFilters() {
 
             {/* Genres */}
             <div>
-              <span className="text-[11px] font-bold text-white/40 mb-2 block uppercase">Thể Loại</span>
+              <span className="text-[11px] font-bold text-foreground/40 mb-2 block uppercase">Thể Loại</span>
               <div className="flex flex-wrap gap-1.5 max-h-[200px] overflow-y-auto scrollbar-hide pr-2">
                 {GENRES.map(g => (
                   <button
                     key={g.slug}
                     onClick={() => setSelectedGenre(selectedGenre === g.slug ? "" : g.slug)}
-                    className={`px-2.5 py-1 rounded-md text-[11px] font-bold transition-colors ${selectedGenre === g.slug ? "bg-[var(--primary)] text-white" : "bg-white/5 text-white/60 hover:bg-white/10 hover:text-white"}`}
+                    className={`px-2.5 py-1 rounded-md text-[11px] font-bold transition-colors ${selectedGenre === g.slug ? "bg-primary text-primary-foreground" : "bg-foreground/5 text-foreground/60 hover:bg-foreground/10 hover:text-foreground"}`}
                   >
                     {g.name}
                   </button>
@@ -140,16 +140,16 @@ export function ComicFilters() {
               </div>
             </div>
 
-            <div className="pt-2 border-t border-white/[0.06] flex gap-2">
+            <div className="pt-2 border-t border-foreground/[0.06] flex gap-2">
               <button 
                 onClick={applyFilters}
-                className="flex-1 py-2 bg-primary hover:bg-primary-hover text-white rounded-lg text-[12px] font-bold transition-all shadow-lg shadow-primary/20"
+                className="flex-1 py-2 bg-primary hover:bg-primary-hover text-primary-foreground rounded-lg text-[12px] font-bold transition-all shadow-lg shadow-primary/20"
               >
                 Áp Dụng Lọc
               </button>
               <button 
                 onClick={() => setIsOpen(false)}
-                className="px-4 py-2 bg-white/5 hover:bg-white/10 text-white rounded-lg text-[12px] font-bold transition-all"
+                className="px-4 py-2 bg-foreground/5 hover:bg-foreground/10 text-foreground rounded-lg text-[12px] font-bold transition-all"
               >
                 Hủy
               </button>
