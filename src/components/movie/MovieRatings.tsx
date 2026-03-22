@@ -10,65 +10,82 @@ interface MovieRatingsProps {
   rottenRating?: number | null;
   audienceScore?: number | null;
   traktRating?: number | null;
+  traktVotes?: number | null;
+  imdbVotes?: number | string | null;
   className?: string;
 }
 
-export function MovieRatings({ tmdbRating, imdbId, imdbRating, rottenRating, audienceScore, traktRating, className = "" }: MovieRatingsProps) {
-  if (!tmdbRating && !imdbRating) return null;
+export function MovieRatings({ tmdbRating, imdbId, imdbRating, rottenRating, audienceScore, traktRating, traktVotes, imdbVotes, className = "" }: MovieRatingsProps) {
+  if (!tmdbRating && !imdbRating && !traktRating) return null;
 
   const imdbScore = imdbRating ? imdbRating.toFixed(1) : (tmdbRating ? tmdbRating.toFixed(1) : "N/A");
   const criticScore = rottenRating || (tmdbRating ? Math.round(tmdbRating * 10) : 0);
   const finalAudienceScore = audienceScore || (tmdbRating ? Math.round(tmdbRating * 10) - 2 : 0);
 
+  const formatVotes = (v: number | string | null | undefined) => {
+    if (!v) return "";
+    const n = typeof v === 'string' ? parseFloat(v.replace(/,/g, '')) : v;
+    if (isNaN(n)) return v.toString();
+    if (n >= 1000000) return (n / 1000000).toFixed(1) + "M";
+    if (n >= 1000) return (n / 1000).toFixed(1) + "K";
+    return n.toString();
+  };
+
   return (
-    <div className={`flex flex-wrap items-center gap-6 ${className}`}>
+    <div className={`flex flex-wrap items-center gap-5 md:gap-7 ${className}`}>
+      {/* Trakt Rating (Priority) */}
+      {traktRating && (
+        <div className="flex items-center gap-2 group transition-all">
+          <div className="text-[#9747FF] drop-shadow-[0_0_8px_rgba(151,71,255,0.4)]">
+             <Star className="w-5 h-5 fill-current" />
+          </div>
+          <div className="flex items-baseline gap-1.5">
+            <span className="text-white font-black text-[16px] leading-none">{Math.round(traktRating * 10)}%</span>
+            {traktVotes && (
+              <span className="text-[11px] text-white/40 font-bold tracking-tight uppercase transition-all cursor-default">{formatVotes(traktVotes)}</span>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* IMDb Rating */}
-      <div className="flex items-center gap-2 group transition-transform hover:scale-105">
-        <div className="flex items-center justify-center w-8 h-8 rounded bg-[#f5c518] text-black font-black text-xs shadow-lg shadow-[#f5c518]/20">
+      <div className="flex items-center gap-2 group">
+        <div className="bg-[#E2B616] text-black px-1.5 py-0.5 rounded-sm font-black text-[10px] leading-tight tracking-tighter shadow-sm">
           IMDb
         </div>
-        <div className="flex flex-col text-left">
-          <span className="text-white font-black text-sm leading-none">{imdbScore}</span>
-          <span className="text-[10px] text-white/30 uppercase tracking-tighter mt-1 font-bold">Rating</span>
+        <div className="flex items-baseline gap-1.5">
+           <span className="text-white font-black text-[16px] leading-none">{imdbScore}</span>
+           {imdbVotes && (
+             <span className="text-[11px] text-white/40 font-bold border-b border-white/20 ml-0.5">{formatVotes(imdbVotes)}</span>
+           )}
         </div>
       </div>
 
       {/* Rotten Tomatoes Critics */}
-      <div className="flex items-center gap-2 group transition-transform hover:scale-105">
-        <div className="flex items-center justify-center w-8 h-8 rounded bg-[#fa320a] text-white shadow-lg shadow-[#fa320a]/20">
-          <svg viewBox="0 0 512 512" width="20" height="20" fill="currentColor">
-            <path d="M479.5 241C479.5 358.1 391.2 453.6 280.9 453.6C170.6 453.6 82.3 358.1 82.3 241C82.3 124 170.6 28.5 280.9 28.5C391.2 28.5 479.5 124 479.5 241ZM309.1 140.2C309.1 140.2 309.2 140.2 309.1 140.2ZM325.2 92.5C313.2 101.9 303.4 114.3 294.4 126.3C287.6 135.5 281.3 145.4 275.6 155.1C268.4 148.2 260.6 142 252.1 136.7C218.6 115.6 179.9 110.1 142.1 113.8C143.2 112 144.3 110.3 145.6 108.6C153.3 98.7 163 89.9 174.1 82.7L181.6 77.9C154.5 73.1 126.7 80.2 104.9 96.6C83.2 113 70 137.1 68.8 162.7C49.9 164.7 33 172.9 21.3 186.2C6.9 202.7 0 224.2 0 245.9C0 268 7.3 289.4 18.5 307.7C29.6 326 44.5 341.2 61.3 351.4C78.1 361.6 96.9 366.8 115.5 366.8C127.3 366.8 139 364.7 149.9 360.5C186.1 405.3 243.6 433 308.2 433C402.6 433 479.1 346.7 479.1 240.2C479.1 180.2 454.4 126.2 414.9 88.5C384.6 115.6 348.6 134.1 309.1 140.2Z" />
+      <div className="flex items-center gap-2 group">
+        <div className="text-[#FA320A]">
+          <svg viewBox="0 0 512 512" width="22" height="22" fill="currentColor">
+            <path d="M479.5 241C479.5 358.1 391.2 453.6 280.9 453.6C170.6 453.6 82.3 358.1 82.3 241C82.3 124 170.6 28.5 280.9 28.5C391.2 28.5 479.5 124 479.5 241Z" />
           </svg>
         </div>
-        <div className="flex flex-col text-left">
-          <span className="text-white font-black text-sm leading-none">{criticScore}%</span>
-          <span className="text-[10px] text-white/30 uppercase tracking-tighter mt-1 font-bold">Tomatoes</span>
+        <div className="flex items-baseline gap-1.5">
+          <span className="text-white font-black text-[16px] leading-none">{criticScore}%</span>
+          <span className="text-[11px] text-white/40 font-bold uppercase border-b border-white/20">Fresh</span>
         </div>
       </div>
 
       {/* Audience Score */}
-      <div className="flex items-center gap-2 group transition-transform hover:scale-105">
-        <div className="flex items-center justify-center w-8 h-8 rounded bg-[#e1c12c] text-black shadow-lg shadow-[#e1c12c]/20">
-           <Star className="h-5 w-5 fill-current" />
+      <div className="flex items-center gap-2 group">
+        <div className="text-[#E2B616]">
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor">
+            <path d="M11,10.22A1,1,0,0,1,12,9h0a1,1,0,0,1,1,1.22l-.78,4.68a1,1,0,0,1-1.94,0ZM21.14,12l-1-7.15A1,1,0,0,0,19.16,4H4.84a1,1,0,0,0-1,.86l-1,7.2C1.55,13.62,1,15,1,16a5,5,0,0,0,5,5,5.13,5.13,0,0,0,3-.94,5,5,0,0,0,6,0,5.13,5.13,0,0,0,3,.94,5,5,0,0,0,5-5C23,15,22.45,13.62,21.14,12Z"/>
+          </svg>
         </div>
-        <div className="flex flex-col text-left">
-          <span className="text-white font-black text-sm leading-none">{finalAudienceScore}%</span>
-          <span className="text-[10px] text-white/30 uppercase tracking-tighter mt-1 font-bold">Audience</span>
+        <div className="flex items-baseline gap-1.5">
+          <span className="text-white font-black text-[16px] leading-none">{finalAudienceScore}%</span>
+          <span className="text-[11px] text-white/40 font-bold uppercase border-b border-white/20">Hot</span>
         </div>
       </div>
-
-      {/* Trakt Rating */}
-      {traktRating && (
-        <div className="flex items-center gap-2 group transition-transform hover:scale-105">
-          <div className="flex items-center justify-center w-8 h-8 rounded bg-[#ed1c24] text-white shadow-lg shadow-[#ed1c24]/20 font-black text-[10px]">
-            T
-          </div>
-          <div className="flex flex-col text-left">
-            <span className="text-white font-black text-sm leading-none">{Math.round(traktRating * 10)}%</span>
-            <span className="text-[10px] text-white/30 uppercase tracking-tighter mt-1 font-bold">Trakt</span>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

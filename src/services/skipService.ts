@@ -85,8 +85,8 @@ export async function getCombinedSkipTimes(params: {
     results = await fetchIntroDBTimes(tmdbId, season, episode);
   }
 
-  // 3. Fallback to default (90s) for Anime if both failed
-  if (results.length === 0 && isAnime) {
+  // 3. Fallback to default (90s) for ANY content if both failed
+  if (results.length === 0) {
     results = [{ startTime: 0, endTime: 90, type: "op" }];
   }
 

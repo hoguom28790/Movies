@@ -293,10 +293,12 @@ export default async function MovieDetailsPage({ params }: { params: Promise<{ s
               <MovieRatings 
                 tmdbRating={tmdbData?.vote_average || safeData.tmdb?.vote_average}
                 imdbId={imdbId}
-                imdbRating={realImdbRating || safeData.imdb?.vote_average}
+                imdbRating={realImdbRating?.rating || safeData.imdb?.vote_average}
+                imdbVotes={realImdbRating?.votes}
                 rottenRating={rtData?.criticScore}
                 audienceScore={rtData?.audienceScore}
                 traktRating={traktRatings?.rating}
+                traktVotes={traktRatings?.votes}
                 className="mt-6"
               />
  

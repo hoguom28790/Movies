@@ -508,14 +508,14 @@
 
       // Synchronize Progress to React Wrapper
       setInterval(() => {
-        if (!video.paused && video.currentTime > 0) {
+        if (!video.paused) {
           window.parent.postMessage({ 
             type: 'UPDATE_PROGRESS', 
             time: video.currentTime,
             duration: video.duration 
           }, '*');
         }
-      }, 5000);
+      }, 1000);
 
       // Listen for initial seek from parent
       window.addEventListener('message', (e) => {

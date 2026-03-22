@@ -6,7 +6,7 @@ export interface IMDbTitle {
   };
 }
  
-export async function getIMDbRating(imdbId: string): Promise<number | null> {
+export async function getIMDbRating(imdbId: string): Promise<{ rating: number; votes: number } | null> {
   if (!imdbId) return null;
   
   try {
@@ -49,7 +49,11 @@ export async function getIMDbRating(imdbId: string): Promise<number | null> {
     };
     
     const ratingData = findRating(data);
-    return ratingData?.ratingValue || null;
+    if (!ratingData) return null;
+    return {
+      rating: ratingData.ratingValue,
+      votes: ratingData.ratingCount
+    };
   } catch (error) {
     console.error("IMDb Scraping Error:", error);
     return null;
