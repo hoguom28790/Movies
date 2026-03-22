@@ -12,6 +12,23 @@ export function ProfileDropdown() {
     const { user, logout } = useAuth();
     const { isConnected: isTraktConnected, login: loginTrakt } = useTrakt();
     const { isConnected: isAniListConnected, login: loginAniList } = useAniList();
+    const [autoSkipIntro, setAutoSkipIntro] = React.useState(false);
+
+    React.useEffect(() => {
+        if (!user) return;
+        const loadSettings = async () => {
+            try {
+                const { getUserSettings } = await import("@/services/db");
+                const settings = await getUserSettings(user.uid);
+                if (settings) {
+                    setAutoSkipIntro(!!settings.autoSkipIntro);
+                }
+            } catch (err) {
+                console.error("Lỗi khi tải cài đặt:", err);
+            }
+        };
+        loadSettings();
+    }, [user]);
 
     if (!user) return null;
 
@@ -55,10 +72,10 @@ export function ProfileDropdown() {
                             {({ active }) => (
                                 <button
                                     onClick={async () => {
-                                        const { getUserSettings, saveUserSettings } = await import("@/services/db");
-                                        const current = await getUserSettings(user.uid);
-                                        await saveUserSettings(user.uid, { autoSkipIntro: !current?.autoSkipIntro });
-                                        window.location.reload(); // Refresh to sync
+                                        const { saveUserSettings } = await import("@/services/db");
+                                        const newValue = !autoSkipIntro;
+                                        setAutoSkipIntro(newValue);
+                                        await saveUserSettings(user.uid, { autoSkipIntro: newValue });
                                     }}
                                     className={`${
                                         active ? 'bg-foreground/5' : ''
@@ -73,8 +90,8 @@ export function ProfileDropdown() {
                                             <span className="text-[9px] text-foreground/30">Tự động tua qua phần mở đầu phim</span>
                                         </div>
                                     </div>
-                                    <div className={`w-8 h-4 rounded-full relative transition-colors ${active ? 'bg-primary' : 'bg-foreground/10'}`}>
-                                        <div className="absolute right-1 top-1 w-2 h-2 rounded-full bg-white" />
+                                    <div className={`w-8 h-4 rounded-full relative transition-all duration-300 ${autoSkipIntro ? 'bg-primary shadow-[0_0_10px_rgba(var(--primary-rgb),0.5)]' : 'bg-foreground/10'}`}>
+                                        <div className={`absolute top-1 w-2 h-2 rounded-full bg-white transition-all duration-300 ${autoSkipIntro ? 'right-1' : 'left-1'}`} />
                                     </div>
                                 </button>
                             )}
