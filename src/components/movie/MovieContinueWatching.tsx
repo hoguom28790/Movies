@@ -73,32 +73,14 @@ export function MovieContinueWatching() {
 
           return (
             <SwiperSlide key={item.movieSlug} className="!w-[180px] sm:!w-[220px]">
-              <div className="relative group overflow-hidden rounded-xl">
-                <MovieCard 
-                  title={item.movieTitle}
-                  slug={item.movieSlug}
-                  posterUrl={item.posterUrl}
-                  episodeText={`Tập ${item.episodeName}`}
-                />
-                
-                {/* Progress bar - Bottom of image area */}
-                <div className="absolute bottom-12 left-0 right-0 px-2 z-20 pointer-events-none">
-                  <div className="progress-bar-premium relative">
-                      <div 
-                        className="h-full bg-primary transition-all duration-1000 bubble-shadow" 
-                        style={{ width: `${progressPercent}%` }} 
-                      />
-                  </div>
-                </div>
-
-                {/* Delete button - Top Right */}
-                <button 
-                  onClick={(e) => handleDelete(item.movieSlug, e)}
-                  className="delete-btn-premium !top-2 !right-2"
-                >
-                  <X className="w-4 h-4" />
-                </button>
-              </div>
+              <MovieCard 
+                title={item.movieTitle}
+                slug={item.movieSlug}
+                posterUrl={item.posterUrl}
+                episodeText={`Tập ${item.episodeName}`}
+                progress={progressPercent}
+                onDelete={(e) => handleDelete(item.movieSlug, e)}
+              />
             </SwiperSlide>
           );
         })}

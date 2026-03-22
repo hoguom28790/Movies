@@ -76,32 +76,15 @@ export default function MovieHistoryPage() {
               : item.progressSeconds > 0 ? 50 : 0; // Fallback to 50 if duration unknown but progress exists
 
             return (
-              <div key={item.id} className="relative group overflow-hidden rounded-xl">
-                <MovieCard 
-                  title={item.movieTitle}
-                  slug={item.movieSlug}
-                  posterUrl={item.posterUrl}
-                />
-                <div className="absolute top-2 left-2 bg-black/80 text-white text-[10px] font-bold px-2 py-0.5 rounded backdrop-blur-md border border-white/10 pointer-events-none z-10 shadow-lg line-clamp-1">
-                  Tập {item.episodeName}
-                </div>
-                
-                {progressPercent > 0 && (
-                  <div className="absolute bottom-[2.5rem] left-0 right-0 px-2 z-20 pointer-events-none">
-                    <div className="progress-bar-premium relative h-1">
-                      <div className="h-full bg-primary transition-all rounded-full bubble-shadow" style={{ width: `${progressPercent}%` }} />
-                    </div>
-                  </div>
-                )}
-
-                <button 
-                  onClick={(e) => handleDelete(item.movieSlug, e)}
-                  className="delete-btn-premium !top-2 !right-2"
-                  title="Xóa khỏi lịch sử"
-                >
-                  <X className="w-4 h-4" />
-                </button>
-              </div>
+              <MovieCard 
+                key={item.id}
+                title={item.movieTitle}
+                slug={item.movieSlug}
+                posterUrl={item.posterUrl}
+                episodeText={`Tập ${item.episodeName}`}
+                progress={progressPercent}
+                onDelete={(e) => handleDelete(item.movieSlug, e)}
+              />
             );
           })}
         </div>

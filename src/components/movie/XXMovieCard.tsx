@@ -9,9 +9,13 @@ interface XXMovieCardProps {
   posterUrl: string;
   year?: string;
   quality?: string;
+  progress?: number;
+  onDelete?: (e: React.MouseEvent) => void;
 }
 
-export function XXMovieCard({ title, slug, posterUrl, year, quality }: XXMovieCardProps) {
+export function XXMovieCard({ 
+  title, slug, posterUrl, year, quality, progress, onDelete 
+}: XXMovieCardProps) {
   return (
     <div className="group relative flex flex-col gap-3 transition-all duration-500 hover:z-10">
       <Link 
@@ -41,7 +45,29 @@ export function XXMovieCard({ title, slug, posterUrl, year, quality }: XXMovieCa
             <Play className="h-8 w-8 text-yellow-500 fill-yellow-500 translate-x-0.5" />
           </div>
         </div>
+
+        {/* Home/History Progress Bar */}
+        {progress !== undefined && progress > 0 && (
+          <div className="absolute bottom-0 left-0 right-0 h-1.5 bg-black/40 z-20">
+            <div 
+              className="h-full bg-yellow-500 transition-all duration-1000 shadow-[0_0_10px_#fbbf24]" 
+              style={{ width: `${progress}%` }} 
+            />
+          </div>
+        )}
       </Link>
+
+      {/* Standardized Delete Button */}
+      {onDelete && (
+         <button 
+           onClick={onDelete}
+           className="delete-btn-premium !top-2 !right-2"
+         >
+            <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <path d="M18 6L6 18M6 6l12 12" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+         </button>
+      )}
       
       <div className="flex flex-col gap-1.5 px-2 mt-1">
         <Link 
