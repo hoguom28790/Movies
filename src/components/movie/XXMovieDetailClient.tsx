@@ -62,7 +62,7 @@ export default function XXMovieDetailClient({ item, slug, autoPlay }: XXMovieDet
       }))
     : (item.sources || []);
 
-  const movieCode = isAVDB ? item.id : item.code;
+  const movieCode = isAVDB ? `av-${item.id}` : item.code;
 
   useEffect(() => {
     if (autoPlay) {
@@ -78,13 +78,13 @@ export default function XXMovieDetailClient({ item, slug, autoPlay }: XXMovieDet
              onClick={() => setIsPlaying(false)}
              className="group flex items-center gap-3 text-white/40 hover:text-white transition-all font-black uppercase italic tracking-[0.2em] text-[10px]"
            >
-              <div className="p-2 rounded-full bg-white/5 group-hover:bg-yellow-500 group-hover:text-black transition-colors">
+              <div className="p-2 rounded-full bg-foreground/5 group-hover:bg-yellow-500 group-hover:text-black transition-colors">
                 <ArrowLeft className="w-4 h-4" />
               </div>
               Quay lại thông tin
            </button>
            <div className="hidden md:flex items-center gap-2 group cursor-default">
-              <span className="text-[9px] font-black text-white/20 uppercase tracking-[0.3em] group-hover:text-yellow-500/40 transition-colors">Trải nghiệm điện ảnh đỉnh cao không quảng cáo</span>
+              <span className="text-[9px] font-black text-foreground/40 uppercase tracking-[0.3em] group-hover:text-yellow-500/40 transition-colors">Trải nghiệm điện ảnh đỉnh cao không quảng cáo</span>
            </div>
         </div>
 
@@ -103,11 +103,11 @@ export default function XXMovieDetailClient({ item, slug, autoPlay }: XXMovieDet
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
              <div className="lg:col-span-2 space-y-8">
-                <div className="bg-surface border border-white/5 rounded-[40px] p-8 md:p-12 transition-all hover:border-white/10">
-                   <h1 className="text-primaryxl md:text-5xl font-black text-white uppercase italic tracking-tighter leading-none mb-6">
+                <div className="bg-surface border border-foreground/5 rounded-[40px] p-8 md:p-12 transition-all hover:border-foreground/10">
+                   <h1 className="text-primaryxl md:text-5xl font-black text-foreground uppercase italic tracking-tighter leading-none mb-6">
                       {title}
                    </h1>
-                   <div className="flex flex-wrap items-center gap-4 mb-10 pb-10 border-b border-white/5">
+                   <div className="flex flex-wrap items-center gap-4 mb-10 pb-10 border-b border-foreground/5">
                       <div className="flex items-center gap-2 px-4 py-1.5 bg-yellow-500 text-black font-black text-[10px] rounded-xl uppercase italic shadow-lg shadow-yellow-500/20">
                         {isAVDB ? "AVDB PREMIUM" : "TOPXX VIP"}
                       </div>
@@ -115,7 +115,7 @@ export default function XXMovieDetailClient({ item, slug, autoPlay }: XXMovieDet
                       <XXPlaylistBtn movieCode={movieCode} movieTitle={title} posterUrl={poster} />
                    </div>
 
-                   <h3 className="text-[10px] font-black text-white/20 uppercase tracking-[0.4em] mb-6 flex items-center gap-3">
+                   <h3 className="text-[10px] font-black text-foreground/20 uppercase tracking-[0.4em] mb-6 flex items-center gap-3">
                       <Server className="w-4 h-4 text-yellow-500" /> {isAVDB ? "Danh sách tập" : "Chọn nguồn phát"}
                    </h3>
                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
@@ -124,10 +124,10 @@ export default function XXMovieDetailClient({ item, slug, autoPlay }: XXMovieDet
                           key={idx}
                           variant={currentServer === idx ? "primary" : "secondary"}
                           onClick={() => setCurrentServer(idx)}
-                          className={`h-14 rounded-2xl font-black text-[11px] uppercase italic tracking-tighter border-white/5 transition-all ${
+                          className={`h-14 rounded-2xl font-black text-[11px] uppercase italic tracking-tighter border-foreground/5 transition-all ${
                             currentServer === idx 
                               ? "bg-yellow-500 text-black shadow-2xl shadow-yellow-500/30 active:scale-95" 
-                              : "bg-white/[0.03] hover:bg-white/10 active:scale-95"
+                              : "bg-foreground/5 hover:bg-foreground/10 active:scale-95"
                           }`}
                         >
                           {src.name || `Tập ${idx + 1}`}
@@ -136,22 +136,22 @@ export default function XXMovieDetailClient({ item, slug, autoPlay }: XXMovieDet
                    </div>
                 </div>
                 
-                <div className="bg-white/[0.01] rounded-[40px] p-8 md:p-12 border border-white/5 border-dashed">
-                   <h4 className="text-[10px] font-black text-white/10 uppercase tracking-[0.5em] mb-6">Mô tả</h4>
-                   <div className="text-white/50 text-base leading-relaxed italic md:leading-loose" dangerouslySetInnerHTML={{ __html: content || "Nội dung đang được xử lý..." }} />
+                <div className="bg-foreground/[0.01] rounded-[40px] p-8 md:p-12 border border-foreground/5 border-dashed">
+                   <h4 className="text-[10px] font-black text-foreground/10 uppercase tracking-[0.5em] mb-6">Mô tả</h4>
+                   <div className="text-foreground/50 text-base leading-relaxed italic md:leading-loose" dangerouslySetInnerHTML={{ __html: content || "Nội dung đang được xử lý..." }} />
                 </div>
              </div>
 
              <div className="space-y-8">
-                <div className="bg-surface border border-white/5 rounded-[40px] p-10 backdrop-blur-3xl sticky top-24">
+                <div className="bg-surface border border-foreground/5 rounded-[40px] p-10 backdrop-blur-3xl sticky top-24">
                    <h3 className="text-[11px] font-black text-yellow-500 uppercase tracking-[0.3em] mb-10 flex items-center gap-3">
                      <span className="w-2 h-2 rounded-full bg-yellow-500 animate-pulse" />
                      Dữ liệu chi tiết
                    </h3>
                    <ul className="space-y-10">
-                      <DetailItem icon={<Tag className="w-4 h-4 text-white/20"/>} label="Thể loại" items={isAVDB ? (Array.isArray(item.category) ? item.category.map((c: any) => ({ name: c, code: c })) : [{ name: item.category, code: item.category }]) : item.genres} path="/v2k9r5w8m3x7n1p4q0z6/the-loai" />
-                      <DetailItem icon={<Globe className="w-4 h-4 text-white/20"/>} label="Quốc gia" items={isAVDB ? (Array.isArray(item.country) ? item.country.map((c: any) => ({ name: c, code: c })) : [{ name: item.country, code: item.country }]) : item.countries} path="/v2k9r5w8m3x7n1p4q0z6/quoc-gia" />
-                      <DetailItem icon={<Users className="w-4 h-4 text-white/20"/>} label="Diễn viên" items={isAVDB ? (Array.isArray(item.actor) ? item.actor.map((a: any) => ({ trans: [{ locale: 'vi', name: a }] })) : item.actor?.split(',').map((a: any) => ({ trans: [{ locale: 'vi', name: a.trim() }] }))) : item.actors} path="/v2k9r5w8m3x7n1p4q0z6/dien-vien" isActor onActorClick={handleActorClick} />
+                      <DetailItem icon={<Tag className="w-4 h-4 text-foreground/20"/>} label="Thể loại" items={isAVDB ? (Array.isArray(item.category) ? item.category.map((c: any) => ({ name: c, code: c })) : [{ name: item.category, code: item.category }]) : item.genres} path="/v2k9r5w8m3x7n1p4q0z6/the-loai" />
+                      <DetailItem icon={<Globe className="w-4 h-4 text-foreground/20"/>} label="Quốc gia" items={isAVDB ? (Array.isArray(item.country) ? item.country.map((c: any) => ({ name: c, code: c })) : [{ name: item.country, code: item.country }]) : item.countries} path="/v2k9r5w8m3x7n1p4q0z6/quoc-gia" />
+                      <DetailItem icon={<Users className="w-4 h-4 text-foreground/20"/>} label="Diễn viên" items={isAVDB ? (Array.isArray(item.actor) ? item.actor.map((a: any) => ({ trans: [{ locale: 'vi', name: a }] })) : item.actor?.split(',').map((a: any) => ({ trans: [{ locale: 'vi', name: a.trim() }] }))) : item.actors} path="/v2k9r5w8m3x7n1p4q0z6/dien-vien" isActor onActorClick={handleActorClick} />
                    </ul>
                 </div>
              </div>
@@ -216,22 +216,22 @@ export default function XXMovieDetailClient({ item, slug, autoPlay }: XXMovieDet
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-16 md:gap-20">
         <div className="lg:col-span-2 space-y-16">
-           <div className="bg-surface rounded-[50px] p-10 md:p-16 border border-white/5 relative overflow-hidden group">
+           <div className="bg-surface rounded-[50px] p-10 md:p-16 border border-foreground/5 relative overflow-hidden group">
               <div className="absolute top-0 right-0 w-64 h-64 bg-yellow-500/5 blur-[100px] -z-10 group-hover:bg-yellow-500/10 transition-colors" />
-              <h3 className="text-[11px] font-black text-white/20 uppercase tracking-[0.4em] mb-10 flex items-center gap-4">
-                 <span className="w-12 h-px bg-white/10" />
+              <h3 className="text-[11px] font-black text-foreground/20 uppercase tracking-[0.4em] mb-10 flex items-center gap-4">
+                 <span className="w-12 h-px bg-foreground/10" />
                  Storyline
               </h3>
               <div 
-                className="text-xl md:text-2xl text-white/60 leading-relaxed font-medium italic"
+                className="text-xl md:text-2xl text-foreground/60 leading-relaxed font-medium italic"
                 dangerouslySetInnerHTML={{ __html: content || "Câu chuyện đang được kể lại..." }}
               />
            </div>
         </div>
 
         <div className="space-y-12">
-          <div className="bg-surface border border-white/5 rounded-[50px] p-12 backdrop-blur-3xl sticky top-24 shadow-2xl">
-             <h3 className="text-[12px] font-black text-white mb-12 border-b border-white/5 pb-8 uppercase tracking-[0.3em] text-yellow-500 italic">Metadata</h3>
+          <div className="bg-surface border border-foreground/5 rounded-[50px] p-12 backdrop-blur-3xl sticky top-24 shadow-2xl">
+             <h3 className="text-[12px] font-black text-foreground mb-12 border-b border-foreground/5 pb-8 uppercase tracking-[0.3em] text-yellow-500 italic">Metadata</h3>
              <ul className="space-y-12">
                <DetailItem 
                   icon={<Tag className="w-4 h-4" />} 
@@ -277,7 +277,7 @@ export default function XXMovieDetailClient({ item, slug, autoPlay }: XXMovieDet
                  <div className="w-16 h-16 border-4 border-yellow-500/20 border-t-yellow-500 rounded-full animate-spin" />
                  <Search className="absolute inset-0 m-auto w-6 h-6 text-yellow-500 animate-pulse" />
               </div>
-              <p className="text-[11px] font-black text-white/50 uppercase tracking-[0.3em] italic">Đang tìm dữ liệu TMDB...</p>
+              <p className="text-[11px] font-black text-foreground/50 uppercase tracking-[0.3em] italic">Đang tìm dữ liệu TMDB...</p>
            </div>
         </div>
       )}
@@ -301,7 +301,7 @@ export default function XXMovieDetailClient({ item, slug, autoPlay }: XXMovieDet
 function DetailItem({ icon, label, items, path, isActor = false, onActorClick }: any) {
   return (
     <li className="flex flex-col gap-2.5">
-      <div className="flex items-center gap-2.5 text-white/20 text-[10px] font-black uppercase tracking-[0.2em]">
+      <div className="flex items-center gap-2.5 text-foreground/20 text-[10px] font-black uppercase tracking-[0.2em]">
         {icon}
         {label}
       </div>
@@ -324,7 +324,7 @@ function DetailItem({ icon, label, items, path, isActor = false, onActorClick }:
               <button
                 key={idx}
                 onClick={() => onActorClick(name)}
-                className="px-3.5 py-1.5 bg-white/5 border border-white/5 rounded-xl text-[13px] font-bold text-white/80 hover:text-yellow-500 hover:border-yellow-500/50 hover:bg-yellow-500/5 transition-all cursor-pointer"
+                className="px-3.5 py-1.5 bg-foreground/5 border border-foreground/5 rounded-xl text-[13px] font-bold text-foreground/80 hover:text-yellow-500 hover:border-yellow-500/50 hover:bg-yellow-500/5 transition-all cursor-pointer"
               >
                 {name || "Diễn viên"}
               </button>
@@ -335,7 +335,7 @@ function DetailItem({ icon, label, items, path, isActor = false, onActorClick }:
             <Link 
               key={idx} 
               href={`${path}/${slug}`}
-              className="px-3.5 py-1.5 bg-white/5 border border-white/5 rounded-xl text-[13px] font-bold text-white/80 hover:text-yellow-500 hover:border-yellow-500/50 hover:bg-yellow-500/5 transition-all"
+              className="px-3.5 py-1.5 bg-foreground/5 border border-foreground/5 rounded-xl text-[13px] font-bold text-foreground/80 hover:text-yellow-500 hover:border-yellow-500/50 hover:bg-yellow-500/5 transition-all"
             >
               {name || (isActor ? "Diễn viên" : "Thể loại")}
             </Link>

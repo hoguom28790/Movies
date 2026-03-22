@@ -100,10 +100,12 @@
 .theme-phim {
   --primary: oklch(65% 0.25 250);
   --primary-hover: oklch(55% 0.25 250);
+  --primary-foreground: 0 0% 100%;
 }
 
 .theme-truyen {
   --primary: #b02c2f;
+  --primary-foreground: #ffffff;
   --on-primary: #ffffff;
   --primary-container: #d24545;
   --on-primary-container: #140001;
@@ -155,6 +157,7 @@
 .theme-xx {
   --primary: oklch(75% 0.15 85);
   --primary-hover: oklch(65% 0.2 85);
+  --primary-foreground: 222.2 47.4% 11.2%; /* Dark text for yellow */
 }
 
 body {

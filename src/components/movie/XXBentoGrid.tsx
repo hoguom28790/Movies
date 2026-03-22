@@ -20,11 +20,11 @@ export function XXBentoGrid({ title, movies, viewAllLink }: XXBentoGridProps) {
   return (
     <div className="space-y-8 mb-20">
       <div className="flex items-center justify-between px-2">
-        <h2 className="text-2xl md:text-primaryxl font-black text-white uppercase italic tracking-tighter">
+        <h2 className="text-2xl md:text-primaryxl font-black text-foreground uppercase italic tracking-tighter">
           {title}
         </h2>
         {viewAllLink && (
-          <Link href={viewAllLink} className="text-sm font-bold text-white/40 hover:text-xx-primary transition-colors uppercase tracking-[0.2em] italic">
+          <Link href={viewAllLink} className="text-sm font-bold text-foreground/40 hover:text-xx-primary transition-colors uppercase tracking-[0.2em] italic">
             Discovery
           </Link>
         )}

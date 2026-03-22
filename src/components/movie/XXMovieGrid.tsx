@@ -64,14 +64,14 @@ export function XXMovieGrid({ initialMovies, title, fetchUrl, initialPage, total
     <div className="py-12 md:py-20 animate-in fade-in duration-1000">
       <div className="flex flex-col gap-2 mb-12 px-2">
         <div className="h-1 w-12 bg-yellow-500 rounded-full animate-pulse" />
-        <h1 className="text-primaryxl md:text-6xl font-black text-white uppercase italic tracking-tighter leading-none">
+        <h1 className="text-primaryxl md:text-6xl font-black text-foreground uppercase italic tracking-tighter leading-none">
           {title}
         </h1>
       </div>
 
       {movies.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-32 bg-white/[0.02] border border-white/5 rounded-[40px] border-dashed">
-          <p className="text-white/20 text-sm font-black uppercase tracking-[0.4em] italic">No content found</p>
+        <div className="flex flex-col items-center justify-center py-32 bg-foreground/[0.02] border border-foreground/5 rounded-[40px] border-dashed">
+          <p className="text-foreground/20 text-sm font-black uppercase tracking-[0.4em] italic">No content found</p>
         </div>
       ) : (
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-x-6 gap-y-12">

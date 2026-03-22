@@ -116,7 +116,7 @@ export default async function WatchPage({
                 </div>
               )}
               
-              <span className="text-[10px] font-semibold text-foreground/30 uppercase tracking-wider hidden sm:block">Nguồn phim:</span>
+              <span className="text-[10px] font-semibold text-foreground/60 uppercase tracking-wider hidden sm:block">Nguồn phim:</span>
               
               {/* Source Switcher Dropdown - Fixed hover gap */}
               <div className="relative group cursor-pointer mr-2">

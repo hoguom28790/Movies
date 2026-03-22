@@ -20,6 +20,11 @@ export default async function XXMovieDetailsPage({
     item = await getAVDBDetails(slug.replace("av-", ""));
   } else {
     item = await getTopXXDetails(slug);
+    // Fallback for AVDB movies without prefix (existing history items)
+    if (!item) {
+      const { getAVDBDetails } = await import("@/services/api/avdb");
+      item = await getAVDBDetails(slug);
+    }
   }
 
   if (!item) return notFound();

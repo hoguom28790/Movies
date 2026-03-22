@@ -35,19 +35,19 @@ export function ComicSourceSelector({ activeSource }: ComicSourceSelectorProps) 
               onClick={() => handleSwitch(source.id)}
               className={`group flex items-center gap-3 px-6 py-3 rounded-2xl transition-all duration-300 border ${
                 isActive
-                  ? "bg-primary border-primary text-white shadow-lg shadow-primary/20"
+                  ? "bg-primary border-primary text-primary-foreground shadow-lg shadow-primary/20"
                   : "bg-surface-container-low border-outline-variant/10 text-on-surface-variant/60 hover:border-primary/50 hover:text-primary"
               }`}
             >
               <div className="flex flex-col items-start translate-y-[1px]">
-                <span className={`font-headline font-black text-xs uppercase tracking-widest ${isActive ? 'text-white' : 'group-hover:text-primary'}`}>
+                <span className={`font-headline font-black text-xs uppercase tracking-widest ${isActive ? 'text-primary-foreground' : 'group-hover:text-primary'}`}>
                   {source.name}
                 </span>
                 <span className="text-[8px] uppercase tracking-tighter opacity-40 font-bold">
                   {source.desc}
                 </span>
               </div>
-              {isActive && <Check className="w-3.5 h-3.5 text-white animate-in fade-in zoom-in duration-300" />}
+              {isActive && <Check className="w-3.5 h-3.5 text-primary-foreground animate-in fade-in zoom-in duration-300" />}
             </button>
           );
         })}
