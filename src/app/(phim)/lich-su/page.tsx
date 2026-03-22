@@ -76,31 +76,27 @@ export default function MovieHistoryPage() {
               : item.progressSeconds > 0 ? 50 : 0; // Fallback to 50 if duration unknown but progress exists
 
             return (
-              <div key={item.id} className="relative group">
+              <div key={item.id} className="relative group overflow-hidden rounded-xl">
                 <MovieCard 
                   title={item.movieTitle}
                   slug={item.movieSlug}
                   posterUrl={item.posterUrl}
                 />
-                <div className="absolute top-2 right-2 bg-black/80 text-white text-[10px] font-bold px-2 py-0.5 rounded backdrop-blur-md border border-white/10 pointer-events-none z-10 shadow-lg line-clamp-1">
+                <div className="absolute top-2 left-2 bg-black/80 text-white text-[10px] font-bold px-2 py-0.5 rounded backdrop-blur-md border border-white/10 pointer-events-none z-10 shadow-lg line-clamp-1">
                   Tập {item.episodeName}
                 </div>
                 
                 {progressPercent > 0 && (
-                  <div className="w-full mt-3 px-1">
-                    <div className="flex justify-between items-center mb-1.5">
-                      <span className="text-[10px] font-bold text-foreground/40 uppercase tracking-wider">Tiến độ</span>
-                      <span className="text-[10px] font-bold text-primary">{progressPercent}%</span>
-                    </div>
-                    <div className="w-full h-1.5 bg-foreground/10 rounded-full overflow-hidden">
-                      <div className="h-full bg-primary transition-all rounded-full" style={{ width: `${progressPercent}%` }} />
+                  <div className="absolute bottom-[2.5rem] left-0 right-0 px-2 z-20 pointer-events-none">
+                    <div className="progress-bar-premium relative h-1">
+                      <div className="h-full bg-primary transition-all rounded-full bubble-shadow" style={{ width: `${progressPercent}%` }} />
                     </div>
                   </div>
                 )}
 
                 <button 
                   onClick={(e) => handleDelete(item.movieSlug, e)}
-                  className="delete-btn-premium"
+                  className="delete-btn-premium !top-2 !right-2"
                   title="Xóa khỏi lịch sử"
                 >
                   <X className="w-4 h-4" />

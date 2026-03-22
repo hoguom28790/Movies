@@ -84,25 +84,27 @@ export function XXContinueWatching() {
 
            return (
             <SwiperSlide key={item.movieCode} className="!w-[160px] sm:!w-[200px]">
-              <div className="relative group">
+              <div className="relative group overflow-hidden rounded-xl">
                 <XXMovieCard 
                   title={item.movieTitle}
                   slug={item.movieCode}
                   posterUrl={item.posterUrl}
                 />
                 
-                {/* Progress bar */}
-                <div className="absolute bottom-[-8px] left-0 right-0 h-1 bg-white/10 rounded-full overflow-hidden z-20">
-                    <div 
-                      className="h-full bg-yellow-500 transition-all duration-1000 bubble-shadow" 
-                      style={{ width: `${progressPercent}%` }} 
-                    />
+                {/* Progress bar - Bottom of image area */}
+                <div className="absolute bottom-[2.8rem] left-0 right-0 px-2 z-20 pointer-events-none">
+                  <div className="progress-bar-premium relative">
+                      <div 
+                        className="h-full bg-yellow-500 transition-all duration-1000 bubble-shadow" 
+                        style={{ width: `${progressPercent}%` }} 
+                      />
+                  </div>
                 </div>
 
                 {/* Delete button - Standardized */}
                 <button 
                   onClick={(e) => handleDelete(item.movieCode, e)}
-                  className="delete-btn-premium"
+                  className="delete-btn-premium !top-2 !right-2"
                 >
                   <X className="w-4 h-4" />
                 </button>

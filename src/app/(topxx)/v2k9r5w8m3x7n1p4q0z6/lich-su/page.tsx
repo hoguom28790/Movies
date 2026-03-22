@@ -117,35 +117,27 @@ export default function XXHistoryPage() {
       ) : (
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 md:gap-6">
           {history.map((item) => (
-            <div key={item.movieCode} className="relative group">
+            <div key={item.movieCode} className="relative group overflow-hidden rounded-[32px]">
               <XXMovieCard 
                 title={item.movieTitle}
                 slug={item.movieCode}
                 posterUrl={item.posterUrl}
               />
               
-              {/* Progress Bar Over Card */}
-              {item.durationSeconds > 0 && (
-                <div className="w-full mt-3 px-1">
-                  <div className="flex justify-between items-center mb-1.5">
-                    <span className="text-[10px] font-bold text-white/40 uppercase tracking-wider">Tiến độ</span>
-                    <span className="text-[10px] font-bold text-yellow-500">
-                      {Math.min(100, Math.round((item.progressSeconds / item.durationSeconds) * 100))}%
-                    </span>
-                  </div>
-                  <div className="w-full h-1.5 bg-white/10 rounded-full overflow-hidden">
+              {/* Progress Bar Over Card Image */}
+              <div className="absolute bottom-[2.5rem] left-0 right-0 px-3 z-20 pointer-events-none">
+                 <div className="progress-bar-premium relative h-1.5 min-w-[30px]">
                     <div 
-                      className="h-full bg-yellow-500 transition-all rounded-full" 
-                      style={{ width: `${Math.min(100, (item.progressSeconds / item.durationSeconds) * 100)}%` }} 
+                      className="h-full bg-yellow-500 transition-all rounded-full bubble-shadow" 
+                      style={{ width: `${item.durationSeconds > 0 ? Math.min(100, (item.progressSeconds / item.durationSeconds) * 100) : (item.progressSeconds > 0 ? 50 : 0)}%` }} 
                     />
-                  </div>
-                </div>
-              )}
+                 </div>
+              </div>
 
               {/* Individual Remove Button */}
               <button 
                 onClick={(e) => handleRemoveItem(item.movieCode, e)}
-                className="delete-btn-premium"
+                className="delete-btn-premium !top-2 !right-2"
                 title="Xóa khỏi lịch sử"
               >
                  <X className="w-4 h-4" />

@@ -187,7 +187,7 @@ export default function MovieLibraryPage() {
                        <MovieCard title={movie.movieTitle} slug={movie.movieSlug} posterUrl={movie.posterUrl} />
                        <button 
                          onClick={(e) => handleRemoveMovie(activePlaylistId!, movie.movieSlug, e)}
-                         className="delete-btn-premium"
+                         className="delete-btn-premium !top-6 !right-2"
                        >
                           <X className="w-5 h-5" />
                        </button>

@@ -278,3 +278,25 @@ html.is-lg-tv {
 
 /* Hide elements not needed on TV if any */
 .is-lg-tv .tv-hidden { display: none !important; }
+
+/* Premium Delete Button Style - Apple Style */
+.delete-btn-premium {
+  @apply absolute top-5 right-2 z-40 w-10 h-10 rounded-2xl bg-black/60 backdrop-blur-xl border border-white/10 flex items-center justify-center text-white/50 hover:bg-red-500 hover:text-white hover:border-red-400 hover:scale-110 active:scale-95 transition-all shadow-2xl opacity-0 group-hover:opacity-100;
+}
+
+.is-lg-tv .delete-btn-premium {
+  @apply w-16 h-16 rounded-3xl top-8 right-4;
+}
+
+.is-lg-tv .delete-btn-premium svg {
+  @apply w-8 h-8;
+}
+
+/* Premium Progress Bar */
+.progress-bar-premium {
+  @apply absolute left-0 right-0 h-1.5 bg-white/10 rounded-full overflow-hidden z-20 shadow-inner;
+}
+
+.bubble-shadow {
+  box-shadow: 0 0 20px var(--primary);
+}
