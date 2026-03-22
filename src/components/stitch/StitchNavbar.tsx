@@ -6,6 +6,7 @@ import { Search, History, Heart, Film } from 'lucide-react';
 import { InstantSearch } from '../layout/InstantSearch';
 import { ProfileDropdown } from '../layout/ProfileDropdown';
 import { ThemeToggle } from '../theme-toggle';
+import { NavMenu } from '../layout/NavMenu';
 import { useAuth } from '@/contexts/AuthContext';
 import { usePathname } from 'next/navigation';
 
@@ -20,20 +21,9 @@ export function StitchNavbar() {
                     <Link href="/truyen" className="text-xl md:text-2xl font-black tracking-tighter text-foreground font-headline uppercase group transition-transform hover:scale-105">
                         Hồ Truyện
                     </Link>
-                    <nav className="hidden md:flex gap-8 items-center">
-                        <Link href="/truyen" className="text-primary border-b-2 border-primary pb-1 font-headline tracking-wider uppercase text-[11px] font-black">
-                            Trang chủ
-                        </Link>
-                        <Link href="/truyen" className="text-foreground/40 hover:text-foreground transition-all font-headline tracking-wider uppercase text-[11px] font-black">
-                            Thể loại
-                        </Link>
-                        <Link href="/truyen?status=all" className="text-foreground/40 hover:text-foreground transition-all font-headline tracking-wider uppercase text-[11px] font-black">
-                            Mới cập nhật
-                        </Link>
-                        <Link href="/truyen" className="text-foreground/40 hover:text-foreground transition-all font-headline tracking-wider uppercase text-[11px] font-black">
-                            Bảng xếp hạng
-                        </Link>
-                    </nav>
+                    <div className="hidden md:block">
+                        <NavMenu mode="truyen" />
+                    </div>
                 </div>
                 
                 <div className="flex items-center gap-2">

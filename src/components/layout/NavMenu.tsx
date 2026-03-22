@@ -175,8 +175,8 @@ export function NavMenu({ mode }: NavMenuProps) {
   ] : dropdowns;
   
   const currentLinks = isComicSection ? [
-    { label: "Trang Chủ Truyện", href: "/truyen" },
     { label: "Mới Cập Nhật", href: "/truyen?status=truyen-moi" },
+    { label: "Bảng Xếp Hạng", href: "/truyen?status=dang-phat-hanh" },
     { label: "Bộ Sưu Tập", href: "/truyen/yeu-thich" },
   ] : directLinks.filter(l => l.href !== "/truyen");
 
@@ -188,7 +188,9 @@ export function NavMenu({ mode }: NavMenuProps) {
             onClick={() => setOpenId(openId === dd.id ? null : dd.id)}
             onMouseEnter={() => { clearCloseTimer(); setOpenId(dd.id); }}
             onMouseLeave={scheduleClose}
-            className={`flex items-center gap-1 px-3 py-2 text-[13px] font-medium transition-colors ${
+            className={`flex items-center gap-1 px-3 py-2 transition-colors ${
+              isComicSection ? "font-headline uppercase tracking-wider text-[10.5px] font-black" : "text-[13px] font-medium"
+            } ${
               openId === dd.id ? "text-primary" : "text-foreground/50 hover:text-foreground"
             }`}
           >
@@ -239,7 +241,11 @@ export function NavMenu({ mode }: NavMenuProps) {
         <Link
           key={link.href}
           href={link.href}
-          className="px-3 py-2 text-[13px] font-medium text-foreground/50 hover:text-foreground transition-colors"
+          className={`px-3 py-2 transition-colors ${
+            isComicSection ? "font-headline uppercase tracking-wider text-[10.5px] font-black" : "text-[13px] font-medium"
+          } ${
+            pathname === link.href ? "text-primary" : "text-foreground/50 hover:text-foreground"
+          }`}
         >
           {link.label}
         </Link>
