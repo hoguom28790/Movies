@@ -52,7 +52,13 @@ export default function RootLayout({
       <body className="bg-background text-foreground selection:bg-primary/30 antialiased font-sans">
         <QueryProvider>
           <DeviceProvider>
-            <ThemeProvider>
+            <ThemeProvider 
+              attribute="class" 
+              defaultTheme="system" 
+              enableSystem={true} 
+              disableTransitionOnChange={true} 
+              storageKey="hophim-theme"
+            >
               <StylePresetProvider>
                 <AuthProvider>
                   <LayoutWrapper>

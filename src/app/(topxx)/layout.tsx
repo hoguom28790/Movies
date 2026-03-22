@@ -8,6 +8,7 @@ import { TOPXX_PATH } from "@/lib/constants";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { getLunarAuthPass } from "@/lib/lunar";
 import { XXInstantSearch } from "@/components/layout/XXInstantSearch";
+import { useUserTheme } from "@/hooks/useUserTheme";
 
 export default function TopXXLayout({
   children,
@@ -16,7 +17,25 @@ export default function TopXXLayout({
 }) {
   const pathname = usePathname();
   const router = useRouter();
+  const { theme, setTheme } = useUserTheme();
   const [isAuthorized, setIsAuthorized] = React.useState(false);
+  const [mounted, setMounted] = React.useState(false);
+
+  // FORCE FIXED flash on TopXX only - Immediate theme sync from Firebase/Storage
+  React.useEffect(() => {
+    setMounted(true);
+    // Force set theme if on TopXX to ensure no flash
+    if (typeof window !== "undefined") {
+      const savedTheme = localStorage.getItem("hophim-theme");
+      if (savedTheme && savedTheme !== theme) {
+        // Remove quotes if any from localStorage string
+        const cleanTheme = savedTheme.replace(/"/g, "");
+        if (["light", "dark", "system"].includes(cleanTheme)) {
+           setTheme(cleanTheme as any);
+        }
+      }
+    }
+  }, [setTheme, theme]);
 
   React.useEffect(() => {
     // Persistent authorization (shared across tabs)
@@ -48,7 +67,7 @@ export default function TopXXLayout({
   }
 
   return (
-    <div className="theme-xx min-h-screen bg-background text-foreground transition-none">
+    <div className={`theme-xx min-h-screen bg-background text-foreground ${!mounted ? "opacity-0" : "animate-in fade-in duration-500"} transition-none`}>
       {/* 18+ Warning Banner */}
       <div className="bg-amber-500 text-black py-2 px-4 flex items-center justify-center gap-2 text-[12px] font-black uppercase tracking-widest z-[1100] relative">
         <AlertCircle className="w-4 h-4" />

@@ -1,17 +1,12 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { ThemeProvider as NextThemesProvider } from "next-themes";
+import { ThemeProvider as NextThemesProvider, type ThemeProviderProps } from "next-themes";
 
-/**
- * Fixed light mode invisible text + DropdownMenu toggle + Firebase sync per user
- */
 export function ThemeProvider({ 
   children,
   ...props 
-}: { 
-  children: React.ReactNode 
-}) {
+}: ThemeProviderProps) {
   // Use default next-themes logic without blocking render
   return (
     <NextThemesProvider 

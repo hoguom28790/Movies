@@ -20,6 +20,7 @@ export function BottomNav() {
 
   const navItems = isXX ? [
     { label: "Trang chủ", icon: Home, href: "/v2k9r5w8m3x7n1p4q0z6", activeRegex: /^\/v2k9r5w8m3x7n1p4q0z6$/ },
+    { label: "Duyệt Tìm", icon: LayoutGrid, href: "/v2k9r5w8m3x7n1p4q0z6", activeRegex: /^\/v2k9r5w8m3x7n1p4q0z6$/ },
     { label: "Lịch sử", icon: History, href: "/v2k9r5w8m3x7n1p4q0z6/lich-su", activeRegex: /\/lich-su/ },
     { label: "Yêu thích", icon: Heart, href: "/v2k9r5w8m3x7n1p4q0z6/yeu-thich", activeRegex: /\/yeu-thich/ },
   ] : [
