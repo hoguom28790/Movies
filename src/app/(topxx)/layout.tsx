@@ -56,10 +56,10 @@ export default function TopXXLayout({
       </div>
 
       <div className="flex flex-col">
-        <header className="fixed top-9 z-[1000] w-full border-b border-foreground/[0.06] bg-surface/90 backdrop-blur-xl transition-all duration-300 pt-safe font-black italic">
+        <header className="fixed top-9 z-[1000] w-full border-b border-foreground/[0.06] bg-surface/90 backdrop-blur-xl pt-safe font-black italic">
           <div className="container mx-auto flex h-14 items-center justify-between px-4 lg:px-8">
             <Link href={`/${TOPXX_PATH}`} className="flex items-center gap-2">
-              <span className="text-xl font-black tracking-tighter text-primary font-headline italic">TopXX 🎬</span>
+              <span className="text-xl font-black tracking-tighter text-foreground font-headline italic">TopXX <span className="text-primary not-italic">🎬</span></span>
             </Link>
             
             <div className="flex items-center gap-2 sm:gap-4 flex-1 justify-end">

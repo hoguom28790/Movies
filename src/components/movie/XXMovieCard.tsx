@@ -74,15 +74,15 @@ export function XXMovieCard({
       <div className="flex flex-col gap-1.5 px-2 mt-1">
         <Link 
           href={`/v2k9r5w8m3x7n1p4q0z6/phim/${slug}`} 
-          className="text-[12px] font-black text-white/60 group-hover:text-yellow-500 uppercase italic tracking-tighter line-clamp-2 transition-all duration-300 leading-[1.2] drop-shadow-sm" 
+          className="text-[12px] font-black text-foreground/60 group-hover:text-yellow-500 uppercase italic tracking-tighter line-clamp-2 transition-all duration-300 leading-[1.2] drop-shadow-sm" 
           title={title}
         >
           {title}
         </Link>
         {year && (
           <div className="flex items-center justify-between">
-            <span className="text-[9px] font-black text-white/20 uppercase italic tracking-[0.2em]">{year}</span>
-            <div className="h-0.5 w-4 bg-white/5 rounded-full" />
+            <span className="text-[9px] font-black text-foreground/20 uppercase italic tracking-[0.2em]">{year}</span>
+            <div className="h-0.5 w-4 bg-foreground/5 rounded-full" />
           </div>
         )}
       </div>
