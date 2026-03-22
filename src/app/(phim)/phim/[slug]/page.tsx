@@ -168,11 +168,14 @@ export default async function MovieDetailsPage({ params }: { params: Promise<{ s
     const { searchTMDBPerson } = await import("@/services/tmdb");
 
     const tmdbCredits = tmdbData?.credits?.cast || [];
-    const tmdbDirectorContent = tmdbData?.credits?.crew?.find((c: any) => c.job === "Director")?.name;
+    const tmdbDirectorContent = tmdbData?.credits?.crew?.find((c: any) => c.job === "Director" || c.job === "Đạo diễn")?.name;
  
     const fallbackActors = safeData.actor;
     const fallbackDirector = safeData.director?.[0] || "Đang cập nhật";
     const directorName = tmdbDirectorContent || fallbackDirector;
+
+    // Use TMDB overview if available, otherwise fallback to safeData.description
+    const finalDescription = tmdbData?.overview || safeData.description;
  
     const allServers: { name: string; items: any[] }[] = safeEpisodes.map((srv: any, idx: number) => ({
       name: srv.server_name || srv.name || `Server ${idx + 1}`,
@@ -299,22 +302,23 @@ export default async function MovieDetailsPage({ params }: { params: Promise<{ s
               </div>
  
               <MovieRatings 
-                tmdbRating={tmdbData?.vote_average || safeData.tmdb?.vote_average}
-                imdbId={imdbId}
-                imdbRating={realImdbRating?.rating || safeData.imdb?.vote_average}
-                imdbVotes={realImdbRating?.votes}
-                rottenRating={rtData?.criticScore}
-                audienceScore={rtData?.audienceScore}
-                traktRating={traktRatings?.rating}
-                traktVotes={traktRatings?.votes}
-                className="mt-6"
+                imdbRating={realImdbRating?.rating || safeData.imdb?.vote_average || 0}
+                imdbVotes={realImdbRating?.votes || safeData.imdb?.vote_count || 0}
+                traktRating={traktRatings?.rating || 0}
+                traktVotes={traktRatings?.votes || 0}
+                tmdbRating={tmdbData?.vote_average || safeData.tmdb?.vote_average || 0}
+                rottenRating={rtData?.criticScore || 0}
+                audienceScore={rtData?.audienceScore || 0}
               />
  
-              <div className="mt-5">
-                <h3 className="text-[13px] font-semibold text-white/60 mb-2">Giới thiệu:</h3>
-                <div
-                  className="text-[13px] text-white/40 leading-relaxed line-clamp-[10]"
-                  dangerouslySetInnerHTML={{ __html: tmdbData?.overview || safeData.description }}
+              <div className="mt-8">
+                <div className="flex items-center gap-2 mb-4">
+                  <div className="w-1.5 h-6 bg-primary rounded-full shadow-[0_0_10px_rgba(var(--primary),0.5)]" />
+                  <h3 className="text-xl font-black text-white uppercase tracking-wider">Giới thiệu</h3>
+                </div>
+                <div 
+                  className="text-white/60 text-base leading-relaxed max-w-4xl"
+                  dangerouslySetInnerHTML={{ __html: finalDescription }}
                 />
               </div>
             </div>
