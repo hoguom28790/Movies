@@ -56,10 +56,6 @@ export function MovieTabs({
         {/* ── EPISODES ── */}
         {activeTab === "episodes" && (
           <div className="animate-in fade-in duration-300">
-            {/* Server notice */}
-            <div className="rounded-lg bg-emerald-500/10 border border-emerald-500/20 px-4 py-2.5 mb-5 text-[12px] text-emerald-400/80">
-              ⭐ Phim bị lỗi hoặc chưa thấy tập mới? Đổi server thôi coi chúng cũ chẳng có vấn đề gì 😉
-            </div>
 
             {/* Server selector */}
             {servers.length > 1 && (
