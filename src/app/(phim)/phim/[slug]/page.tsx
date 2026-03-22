@@ -282,10 +282,10 @@ export default async function MovieDetailsPage({ params }: { params: Promise<{ s
                   <span className="px-2.5 py-1 rounded-md bg-primary/20 text-primary text-[11px] font-semibold">
                     {safeData.quality}
                   </span>
-                  <span className="px-2.5 py-1 rounded-md bg-white/5 text-white/50 text-[11px] font-medium">
+                  <span className="px-2.5 py-1 rounded-md bg-foreground/5 text-foreground/50 text-[11px] font-medium">
                     {tmdbData?.release_date?.split("-")[0] || tmdbData?.first_air_date?.split("-")[0] || safeData.year}
                   </span>
-                  <span className="px-2.5 py-1 rounded-md bg-white/5 text-white/50 text-[11px] font-medium">
+                  <span className="px-2.5 py-1 rounded-md bg-foreground/5 text-foreground/50 text-[11px] font-medium">
                     {safeData.episode_current}
                   </span>
                 </div>
@@ -308,7 +308,7 @@ export default async function MovieDetailsPage({ params }: { params: Promise<{ s
                       <Link
                         key={g.slug}
                         href={`/the-loai/${g.slug}`}
-                        className="px-2.5 py-1 rounded-md text-[11px] bg-white/5 text-white/40 hover:text-white hover:bg-white/10 transition-all font-medium"
+                        className="px-2.5 py-1 rounded-md text-[11px] bg-foreground/5 text-foreground/40 hover:text-primary hover:bg-foreground/10 transition-all font-medium"
                       >
                         {g.name}
                       </Link>
@@ -349,8 +349,8 @@ export default async function MovieDetailsPage({ params }: { params: Promise<{ s
                     </div>
                     {displayActors.length > 8 && (
                       <div className="hidden sm:flex items-center gap-2">
-                         <div className="h-[1px] w-12 bg-white/10"></div>
-                         <span className="text-[10px] text-white/20 font-black uppercase tracking-widest">Cuộn để xem thêm</span>
+                         <div className="h-[1px] w-12 bg-foreground/10"></div>
+                         <span className="text-[10px] text-foreground/20 font-black uppercase tracking-widest">Cuộn để xem thêm</span>
                       </div>
                     )}
                   </div>
@@ -370,7 +370,7 @@ export default async function MovieDetailsPage({ params }: { params: Promise<{ s
                                 sizes="(max-width: 640px) 100px, 120px"
                               />
                             ) : (
-                              <div className="w-full h-full flex items-center justify-center bg-white/5 text-white/20 text-3xl font-black">
+                              <div className="w-full h-full flex items-center justify-center bg-foreground/5 text-foreground/20 text-3xl font-black">
                                 {actor.name?.charAt(0)}
                               </div>
                             )}

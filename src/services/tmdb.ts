@@ -71,7 +71,10 @@ export async function searchTMDBPerson(name: string): Promise<{ profile_path: st
     const res = await fetch(url, { next: { revalidate: 86400 } });
     if (!res.ok) return null;
     const data = await res.json();
-    const bestMatch = data.results?.[0];
+    const results = data.results || [];
+    // Prioritize match with profile_path
+    const bestMatch = results.find((r: any) => r.profile_path) || results[0];
+    
     if (bestMatch) {
       return { profile_path: bestMatch.profile_path, id: bestMatch.id };
     }
