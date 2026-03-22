@@ -222,8 +222,8 @@ export default async function MovieDetailsPage({ params }: { params: Promise<{ s
           className="object-cover object-top opacity-50 scale-105"
           sizes="100vw"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0a] via-[#0a0a0a]/40 to-transparent" />
-        <div className="absolute inset-0 bg-gradient-to-r from-[#0a0a0a] via-transparent to-[#0a0a0a]/30" />
+        <div className="absolute inset-0 bg-[var(--banner-overlay)]" />
+        <div className="absolute inset-0 bg-gradient-to-r from-background via-transparent to-background/30" />
       </div>
 
       <div className="container mx-auto px-4 lg:px-12 relative z-10 -mt-64 sm:-mt-80 lg:-mt-96 pb-20 md:pb-16 px-safe">
@@ -261,12 +261,12 @@ export default async function MovieDetailsPage({ params }: { params: Promise<{ s
               </div>
  
               <div className="mt-6 text-center lg:text-left">
-                <h1 className="text-xl font-bold text-white leading-snug">{tmdbData?.title || safeData.name}</h1>
-                <p className="text-[13px] text-white/30 mt-0.5 italic">
+                <h1 className="text-xl font-bold text-foreground leading-snug">{tmdbData?.title || safeData.name}</h1>
+                <p className="text-[13px] text-foreground/30 mt-0.5 italic">
                   {tmdbData?.original_title || safeData.origin_name}
                 </p>
                 <div className="mt-2 flex items-center gap-1.5">
-                   <span className="text-[12px] text-white/40 font-medium">Đạo diễn:</span>
+                   <span className="text-[12px] text-foreground/40 font-medium">Đạo diễn:</span>
                    <span className="text-[12px] text-primary font-bold tracking-wide uppercase">{directorName}</span>
                 </div>
 
@@ -314,10 +314,10 @@ export default async function MovieDetailsPage({ params }: { params: Promise<{ s
               <div className="mt-8">
                 <div className="flex items-center gap-2 mb-4">
                   <div className="w-1.5 h-6 bg-primary rounded-full shadow-[0_0_10px_rgba(var(--primary),0.5)]" />
-                  <h3 className="text-xl font-black text-white uppercase tracking-wider">Giới thiệu</h3>
+                  <h3 className="text-xl font-black text-foreground uppercase tracking-wider">Giới thiệu</h3>
                 </div>
                 <div 
-                  className="text-white/60 text-base leading-relaxed max-w-4xl"
+                  className="text-foreground/60 text-base leading-relaxed max-w-4xl"
                   dangerouslySetInnerHTML={{ __html: finalDescription }}
                 />
               </div>
@@ -337,7 +337,7 @@ export default async function MovieDetailsPage({ params }: { params: Promise<{ s
                   <div className="flex items-center justify-between mb-8 px-2">
                     <div className="flex items-center gap-3">
                       <div className="w-1.5 h-6 bg-primary rounded-full shadow-[0_0_10px_rgba(var(--primary),0.5)]" />
-                      <h3 className="text-xl font-black text-white uppercase tracking-wider">Diễn viên chính</h3>
+                      <h3 className="text-xl font-black text-foreground uppercase tracking-wider">Diễn viên chính</h3>
                     </div>
                     {displayActors.length > 8 && (
                       <div className="hidden sm:flex items-center gap-2">
@@ -368,10 +368,10 @@ export default async function MovieDetailsPage({ params }: { params: Promise<{ s
                             )}
                           </div>
                           <div className="text-center space-y-1">
-                            <h4 className="text-[13px] font-black text-white/90 group-hover/actor:text-primary transition-colors line-clamp-1">
+                            <h4 className="text-[13px] font-black text-foreground/90 group-hover/actor:text-primary transition-colors line-clamp-1">
                               {actor.name}
                             </h4>
-                            <p className="text-[10px] text-white/30 font-medium italic line-clamp-1">
+                            <p className="text-[10px] text-foreground/30 font-medium italic line-clamp-1">
                               {actor.character || "N/A"}
                             </p>
                           </div>

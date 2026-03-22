@@ -40,9 +40,9 @@ export function MovieRatings({ tmdbRating, imdbId, imdbRating, rottenRating, aud
              <Star className="w-5 h-5 fill-current" />
           </div>
           <div className="flex items-baseline gap-1.5">
-            <span className="text-white font-black text-[16px] leading-none">{Math.round(traktRating * 10)}%</span>
+            <span className="text-foreground font-black text-[16px] leading-none">{Math.round(traktRating * 10)}%</span>
             {traktVotes && (
-              <span className="text-[11px] text-white/40 font-bold tracking-tight uppercase transition-all cursor-default">{formatVotes(traktVotes)}</span>
+              <span className="text-[11px] text-foreground/40 font-bold tracking-tight uppercase transition-all cursor-default">{formatVotes(traktVotes)}</span>
             )}
           </div>
         </div>
@@ -54,9 +54,9 @@ export function MovieRatings({ tmdbRating, imdbId, imdbRating, rottenRating, aud
           IMDb
         </div>
         <div className="flex items-baseline gap-1.5">
-           <span className="text-white font-black text-[16px] leading-none">{imdbScore}</span>
+           <span className="text-foreground font-black text-[16px] leading-none">{imdbScore}</span>
            {imdbVotes && (
-             <span className="text-[11px] text-white/40 font-bold border-b border-white/20 ml-0.5">{formatVotes(imdbVotes)}</span>
+             <span className="text-[11px] text-foreground/40 font-bold border-b border-foreground/20 ml-0.5">{formatVotes(imdbVotes)}</span>
            )}
         </div>
       </div>
@@ -69,8 +69,8 @@ export function MovieRatings({ tmdbRating, imdbId, imdbRating, rottenRating, aud
           </svg>
         </div>
         <div className="flex items-baseline gap-1.5">
-          <span className="text-white font-black text-[16px] leading-none">{criticScore}%</span>
-          <span className="text-[11px] text-white/40 font-bold uppercase border-b border-white/20">Fresh</span>
+          <span className="text-foreground font-black text-[16px] leading-none">{criticScore}%</span>
+          <span className="text-[11px] text-foreground/40 font-bold uppercase border-b border-foreground/20">Fresh</span>
         </div>
       </div>
 
@@ -82,8 +82,8 @@ export function MovieRatings({ tmdbRating, imdbId, imdbRating, rottenRating, aud
           </svg>
         </div>
         <div className="flex items-baseline gap-1.5">
-          <span className="text-white font-black text-[16px] leading-none">{finalAudienceScore}%</span>
-          <span className="text-[11px] text-white/40 font-bold uppercase border-b border-white/20">Hot</span>
+          <span className="text-foreground font-black text-[16px] leading-none">{finalAudienceScore}%</span>
+          <span className="text-[11px] text-foreground/40 font-bold uppercase border-b border-foreground/20">Hot</span>
         </div>
       </div>
     </div>
