@@ -69,7 +69,7 @@ export default async function Home() {
       <section className="container mx-auto px-6 lg:px-12 relative z-10">
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h3 className="text-2xl font-black font-headline tracking-tight text-white uppercase">
+            <h3 className="text-2xl font-black font-headline tracking-tight text-foreground uppercase">
               Phim Mới Cập Nhật
             </h3>
             <div className="h-1 w-12 bg-primary mt-1 rounded-full"></div>

@@ -22,7 +22,7 @@ export function ProfileDropdown() {
                     {user.photoURL ? (
                         <img src={user.photoURL} alt="Avatar" className="w-full h-full object-cover" />
                     ) : (
-                        <div className="w-full h-full bg-white/10 flex items-center justify-center text-white/40 group-hover:text-white transition-colors">
+                        <div className="w-full h-full bg-foreground/10 flex items-center justify-center text-foreground/40 group-hover:text-foreground transition-colors">
                             <User className="w-4 h-4" />
                         </div>
                     )}
@@ -38,34 +38,65 @@ export function ProfileDropdown() {
                 leaveFrom="transform opacity-100 scale-100"
                 leaveTo="transform opacity-0 scale-95"
             >
-                <Menu.Items className="absolute right-0 mt-3 w-72 origin-top-right rounded-2xl bg-[#0a0a0a]/90 backdrop-blur-2xl border border-white/10 shadow-2xl ring-1 ring-black ring-opacity-5 focus:outline-none z-50 overflow-hidden">
+                <Menu.Items className="absolute right-0 mt-3 w-72 origin-top-right rounded-2xl bg-surface border border-foreground/10 shadow-2xl shadow-black/20 focus:outline-none z-50 overflow-hidden">
                     {/* User Header */}
-                    <div className="px-5 py-4 border-b border-white/5 bg-white/[0.02]">
-                        <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/30 mb-1">Tài khoản</p>
-                        <p className="text-sm font-bold text-white truncate">{user.email}</p>
+                    <div className="px-5 py-4 border-b border-foreground/5 bg-foreground/[0.02]">
+                        <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-foreground/30 mb-1">Tài khoản</p>
+                        <p className="text-sm font-bold text-foreground truncate">{user.email}</p>
                     </div>
 
                     <div className="p-2">
                         {/* Sync Section */}
                         <div className="px-3 py-2">
-                            <h3 className="text-[10px] font-bold uppercase tracking-[0.2em] text-primary/60">Đồng bộ</h3>
+                            <h3 className="text-[10px] font-bold uppercase tracking-[0.2em] text-primary">Cài đặt</h3>
                         </div>
+
+                        <Menu.Item>
+                            {({ active }) => (
+                                <button
+                                    onClick={async () => {
+                                        const { getUserSettings, saveUserSettings } = await import("@/services/db");
+                                        const current = await getUserSettings(user.uid);
+                                        await saveUserSettings(user.uid, { autoSkipIntro: !current?.autoSkipIntro });
+                                        window.location.reload(); // Refresh to sync
+                                    }}
+                                    className={`${
+                                        active ? 'bg-foreground/5' : ''
+                                    } group flex w-full items-center justify-between rounded-xl px-3 py-2.5 transition-colors`}
+                                >
+                                    <div className="flex items-center gap-3">
+                                        <div className="p-2 rounded-lg bg-primary/10 text-primary">
+                                            <CheckCircle2 className="h-4 w-4" />
+                                        </div>
+                                        <div className="flex flex-col items-start translate-y-[-1px]">
+                                            <span className="text-foreground font-medium text-xs">Tự động bỏ qua Intro</span>
+                                            <span className="text-[9px] text-foreground/30">Tự động tua qua phần mở đầu phim</span>
+                                        </div>
+                                    </div>
+                                    <div className={`w-8 h-4 rounded-full relative transition-colors ${active ? 'bg-primary' : 'bg-foreground/10'}`}>
+                                        <div className="absolute right-1 top-1 w-2 h-2 rounded-full bg-white" />
+                                    </div>
+                                </button>
+                            )}
+                        </Menu.Item>
+
+                        <div className="my-2 border-t border-foreground/5" />
 
                         <Menu.Item>
                             {({ active }) => (
                                 <button
                                     onClick={loginTrakt}
                                     className={`${
-                                        active ? 'bg-white/5' : ''
+                                        active ? 'bg-foreground/5' : ''
                                     } group flex w-full items-center justify-between rounded-xl px-3 py-2.5 transition-colors`}
                                 >
                                     <div className="flex items-center gap-3">
-                                        <div className={`p-2 rounded-lg ${isTraktConnected ? 'bg-red-500/10 text-red-500' : 'bg-white/5 text-white/40'}`}>
+                                        <div className={`p-2 rounded-lg ${isTraktConnected ? 'bg-red-500/10 text-red-500' : 'bg-foreground/5 text-foreground/40'}`}>
                                             <Film className="h-4 w-4" />
                                         </div>
                                         <div className="flex flex-col items-start translate-y-[-1px]">
-                                            <span className="text-white font-medium text-xs">Phim (Trakt)</span>
-                                            <span className={`text-[9px] ${isTraktConnected ? 'text-green-500' : 'text-white/20'}`}>
+                                            <span className="text-foreground font-medium text-xs">Phim (Trakt)</span>
+                                            <span className={`text-[9px] ${isTraktConnected ? 'text-green-500' : 'text-foreground/20'}`}>
                                                 {isTraktConnected ? 'Đã kết nối' : 'Chưa kết nối'}
                                             </span>
                                         </div>
@@ -73,7 +104,7 @@ export function ProfileDropdown() {
                                     {isTraktConnected ? (
                                         <CheckCircle2 className="h-3.5 w-3.5 text-green-500/50" />
                                     ) : (
-                                        <ChevronRight className="h-3.5 w-3.5 text-white/10" />
+                                        <ChevronRight className="h-3.5 w-3.5 text-foreground/10" />
                                     )}
                                 </button>
                             )}
@@ -84,16 +115,16 @@ export function ProfileDropdown() {
                                 <button
                                     onClick={loginAniList}
                                     className={`${
-                                        active ? 'bg-white/5' : ''
+                                        active ? 'bg-foreground/5' : ''
                                     } group flex w-full items-center justify-between rounded-xl px-3 py-2.5 transition-colors`}
                                 >
                                     <div className="flex items-center gap-3">
-                                        <div className={`p-2 rounded-lg ${isAniListConnected ? 'bg-sky-500/10 text-sky-500' : 'bg-white/5 text-white/40'}`}>
+                                        <div className={`p-2 rounded-lg ${isAniListConnected ? 'bg-sky-500/10 text-sky-500' : 'bg-foreground/5 text-foreground/40'}`}>
                                             <Book className="h-4 w-4" />
                                         </div>
                                         <div className="flex flex-col items-start translate-y-[-1px]">
-                                            <span className="text-white font-medium text-xs">Truyện (AniList)</span>
-                                            <span className={`text-[9px] ${isAniListConnected ? 'text-green-500' : 'text-white/20'}`}>
+                                            <span className="text-foreground font-medium text-xs">Truyện (AniList)</span>
+                                            <span className={`text-[9px] ${isAniListConnected ? 'text-green-500' : 'text-foreground/20'}`}>
                                                 {isAniListConnected ? 'Đã kết nối' : 'Chưa kết nối'}
                                             </span>
                                         </div>
@@ -101,7 +132,7 @@ export function ProfileDropdown() {
                                     {isAniListConnected ? (
                                         <CheckCircle2 className="h-3.5 w-3.5 text-green-500/50" />
                                     ) : (
-                                        <ChevronRight className="h-3.5 w-3.5 text-white/10" />
+                                        <ChevronRight className="h-3.5 w-3.5 text-foreground/10" />
                                     )}
                                 </button>
                             )}
@@ -109,13 +140,12 @@ export function ProfileDropdown() {
 
                         <div className="my-2 border-t border-white/5" />
 
-                        {/* Logout Section */}
                         <Menu.Item>
                             {({ active }) => (
                                 <button
                                     onClick={() => logout()}
                                     className={`${
-                                        active ? 'bg-red-500/10 text-red-500' : 'text-white/60'
+                                        active ? 'bg-red-500/10 text-red-500' : 'text-foreground/60'
                                     } group flex w-full items-center gap-3 rounded-xl px-3 py-3 text-sm font-bold transition-all`}
                                 >
                                     <LogOut className="h-4 w-4" />
@@ -125,9 +155,9 @@ export function ProfileDropdown() {
                         </Menu.Item>
                     </div>
 
-                    <div className="px-5 py-3 bg-white/[0.02] border-t border-white/5">
-                        <p className="text-[9px] text-white/20 italic">
-                            Website Personal • Noir Edition
+                    <div className="px-5 py-3 bg-foreground/[0.02] border-t border-foreground/5">
+                        <p className="text-[9px] text-foreground/20 italic">
+                            Website Personal • Hồ Phim Edition
                         </p>
                     </div>
                 </Menu.Items>

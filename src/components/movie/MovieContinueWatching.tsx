@@ -50,7 +50,7 @@ export function MovieContinueWatching() {
           <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center border border-primary/20">
             <History className="w-5 h-5 text-primary" />
           </div>
-          <h3 className="text-xl md:text-2xl font-black font-headline tracking-tight text-white uppercase italic">
+          <h3 className="text-xl md:text-2xl font-black font-headline tracking-tight text-foreground uppercase italic">
             Xem Tiếp
           </h3>
         </div>

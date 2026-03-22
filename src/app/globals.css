@@ -2,18 +2,23 @@
 
 @theme {
   /* Colors - using OKLCH for perceptually uniform gradients and high-end feel */
-  --color-background: oklch(14% 0 0);
-  --color-foreground: oklch(98% 0 0);
+  --color-background: hsl(var(--background));
+  --color-foreground: hsl(var(--foreground));
   
-  --color-primary: var(--primary);
-  --color-primary-hover: var(--primary-hover);
+  --color-primary: hsl(var(--primary));
+  --color-primary-foreground: hsl(var(--primary-foreground));
   
-  /* TopXX Specific Colors (Yellow/Gold) */
-  --color-xx-primary: oklch(75% 0.15 85);
-  --color-xx-secondary: oklch(65% 0.2 60);
+  /* Section-specific primary colors */
+  --color-primary-movie: oklch(65% 0.25 250);
+  --color-primary-comic: #b02c2f;
+  --color-primary-topxx: oklch(75% 0.15 85);
   
-  --color-surface: oklch(18% 0.01 250);
-  --color-surface-hover: oklch(22% 0.02 250);
+  --color-surface: hsl(var(--card));
+  --color-surface-foreground: hsl(var(--card-foreground));
+  
+  --color-border: hsl(var(--border));
+  --color-input: hsl(var(--input));
+  --color-ring: hsl(var(--ring));
   
   /* Spacing Scale */
   --spacing-safe-pb: env(safe-area-inset-bottom, 0px);
@@ -32,24 +37,64 @@
 }
 
 :root {
-  --background: oklch(100% 0 0); /* Pure White */
-  --foreground: oklch(14% 0 0); /* Dark Black */
-  --primary: oklch(65% 0.25 250); /* Default Blue for Phim */
-  --primary-hover: oklch(55% 0.25 250);
-  --surface: oklch(98% 0.01 250);
-  --surface-hover: oklch(95% 0.02 250);
+  --background: 0 0% 100%;
+  --foreground: 222.2 84% 4.9%;
+  --card: 0 0% 100%;
+  --card-foreground: 222.2 84% 4.9%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 222.2 84% 4.9%;
+  --primary: 221.2 83.2% 53.3%;
+  --primary-foreground: 210 40% 98%;
+  --secondary: 210 40% 96.1%;
+  --secondary-foreground: 222.2 47.4% 11.2%;
+  --muted: 210 40% 96.1%;
+  --muted-foreground: 215.4 16.3% 46.9%;
+  --accent: 210 40% 96.1%;
+  --accent-foreground: 222.2 47.4% 11.2%;
+  --destructive: 0 84.2% 60.2%;
+  --destructive-foreground: 210 40% 98%;
+  --border: 214.3 31.8% 91.4%;
+  --input: 214.3 31.8% 91.4%;
+  --ring: 221.2 83.2% 53.3%;
   --radius: 12px;
-  --banner-overlay: linear-gradient(to top, oklch(100% 0 0) 0%, oklch(100% 0 0 / 80%) 20%, oklch(100% 0 0 / 0%) 100%);
+  --banner-overlay-light: linear-gradient(to top, hsl(0 0% 100% / 100%) 0%, hsl(0 0% 100% / 60%) 40%, transparent 100%);
+  --banner-overlay-dark: linear-gradient(to top, hsl(222.2 84% 4.9% / 100%) 0%, hsl(222.2 84% 4.9% / 60%) 40%, transparent 100%);
+  --banner-overlay: var(--banner-overlay-light);
 }
 
 .dark {
-  --background: oklch(14% 0 0); /* Noir Black */
-  --foreground: oklch(98% 0 0); /* Soft White */
-  --primary: oklch(65% 0.25 250); 
-  --primary-hover: oklch(55% 0.25 250);
-  --surface: oklch(18% 0.01 250);
-  --surface-hover: oklch(22% 0.02 250);
-  --banner-overlay: linear-gradient(to top, oklch(14% 0 0) 0%, oklch(14% 0 0 / 80%) 20%, oklch(14% 0 0 / 0%) 100%);
+  --background: 222.2 84% 4.9%;
+  --foreground: 210 40% 98%;
+  --card: 222.2 84% 4.9%;
+  --card-foreground: 210 40% 98%;
+  --popover: 222.2 84% 4.9%;
+  --popover-foreground: 210 40% 98%;
+  --primary: 217.2 91.2% 59.8%;
+  --primary-foreground: 222.2 47.4% 11.2%;
+  --secondary: 217.2 32.6% 17.5%;
+  --secondary-foreground: 210 40% 98%;
+  --muted: 217.2 32.6% 17.5%;
+  --muted-foreground: 215 20.2% 65.1%;
+  --accent: 217.2 32.6% 17.5%;
+  --accent-foreground: 210 40% 98%;
+  --destructive: 0 62.8% 30.6%;
+  --destructive-foreground: 210 40% 98%;
+  --border: 217.2 32.6% 17.5%;
+  --input: 217.2 32.6% 17.5%;
+  --ring: 224.3 76.3% 48%;
+  --banner-overlay: var(--banner-overlay-dark);
+}
+
+.theme-phim {
+  --primary: 221.2 83.2% 53.3%;
+}
+
+.theme-truyen {
+  --primary: 359 60% 43%; /* Closer to #b02c2f */
+}
+
+.theme-xx {
+  --primary: 48 89% 60%; /* Closer to oklch yellow */
 }
 
 .theme-phim {

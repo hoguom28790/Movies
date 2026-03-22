@@ -33,7 +33,7 @@ export function Navbar({ mode: initialMode }: NavbarProps) {
 
   return (
     <>
-      <header className="fixed top-0 z-50 w-full border-b border-white/[0.06] bg-[#0a0a0a]/90 backdrop-blur-xl transition-all duration-300 pt-safe">
+      <header className="fixed top-0 z-50 w-full border-b border-foreground/5 bg-background/80 backdrop-blur-xl transition-all duration-300 pt-safe">
         <div className="container mx-auto flex h-14 items-center justify-between px-4 lg:px-8">
           <div className="lg:hidden">
             <MobileMenu mode={mode as any} />
@@ -53,11 +53,11 @@ export function Navbar({ mode: initialMode }: NavbarProps) {
           {/* Right: Search + Actions */}
           <div className="flex items-center gap-2 flex-shrink-0">
             {isComicSection ? (
-              <Link href="/" className="hidden sm:flex items-center gap-1.5 px-4 py-1.5 mr-2 rounded-lg bg-white/10 hover:bg-white/20 text-white text-[12px] font-bold transition-all">
+              <Link href="/" className="hidden sm:flex items-center gap-1.5 px-4 py-1.5 mr-2 rounded-lg bg-foreground/10 hover:bg-foreground/20 text-foreground text-[12px] font-bold transition-all">
                 <Film className="w-4 h-4" /> Sang Hồ Phim
               </Link>
             ) : (
-              <Link href="/truyen" className="hidden sm:flex items-center gap-1.5 px-4 py-1.5 mr-2 rounded-lg bg-primary hover:bg-primary-hover text-white text-[12px] font-bold transition-all shadow-lg shadow-indigo-500/20">
+              <Link href="/truyen" className="hidden sm:flex items-center gap-1.5 px-4 py-1.5 mr-2 rounded-lg bg-primary hover:bg-primary-hover text-primary-foreground text-[12px] font-bold transition-all shadow-lg shadow-primary/20">
                 <BookOpen className="w-4 h-4" /> Sang Hồ Truyện
               </Link>
             )}
@@ -77,7 +77,7 @@ export function Navbar({ mode: initialMode }: NavbarProps) {
             <div className="flex items-center gap-1 sm:gap-2">
               <Link
                 href={isComicSection ? "/truyen/search" : "/search"}
-                className="p-2 text-white/50 hover:text-white hover:bg-white/10 rounded-full transition-all"
+                className="p-1.5 rounded-lg bg-foreground/5 text-foreground/30 hover:text-foreground hover:bg-foreground/10 transition-all font-medium"
                 title="Tìm kiếm"
               >
                 <Search className="h-5 w-5" />
@@ -86,7 +86,7 @@ export function Navbar({ mode: initialMode }: NavbarProps) {
               <Link
                 href={isComicSection ? "/truyen/lich-su" : "/lich-su"}
                 className={`p-2 rounded-full transition-all ${
-                  (pathname === "/lich-su" || pathname === "/truyen/lich-su") ? "bg-primary text-white shadow-lg shadow-primary/20" : "text-white/50 hover:bg-white/10 hover:text-white"
+                  (pathname === "/lich-su" || pathname === "/truyen/lich-su") ? "bg-primary text-primary-foreground shadow-lg shadow-primary/20" : "text-foreground/50 hover:bg-foreground/10 hover:text-foreground"
                 }`}
                 title="Lịch sử"
               >
@@ -98,7 +98,7 @@ export function Navbar({ mode: initialMode }: NavbarProps) {
               <Link
                 href={isComicSection ? "/truyen/yeu-thich" : "/yeu-thich"}
                 className={`p-2 rounded-full transition-all ${
-                  (pathname === "/yeu-thich" || pathname === "/truyen/yeu-thich") ? "bg-primary text-white shadow-lg shadow-primary/20" : "text-white/50 hover:bg-white/10 hover:text-white"
+                  (pathname === "/yeu-thich" || pathname === "/truyen/yeu-thich") ? "bg-primary text-primary-foreground shadow-lg shadow-primary/20" : "text-foreground/50 hover:bg-foreground/10 hover:text-foreground"
                 }`}
                 title="Yêu thích"
               >
@@ -106,13 +106,13 @@ export function Navbar({ mode: initialMode }: NavbarProps) {
               </Link>
 
               {user ? (
-                 <div className="ml-1 pl-1 border-l border-white/5">
+                 <div className="ml-1 pl-1 border-l border-foreground/10">
                     <ProfileDropdown />
                  </div>
               ) : (
                 <button
                   onClick={() => setIsAuthOpen(true)}
-                  className="ml-2 px-5 py-2 rounded-full bg-primary hover:bg-primary-hover text-white text-[12px] font-bold transition-all shadow-lg shadow-primary/20"
+                  className="ml-2 px-5 py-2 rounded-full bg-primary hover:bg-primary-hover text-primary-foreground text-[12px] font-bold transition-all shadow-lg shadow-primary/20"
                 >
                   Đăng nhập
                 </button>

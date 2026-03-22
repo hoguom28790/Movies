@@ -64,7 +64,7 @@ export function HeroSlider({ movies }: HeroSliderProps) {
           key={currentIndex} 
           className="flex flex-col items-start gap-4 animate-in slide-in-from-bottom-12 fade-in duration-1000 max-w-[85%]"
         >
-          <span className="inline-block px-3 py-1 bg-primary text-white text-[10px] font-bold uppercase tracking-widest rounded-lg shadow-lg shadow-primary/20">
+          <span className="inline-block px-3 py-1 bg-primary text-primary-foreground text-[10px] font-bold uppercase tracking-widest rounded-lg shadow-lg shadow-primary/20">
             Phim Đề Cử
           </span>
 
@@ -80,14 +80,14 @@ export function HeroSlider({ movies }: HeroSliderProps) {
             <Link href={`/phim/${currentMovie.slug}`} className="flex-1 md:flex-none">
               <Button
                 size="lg"
-                className="h-14 px-10 text-[16px] font-black rounded-xl gap-2 bg-gradient-to-br from-primary to-primary-container text-white border-none shadow-[0_8px_25px_rgba(59,130,246,0.3)] transition-all hover:scale-105 active:scale-95 group"
+                className="h-14 px-10 text-[16px] font-black rounded-xl gap-2 bg-primary text-primary-foreground shadow-[0_8px_25px_rgba(var(--primary),0.3)] transition-all hover:scale-105 active:scale-95 group"
               >
                 <Play className="w-6 h-6 fill-current group-hover:animate-pulse" />
                 XEM NGAY
               </Button>
             </Link>
             
-            <button className="w-14 h-14 bg-white/10 backdrop-blur-md rounded-xl flex items-center justify-center text-white border border-white/5 hover:bg-white/20 hover:scale-105 active:scale-95 transition-all">
+            <button className="w-14 h-14 bg-foreground/10 backdrop-blur-md rounded-xl flex items-center justify-center text-foreground border border-foreground/5 hover:bg-foreground/20 hover:scale-105 active:scale-95 transition-all">
               <span className="text-[32px] font-light leading-none">+</span>
             </button>
           </div>
@@ -122,7 +122,7 @@ export function HeroSlider({ movies }: HeroSliderProps) {
       {/* Navigation arrows */}
       <button 
         onClick={prevSlide}
-        className="absolute left-4 top-1/2 -translate-y-1/2 z-20 p-3 rounded-full bg-black/30 backdrop-blur-sm text-white opacity-0 group-hover:opacity-100 transition-all hover:bg-white/10"
+        className="absolute left-4 top-1/2 -translate-y-1/2 z-20 p-3 rounded-full bg-foreground/10 backdrop-blur-sm text-foreground opacity-0 group-hover:opacity-100 transition-all hover:bg-foreground/20"
         aria-label="Previous"
       >
         <ChevronLeft className="w-5 h-5" />
@@ -130,7 +130,7 @@ export function HeroSlider({ movies }: HeroSliderProps) {
 
       <button 
         onClick={nextSlide}
-        className="absolute right-4 top-1/2 -translate-y-1/2 z-20 p-3 rounded-full bg-black/30 backdrop-blur-sm text-white opacity-0 group-hover:opacity-100 transition-all hover:bg-white/10"
+        className="absolute right-4 top-1/2 -translate-y-1/2 z-20 p-3 rounded-full bg-foreground/10 backdrop-blur-sm text-foreground opacity-0 group-hover:opacity-100 transition-all hover:bg-foreground/20"
         aria-label="Next"
       >
         <ChevronRight className="w-5 h-5" />
@@ -143,7 +143,7 @@ export function HeroSlider({ movies }: HeroSliderProps) {
             key={idx}
             onClick={() => setCurrentIndex(idx)}
             className={`transition-all duration-300 rounded-full h-1 ${
-              idx === currentIndex ? "w-6 bg-primary" : "w-1.5 bg-white/20"
+              idx === currentIndex ? "w-6 bg-primary" : "w-1.5 bg-foreground/20"
             }`}
             aria-label={`Slide ${idx + 1}`}
           />

@@ -161,7 +161,8 @@ export async function disconnectTrakt(userId: string) {
 // ================= USER SETTINGS =================
 export interface UserSettings {
   autoSkipIntro?: boolean;
-  theme?: "phim" | "truyen" | "topxx";
+  theme?: "phim" | "truyen" | "topxx"; // Style preset
+  appTheme?: "light" | "dark" | "system"; // UI Theme
 }
 
 export async function saveUserSettings(userId: string, settings: Partial<UserSettings>) {
@@ -176,6 +177,11 @@ export async function getUserSettings(userId: string): Promise<UserSettings | nu
     return snap.data()?.settings || null;
   }
   return null;
+}
+
+export async function saveAppTheme(userId: string, appTheme: "light" | "dark" | "system") {
+  const docRef = doc(db, "users", userId);
+  await setDoc(docRef, { settings: { appTheme } }, { merge: true });
 }
 
 // ================= FAVORITE ACTORS =================

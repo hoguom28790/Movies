@@ -83,8 +83,8 @@ export function InstantSearch() {
     <div className="relative flex-1 max-w-md hidden md:block mx-auto" ref={dropdownRef}>
       <form 
         onSubmit={handleSearchSubmit}
-        className={`relative flex items-center bg-[#111]/80 border border-white/5 rounded-lg px-4 py-2 transition-all duration-300 ${
-          isOpen ? "ring-1 ring-[var(--primary)]/30 bg-[#161616]" : "hover:bg-[#1a1a1a]"
+        className={`relative flex items-center bg-surface border border-foreground/5 rounded-lg px-4 py-2 transition-all duration-300 ${
+          isOpen ? "ring-1 ring-primary/30 bg-surface shadow-lg" : "hover:bg-foreground/[0.03]"
         }`}
       >
         <button type="submit" className="outline-none" aria-label="Search">
@@ -96,7 +96,7 @@ export function InstantSearch() {
           onChange={(e) => setQuery(e.target.value)}
           onFocus={() => query.trim().length > 1 && setIsOpen(true)}
           placeholder={isComicSection ? "Tìm kiếm truyện tranh..." : "Tìm kiếm phim, diễn viên..."}
-          className="ml-3 flex-1 bg-transparent text-[13px] text-white placeholder:text-white/10 outline-none font-medium tracking-tight"
+          className="ml-3 flex-1 bg-transparent text-[13px] text-foreground placeholder:text-foreground/20 outline-none font-medium tracking-tight"
         />
         {query && (
           <button type="button" onClick={() => setQuery("")} className="ml-2 text-white/20 hover:text-white transition-colors">
@@ -107,9 +107,9 @@ export function InstantSearch() {
 
       {/* Dropdown Results */}
       {isOpen && (results.length > 0 || loading) && (
-        <div className="absolute top-full left-0 right-0 mt-2 bg-[#0e0e0e] border border-white/5 rounded-xl shadow-2xl overflow-hidden z-50 animate-in fade-in slide-in-from-top-2 duration-300">
-          <div className="px-4 py-3 border-b border-white/5">
-             <span className="text-[10px] font-black text-white/30 uppercase tracking-[0.2em]">{isComicSection ? "Danh sách truyện" : "Danh sách phim"}</span>
+        <div className="absolute top-full left-0 right-0 mt-2 bg-surface border border-foreground/5 rounded-xl shadow-2xl overflow-hidden z-50 animate-in fade-in slide-in-from-top-2 duration-300">
+          <div className="px-4 py-3 border-b border-foreground/5">
+             <span className="text-[10px] font-black text-foreground/30 uppercase tracking-[0.2em]">{isComicSection ? "Danh sách truyện" : "Danh sách phim"}</span>
           </div>
           
           <div className="max-h-[70vh] overflow-y-auto scrollbar-hide py-2">
@@ -138,13 +138,13 @@ export function InstantSearch() {
                     </div>
                   </div>
                   <div className="flex flex-col gap-1 overflow-hidden">
-                    <h4 className="text-[13px] font-bold text-white group-hover:text-[var(--primary)] transition-colors truncate">
+                    <h4 className="text-[13px] font-bold text-foreground group-hover:text-primary transition-colors truncate">
                       {item.title}
                     </h4>
-                    <p className="text-[11px] text-white/40 font-medium truncate italic opacity-80">
+                    <p className="text-[11px] text-foreground/40 font-medium truncate italic opacity-80">
                       {item.originalTitle || item.title}
                     </p>
-                    <span className="text-[10px] font-black text-white/20">{item.year || (isComicSection ? "Truyện" : "2024")}</span>
+                    <span className="text-[10px] font-black text-foreground/10">{item.year || (isComicSection ? "Truyện" : "2024")}</span>
                   </div>
                 </Link>
               ))
@@ -155,7 +155,7 @@ export function InstantSearch() {
             <Link
               href={isComicSection ? `/truyen/search?q=${encodeURIComponent(query)}` : `/search?q=${encodeURIComponent(query)}`}
               onClick={() => setIsOpen(false)}
-              className="block w-full py-3 bg-[#161616] text-center text-[11px] font-black text-white/30 hover:text-[var(--primary)] hover:bg-[#1a1a1a] transition-all border-t border-white/5 uppercase tracking-widest"
+              className="block w-full py-3 bg-foreground/[0.03] text-center text-[11px] font-black text-foreground/30 hover:text-primary hover:bg-foreground/[0.05] transition-all border-t border-foreground/5 uppercase tracking-widest"
             >
               Toàn bộ kết quả
             </Link>

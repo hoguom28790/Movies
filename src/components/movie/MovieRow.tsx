@@ -24,14 +24,14 @@ export function MovieRow({ title, movies, viewAllHref }: MovieRowProps) {
     <section className="relative">
       {/* Header */}
       <div className="flex items-center justify-between mb-5 px-4 lg:px-12">
-        <h3 className="text-base font-semibold text-white/90">
+        <h3 className="text-xl font-black font-headline tracking-tight text-foreground uppercase">
           {title}
         </h3>
         <div className="flex items-center gap-3">
           {viewAllHref && (
             <Link
               href={viewAllHref}
-              className="text-[12px] text-white/40 hover:text-white transition-colors"
+              className="text-[12px] text-foreground/40 hover:text-foreground transition-colors"
             >
               Xem toàn bộ
             </Link>
