@@ -79,16 +79,18 @@ export async function searchTopXXMovies(keyword: string, page: number = 1): Prom
   const url = `${BASE_URL}/movies/search?keyword=${encodeURIComponent(keyword)}&page=${page}`;
   
   try {
-    const [topxxRes, avdbRes] = await Promise.allSettled([
+    const [topxxRes, avdbTitleRes, avdbActorRes] = await Promise.allSettled([
       fetch(url, { headers: DEFAULT_HEADERS, signal: AbortSignal.timeout(10000) }).then(r => r.json()),
-      import("./avdb").then(m => m.getAVDBMovies(page, undefined, keyword))
+      import("./avdb").then(m => m.getAVDBMovies(page, undefined, keyword)),
+      import("./avdb").then(m => m.getAVDBMovies(page, undefined, undefined, keyword)) // Search by actor too
     ]);
 
     let items: Movie[] = [];
     let totalItems = 0;
     let totalPages = 0;
 
-    if (topxxRes.status === "fulfilled" && topxxRes.value.status === "success") {
+    // 1. Process TopXX results
+    if (topxxRes.status === "fulfilled" && topxxRes.value?.status === "success") {
       const txItems = topxxRes.value.data.map((item: any) => {
         const viTrans = item.trans?.find((t: any) => t.locale === "vi") || item.trans?.[0];
         const enTrans = item.trans?.find((t: any) => t.locale === "en") || {};
@@ -110,16 +112,32 @@ export async function searchTopXXMovies(keyword: string, page: number = 1): Prom
       totalPages = Math.max(totalPages, topxxRes.value.meta?.last_page || 1);
     }
 
-    if (avdbRes.status === "fulfilled") {
-      items = [...items, ...avdbRes.value.items];
-      totalItems += avdbRes.value.pagination.totalItems;
-      totalPages = Math.max(totalPages, avdbRes.value.pagination.totalPages);
+    // 2. Process AVDB title results
+    if (avdbTitleRes.status === "fulfilled") {
+        items = [...items, ...avdbTitleRes.value.items];
+        totalItems += avdbTitleRes.value.pagination.totalItems;
+        totalPages = Math.max(totalPages, avdbTitleRes.value.pagination.totalPages);
     }
+
+    // 3. Process AVDB actor results
+    if (avdbActorRes.status === "fulfilled") {
+        items = [...items, ...avdbActorRes.value.items];
+        totalItems += avdbActorRes.value.pagination.totalItems;
+        totalPages = Math.max(totalPages, avdbActorRes.value.pagination.totalPages);
+    }
+
+    // Dedup results by ID
+    const seen = new Set();
+    items = items.filter(item => {
+      const duplicate = seen.has(item.id);
+      seen.add(item.id);
+      return !duplicate;
+    });
 
     return {
       items,
       pagination: {
-        totalItems,
+        totalItems: items.length, // approximation as we merged sources
         totalPages,
         currentPage: page
       }
