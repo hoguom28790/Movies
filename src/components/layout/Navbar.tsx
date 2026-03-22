@@ -35,9 +35,7 @@ export function Navbar({ mode: initialMode }: NavbarProps) {
     <>
       <header className="fixed top-0 z-50 w-full border-b border-foreground/5 bg-background/80 backdrop-blur-xl transition-all duration-300 pt-safe">
         <div className="container mx-auto flex h-14 items-center justify-between px-4 lg:px-8">
-          <div className="lg:hidden">
-            <MobileMenu mode={mode as any} />
-          </div>
+          {/* Left menu removed as requested, using bottom tab bar instead */}
  
           {/* Logo */}
           <Link href={isComicSection ? "/truyen" : "/"} className="flex items-center gap-2 group md:mr-6 flex-shrink-0">
