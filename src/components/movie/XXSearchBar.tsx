@@ -20,17 +20,17 @@ export function XXSearchBar() {
     <div className="px-6 -mt-8 relative z-20 container mx-auto lg:px-12 max-w-7xl">
       <form 
         onSubmit={handleSearch}
-        className="w-full h-16 bg-white/5 backdrop-blur-3xl border border-white/10 rounded-full flex items-center px-6 gap-4 shadow-2xl transition-all hover:bg-white/10 hover:border-yellow-500/30 group"
+        className="w-full h-16 bg-foreground/5 backdrop-blur-3xl border border-foreground/10 rounded-full flex items-center px-6 gap-4 shadow-2xl transition-all hover:bg-foreground/10 hover:border-yellow-500/30 group"
       >
-        <Search className="w-5 h-5 text-white/30 group-focus-within:text-yellow-500 transition-colors" />
+        <Search className="w-5 h-5 text-foreground/30 group-focus-within:text-yellow-500 transition-colors" />
         <input 
           name="q"
-          className="bg-transparent border-none focus:ring-0 text-white placeholder-white/20 w-full font-black text-[15px] uppercase italic tracking-tighter outline-none" 
+          className="bg-transparent border-none focus:ring-0 text-foreground placeholder:text-foreground/20 w-full font-black text-[15px] uppercase italic tracking-tighter outline-none" 
           placeholder="Tìm kiếm tác phẩm hoặc diễn viên..." 
           type="text"
           autoComplete="off"
         />
-        <button type="button" className="p-2 text-white/20 hover:text-yellow-500 transition-colors">
+        <button type="button" className="p-2 text-foreground/20 hover:text-yellow-500 transition-colors">
           <Mic className="w-5 h-5" />
         </button>
       </form>

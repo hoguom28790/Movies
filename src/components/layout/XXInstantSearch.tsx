@@ -75,12 +75,12 @@ export function XXInstantSearch() {
       <div className="hidden sm:block relative flex-1 max-w-[200px] lg:max-w-[360px]">
         <form 
           onSubmit={handleSearchSubmit}
-          className={`relative flex items-center bg-white/[0.03] border border-white/[0.08] rounded-full px-4 py-1.5 transition-all duration-300 ${
-            isOpen ? "ring-1 ring-yellow-500/30 bg-white/[0.06] shadow-lg shadow-yellow-500/5" : "hover:bg-white/[0.06]"
+          className={`relative flex items-center bg-foreground/[0.03] border border-foreground/[0.08] rounded-full px-4 py-1.5 transition-all duration-300 ${
+            isOpen ? "ring-1 ring-yellow-500/30 bg-foreground/[0.06] shadow-lg shadow-yellow-500/5" : "hover:bg-foreground/[0.06]"
           }`}
         >
           <button type="submit" className="outline-none" aria-label="Search">
-             <Search className={`h-4 w-4 transition-colors ${loading ? "text-yellow-500 animate-pulse" : "text-white/20 hover:text-white"}`} />
+             <Search className={`h-4 w-4 transition-colors ${loading ? "text-yellow-500 animate-pulse" : "text-foreground/20 hover:text-foreground"}`} />
           </button>
           <input
             type="text"
@@ -88,10 +88,10 @@ export function XXInstantSearch() {
             onChange={(e) => setQuery(e.target.value)}
             onFocus={() => query.trim().length > 1 && setIsOpen(true)}
             placeholder="Tìm phim, diễn viên..."
-            className="ml-3 flex-1 bg-transparent text-[12px] text-white placeholder:text-white/20 outline-none font-medium italic tracking-tight uppercase"
+            className="ml-3 flex-1 bg-transparent text-[12px] text-foreground placeholder-foreground/20 outline-none font-medium italic tracking-tight uppercase"
           />
           {query && (
-            <button type="button" onClick={() => setQuery("")} className="ml-2 text-white/20 hover:text-white transition-colors">
+            <button type="button" onClick={() => setQuery("")} className="ml-2 text-foreground/20 hover:text-foreground transition-colors">
               <X className="h-4 w-4" />
             </button>
           )}
@@ -99,16 +99,16 @@ export function XXInstantSearch() {
 
         {/* Dropdown Results */}
         {isOpen && (results.length > 0 || loading) && (
-          <div className="absolute top-full left-0 right-0 mt-3 bg-surface border border-white/5 rounded-2xl shadow-2xl shadow-black/80 overflow-hidden z-50 animate-in fade-in slide-in-from-top-2 duration-300 backdrop-blur-3xl">
-            <div className="px-4 py-3 border-b border-white/5 bg-white/[0.02]">
-               <span className="text-[10px] font-black text-white/20 uppercase tracking-[0.4em] italic">Danh sách tác phẩm</span>
+          <div className="absolute top-full left-0 right-0 mt-3 bg-surface border border-foreground/5 rounded-2xl shadow-2xl shadow-black/80 overflow-hidden z-50 animate-in fade-in slide-in-from-top-2 duration-300 backdrop-blur-3xl">
+            <div className="px-4 py-3 border-b border-foreground/5 bg-foreground/[0.02]">
+               <span className="text-[10px] font-black text-foreground/20 uppercase tracking-[0.4em] italic">Danh sách tác phẩm</span>
             </div>
             
             <div className="max-h-[60vh] overflow-y-auto scrollbar-hide py-2">
               {loading ? (
                 <div className="flex flex-col items-center justify-center py-12 gap-3">
                    <Loader2 className="h-6 w-6 text-yellow-500 animate-spin" />
-                   <span className="text-[10px] text-white/20 font-black uppercase tracking-widest italic animate-pulse">Đang truy vấn...</span>
+                   <span className="text-[10px] text-foreground/20 font-black uppercase tracking-widest italic animate-pulse">Đang truy vấn...</span>
                 </div>
               ) : (
                 results.map((item) => (
@@ -116,9 +116,9 @@ export function XXInstantSearch() {
                     key={item.slug}
                     href={`/${TOPXX_PATH}/phim/${item.slug}`}
                     onClick={() => setIsOpen(false)}
-                    className="flex items-center gap-4 px-4 py-2.5 hover:bg-white/[0.03] transition-colors group"
+                    className="flex items-center gap-4 px-4 py-2.5 hover:bg-foreground/[0.03] transition-colors group"
                   >
-                    <div className="relative h-14 w-10 flex-shrink-0 rounded-lg overflow-hidden bg-white/5">
+                    <div className="relative h-14 w-10 flex-shrink-0 rounded-lg overflow-hidden bg-foreground/5">
                       <Image
                         src={item.posterUrl || "https://fakeimg.pl/200x300?text=No+Poster"}
                         alt={item.title}
@@ -131,15 +131,15 @@ export function XXInstantSearch() {
                       </div>
                     </div>
                     <div className="flex flex-col gap-0.5 overflow-hidden">
-                      <h4 className="text-[12px] font-black text-white group-hover:text-yellow-500 transition-colors truncate uppercase italic tracking-tighter">
+                      <h4 className="text-[12px] font-black text-foreground group-hover:text-yellow-500 transition-colors truncate uppercase italic tracking-tighter">
                         {item.title}
                       </h4>
-                      <p className="text-[10px] text-white/40 font-black truncate italic opacity-80 uppercase tracking-tight">
+                      <p className="text-[10px] text-foreground/40 font-black truncate italic opacity-80 uppercase tracking-tight">
                         {item.originalTitle || item.title}
                       </p>
                       <div className="flex items-center gap-2 mt-0.5">
                          <span className="text-[9px] font-black text-yellow-500/40 uppercase tracking-tighter">{item.year || "2024"}</span>
-                         <span className="text-[8px] px-1 py-0.5 rounded-sm bg-white/5 text-white/20 font-black uppercase tracking-widest">{item.quality || "4K"}</span>
+                         <span className="text-[8px] px-1 py-0.5 rounded-sm bg-foreground/5 text-foreground/20 font-black uppercase tracking-widest">{item.quality || "4K"}</span>
                       </div>
                     </div>
                   </Link>
@@ -151,15 +151,15 @@ export function XXInstantSearch() {
               <Link
                 href={`/${TOPXX_PATH}/search?q=${encodeURIComponent(query)}`}
                 onClick={() => setIsOpen(false)}
-                className="block w-full py-4 bg-yellow-500/5 text-center text-[10px] font-black text-yellow-500 hover:bg-yellow-500 hover:text-black transition-all border-t border-white/5 uppercase tracking-[0.3em] italic"
+                className="block w-full py-4 bg-yellow-500/5 text-center text-[10px] font-black text-yellow-500 hover:bg-yellow-500 hover:text-black transition-all border-t border-foreground/5 uppercase tracking-[0.3em] italic"
               >
                 Xem tất cả kết quả →
               </Link>
             )}
 
             {!loading && results.length === 0 && query && (
-               <div className="py-12 text-center bg-white/[0.01]">
-                   <span className="text-[10px] text-white/20 font-black uppercase tracking-widest italic">Không tìm thấy bản ghi nào cho "{query}"</span>
+               <div className="py-12 text-center bg-foreground/[0.01]">
+                   <span className="text-[10px] text-foreground/20 font-black uppercase tracking-widest italic">Không tìm thấy bản ghi nào cho "{query}"</span>
                </div>
             )}
           </div>
