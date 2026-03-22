@@ -84,10 +84,10 @@ export function ActorModal({ isOpen, onClose, actor }: ActorModalProps) {
       const match = searchResult.items.length > 0 ? findMatch(searchResult.items) : null;
 
       if (match) {
-        console.log(`[ActorModal] Match found: ${match.title} (${match.year}) -> /xem/${match.slug}`);
+        console.log(`[ActorModal] Match found: ${match.title} (${match.year}) -> /phim/${match.slug}`);
         setToast(null);
         onClose();
-        router.push(`/xem/${match.slug}`);
+        router.push(`/phim/${match.slug}`);
       } else {
         console.warn(`[ActorModal] No match found for: ${title}`);
         setToast({ 
@@ -290,4 +290,4 @@ export function ActorModal({ isOpen, onClose, actor }: ActorModalProps) {
     </Transition.Root>
   );
 }
-// Click actor image → TMDB movie_credits/tv_credits modal → search site's API by title+year → navigate to /xem/[slug]
+// Click actor image → TMDB movie_credits/tv_credits modal → search site's API by title+year → navigate to /phim/[slug]

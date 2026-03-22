@@ -2,11 +2,13 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { Play, Calendar, Globe, Tag, Users, ArrowLeft, Server } from "lucide-react";
+import { Play, Calendar, Globe, Tag, Users, ArrowLeft, Server, Info, Search, X } from "lucide-react";
 import { XXPlayer } from "@/components/layout/XXPlayer";
 import { XXFavoriteBtn } from "@/components/movie/XXFavoriteBtn";
 import { XXPlaylistBtn } from "@/components/movie/XXPlaylistBtn";
 import { Button } from "@/components/ui/Button";
+import { ActorModal } from "@/components/movie/ActorModal";
+import { searchTMDBPerson } from "@/services/tmdb";
 
 interface XXMovieDetailClientProps {
   item: any;
@@ -17,6 +19,34 @@ interface XXMovieDetailClientProps {
 export default function XXMovieDetailClient({ item, slug, autoPlay }: XXMovieDetailClientProps) {
   const [isPlaying, setIsPlaying] = useState(autoPlay || false);
   const [currentServer, setCurrentServer] = useState(0);
+  const [selectedActor, setSelectedActor] = useState<any>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isSearchingActor, setIsSearchingActor] = useState(false);
+  const [errorToast, setErrorToast] = useState<string | null>(null);
+
+  const handleActorClick = async (name: string) => {
+    try {
+      setIsSearchingActor(true);
+      setErrorToast(null);
+      const match = await searchTMDBPerson(name);
+      
+      if (match) {
+        setSelectedActor({
+          id: match.id,
+          name: name,
+          profile_path: match.profile_path
+        });
+        setIsModalOpen(true);
+      } else {
+        setErrorToast(`Không thấy dữ liệu sự nghiệp của "${name}" trên TMDB.`);
+        setTimeout(() => setErrorToast(null), 3000);
+      }
+    } catch (e) {
+      setErrorToast("Lỗi khi tìm kiếm diễn viên. Thử lại sau!");
+    } finally {
+      setIsSearchingActor(false);
+    }
+  };
 
   // Normalize data between sources
   const isAVDB = item.source === 'avdb';
@@ -41,10 +71,7 @@ export default function XXMovieDetailClient({ item, slug, autoPlay }: XXMovieDet
     }
   }, [autoPlay]);
 
-  if (isPlaying && sources.length > 0) {
-    const currentSource = sources[currentServer] || sources[0];
-    
-    return (
+  const contentBody = (isPlaying && sources.length > 0) ? (
       <div className="container mx-auto px-4 md:px-8 pb-32 animate-in fade-in slide-in-from-bottom-5 duration-700">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8 pt-8">
            <button 
@@ -65,9 +92,9 @@ export default function XXMovieDetailClient({ item, slug, autoPlay }: XXMovieDet
           <div className="w-full relative group">
              <div className="absolute -inset-1 bg-yellow-500/10 blur-2xl opacity-0 group-hover:opacity-100 transition-opacity -z-10" />
              <XXPlayer 
-                url={currentSource.link}
-                isHls={currentSource.link.includes('.m3u8') || currentSource.link.includes('m3u8')}
-                rawEmbedUrl={(!currentSource.link.includes('.m3u8') && !currentSource.link.includes('.mp4') && !currentSource.link.includes('.mkv')) ? currentSource.link : ""}
+                url={sources[currentServer]?.link || sources[0]?.link}
+                isHls={(sources[currentServer]?.link || sources[0]?.link).includes('.m3u8') || (sources[currentServer]?.link || sources[0]?.link).includes('m3u8')}
+                rawEmbedUrl={(!(sources[currentServer]?.link || sources[0]?.link).includes('.m3u8') && !(sources[currentServer]?.link || sources[0]?.link).includes('.mp4') && !(sources[currentServer]?.link || sources[0]?.link).includes('.mkv')) ? (sources[currentServer]?.link || sources[0]?.link) : ""}
                 movieTitle={title}
                 movieCode={movieCode}
                 posterUrl={poster}
@@ -124,19 +151,15 @@ export default function XXMovieDetailClient({ item, slug, autoPlay }: XXMovieDet
                    <ul className="space-y-10">
                       <DetailItem icon={<Tag className="w-4 h-4 text-white/20"/>} label="Thể loại" items={isAVDB ? (Array.isArray(item.category) ? item.category.map((c: any) => ({ name: c, code: c })) : [{ name: item.category, code: item.category }]) : item.genres} path="/v2k9r5w8m3x7n1p4q0z6/the-loai" />
                       <DetailItem icon={<Globe className="w-4 h-4 text-white/20"/>} label="Quốc gia" items={isAVDB ? (Array.isArray(item.country) ? item.country.map((c: any) => ({ name: c, code: c })) : [{ name: item.country, code: item.country }]) : item.countries} path="/v2k9r5w8m3x7n1p4q0z6/quoc-gia" />
-                      <DetailItem icon={<Users className="w-4 h-4 text-white/20"/>} label="Diễn viên" items={isAVDB ? (Array.isArray(item.actor) ? item.actor.map((a: any) => ({ trans: [{ locale: 'vi', name: a }] })) : item.actor?.split(',').map((a: any) => ({ trans: [{ locale: 'vi', name: a.trim() }] }))) : item.actors} path="/v2k9r5w8m3x7n1p4q0z6/dien-vien" isActor />
+                      <DetailItem icon={<Users className="w-4 h-4 text-white/20"/>} label="Diễn viên" items={isAVDB ? (Array.isArray(item.actor) ? item.actor.map((a: any) => ({ trans: [{ locale: 'vi', name: a }] })) : item.actor?.split(',').map((a: any) => ({ trans: [{ locale: 'vi', name: a.trim() }] }))) : item.actors} path="/v2k9r5w8m3x7n1p4q0z6/dien-vien" isActor onActorClick={handleActorClick} />
                    </ul>
                 </div>
              </div>
           </div>
         </div>
       </div>
-    );
-  }
-
-  return (
+  ) : (
     <div className="container mx-auto px-4 md:px-0 pb-32 animate-in fade-in slide-in-from-bottom-5 duration-1000 max-w-7xl">
-      {/* Hero Section */}
       <div className="relative w-full h-[65vh] md:h-[80vh] rounded-[50px] overflow-hidden mb-16 group shadow-2xl shadow-black">
         <img 
           src={poster} 
@@ -228,6 +251,7 @@ export default function XXMovieDetailClient({ item, slug, autoPlay }: XXMovieDet
                   items={isAVDB ? (Array.isArray(item.actor) ? item.actor.map((a: any) => ({ trans: [{ locale: 'vi', name: a }] })) : item.actor?.split(',').map((a: any) => ({ trans: [{ locale: 'vi', name: a.trim() }] }))) : item.actors} 
                   path="/v2k9r5w8m3x7n1p4q0z6/dien-vien" 
                   isActor 
+                  onActorClick={handleActorClick}
                />
              </ul>
           </div>
@@ -235,10 +259,46 @@ export default function XXMovieDetailClient({ item, slug, autoPlay }: XXMovieDet
       </div>
     </div>
   );
+
+  return (
+    <>
+      {contentBody}
+
+      <ActorModal 
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        actor={selectedActor}
+      />
+
+      {isSearchingActor && (
+        <div className="fixed inset-0 z-[3000] flex items-center justify-center bg-black/60 backdrop-blur-sm animate-in fade-in duration-300">
+           <div className="bg-surface p-8 rounded-[40px] border border-white/10 shadow-2xl flex flex-col items-center gap-6">
+              <div className="relative">
+                 <div className="w-16 h-16 border-4 border-yellow-500/20 border-t-yellow-500 rounded-full animate-spin" />
+                 <Search className="absolute inset-0 m-auto w-6 h-6 text-yellow-500 animate-pulse" />
+              </div>
+              <p className="text-[11px] font-black text-white/50 uppercase tracking-[0.3em] italic">Đang tìm dữ liệu TMDB...</p>
+           </div>
+        </div>
+      )}
+
+      {errorToast && (
+        <div className="fixed bottom-10 left-1/2 -translate-x-1/2 z-[3000] px-8 py-4 bg-red-500/10 border border-red-500/20 backdrop-blur-3xl rounded-full shadow-2xl animate-in slide-in-from-bottom-10 duration-500">
+           <div className="flex items-center gap-3">
+              <Info className="w-5 h-5 text-red-500" />
+              <p className="text-[13px] font-black text-white italic">{errorToast}</p>
+              <button onClick={() => setErrorToast(null)} className="p-1 text-white/20 hover:text-white">
+                 <X className="w-4 h-4" />
+              </button>
+           </div>
+        </div>
+      )}
+    </>
+  );
 }
 
 
-function DetailItem({ icon, label, items, path, isActor = false }: any) {
+function DetailItem({ icon, label, items, path, isActor = false, onActorClick }: any) {
   return (
     <li className="flex flex-col gap-2.5">
       <div className="flex items-center gap-2.5 text-white/20 text-[10px] font-black uppercase tracking-[0.2em]">
@@ -257,6 +317,18 @@ function DetailItem({ icon, label, items, path, isActor = false }: any) {
               .replace(/[đĐ]/g, "d")
               .replace(/[^a-z0-9]+/g, "-")
               .replace(/^-+|-+$/g, "");
+          }
+
+          if (isActor && onActorClick) {
+            return (
+              <button
+                key={idx}
+                onClick={() => onActorClick(name)}
+                className="px-3.5 py-1.5 bg-white/5 border border-white/5 rounded-xl text-[13px] font-bold text-white/80 hover:text-yellow-500 hover:border-yellow-500/50 hover:bg-yellow-500/5 transition-all cursor-pointer"
+              >
+                {name || "Diễn viên"}
+              </button>
+            );
           }
 
           return (

@@ -81,4 +81,4 @@ export function CastSection({ actors }: CastSectionProps) {
     </section>
   );
 }
-// Click actor image → TMDB movie_credits/tv_credits modal → search site's API by title+year → navigate to /xem/[slug]
+// Click actor image → TMDB movie_credits/tv_credits modal → search site's API by title+year → navigate to /phim/[slug]
