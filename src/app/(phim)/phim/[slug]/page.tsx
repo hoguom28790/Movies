@@ -210,16 +210,20 @@ export default async function MovieDetailsPage({ params }: { params: Promise<{ s
  
     return (
       <div className="min-h-screen pb-safe">
-        <div className="relative w-full h-[35vh] sm:h-[40vh] lg:h-[45vh] min-h-[250px] overflow-hidden">
-          <img
-            src={thumb || poster}
-            alt={safeData.name}
-            className="w-full h-full object-cover object-top opacity-30 scale-105"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0a] via-[#0a0a0a]/60 to-[#0a0a0a]/30" />
-        </div>
- 
-        <div className="container mx-auto px-4 lg:px-12 relative z-10 -mt-44 sm:-mt-52 lg:-mt-64 pb-20 md:pb-16 px-safe">
+      <div className="relative w-full h-[60vh] lg:h-[75vh] min-h-[400px] overflow-hidden">
+        <Image
+          src={thumb || poster}
+          alt={safeData.name}
+          fill
+          priority
+          className="object-cover object-top opacity-50 scale-105"
+          sizes="100vw"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0a] via-[#0a0a0a]/40 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-r from-[#0a0a0a] via-transparent to-[#0a0a0a]/30" />
+      </div>
+
+      <div className="container mx-auto px-4 lg:px-12 relative z-10 -mt-64 sm:-mt-80 lg:-mt-96 pb-20 md:pb-16 px-safe">
           <div className="flex flex-col lg:flex-row gap-8">
             <div className="w-full lg:w-[280px] flex-shrink-0">
               <div className="relative w-[160px] sm:w-[200px] lg:w-full mx-auto lg:mx-0">
@@ -258,6 +262,10 @@ export default async function MovieDetailsPage({ params }: { params: Promise<{ s
                 <p className="text-[13px] text-white/30 mt-0.5 italic">
                   {tmdbData?.original_title || safeData.origin_name}
                 </p>
+                <div className="mt-2 flex items-center gap-1.5">
+                   <span className="text-[12px] text-white/40 font-medium">Đạo diễn:</span>
+                   <span className="text-[12px] text-primary font-bold tracking-wide uppercase">{directorName}</span>
+                </div>
 
                 <div className="flex flex-wrap justify-center lg:justify-start items-center gap-2 mt-3">
                   <TraktWatchedBadge 
@@ -321,36 +329,51 @@ export default async function MovieDetailsPage({ params }: { params: Promise<{ s
               />
  
               {displayActors.length > 0 && (
-                <section className="mt-10">
-                  <div className="flex items-center gap-2 mb-6">
-                    <div className="w-1 h-5 bg-primary rounded-full" />
-                    <h3 className="text-lg font-bold text-white/90">Diễn viên</h3>
-                  </div>
-                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
-                    {displayActors.map((actor: any, idx: number) => (
-                      <div key={idx} className="group flex flex-col items-center text-center gap-3">
-                        <div className="relative w-24 h-24 sm:w-28 sm:h-28 rounded-full overflow-hidden bg-white/5 border-2 border-white/[0.06] group-hover:border-primary/50 transition-all duration-300">
-                          {actor.profile_path ? (
-                            <img
-                              src={getTMDBImageUrl(actor.profile_path, 'w185') || ""}
-                              alt={actor.name}
-                              className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                              loading="lazy"
-                            />
-                          ) : (
-                            <div className="w-full h-full flex items-center justify-center text-white/10 text-2xl uppercase bg-white/5">
-                              {actor.name?.charAt(0)}
-                            </div>
-                          )}
-                        </div>
-                        <div className="space-y-0.5">
-                          <p className="text-[13px] font-bold text-white/90 group-hover:text-primary transition-colors line-clamp-1">{actor.name}</p>
-                          {actor.character && (
-                            <p className="text-[11px] text-white/30 line-clamp-1 italic">{actor.character}</p>
-                          )}
-                        </div>
+                <section className="mt-12 overflow-hidden">
+                  <div className="flex items-center justify-between mb-8 px-2">
+                    <div className="flex items-center gap-3">
+                      <div className="w-1.5 h-6 bg-primary rounded-full shadow-[0_0_10px_rgba(var(--primary),0.5)]" />
+                      <h3 className="text-xl font-black text-white uppercase tracking-wider">Diễn viên chính</h3>
+                    </div>
+                    {displayActors.length > 8 && (
+                      <div className="hidden sm:flex items-center gap-2">
+                         <div className="h-[1px] w-12 bg-white/10"></div>
+                         <span className="text-[10px] text-white/20 font-black uppercase tracking-widest">Cuộn để xem thêm</span>
                       </div>
-                    ))}
+                    )}
+                  </div>
+                  
+                  <div className="relative group">
+                    <div className="flex overflow-x-auto pb-6 gap-6 no-scrollbar snap-x snap-mandatory px-2">
+                      {displayActors.slice(0, 10).map((actor: any, idx: number) => (
+                        <div key={idx} className="flex-shrink-0 w-[100px] sm:w-[120px] snap-start group/actor">
+                          <div className="relative aspect-square rounded-full overflow-hidden mb-4 border-2 border-white/5 group-hover/actor:border-primary/50 transition-all duration-500 shadow-xl">
+                            {actor.profile_path ? (
+                              <Image
+                                src={getTMDBImageUrl(actor.profile_path, 'w185') || ""}
+                                alt={actor.name}
+                                fill
+                                className="object-cover group-hover/actor:scale-110 transition-transform duration-700"
+                                loading="lazy"
+                                sizes="(max-width: 640px) 100px, 120px"
+                              />
+                            ) : (
+                              <div className="w-full h-full flex items-center justify-center bg-white/5 text-white/20 text-3xl font-black">
+                                {actor.name?.charAt(0)}
+                              </div>
+                            )}
+                          </div>
+                          <div className="text-center space-y-1">
+                            <h4 className="text-[13px] font-black text-white/90 group-hover/actor:text-primary transition-colors line-clamp-1">
+                              {actor.name}
+                            </h4>
+                            <p className="text-[10px] text-white/30 font-medium italic line-clamp-1">
+                              {actor.character || "N/A"}
+                            </p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 </section>
               )}

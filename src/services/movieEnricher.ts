@@ -1,54 +1,48 @@
 import { Movie } from "@/types/movie";
-import { searchOMDbMovie, getFallbackPlaceholder } from "./omdb";
+import { searchTMDBMovie, getTMDBImageUrl } from "./tmdb";
 
 export async function enrichMovies(movies: Movie[]): Promise<Movie[]> {
   const enriched = await Promise.all(
     movies.map(async (movie) => {
       let currentMovie = { ...movie };
       try {
-        // High-Speed OMDb + Fanart.tv Poster/Backdrop Overrider for Homepage optimization
-        // Bypasses getMovieDetails and TMDB entirely!
+        // High-Quality TMDB Poster/Backdrop Overrider for Homepage optimization
         
-        let mediaType: "movie" | "tv" = "movie";
-        let fallbackPoster = null;
-        let fallbackBackdrop = null;
-        let omdbSearch = null;
+        let tmdbSearch = null;
 
-        // Exhaustive Search to map ID and grab Images natively from search list
         const yearMatch = currentMovie.year ? parseInt(currentMovie.year) : undefined;
         const searchName = currentMovie.title;
         const searchOrigin = currentMovie.originalTitle || "";
 
+        // Strategy 1: Search with Year
         if (yearMatch) {
-          omdbSearch = await searchOMDbMovie(searchName, yearMatch, mediaType);
-          if (!omdbSearch && searchOrigin) {
-            omdbSearch = await searchOMDbMovie(searchOrigin, yearMatch, mediaType);
+          tmdbSearch = await searchTMDBMovie(searchName, yearMatch);
+          if (!tmdbSearch && searchOrigin) {
+            tmdbSearch = await searchTMDBMovie(searchOrigin, yearMatch);
           }
         }
           
-        if (!omdbSearch) {
-          omdbSearch = await searchOMDbMovie(searchName, undefined, mediaType);
+        // Strategy 2: Search without Year (Fuzzy fallback)
+        if (!tmdbSearch) {
+          tmdbSearch = await searchTMDBMovie(searchName);
         }
-        if (!omdbSearch && searchOrigin) {
-          omdbSearch = await searchOMDbMovie(searchOrigin, undefined, mediaType);
+        if (!tmdbSearch && searchOrigin) {
+          tmdbSearch = await searchTMDBMovie(searchOrigin);
         }
           
-        if (omdbSearch) {
-          fallbackPoster = omdbSearch.poster_path;
-          fallbackBackdrop = omdbSearch.backdrop_path;
+        if (tmdbSearch) {
+          const tmdbPoster = getTMDBImageUrl(tmdbSearch.poster_path || null, 'w500');
+          const tmdbBackdrop = getTMDBImageUrl(tmdbSearch.backdrop_path || null, 'w1280');
+
+          return {
+            ...currentMovie,
+            imdbRating: tmdbSearch?.vote_average || currentMovie.imdbRating || 0,
+            posterUrl: tmdbPoster || currentMovie.posterUrl || "",
+            thumbUrl: tmdbBackdrop || tmdbPoster || currentMovie.thumbUrl || "",
+          };
         }
 
-        // Use Fallback Placeholders if no poster found at all
-        const finalPoster = fallbackPoster && fallbackPoster !== "N/A" ? fallbackPoster : (currentMovie.posterUrl || getFallbackPlaceholder(searchName));
-        const finalThumb = fallbackBackdrop && fallbackBackdrop !== "N/A" ? fallbackBackdrop : (fallbackPoster && fallbackPoster !== "N/A" ? fallbackPoster : (currentMovie.thumbUrl || finalPoster));
-
-        // Super fast assignment directly from OMDb/Fanart results without hitting details endpoint
-        return {
-          ...currentMovie,
-          imdbRating: omdbSearch?.vote_average || currentMovie.imdbRating || 0,
-          posterUrl: finalPoster ?? "",
-          thumbUrl: finalThumb ?? "",
-        };
+        return currentMovie;
       } catch (error) {
         console.error(`Error enriching movie ${movie.slug}:`, error);
         return movie;
