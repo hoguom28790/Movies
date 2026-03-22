@@ -300,3 +300,10 @@ html.is-lg-tv {
 .bubble-shadow {
   box-shadow: 0 0 20px var(--primary);
 }
+
+/* Ensure delete buttons are visible on touch devices (iOS/iPadOS) */
+@media (hover: none) {
+  .delete-btn-premium {
+    @apply opacity-100 bg-black/80 border-white/20;
+  }
+}
