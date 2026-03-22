@@ -59,9 +59,9 @@ export function TraktConnectBtn() {
     return (
       <div className="space-y-4 w-full">
          <div className="flex items-center gap-3 p-4 bg-primary/10 border border-primary/20 rounded-2xl">
-            <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
-               <Tv className="w-5 h-5 text-primary" />
-            </div>
+             <div className="w-12 h-12 rounded-xl bg-red-500 flex items-center justify-center shadow-lg shadow-red-500/20">
+                <Tv className="w-6 h-6 text-white" />
+             </div>
             <div>
                <p className="text-[10px] font-black text-primary uppercase tracking-[0.2em]">Đã kết nối</p>
                <p className="text-sm font-bold text-white">{traktUser || "Người dùng Trakt"}</p>

@@ -18,8 +18,8 @@ export function useTrakt() {
                 const snap = await getDoc(docRef);
                 if (snap.exists()) {
                     const data = snap.data();
-                    if (data.trakt_token) {
-                        setTraktToken(data.trakt_token);
+                    if (data.trakt) {
+                        setTraktToken(data.trakt.access_token || null);
                         setStatus("connected");
                     } else {
                         setStatus("disconnected");

@@ -65,7 +65,7 @@ export function ProfileDropdown() {
                                     } group flex w-full items-center justify-between rounded-xl px-3 py-2.5 transition-colors`}
                                 >
                                     <div className="flex items-center gap-3">
-                                        <div className="p-2 rounded-lg bg-primary/10 text-primary">
+                                        <div className="p-2 rounded-lg bg-blue-500 text-white shadow-sm">
                                             <CheckCircle2 className="h-4 w-4" />
                                         </div>
                                         <div className="flex flex-col items-start translate-y-[-1px]">
@@ -91,12 +91,12 @@ export function ProfileDropdown() {
                                     } group flex w-full items-center justify-between rounded-xl px-3 py-2.5 transition-colors`}
                                 >
                                     <div className="flex items-center gap-3">
-                                        <div className={`p-2 rounded-lg ${isTraktConnected ? 'bg-red-500/10 text-red-500' : 'bg-foreground/5 text-foreground/40'}`}>
+                                        <div className={`p-2 rounded-lg transition-colors shadow-sm ${isTraktConnected ? 'bg-red-500 text-white' : 'bg-foreground/10 text-foreground/40'}`}>
                                             <Film className="h-4 w-4" />
                                         </div>
                                         <div className="flex flex-col items-start translate-y-[-1px]">
-                                            <span className="text-foreground font-medium text-xs">Phim (Trakt)</span>
-                                            <span className={`text-[9px] ${isTraktConnected ? 'text-green-500' : 'text-foreground/20'}`}>
+                                            <span className="text-foreground font-bold text-xs">Phim (Trakt)</span>
+                                            <span className={`text-[9px] font-medium ${isTraktConnected ? 'text-green-500' : 'text-foreground/30'}`}>
                                                 {isTraktConnected ? 'Đã kết nối' : 'Chưa kết nối'}
                                             </span>
                                         </div>
@@ -119,12 +119,12 @@ export function ProfileDropdown() {
                                     } group flex w-full items-center justify-between rounded-xl px-3 py-2.5 transition-colors`}
                                 >
                                     <div className="flex items-center gap-3">
-                                        <div className={`p-2 rounded-lg ${isAniListConnected ? 'bg-sky-500/10 text-sky-500' : 'bg-foreground/5 text-foreground/40'}`}>
+                                        <div className={`p-2 rounded-lg transition-colors shadow-sm ${isAniListConnected ? 'bg-sky-500 text-white' : 'bg-foreground/10 text-foreground/40'}`}>
                                             <Book className="h-4 w-4" />
                                         </div>
                                         <div className="flex flex-col items-start translate-y-[-1px]">
-                                            <span className="text-foreground font-medium text-xs">Truyện (AniList)</span>
-                                            <span className={`text-[9px] ${isAniListConnected ? 'text-green-500' : 'text-foreground/20'}`}>
+                                            <span className="text-foreground font-bold text-xs">Truyện (AniList)</span>
+                                            <span className={`text-[9px] font-medium ${isAniListConnected ? 'text-green-500' : 'text-foreground/30'}`}>
                                                 {isAniListConnected ? 'Đã kết nối' : 'Chưa kết nối'}
                                             </span>
                                         </div>
