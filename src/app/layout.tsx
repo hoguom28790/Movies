@@ -8,6 +8,7 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import { StylePresetProvider } from "@/contexts/StylePresetContext";
 import { ThemeProvider } from "@/components/theme-provider";
 import { DeviceProvider } from "@/contexts/DeviceContext";
+import { LgTvDetector } from "@/components/layout/LgTvDetector";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -57,6 +58,7 @@ export default function RootLayout({
                   <LayoutWrapper>
                     {children}
                   </LayoutWrapper>
+                  <LgTvDetector />
                 </AuthProvider>
               </StylePresetProvider>
             </ThemeProvider>

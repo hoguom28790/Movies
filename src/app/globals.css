@@ -230,3 +230,51 @@ body {
     color: #D24545;
     font-weight: 900;
 }
+
+/* LG webOS TV detection via User-Agent + apply .is-lg-tv class for TV-specific overrides */
+html.is-lg-tv {
+  font-size: 20px; /* Increase base font size for TV distance */
+}
+
+.is-lg-tv body {
+  cursor: none !important; /* Hide cursor if using remote air mouse in some cases, or just leave it */
+}
+
+/* TV Grid adjustments - Scale up columns for large screens */
+.is-lg-tv .grid-cols-2 { grid-template-columns: repeat(4, minmax(0, 1fr)) !important; }
+.is-lg-tv .grid-cols-3 { grid-template-columns: repeat(6, minmax(0, 1fr)) !important; }
+.is-lg-tv .grid-cols-4 { grid-template-columns: repeat(8, minmax(0, 1fr)) !important; }
+.is-lg-tv .grid-cols-5 { grid-template-columns: repeat(10, minmax(0, 1fr)) !important; }
+.is-lg-tv .grid-cols-6 { grid-template-columns: repeat(12, minmax(0, 1fr)) !important; }
+
+/* TV Typography & Spacing */
+.is-lg-tv h1 { font-size: 5rem !important; }
+.is-lg-tv h2 { font-size: 3.5rem !important; }
+.is-lg-tv h3 { font-size: 2.5rem !important; }
+.is-lg-tv p, .is-lg-tv span, .is-lg-tv a { font-size: 1.25rem !important; }
+
+.is-lg-tv .container {
+  max-width: 95vw !important;
+  padding-left: 4rem !important;
+  padding-right: 4rem !important;
+}
+
+.is-lg-tv .gap-4 { gap: 2rem !important; }
+.is-lg-tv .gap-6 { gap: 3rem !important; }
+.is-lg-tv .mb-16 { margin-bottom: 6rem !important; }
+
+/* Remote-Friendly Focus States */
+.is-lg-tv button:focus, 
+.is-lg-tv a:focus,
+.is-lg-tv [role="button"]:focus { 
+  outline: 8px solid var(--primary) !important; 
+  outline-offset: 6px !important; 
+  box-shadow: 0 0 0 20px oklch(0 0 0 / 30%), 0 0 40px var(--primary) !important;
+  transform: scale(1.05) !important;
+  z-index: 50 !important;
+  position: relative;
+  transition: all 0.2s ease-out !important;
+}
+
+/* Hide elements not needed on TV if any */
+.is-lg-tv .tv-hidden { display: none !important; }
