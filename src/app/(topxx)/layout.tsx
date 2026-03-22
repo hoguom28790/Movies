@@ -6,8 +6,8 @@ import { usePathname, useRouter } from "next/navigation";
 import { AlertCircle, LogOut, User, Home, History as HistoryIcon, Heart, Search } from "lucide-react";
 import { TOPXX_PATH } from "@/lib/constants";
 import { ThemeToggle } from "@/components/theme-toggle";
-
 import { getLunarAuthPass } from "@/lib/lunar";
+import { XXInstantSearch } from "@/components/layout/XXInstantSearch";
 
 export default function TopXXLayout({
   children,
@@ -62,12 +62,11 @@ export default function TopXXLayout({
               <span className="text-xl font-black tracking-tighter text-primary font-headline italic">TopXX 🎬</span>
             </Link>
             
-            <nav className="flex items-center gap-2 sm:gap-4">
+            <div className="flex items-center gap-2 sm:gap-4 flex-1 justify-end">
+              <XXInstantSearch />
+              
               <Link href={`/${TOPXX_PATH}`} className={`p-2 transition-colors ${pathname === `/${TOPXX_PATH}` ? "text-primary" : "text-foreground/60 hover:text-primary"}`}>
                 <Home className="w-5 h-5" />
-              </Link>
-              <Link href={`/${TOPXX_PATH}/search`} className={`p-2 transition-colors ${pathname.includes('/search') ? "text-primary" : "text-foreground/60 hover:text-primary"}`}>
-                <Search className="w-5 h-5" />
               </Link>
               <Link href={`/${TOPXX_PATH}/lich-su`} className={`p-2 transition-colors ${pathname.includes('/lich-su') ? "text-primary" : "text-foreground/60 hover:text-primary"}`}>
                 <HistoryIcon className="w-5 h-5" />
@@ -82,7 +81,7 @@ export default function TopXXLayout({
               <Link href="/" className="px-3 sm:px-4 py-1.5 rounded-lg bg-foreground/5 hover:bg-primary hover:text-primary-foreground text-foreground/60 text-[11px] sm:text-[12px] font-bold transition-all border border-foreground/5 whitespace-nowrap">
                 Sang Hồ Phim
               </Link>
-            </nav>
+            </div>
           </div>
         </header>
 
