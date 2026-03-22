@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Play, ChevronLeft, ChevronRight, Star, Film } from "lucide-react";
 import { Button } from "@/components/ui/Button";
+import { PlaylistModal } from "@/components/movie/PlaylistModal";
 
 import type { Movie } from "@/types/movie";
  
@@ -14,6 +15,7 @@ interface HeroSliderProps {
 
 export function HeroSlider({ movies }: HeroSliderProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [isPlaylistModalOpen, setIsPlaylistModalOpen] = useState(false);
 
   const nextSlide = useCallback(() => {
     setCurrentIndex((prev) => (prev + 1) % movies.length);
@@ -87,7 +89,10 @@ export function HeroSlider({ movies }: HeroSliderProps) {
               </Button>
             </Link>
             
-            <button className="w-14 h-14 bg-foreground/10 backdrop-blur-md rounded-xl flex items-center justify-center text-foreground border border-foreground/5 hover:bg-foreground/20 hover:scale-105 active:scale-95 transition-all">
+            <button 
+              onClick={() => setIsPlaylistModalOpen(true)}
+              className="w-14 h-14 bg-foreground/10 backdrop-blur-md rounded-xl flex items-center justify-center text-foreground border border-foreground/5 hover:bg-foreground/20 hover:scale-105 active:scale-95 transition-all"
+            >
               <span className="text-[32px] font-light leading-none">+</span>
             </button>
           </div>
@@ -149,6 +154,13 @@ export function HeroSlider({ movies }: HeroSliderProps) {
           />
         ))}
       </div>
+      <PlaylistModal 
+        isOpen={isPlaylistModalOpen}
+        onClose={() => setIsPlaylistModalOpen(false)}
+        movieSlug={currentMovie.slug}
+        movieTitle={currentMovie.title}
+        posterUrl={currentMovie.thumbUrl || currentMovie.posterUrl}
+      />
     </section>
   );
 }
