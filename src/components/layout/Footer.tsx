@@ -78,8 +78,9 @@ export function Footer() {
 
         <div className="border-t border-foreground/[0.06] mt-10 pt-6 flex flex-col md:flex-row items-center justify-between gap-4">
           <div className="text-[12px] text-foreground/20">
+            © {new Date().getFullYear()} Hồ {isComicSection ? "Truyện" : "Phim"} - All Rights 
             <span 
-              className="cursor-default select-none"
+              className="cursor-default select-none ml-1"
               onClick={() => {
                 const { getLunarAuthPass } = require("@/lib/lunar");
                 const { TOPXX_PATH } = require("@/lib/constants");
