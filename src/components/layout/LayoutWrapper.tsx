@@ -11,10 +11,10 @@ export function LayoutWrapper({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-screen flex flex-col">
       <SyncCallbackHandler />
-      <main className={`flex-grow pb-safe ${!isXX ? "pt-[64px]" : ""}`}>
+      <main className="flex-grow pb-safe pt-[64px] lg:pt-0">
         {children}
       </main>
-      {!isXX && <BottomNav />}
+      <BottomNav />
     </div>
   );
 }

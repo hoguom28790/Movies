@@ -19,11 +19,11 @@ export function BottomNav() {
   const isComic = pathname.startsWith("/truyen") || pathname.startsWith("/doc");
 
   const navItems = [
-    { label: "Trang chủ", icon: Home, href: isXX ? "/v2k9r5w8m3x7n1p4q0z6" : (isComic ? "/truyen" : "/"), activeRegex: isXX ? /^\/topxx$/ : (isComic ? /^\/truyen$/ : /^\/$/) },
-    { label: "Duyệt Tìm", icon: LayoutGrid, href: isXX ? "/v2k9r5w8m3x7n1p4q0z6/the-loai" : (isComic ? "/truyen?genre=all" : "/the-loai"), activeRegex: /\/(the-loai|search|truyen\?genre)/ },
+    { label: "Trang chủ", icon: Home, href: isXX ? "/v2k9r5w8m3x7n1p4q0z6" : (isComic ? "/truyen" : "/"), activeRegex: isXX ? /^\/v2k9r5w8m3x7n1p4q0z6$/ : (isComic ? /^\/truyen$/ : /^\/$/) },
+    { label: "Duyệt Tìm", icon: LayoutGrid, href: isXX ? "/v2k9r5w8m3x7n1p4q0z6" : (isComic ? "/truyen?genre=all" : "/the-loai"), activeRegex: isXX ? /^\/v2k9r5w8m3x7n1p4q0z6$/ : /\/(the-loai|search|truyen\?genre)/ },
     { label: "Lịch sử", icon: History, href: isXX ? "/v2k9r5w8m3x7n1p4q0z6/lich-su" : (isComic ? "/truyen/lich-su" : "/lich-su"), activeRegex: /\/lich-su/ },
     { label: "Yêu thích", icon: Heart, href: isXX ? "/v2k9r5w8m3x7n1p4q0z6/yeu-thich" : (isComic ? "/truyen/yeu-thich" : "/yeu-thich"), activeRegex: /\/yeu-thich/ },
-    { label: isComic ? "Hồ Phim" : "Hồ Truyện", icon: BookOpen, href: isComic ? "/" : "/truyen", activeRegex: isComic ? /^\/(?!truyen|doc|topxx).*/ : /^\/(truyen|doc)/ },
+    { label: isComic || isXX ? "Hồ Phim" : "Hồ Truyện", icon: BookOpen, href: isComic || isXX ? "/" : "/truyen", activeRegex: isComic ? /^\/(?!truyen|doc|topxx).*/ : /^\/(truyen|doc)/ },
   ];
 
   return (
