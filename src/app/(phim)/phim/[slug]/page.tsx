@@ -199,11 +199,15 @@ export default async function MovieDetailsPage({ params }: { params: Promise<{ s
       displayActors = tmdbCredits.slice(0, 10);
     } else if (fallbackActors.length > 0) {
       // If TMDB cast is missing, try to find profiles for source actors individually
-      const actorNames = fallbackActors.slice(0, 10);
+      const actorNames = fallbackActors.filter((n: any) => n && n.trim().length > 0).map((n: any) => n.trim()).slice(0, 10);
       const profiles = await Promise.all(
         actorNames.map(async (name: string) => {
-          const person = await searchTMDBPerson(name).catch(() => null);
-          return { name, profile_path: person?.profile_path || null };
+          try {
+            const person = await searchTMDBPerson(name).catch(() => null);
+            return { name, profile_path: person?.profile_path || null };
+          } catch {
+            return { name, profile_path: null };
+          }
         })
       );
       displayActors = profiles;
@@ -285,6 +289,18 @@ export default async function MovieDetailsPage({ params }: { params: Promise<{ s
                     {safeData.episode_current}
                   </span>
                 </div>
+
+                <div className="mt-8 mb-4">
+                   <MovieRatings 
+                     imdbRating={realImdbRating?.rating || safeData.imdb?.vote_average || 0}
+                     imdbVotes={realImdbRating?.votes || safeData.imdb?.vote_count || 0}
+                     traktRating={traktRatings?.rating || 0}
+                     traktVotes={traktRatings?.votes || 0}
+                     tmdbRating={tmdbData?.vote_average || safeData.tmdb?.vote_average || 0}
+                     rottenRating={rtData?.criticScore || 0}
+                     audienceScore={rtData?.audienceScore || 0}
+                   />
+                </div>
  
                 {genreTags.length > 0 && (
                   <div className="flex flex-wrap justify-center lg:justify-start gap-1.5 mt-3">
@@ -301,15 +317,7 @@ export default async function MovieDetailsPage({ params }: { params: Promise<{ s
                 )}
               </div>
  
-              <MovieRatings 
-                imdbRating={realImdbRating?.rating || safeData.imdb?.vote_average || 0}
-                imdbVotes={realImdbRating?.votes || safeData.imdb?.vote_count || 0}
-                traktRating={traktRatings?.rating || 0}
-                traktVotes={traktRatings?.votes || 0}
-                tmdbRating={tmdbData?.vote_average || safeData.tmdb?.vote_average || 0}
-                rottenRating={rtData?.criticScore || 0}
-                audienceScore={rtData?.audienceScore || 0}
-              />
+
  
               <div className="mt-8">
                 <div className="flex items-center gap-2 mb-4">

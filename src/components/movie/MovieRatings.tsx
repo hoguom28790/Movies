@@ -36,8 +36,10 @@ export function MovieRatings({ tmdbRating, imdbId, imdbRating, rottenRating, aud
       {/* Trakt Rating (Priority) */}
       {traktRating && (
         <div className="flex items-center gap-2 group transition-all">
-          <div className="text-[#9747FF] drop-shadow-[0_0_8px_rgba(151,71,255,0.4)]">
-             <Star className="w-5 h-5 fill-current" />
+          <div className="text-[#ED1C24] drop-shadow-[0_0_8px_rgba(237,28,36,0.3)]">
+             <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor">
+               <path d="M18.8 3H5.2C4 3 3 4 3 5.2v13.6C3 20 4 21 5.2 21h13.6c1.2 0 2.2-1 2.2-2.2V5.2C21 4 20 3 18.8 3zm-3.6 5.6h-2.1v9.5h-2.2V8.6H8.8V6.4h6.4v2.2z"/>
+             </svg>
           </div>
           <div className="flex items-baseline gap-1.5">
             <span className="text-foreground font-black text-[16px] leading-none">{Math.round(traktRating * 10)}%</span>
