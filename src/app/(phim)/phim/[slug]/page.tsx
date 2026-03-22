@@ -7,7 +7,7 @@ import { WatchlistBtn } from "@/components/movie/WatchlistBtn";
 import { getTMDBImageUrl, getTMDBMovieDetails, searchTMDBMovie, getTMDBCollection } from "@/services/tmdb";
 import { MovieTabs } from "@/components/movie/MovieTabs";
 import { MovieRatings } from "@/components/movie/MovieRatings";
- 
+import { CastSection } from "@/components/movie/CastSection";
 import { TraktWatchedBadge } from "@/components/movie/TraktWatchedBadge";
 
 async function fetchMovieData(slug: string) {
@@ -340,55 +340,7 @@ export default async function MovieDetailsPage({ params }: { params: Promise<{ s
                 collection={collectionData}
               />
  
-              {displayActors.length > 0 && (
-                <section className="mt-12 overflow-hidden">
-                  <div className="flex items-center justify-between mb-8 px-2">
-                    <div className="flex items-center gap-3">
-                      <div className="w-1.5 h-6 bg-primary rounded-full shadow-[0_0_10px_rgba(var(--primary),0.5)]" />
-                      <h3 className="text-xl font-black text-foreground uppercase tracking-wider">Diễn viên chính</h3>
-                    </div>
-                    {displayActors.length > 8 && (
-                      <div className="hidden sm:flex items-center gap-2">
-                         <div className="h-[1px] w-12 bg-foreground/10"></div>
-                         <span className="text-[10px] text-foreground/20 font-black uppercase tracking-widest">Cuộn để xem thêm</span>
-                      </div>
-                    )}
-                  </div>
-                  
-                  <div className="relative group">
-                    <div className="flex overflow-x-auto pb-6 gap-6 no-scrollbar snap-x snap-mandatory px-2">
-                      {displayActors.slice(0, 10).map((actor: any, idx: number) => (
-                        <div key={idx} className="flex-shrink-0 w-[100px] sm:w-[120px] snap-start group/actor">
-                          <div className="relative aspect-square rounded-full overflow-hidden mb-4 border-2 border-white/5 group-hover/actor:border-primary/50 transition-all duration-500 shadow-xl">
-                            {actor.profile_path ? (
-                              <Image
-                                src={getTMDBImageUrl(actor.profile_path, 'w185') || ""}
-                                alt={actor.name}
-                                fill
-                                className="object-cover group-hover/actor:scale-110 transition-transform duration-700"
-                                loading="lazy"
-                                sizes="(max-width: 640px) 100px, 120px"
-                              />
-                            ) : (
-                              <div className="w-full h-full flex items-center justify-center bg-foreground/5 text-foreground/20 text-3xl font-black">
-                                {actor.name?.charAt(0)}
-                              </div>
-                            )}
-                          </div>
-                          <div className="text-center space-y-1">
-                            <h4 className="text-[13px] font-black text-foreground/90 group-hover/actor:text-primary transition-colors line-clamp-1">
-                              {actor.name}
-                            </h4>
-                            <p className="text-[10px] text-foreground/30 font-medium italic line-clamp-1">
-                              {actor.character || "N/A"}
-                            </p>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </section>
-              )}
+              <CastSection actors={displayActors} />
             </div>
           </div>
         </div>

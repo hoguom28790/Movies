@@ -99,7 +99,7 @@ export async function getTMDBMovieDetails(tmdbId: number, type: "movie" | "tv" =
 export async function getTMDBActorDetails(actorId: number) {
   try {
     const response = await fetch(
-      `${BASE_URL}/person/${actorId}?api_key=${TMDB_API_KEY}&language=vi-VN&append_to_response=movie_credits`
+      `${BASE_URL}/person/${actorId}?api_key=${TMDB_API_KEY}&language=vi-VN&append_to_response=movie_credits,tv_credits`
     );
     return await response.json();
   } catch (error) {
