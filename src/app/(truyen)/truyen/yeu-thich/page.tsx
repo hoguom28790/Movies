@@ -108,11 +108,11 @@ export default function ComicLibraryPage() {
   if (!user) {
     return (
       <div className="container mx-auto px-6 py-40 text-center theme-truyen">
-        <div className="w-24 h-24 rounded-full bg-white/5 border border-white/10 flex items-center justify-center mb-10 mx-auto">
-            <Heart className="w-12 h-12 text-white/20" />
+        <div className="w-24 h-24 rounded-full bg-foreground/5 border border-foreground/10 flex items-center justify-center mb-10 mx-auto">
+            <Heart className="w-12 h-12 text-foreground/20" />
         </div>
-        <h2 className="text-5xl font-black text-white uppercase italic tracking-tighter mb-6 leading-none">Bạn chưa đăng nhập</h2>
-        <p className="text-white/40 font-bold mb-12 max-w-sm mx-auto">Đăng nhập để xem tủ truyện yêu thích và các bộ sưu tập cá nhân của bạn.</p>
+        <h2 className="text-5xl font-black text-foreground uppercase italic tracking-tighter mb-6 leading-none">Bạn chưa đăng nhập</h2>
+        <p className="text-foreground/40 font-bold mb-12 max-w-sm mx-auto">Đăng nhập để xem tủ truyện yêu thích và các bộ sưu tập cá nhân của bạn.</p>
         <Link href="/login">
             <Button className="px-12 py-8 rounded-3xl font-black uppercase tracking-widest text-xs shadow-2xl shadow-primary/20">Đăng Nhập Ngay</Button>
         </Link>
@@ -128,20 +128,20 @@ export default function ComicLibraryPage() {
 
   return (
     <div className="container mx-auto px-6 md:px-24 py-16 mt-16 animate-in fade-in duration-1000 min-h-[90vh] theme-truyen">
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-10 mb-20 border-b border-white/5 pb-12">
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-10 mb-20 border-b border-foreground/5 pb-12">
         <div className="space-y-4">
            <span className="font-label text-primary uppercase tracking-[0.5em] font-black text-xs opacity-60">Thư viện cá nhân</span>
-           <h1 className="text-6xl md:text-8xl font-black text-white italic tracking-tighter uppercase leading-[0.8] select-none">Tủ Truyện</h1>
+           <h1 className="text-6xl md:text-8xl font-black text-foreground italic tracking-tighter uppercase leading-[0.8] select-none">Tủ Truyện</h1>
         </div>
 
         <div className="relative group max-w-sm w-full md:w-96">
-           <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-white/20 group-focus-within:text-primary transition-all" />
+           <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-foreground/20 group-focus-within:text-primary transition-all" />
            <input 
              type="text"
              placeholder="Tìm truyện trong tủ..."
              value={searchQuery}
              onChange={e => setSearchQuery(e.target.value)}
-             className="w-full bg-[#111111] border border-white/5 rounded-[2rem] pl-12 pr-6 py-5 text-[15px] text-white focus:outline-none focus:border-primary/50 focus:bg-white/[0.04] transition-all font-bold shadow-2xl"
+             className="w-full bg-foreground/5 border border-foreground/5 rounded-[2rem] pl-12 pr-6 py-5 text-[15px] text-foreground focus:outline-none focus:border-primary/50 focus:bg-foreground/[0.08] transition-all font-bold shadow-2xl"
            />
         </div>
       </div>
@@ -150,10 +150,10 @@ export default function ComicLibraryPage() {
         {/* Sidebar */}
         <aside className="w-full lg:w-[350px] space-y-10 flex-shrink-0">
            <div className="flex items-center justify-between px-4">
-              <h3 className="text-[10px] font-black text-white/30 uppercase tracking-[0.4em]">Danh Sách Bộ Sưu Tập</h3>
+              <h3 className="text-[10px] font-black text-foreground/30 uppercase tracking-[0.4em]">Danh Sách Bộ Sưu Tập</h3>
               <button 
                 onClick={() => setIsCreating(true)} 
-                className="w-10 h-10 rounded-2xl bg-white/5 hover:bg-primary text-white transition-all flex items-center justify-center group"
+                className="w-10 h-10 rounded-2xl bg-foreground/5 hover:bg-primary text-foreground hover:text-white transition-all flex items-center justify-center group"
               >
                  <Plus className="w-5 h-5 group-hover:rotate-90 transition-transform duration-300" />
               </button>
@@ -177,14 +177,14 @@ export default function ComicLibraryPage() {
 
            <div className="space-y-4">
               {/* Favorites Virtual Item */}
-              <div 
-                onClick={() => setActiveTab("favorites")}
-                className={`group relative p-6 rounded-[2rem] cursor-pointer transition-all border ${
-                  activeTab === "favorites" 
-                    ? "bg-primary text-white border-primary shadow-2xl shadow-primary/20 scale-[1.05] translate-x-2" 
-                    : "bg-white/[0.02] text-white/40 border-white/5 hover:bg-white/5 hover:text-white"
-                }`}
-              >
+                <div 
+                  onClick={() => setActiveTab("favorites")}
+                  className={`group relative p-6 rounded-[2rem] cursor-pointer transition-all border ${
+                    activeTab === "favorites" 
+                      ? "bg-primary text-white border-primary shadow-2xl shadow-primary/20 scale-[1.05] translate-x-2" 
+                      : "bg-foreground/[0.02] text-foreground/40 border-foreground/5 hover:bg-foreground/5 hover:text-foreground"
+                  }`}
+                >
                   <div className="flex items-center justify-between relative z-10">
                     <div className="flex items-center gap-5 font-black uppercase tracking-tighter italic text-xl">
                         <Heart className={`w-5 h-5 ${activeTab === "favorites" ? "fill-current" : ""}`} />
@@ -201,7 +201,7 @@ export default function ComicLibraryPage() {
                   className={`group relative p-6 rounded-[2rem] cursor-pointer transition-all border ${
                     activeTab === p.id 
                       ? "bg-primary text-white border-primary shadow-2xl shadow-primary/20 scale-[1.05] translate-x-2" 
-                      : "bg-white/[0.02] text-white/40 border-white/5 hover:bg-white/5 hover:text-white"
+                      : "bg-foreground/[0.02] text-foreground/40 border-foreground/5 hover:bg-foreground/5 hover:text-foreground"
                   }`}
                 >
                    <div className="flex items-center justify-between relative z-10">
@@ -228,28 +228,28 @@ export default function ComicLibraryPage() {
         </aside>
 
         {/* Main Content Area */}
-        <div className="flex-1 space-y-16 bg-white/[0.01] rounded-[4rem] border border-white/5 p-8 md:p-16 min-h-[60vh]">
-            <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-8 border-b border-white/5 pb-10">
+        <div className="flex-1 space-y-16 bg-foreground/[0.01] rounded-[4rem] border border-foreground/5 p-8 md:p-16 min-h-[60vh]">
+            <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-8 border-b border-foreground/5 pb-10">
                 <div className="space-y-2">
-                  <h2 className="text-5xl md:text-7xl font-black italic uppercase tracking-tighter text-white/90 leading-none">
+                  <h2 className="text-5xl md:text-7xl font-black italic uppercase tracking-tighter text-foreground/90 leading-none">
                      {activeTab === "favorites" ? "Yêu Thích" : activePlaylist?.name}
                   </h2>
-                  <p className="text-white/30 font-bold uppercase tracking-[0.3em] text-[10px] ml-1">
+                  <p className="text-foreground/30 font-bold uppercase tracking-[0.3em] text-[10px] ml-1">
                       {filteredItems.length} tác phẩm trong danh sách
                   </p>
                 </div>
                 
-                <div className="h-1 flex-grow bg-white/5 rounded-full mx-8 hidden xl:block">
+                <div className="h-1 flex-grow bg-foreground/5 rounded-full mx-8 hidden xl:block">
                     <div className="h-full bg-primary rounded-full" style={{ width: `${Math.min(100, (filteredItems.length / 10) * 100)}%` }} />
                 </div>
             </div>
 
             {filteredItems.length === 0 ? (
                <div className="py-32 flex flex-col items-center justify-center text-center space-y-8 animate-pulse">
-                  <BookOpen className="w-20 h-20 text-white/5" />
-                  <p className="text-white/20 font-black uppercase tracking-[0.4em] text-sm">Danh sách hiện đang trống</p>
+                  <BookOpen className="w-20 h-20 text-foreground/5" />
+                  <p className="text-foreground/20 font-black uppercase tracking-[0.4em] text-sm">Danh sách hiện đang trống</p>
                   <Link href="/truyen">
-                    <Button variant="secondary" className="px-10 py-6 rounded-2xl border-white/10 font-black uppercase tracking-[0.2em] text-[10px] hover:bg-white/5">Khám Phá Thêm Truyện</Button>
+                    <Button variant="secondary" className="px-10 py-6 rounded-2xl border-foreground/10 font-black uppercase tracking-[0.2em] text-[10px] hover:bg-foreground/5">Khám Phá Thêm Truyện</Button>
                   </Link>
                </div>
             ) : (
@@ -276,7 +276,7 @@ export default function ComicLibraryPage() {
                           </Link>
                        </div>
                        <Link href={`/truyen/${comic.comicSlug}`} className="px-3">
-                          <h3 className="text-xl font-black text-white group-hover:text-primary transition-all line-clamp-2 uppercase leading-[0.9] tracking-tighter">
+                          <h3 className="text-xl font-black text-foreground group-hover:text-primary transition-all line-clamp-2 uppercase leading-[0.9] tracking-tighter">
                             {comic.comicTitle}
                           </h3>
                        </Link>

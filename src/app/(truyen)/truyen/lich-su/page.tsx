@@ -77,9 +77,9 @@ export default function ComicHistoryPage() {
       </div>
       
       {items.length === 0 ? (
-        <div className="text-center py-20 bg-white/[0.02] border border-dashed border-white/10 rounded-[30px] flex flex-col items-center">
-          <BookOpen className="w-12 h-12 text-white/5 mb-4" />
-          <p className="text-neutral-500 font-bold uppercase tracking-widest text-sm">Bạn chưa đọc bộ truyện nào.</p>
+        <div className="text-center py-20 bg-foreground/[0.02] border border-dashed border-foreground/10 rounded-[30px] flex flex-col items-center">
+          <BookOpen className="w-12 h-12 text-foreground/5 mb-4" />
+          <p className="text-foreground/50 font-bold uppercase tracking-widest text-sm">Bạn chưa đọc bộ truyện nào.</p>
         </div>
       ) : (
         <div className="grid grid-cols-2 xs:grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6 animate-in fade-in duration-700">
@@ -95,10 +95,10 @@ export default function ComicHistoryPage() {
               {/* Comic Progress Bar */}
               <div className="w-full mt-3 px-1">
                  <div className="flex justify-between items-center mb-1.5">
-                    <span className="text-[10px] font-bold text-white/40 uppercase tracking-wider">Tiến độ</span>
+                    <span className="text-[10px] font-bold text-foreground/40 uppercase tracking-wider">Tiến độ</span>
                     <span className="text-[10px] font-bold text-indigo-400">{item.percent}%</span>
                  </div>
-                 <div className="w-full h-1.5 bg-white/10 rounded-full overflow-hidden">
+                 <div className="w-full h-1.5 bg-foreground/10 rounded-full overflow-hidden">
                    <div className="h-full bg-primary transition-all rounded-full" style={{ width: `${item.percent}%` }} />
                  </div>
               </div>

@@ -55,13 +55,13 @@ export function ComicCard({ title, slug, posterUrl, latestChapter, statusText, o
       <div className="flex flex-col gap-0.5 px-0.5 mt-1">
         <Link 
           href={`/truyen/${slug}`} 
-          className="text-[14px] sm:text-[15px] md:text-[16px] font-semibold text-white/90 hover:text-white line-clamp-2 transition-colors leading-[1.4]" 
+          className="text-[14px] sm:text-[15px] md:text-[16px] font-semibold text-foreground/90 hover:text-foreground line-clamp-2 transition-colors leading-[1.4]" 
           title={title}
         >
           {title}
         </Link>
         {originalTitle && (
-          <span className="text-[12px] sm:text-[13px] text-white/40 line-clamp-1">{originalTitle}</span>
+          <span className="text-[12px] sm:text-[13px] text-foreground/40 line-clamp-1">{originalTitle}</span>
         )}
       </div>
     </div>
