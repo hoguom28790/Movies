@@ -2,7 +2,7 @@
 
 import React, { useState, Fragment } from "react";
 import { Dialog, Transition, Tab } from "@headlessui/react";
-import { X, Play, Star, Calendar, User, Film, Tv, Info, Search } from "lucide-react";
+import { X, Play, Star, Calendar, User, Film, Tv, Info, Search, ChevronRight } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { getTMDBActorDetails, getTMDBImageUrl } from "@/services/tmdb";
 import { searchMovies } from "@/services/api";
@@ -30,37 +30,86 @@ export function ActorModal({ isOpen, onClose, actor }: ActorModalProps) {
     staleTime: 1000 * 60 * 60 * 24, // 24 hours
   });
 
-  const handleMovieClick = async (title: string, year: string) => {
+  const [toast, setToast] = useState<{ message: string; submessage?: string; type: "info" | "error"; link?: string } | null>(null);
+
+  const normalize = (text: string) => {
+    return text
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "") // Remove accents
+      .replace(/[^\w\s]/g, "") // Remove special characters
+      .replace(/\s+/g, " ") // Clean double spaces
+      .replace(/(phan|part|season|tap)\s*\d+/gi, "") // Remove part/season fragments
+      .trim();
+  };
+
+  const handleMovieClick = async (title: string, year: string, tmdbId: number, isTv: boolean) => {
     try {
       setIsSearching(title);
-      // Clean title and try to find on site
-      const cleanTitle = title.replace(/\(Part\s+\d+\)/gi, "").replace(/\(Phần\s+\d+\)/gi, "").trim();
-      const searchResult = await searchMovies(cleanTitle);
+      setToast({ message: `Đang tìm: ${title} (${year})...`, type: "info" });
       
-      const match = searchResult.items.find((item: any) => 
-        item.title.toLowerCase() === cleanTitle.toLowerCase() || 
-        item.originalTitle?.toLowerCase() === cleanTitle.toLowerCase() ||
-        (year && item.year === year)
-      ) || searchResult.items[0];
+      const cleanTitle = title.replace(/\(Part\s+\d+\)/gi, "").replace(/\(Phần\s+\d+\)/gi, "").trim();
+      const normalizedTitle = normalize(cleanTitle);
+      
+      console.log(`[ActorModal] Searching for: "${title}" | Normalized: "${normalizedTitle}" | Year: ${year}`);
+
+      // Strategy 1: Search with cleaned title
+      let searchResult = await searchMovies(cleanTitle);
+      console.log(`[ActorModal] Search API Response (Clean Title):`, searchResult.items.length, "results");
+
+      // Strategy 2: If no results, search with normalized title
+      if (searchResult.items.length === 0 && normalizedTitle !== cleanTitle.toLowerCase()) {
+        searchResult = await searchMovies(normalizedTitle);
+        console.log(`[ActorModal] Search API Response (Normalized):`, searchResult.items.length, "results");
+      }
+
+      // Finding strategy
+      const findMatch = (items: any[]) => {
+        return items.find((item: any) => {
+          const itemTitle = normalize(item.title);
+          const itemOrigin = normalize(item.originalTitle || "");
+          const yearDiff = Math.abs(parseInt(item.year) - parseInt(year));
+          
+          return (
+            (itemTitle === normalizedTitle || itemOrigin === normalizedTitle) && 
+            (year ? yearDiff <= 1 : true)
+          );
+        }) || items.find((item: any) => {
+           const itemTitle = normalize(item.title);
+           const itemOrigin = normalize(item.originalTitle || "");
+           return itemTitle.includes(normalizedTitle) || itemOrigin.includes(normalizedTitle);
+        }) || items[0];
+      };
+
+      const match = searchResult.items.length > 0 ? findMatch(searchResult.items) : null;
 
       if (match) {
+        console.log(`[ActorModal] Match found: ${match.title} (${match.year}) -> /xem/${match.slug}`);
+        setToast(null);
         onClose();
         router.push(`/xem/${match.slug}`);
       } else {
-        alert("🔍 Phim này hiện chưa có trên hệ thống của chúng tôi.\nChúng tôi sẽ cập nhật sớm nhất có thể!");
+        console.warn(`[ActorModal] No match found for: ${title}`);
+        setToast({ 
+          message: "Phim này hiện chưa có trên hệ thống.", 
+          submessage: "Bạn có thể xem thông tin chi tiết trên TMDB.",
+          type: "error",
+          link: `https://www.themoviedb.org/${isTv ? 'tv' : 'movie'}/${tmdbId}`
+        });
       }
     } catch (error) {
        console.error("Search error:", error);
+       setToast({ message: "Lỗi hệ thống khi tìm kiếm. Vui lòng thử lại sau.", type: "error" });
     } finally {
       setIsSearching(null);
     }
   };
 
-  const MovieCard = ({ item }: { item: any }) => (
+  const MovieCard = ({ item, isTv }: { item: any; isTv: boolean }) => (
     <motion.button
       whileHover={{ y: -8, scale: 1.02 }}
       whileTap={{ scale: 0.98 }}
-      onClick={() => handleMovieClick(item.title || item.name, (item.release_date || item.first_air_date)?.split("-")[0])}
+      onClick={() => handleMovieClick(item.title || item.name, (item.release_date || item.first_air_date)?.split("-")[0], item.id, isTv)}
       className="group relative flex flex-col gap-3 text-left outline-none focus:ring-2 focus:ring-primary rounded-xl overflow-hidden"
     >
       <div className="relative aspect-[2/3] rounded-xl overflow-hidden bg-foreground/5 shadow-2xl">
@@ -184,14 +233,14 @@ export function ActorModal({ isOpen, onClose, actor }: ActorModalProps) {
                           <Tab.Panel className="animate-in fade-in slide-in-from-bottom-4 duration-500">
                              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-x-6 gap-y-10">
                                 {details?.movie_credits?.cast?.sort((a: any, b: any) => (b.popularity || 0) - (a.popularity || 0)).slice(0, 30).map((m: any) => (
-                                  <MovieCard key={m.id} item={m} />
+                                  <MovieCard key={m.id} item={m} isTv={false} />
                                 ))}
                              </div>
                           </Tab.Panel>
                           <Tab.Panel className="animate-in fade-in slide-in-from-bottom-4 duration-500">
                              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-x-6 gap-y-10">
                                 {details?.tv_credits?.cast?.sort((a: any, b: any) => (b.popularity || 0) - (a.popularity || 0)).slice(0, 30).map((m: any) => (
-                                  <MovieCard key={m.id} item={m} />
+                                  <MovieCard key={m.id} item={m} isTv={true} />
                                 ))}
                              </div>
                           </Tab.Panel>
@@ -213,6 +262,31 @@ export function ActorModal({ isOpen, onClose, actor }: ActorModalProps) {
           </div>
         </div>
       </Dialog>
+
+      <AnimatePresence>
+        {toast && (
+          <motion.div 
+            initial={{ opacity: 0, x: 50 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: 50 }}
+            className={`fixed bottom-8 right-0 sm:right-8 z-[2100] p-6 rounded-t-3xl sm:rounded-3xl backdrop-blur-3xl shadow-2xl border flex flex-col gap-2 w-full sm:max-w-sm ${toast.type === 'error' ? 'bg-red-500/10 border-red-500/20' : 'bg-primary/10 border-primary/20'}`}
+          >
+             <div className="flex items-center gap-3">
+                {toast.type === 'error' ? <Info className="text-red-500 w-5 h-5" /> : <Search className="text-primary w-5 h-5 animate-pulse" />}
+                <p className="text-[13px] font-black text-foreground">{toast.message}</p>
+             </div>
+             {toast.submessage && <p className="text-[11px] text-foreground/50 font-medium pl-8">{toast.submessage}</p>}
+             {toast.link && (
+                <a href={toast.link} target="_blank" className="ml-8 mt-2 text-[10px] font-black uppercase tracking-widest text-primary hover:underline flex items-center gap-1">
+                   Xem trên TMDB <ChevronRight className="w-3 h-3" />
+                </a>
+             )}
+             <button onClick={() => setToast(null)} className="absolute top-4 right-4 text-foreground/20 hover:text-foreground">
+                <X className="w-4 h-4" />
+             </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </Transition.Root>
   );
 }
