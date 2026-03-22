@@ -269,9 +269,9 @@ export default function XXLibraryPage() {
                         {activeTab === "playlist" && (
                           <button 
                             onClick={startEditing}
-                            className="p-2 rounded-xl bg-foreground/5 text-foreground/20 hover:text-yellow-500 hover:bg-foreground/10 transition-all ml-2"
+                            className="p-3 rounded-2xl bg-foreground/5 text-foreground/40 hover:text-yellow-500 hover:bg-foreground/10 transition-all ml-2"
                           >
-                             <Edit2 className="w-5 h-5" />
+                             <Edit2 className="w-6 h-6" />
                           </button>
                         )}
                       </>

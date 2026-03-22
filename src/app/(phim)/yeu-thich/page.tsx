@@ -3,10 +3,10 @@
 import React, { useEffect, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import Link from "next/link";
-import { getUserPlaylists, deletePlaylist, removeMovieFromPlaylist, ensureDefaultPlaylist, createPlaylist } from "@/services/db";
+import { getUserPlaylists, deletePlaylist, removeMovieFromPlaylist, ensureDefaultPlaylist, createPlaylist, updatePlaylistName } from "@/services/db";
 import { Playlist } from "@/types/database";
 import { MovieCard } from "@/components/movie/MovieCard";
-import { Trash, Library, Loader2, X, Plus, Heart, Search, Film } from "lucide-react";
+import { Trash, Library, Loader2, X, Plus, Heart, Search, Film, Edit2, Check, X as CloseIcon } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 
 // Separate movie library page in Hồ Phim
@@ -18,6 +18,8 @@ export default function MovieLibraryPage() {
   const [isCreating, setIsCreating] = useState(false);
   const [newName, setNewName] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
+  const [isEditingName, setIsEditingName] = useState(false);
+  const [editNameValue, setEditNameValue] = useState("");
 
   const loadData = async () => {
     if (!user) return;
@@ -51,6 +53,23 @@ export default function MovieLibraryPage() {
       setNewName("");
       setIsCreating(false);
     } catch (err) { }
+  };
+
+  const handleRename = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!activePlaylistId || !editNameValue.trim()) return;
+    try {
+      await updatePlaylistName(activePlaylistId, editNameValue.trim());
+      await loadData();
+      setIsEditingName(false);
+    } catch (err) { }
+  };
+
+  const startEditing = () => {
+    if (activePlaylist) {
+      setEditNameValue(activePlaylist.name);
+      setIsEditingName(true);
+    }
   };
 
   const handleDeletePlaylist = async (id: string, name: string) => {
@@ -159,8 +178,36 @@ export default function MovieLibraryPage() {
         <div className="flex-1 space-y-12">
             <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6">
                 <div>
-                  <h2 className="text-4xl font-black italic uppercase tracking-tighter text-foreground/40">{activePlaylist?.name}</h2>
-                  <div className="mt-2 h-1 w-24 bg-primary rounded-full"></div>
+                   <div className="flex items-center gap-3">
+                     {isEditingName ? (
+                       <form onSubmit={handleRename} className="flex items-center gap-2">
+                          <input 
+                            autoFocus
+                            type="text"
+                            value={editNameValue}
+                            onChange={(e) => setEditNameValue(e.target.value)}
+                            className="bg-foreground/5 border border-foreground/10 rounded-xl px-4 py-2 text-2xl md:text-4xl font-black text-foreground uppercase italic tracking-tighter outline-none focus:border-primary/50"
+                          />
+                          <button type="submit" className="p-2 bg-primary rounded-xl text-primary-foreground hover:opacity-80 transition-opacity">
+                             <Check className="w-6 h-6" />
+                          </button>
+                          <button type="button" onClick={() => setIsEditingName(false)} className="p-2 bg-foreground/5 rounded-xl text-foreground hover:bg-red-500 hover:text-white transition-colors">
+                             <CloseIcon className="w-6 h-6" />
+                          </button>
+                       </form>
+                     ) : (
+                       <>
+                         <h2 className="text-4xl font-black italic uppercase tracking-tighter text-foreground/90">{activePlaylist?.name}</h2>
+                         <button 
+                           onClick={startEditing}
+                           className="p-2 rounded-xl bg-foreground/5 text-foreground/20 hover:text-primary hover:bg-primary/10 transition-all ml-2"
+                         >
+                            <Edit2 className="w-5 h-5" />
+                         </button>
+                       </>
+                     )}
+                   </div>
+                   <div className="mt-2 h-1 w-24 bg-primary rounded-full"></div>
                 </div>
 
                 <div className="relative max-w-sm w-full sm:w-80">

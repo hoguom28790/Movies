@@ -9,6 +9,7 @@ import {
   deleteComicPlaylist, 
   removeComicFromPlaylist, 
   createComicPlaylist, 
+  renameComicPlaylist,
   ComicPlaylist,
   ensureDefaultComicPlaylist,
   getUserComicFavorites,
@@ -25,7 +26,10 @@ import {
   Search, 
   BookOpen, 
   Sparkles,
-  ChevronRight
+  ChevronRight,
+  Edit2,
+  Check,
+  X as CloseIcon
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 
@@ -38,6 +42,8 @@ export default function ComicLibraryPage() {
   const [isCreating, setIsCreating] = useState(false);
   const [newName, setNewName] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
+  const [isEditingName, setIsEditingName] = useState(false);
+  const [editNameValue, setEditNameValue] = useState("");
 
   const loadData = async () => {
     if (!user) return;
@@ -73,6 +79,23 @@ export default function ComicLibraryPage() {
       setNewName("");
       setIsCreating(false);
     } catch (err) { }
+  };
+
+  const handleRename = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (activeTab === "favorites" || !activeTab || !editNameValue.trim()) return;
+    try {
+      await renameComicPlaylist(activeTab, editNameValue.trim());
+      await loadData();
+      setIsEditingName(false);
+    } catch (err) { }
+  };
+
+  const startEditing = () => {
+    if (activePlaylist) {
+      setEditNameValue(activePlaylist.name);
+      setIsEditingName(true);
+    }
   };
 
   const handleDeletePlaylist = async (id: string, name: string) => {
@@ -160,13 +183,13 @@ export default function ComicLibraryPage() {
            </div>
 
            {isCreating && (
-             <form onSubmit={handleCreate} className="bg-surface p-6 rounded-[2.5rem] border border-white/10 shadow-3xl animate-in slide-in-from-top-4">
+             <form onSubmit={handleCreate} className="bg-foreground/[0.03] p-6 rounded-[2.5rem] border border-foreground/10 shadow-3xl animate-in slide-in-from-top-4">
                 <input 
                   autoFocus
                   placeholder="Tên bộ sưu tập truyện..."
                   value={newName}
                   onChange={e => setNewName(e.target.value)}
-                  className="w-full bg-white/[0.03] border border-white/10 rounded-2xl px-5 py-4 text-sm focus:outline-none focus:border-primary/50 transition-all mb-4 font-black uppercase tracking-tight placeholder:text-white/20"
+                  className="w-full bg-foreground/5 border border-foreground/10 rounded-2xl px-5 py-4 text-sm focus:outline-none focus:border-primary/50 transition-all mb-4 font-black uppercase tracking-tight placeholder:text-foreground/20 text-foreground"
                 />
                 <div className="flex gap-3">
                     <Button type="submit" size="sm" className="flex-1 rounded-xl h-12 uppercase font-black tracking-widest text-[10px]">Tạo Mới</Button>
@@ -216,7 +239,7 @@ export default function ComicLibraryPage() {
                       <button 
                         onClick={(e) => { e.stopPropagation(); handleDeletePlaylist(p.id, p.name); }}
                         className={`p-2.5 rounded-xl transition-all shadow-xl ${
-                            activeTab === p.id ? "bg-white/10 hover:bg-black/20 text-white" : "bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white"
+                            activeTab === p.id ? "bg-foreground/10 hover:bg-black/20 text-white" : "bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white"
                         }`}
                       >
                          <Trash2 size={16} />
@@ -230,13 +253,43 @@ export default function ComicLibraryPage() {
         {/* Main Content Area */}
         <div className="flex-1 space-y-16 bg-foreground/[0.01] rounded-[4rem] border border-foreground/5 p-8 md:p-16 min-h-[60vh]">
             <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-8 border-b border-foreground/5 pb-10">
-                <div className="space-y-2">
-                  <h2 className="text-5xl md:text-7xl font-black italic uppercase tracking-tighter text-foreground/90 leading-none">
-                     {activeTab === "favorites" ? "Yêu Thích" : activePlaylist?.name}
-                  </h2>
-                  <p className="text-foreground/30 font-bold uppercase tracking-[0.3em] text-[10px] ml-1">
-                      {filteredItems.length} tác phẩm trong danh sách
-                  </p>
+                <div className="space-y-4">
+                   <div className="flex items-center gap-4">
+                     {isEditingName && activeTab !== "favorites" ? (
+                       <form onSubmit={handleRename} className="flex items-center gap-3">
+                          <input 
+                            autoFocus
+                            type="text"
+                            value={editNameValue}
+                            onChange={(e) => setEditNameValue(e.target.value)}
+                            className="bg-foreground/5 border border-foreground/10 rounded-[1.5rem] px-6 py-3 text-4xl md:text-6xl font-black text-foreground uppercase italic tracking-tighter outline-none focus:border-primary/50"
+                          />
+                          <button type="submit" className="w-14 h-14 bg-primary rounded-2xl text-white flex items-center justify-center hover:opacity-80 transition-opacity">
+                             <Check size={28} />
+                          </button>
+                          <button type="button" onClick={() => setIsEditingName(false)} className="w-14 h-14 bg-foreground/5 rounded-2xl text-foreground flex items-center justify-center hover:bg-red-500 hover:text-white transition-colors">
+                             <CloseIcon size={28} />
+                          </button>
+                       </form>
+                     ) : (
+                       <>
+                         <h2 className="text-5xl md:text-7xl font-black italic uppercase tracking-tighter text-foreground/90 leading-none">
+                            {activeTab === "favorites" ? "Yêu Thích" : activePlaylist?.name}
+                         </h2>
+                         {activeTab !== "favorites" && (
+                           <button 
+                             onClick={startEditing}
+                             className="p-3 rounded-2xl bg-foreground/5 text-foreground/20 hover:text-primary hover:bg-primary/10 transition-all ml-2"
+                           >
+                              <Edit2 size={24} />
+                           </button>
+                         )}
+                       </>
+                     )}
+                   </div>
+                   <p className="text-foreground/30 font-bold uppercase tracking-[0.3em] text-[10px] ml-1">
+                       {filteredItems.length} tác phẩm trong danh sách
+                   </p>
                 </div>
                 
                 <div className="h-1 flex-grow bg-foreground/5 rounded-full mx-8 hidden xl:block">
@@ -256,14 +309,14 @@ export default function ComicLibraryPage() {
                <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-8 md:gap-12 animate-in slide-in-from-bottom-8 duration-1000">
                   {filteredItems.map((comic: any) => (
                     <div key={comic.comicSlug} className="group flex flex-col gap-5">
-                       <div className="relative aspect-[3/4] rounded-[2.5rem] overflow-hidden border border-white/10 shadow-3xl transition-all duration-700 hover:scale-[1.05] hover:border-primary/40 active:scale-95">
+                       <div className="relative aspect-[3/4] rounded-[2.5rem] overflow-hidden border border-foreground/10 shadow-3xl transition-all duration-700 hover:scale-[1.05] hover:border-primary/40 active:scale-95">
                           <Image src={comic.coverUrl} alt={comic.comicTitle} fill className="object-cover transition-transform duration-1000 group-hover:scale-110" unoptimized />
-                          <div className="absolute inset-0 bg-gradient-to-t from-black via-black/10 to-transparent opacity-60 group-hover:opacity-80 transition-opacity duration-500" />
+                          <div className="absolute inset-0 bg-gradient-to-t from-foreground/80 via-transparent to-transparent opacity-60 group-hover:opacity-80 transition-opacity duration-500" />
                           
                           <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 translate-y-4 group-hover:translate-y-0 transition-all duration-500 z-20">
                              <button 
                                onClick={(e) => handleRemoveItem(activeTab, comic.comicSlug, e)}
-                               className="w-10 h-10 rounded-2xl bg-black/60 backdrop-blur-md text-red-400 border border-white/10 flex items-center justify-center hover:bg-red-500 hover:text-white transition-all shadow-xl"
+                               className="w-10 h-10 rounded-2xl bg-foreground/60 backdrop-blur-md text-red-400 border border-foreground/10 flex items-center justify-center hover:bg-red-500 hover:text-white transition-all shadow-xl"
                              >
                                 <X size={20} />
                              </button>
