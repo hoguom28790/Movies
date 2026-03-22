@@ -78,9 +78,6 @@ export default function TopXXLayout({
                 <User className="w-5 h-5" />
               </Link>
               <ThemeToggle />
-              <Link href="/" className="px-3 sm:px-4 py-1.5 rounded-lg bg-foreground/5 hover:bg-primary hover:text-primary-foreground text-foreground/60 text-[11px] sm:text-[12px] font-bold transition-all border border-foreground/5 whitespace-nowrap">
-                Sang Hồ Phim
-              </Link>
             </div>
           </div>
         </header>

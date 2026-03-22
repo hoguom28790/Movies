@@ -12,20 +12,11 @@ export function ThemeProvider({
 }: { 
   children: React.ReactNode 
 }) {
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  if (!mounted) {
-    return <>{children}</>;
-  }
-
+  // Use default next-themes logic without blocking render
   return (
     <NextThemesProvider 
       attribute="class" 
-      defaultTheme="system" 
+      defaultTheme="dark" 
       enableSystem={true}
       disableTransitionOnChange={true}
       {...props}
