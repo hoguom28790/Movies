@@ -66,10 +66,13 @@ export default function TopXXLayout({
               <Link href={`/${TOPXX_PATH}`} className={`p-2 transition-colors ${pathname === `/${TOPXX_PATH}` ? "text-primary" : "text-foreground/60 hover:text-primary"}`}>
                 <Home className="w-5 h-5" />
               </Link>
-              <Link href={`/${TOPXX_PATH}/lich-su`} className={`p-2 transition-colors ${pathname === `/${TOPXX_PATH}/lich-su` ? "text-primary" : "text-foreground/60 hover:text-primary"}`}>
+              <Link href={`/${TOPXX_PATH}/search`} className={`p-2 transition-colors ${pathname.includes('/search') ? "text-primary" : "text-foreground/60 hover:text-primary"}`}>
+                <Search className="w-5 h-5" />
+              </Link>
+              <Link href={`/${TOPXX_PATH}/lich-su`} className={`p-2 transition-colors ${pathname.includes('/lich-su') ? "text-primary" : "text-foreground/60 hover:text-primary"}`}>
                 <HistoryIcon className="w-5 h-5" />
               </Link>
-              <Link href={`/${TOPXX_PATH}/yeu-thich`} className={`p-2 transition-colors ${pathname === `/${TOPXX_PATH}/yeu-thich` ? "text-primary" : "text-foreground/60 hover:text-primary"}`}>
+              <Link href={`/${TOPXX_PATH}/yeu-thich`} className={`p-2 transition-colors ${pathname.includes('/yeu-thich') ? "text-primary" : "text-foreground/60 hover:text-primary"}`}>
                 <Heart className="w-5 h-5" />
               </Link>
               <Link href="/settings" className="p-2 text-foreground/60 hover:text-primary transition-colors hidden sm:block">
