@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useRef } from "react";
-import { useTheme } from "@/contexts/ThemeContext";
+import { useStylePreset } from "@/contexts/StylePresetContext";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
 import { useDevice } from "@/contexts/DeviceContext";
@@ -25,7 +25,7 @@ interface PlayerContainerProps {
 }
 
 export function PlayerContainer({ url, isHls, rawEmbedUrl, nextEpisodeUrl, movieTitle, movieSlug, episodeName, episodeSlug, posterUrl }: PlayerContainerProps) {
-  const { theme } = useTheme();
+  const { preset: stylePreset } = useStylePreset();
   const router = useRouter();
   const { user } = useAuth();
   const { isIOS } = useDevice();
@@ -304,8 +304,8 @@ export function PlayerContainer({ url, isHls, rawEmbedUrl, nextEpisodeUrl, movie
   const isDirectVideo = url.includes('.m3u8') || url.includes('.mp4') || url.includes('.mkv') || url.includes('.ts') || url.includes('m3u8') || url.includes('mp4');
 
   const iframeSrc = isDirectVideo 
-    ? `/player.html?url=${encodeURIComponent(url)}&theme=${theme}`
-    : rawEmbedUrl || `/player.html?url=${encodeURIComponent(url)}&theme=${theme}`;
+    ? `/player.html?url=${encodeURIComponent(url)}&theme=${stylePreset}`
+    : rawEmbedUrl || `/player.html?url=${encodeURIComponent(url)}&theme=${stylePreset}`;
 
   return (
     <div className={isPseudoFS 

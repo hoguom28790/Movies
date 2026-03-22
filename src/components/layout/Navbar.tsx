@@ -5,13 +5,14 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Search, UserCircle, LogOut, Heart, History as HistoryIcon, BookOpen, Film } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
-import { useTheme } from "@/contexts/ThemeContext";
-import { AuthModal } from "@/components/auth/AuthModal";
+import { useStylePreset } from "@/contexts/StylePresetContext";
+import { ThemeToggle } from "@/components/theme-toggle";
 import { InstantSearch } from "./InstantSearch";
 import { NavMenu } from "./NavMenu";
 import { MobileMenu } from "./MobileMenu";
 import { ProfileDropdown } from "./ProfileDropdown";
 import { ComicFilters } from "@/components/comic/ComicFilters";
+import { AuthModal } from "@/components/auth/AuthModal";
 
 import { TOPXX_PATH } from "@/lib/constants";
 
@@ -91,6 +92,8 @@ export function Navbar({ mode: initialMode }: NavbarProps) {
               >
                 <HistoryIcon className="h-5 w-5" />
               </Link>
+
+              <ThemeToggle />
 
               <Link
                 href={isComicSection ? "/truyen/yeu-thich" : "/yeu-thich"}

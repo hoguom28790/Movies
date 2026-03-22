@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { AlertCircle, LogOut, User, Home, History as HistoryIcon, Heart, Search } from "lucide-react";
 import { TOPXX_PATH } from "@/lib/constants";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 import { getLunarAuthPass } from "@/lib/lunar";
 
@@ -47,7 +48,7 @@ export default function TopXXLayout({
   }
 
   return (
-    <div className="theme-xx min-h-screen bg-background text-primaryoreground">
+    <div className="theme-xx min-h-screen bg-background text-foreground transition-colors duration-300">
       {/* 18+ Warning Banner */}
       <div className="bg-amber-500 text-black py-2 px-4 flex items-center justify-center gap-2 text-[12px] font-black uppercase tracking-widest z-[1100] relative">
         <AlertCircle className="w-4 h-4" />
@@ -74,6 +75,7 @@ export default function TopXXLayout({
               <Link href="/settings" className="p-2 text-white/60 hover:text-primary transition-colors hidden sm:block">
                 <User className="w-5 h-5" />
               </Link>
+              <ThemeToggle />
               <Link href="/" className="px-3 sm:px-4 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-white/60 hover:text-white text-[11px] sm:text-[12px] font-bold transition-all border border-white/5 whitespace-nowrap">
                 Sang Hồ Phim
               </Link>

@@ -55,8 +55,8 @@ export function HeroSlider({ movies }: HeroSliderProps) {
       ))}
 
       {/* Cinematic Overlays */}
-      <div className="absolute inset-0 z-0 bg-gradient-to-t from-[#0a0a0a] via-[#0a0a0a]/40 to-transparent" />
-      <div className="absolute inset-0 z-0 bg-gradient-to-r from-[#0a0a0a]/80 via-transparent to-transparent" />
+      <div className="absolute inset-0 z-0 bg-[var(--banner-overlay)]" />
+      <div className="absolute inset-0 z-0 bg-gradient-to-r from-background/90 via-transparent to-transparent" />
 
       {/* Content Container */}
       <div className="container relative z-10 mx-auto px-6 lg:px-12 pb-20 w-full transition-all duration-700">
@@ -68,11 +68,11 @@ export function HeroSlider({ movies }: HeroSliderProps) {
             Phim Đề Cử
           </span>
 
-          <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black font-headline leading-[0.9] tracking-tighter text-white uppercase drop-shadow-2xl">
+          <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black font-headline leading-[0.9] tracking-tighter text-foreground uppercase drop-shadow-2xl">
             {currentMovie.title}
           </h1>
 
-          <p className="text-white/60 text-lg sm:text-xl font-medium tracking-wide drop-shadow-md">
+          <p className="text-foreground/60 text-lg sm:text-xl font-medium tracking-wide drop-shadow-md">
             {currentMovie.originalTitle || "Sẵn sàng để xem"} • {currentMovie.year} • {currentMovie.quality}
           </p>
 

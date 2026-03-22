@@ -32,13 +32,24 @@
 }
 
 :root {
-  --background: oklch(14% 0 0);
-  --foreground: oklch(98% 0 0);
+  --background: oklch(100% 0 0); /* Pure White */
+  --foreground: oklch(14% 0 0); /* Dark Black */
   --primary: oklch(65% 0.25 250); /* Default Blue for Phim */
+  --primary-hover: oklch(55% 0.25 250);
+  --surface: oklch(98% 0.01 250);
+  --surface-hover: oklch(95% 0.02 250);
+  --radius: 12px;
+  --banner-overlay: linear-gradient(to top, oklch(100% 0 0 / 95%) 0%, oklch(100% 0 0 / 20%) 50%, transparent 100%);
+}
+
+.dark {
+  --background: oklch(14% 0 0); /* Noir Black */
+  --foreground: oklch(98% 0 0); /* Soft White */
+  --primary: oklch(65% 0.25 250); 
   --primary-hover: oklch(55% 0.25 250);
   --surface: oklch(18% 0.01 250);
   --surface-hover: oklch(22% 0.02 250);
-  --radius: 12px;
+  --banner-overlay: linear-gradient(to top, oklch(14% 0 0 / 95%) 0%, oklch(14% 0 0 / 20%) 50%, transparent 100%);
 }
 
 .theme-phim {

@@ -5,7 +5,8 @@ import "./globals.css";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { AuthProvider } from "@/contexts/AuthContext";
-import { ThemeProvider } from "@/contexts/ThemeContext";
+import { StylePresetProvider } from "@/contexts/StylePresetContext";
+import { ThemeProvider } from "@/components/theme-provider";
 import { DeviceProvider } from "@/contexts/DeviceContext";
 
 const inter = Inter({
@@ -47,15 +48,17 @@ export default function RootLayout({
       <head>
         <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" />
       </head>
-      <body className="bg-[#0a0a0a] text-white selection:bg-primary/30 antialiased font-sans transition-colors duration-300">
+      <body className="bg-background text-foreground selection:bg-primary/30 antialiased font-sans transition-colors duration-300">
         <QueryProvider>
           <DeviceProvider>
             <ThemeProvider>
-              <AuthProvider>
-                <LayoutWrapper>
-                 {children}
-              </LayoutWrapper>
-              </AuthProvider>
+              <StylePresetProvider>
+                <AuthProvider>
+                  <LayoutWrapper>
+                    {children}
+                  </LayoutWrapper>
+                </AuthProvider>
+              </StylePresetProvider>
             </ThemeProvider>
           </DeviceProvider>
         </QueryProvider>
