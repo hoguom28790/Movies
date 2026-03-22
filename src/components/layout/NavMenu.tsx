@@ -189,7 +189,7 @@ export function NavMenu({ mode }: NavMenuProps) {
             onMouseEnter={() => { clearCloseTimer(); setOpenId(dd.id); }}
             onMouseLeave={scheduleClose}
             className={`flex items-center gap-1 px-3 py-2 text-[13px] font-medium transition-colors ${
-              openId === dd.id ? "text-primary" : "text-white/50 hover:text-white"
+              openId === dd.id ? "text-primary" : "text-foreground/50 hover:text-foreground"
             }`}
           >
             {dd.label}
@@ -200,7 +200,7 @@ export function NavMenu({ mode }: NavMenuProps) {
             <div
               onMouseEnter={clearCloseTimer}
               onMouseLeave={scheduleClose}
-              className="absolute top-full left-1/2 -translate-x-1/2 mt-1 rounded-xl bg-[#141416]/95 backdrop-blur-xl border border-white/[0.08] shadow-2xl shadow-black/80 p-4 z-50 animate-in fade-in slide-in-from-top-2 duration-150"
+              className="absolute top-full left-1/2 -translate-x-1/2 mt-1 rounded-xl bg-surface/95 backdrop-blur-xl border border-foreground/[0.08] shadow-2xl shadow-black/20 p-4 z-50 animate-in fade-in slide-in-from-top-2 duration-150"
               style={{ minWidth: `${dd.cols * 140}px` }}
             >
               <div
@@ -224,7 +224,7 @@ export function NavMenu({ mode }: NavMenuProps) {
                       }
                       setOpenId(null);
                     }}
-                    className="px-3 py-2 text-[13px] text-white/50 hover:text-white hover:bg-white/5 rounded-lg transition-colors whitespace-nowrap"
+                    className="px-3 py-2 text-[13px] text-foreground/50 hover:text-foreground hover:bg-foreground/5 rounded-lg transition-colors whitespace-nowrap"
                   >
                     {item.name}
                   </Link>
@@ -239,7 +239,7 @@ export function NavMenu({ mode }: NavMenuProps) {
         <Link
           key={link.href}
           href={link.href}
-          className="px-3 py-2 text-[13px] font-medium text-white/50 hover:text-white transition-colors"
+          className="px-3 py-2 text-[13px] font-medium text-foreground/50 hover:text-foreground transition-colors"
         >
           {link.label}
         </Link>

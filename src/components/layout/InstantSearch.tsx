@@ -88,7 +88,7 @@ export function InstantSearch() {
         }`}
       >
         <button type="submit" className="outline-none" aria-label="Search">
-           <Search className={`h-4 w-4 transition-colors ${loading ? "text-[var(--primary)] animate-pulse" : "text-white/20 hover:text-white"}`} />
+           <Search className={`h-4 w-4 transition-colors ${loading ? "text-primary animate-pulse" : "text-foreground/20 hover:text-foreground"}`} />
         </button>
         <input
           type="text"
@@ -99,7 +99,7 @@ export function InstantSearch() {
           className="ml-3 flex-1 bg-transparent text-[13px] text-foreground placeholder:text-foreground/20 outline-none font-medium tracking-tight"
         />
         {query && (
-          <button type="button" onClick={() => setQuery("")} className="ml-2 text-white/20 hover:text-white transition-colors">
+          <button type="button" onClick={() => setQuery("")} className="ml-2 text-foreground/20 hover:text-foreground transition-colors">
             <X className="h-4 w-4" />
           </button>
         )}
@@ -115,8 +115,8 @@ export function InstantSearch() {
           <div className="max-h-[70vh] overflow-y-auto scrollbar-hide py-2">
             {loading ? (
               <div className="flex flex-col items-center justify-center py-12 gap-3">
-                 <Loader2 className="h-6 w-6 text-[var(--primary)] animate-spin" />
-                 <span className="text-xs text-white/20 font-medium">Đang tìm kiếm...</span>
+                 <Loader2 className="h-6 w-6 text-primary animate-spin" />
+                 <span className="text-xs text-foreground/20 font-medium">Đang tìm kiếm...</span>
               </div>
             ) : (
               results.map((item) => (
@@ -124,9 +124,9 @@ export function InstantSearch() {
                   key={item.slug}
                   href={isComicSection ? `/truyen/${item.slug}` : `/phim/${item.slug}`}
                   onClick={() => setIsOpen(false)}
-                  className="flex items-center gap-4 px-4 py-2 hover:bg-white/5 transition-colors group"
+                  className="flex items-center gap-4 px-4 py-2 hover:bg-foreground/5 transition-colors group"
                 >
-                  <div className="relative h-16 w-11 flex-shrink-0 rounded-md overflow-hidden bg-white/5">
+                  <div className="relative h-16 w-11 flex-shrink-0 rounded-md overflow-hidden bg-foreground/5">
                     <Image
                       src={item.posterUrl}
                       alt={item.title}
@@ -163,7 +163,7 @@ export function InstantSearch() {
 
           {!loading && results.length === 0 && query && (
              <div className="py-12 text-center">
-                 <span className="text-xs text-white/20 font-medium">Không tìm thấy kết quả nào cho "{query}"</span>
+                 <span className="text-xs text-foreground/20 font-medium">Không tìm thấy kết quả nào cho "{query}"</span>
              </div>
           )}
         </div>

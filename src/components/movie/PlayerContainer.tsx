@@ -37,7 +37,7 @@ export function PlayerContainer({ url, isHls, rawEmbedUrl, nextEpisodeUrl, movie
   const [skipShow, setSkipShow] = useState<SkipTime | null>(null);
   const [isAnime, setIsAnime] = useState(false);
   const [malId, setMalId] = useState<number | null>(null);
-  const [toast, setToast] = useState<string | null>(null);
+  const [toast, setToast] = useState<React.ReactNode | null>(null);
 
   useEffect(() => {
     if (toast) {
@@ -264,6 +264,17 @@ export function PlayerContainer({ url, isHls, rawEmbedUrl, nextEpisodeUrl, movie
     if (currentSkip) {
       if (userSettings?.autoSkipIntro) {
         handleSeek(currentSkip.endTime + 0.5);
+        setToast(
+          <div className="flex items-center gap-3">
+            <span>Đã tự động bỏ qua mở đầu ⏩</span>
+            <button 
+              onClick={handleDisableAutoSkip}
+              className="px-2 py-0.5 rounded bg-primary text-[10px] font-black uppercase hover:bg-primary-hover transition-colors"
+            >
+              Tắt tự động
+            </button>
+          </div>
+        );
       } else {
         setSkipShow(currentSkip);
       }
@@ -277,8 +288,17 @@ export function PlayerContainer({ url, isHls, rawEmbedUrl, nextEpisodeUrl, movie
     if (iframeRef && iframeRef.contentWindow) {
       iframeRef.contentWindow.postMessage({ type: 'SEEK', time }, '*');
       setSkipShow(null);
-      setToast("Đã bỏ qua phần mở đầu ⏩");
+      if (!userSettings?.autoSkipIntro) {
+        setToast("Đã bỏ qua phần mở đầu ⏩");
+      }
     }
+  };
+
+  const handleDisableAutoSkip = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    autoSkipMutation.mutate(false);
+    setToast("Đã tắt tự động bỏ qua 🛑");
   };
 
   // Keyboard Shortcut 'S' listener
@@ -361,6 +381,19 @@ export function PlayerContainer({ url, isHls, rawEmbedUrl, nextEpisodeUrl, movie
             animate={{ opacity: 1, scale: 1, y: 0, x: "-50%" }}
             exit={{ opacity: 0, scale: 0.9, y: -20, x: "-50%" }}
             className="absolute top-20 left-1/2 z-[200] bg-white/10 backdrop-blur-xl border border-white/10 text-white px-6 py-3 rounded-full shadow-2xl font-bold text-sm tracking-wide pointer-events-none"
+          >
+            {toast}
+          </motion.div>
+        )}
+      </AnimatePresence>
+      {/* Toast Notification */}
+      <AnimatePresence>
+        {toast && (
+          <motion.div
+            initial={{ opacity: 0, y: -20, scale: 0.9 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -20, scale: 0.9 }}
+            className="absolute top-12 left-1/2 -translate-x-1/2 z-[200] px-5 py-3 rounded-2xl bg-black/80 backdrop-blur-xl border border-white/10 text-white text-[13px] font-bold shadow-2xl flex items-center gap-3 whitespace-nowrap"
           >
             {toast}
           </motion.div>

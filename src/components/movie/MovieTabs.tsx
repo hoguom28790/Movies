@@ -40,7 +40,7 @@ export function MovieTabs({
             className={`pb-3 text-[12px] sm:text-[13px] font-semibold whitespace-nowrap transition-all relative ${
               activeTab === tab.id 
                 ? "text-primary" 
-                : "text-white/30 hover:text-white/60"
+                : "text-foreground/30 hover:text-foreground/60"
             }`}
           >
             {tab.label}
@@ -70,8 +70,8 @@ export function MovieTabs({
                     onClick={() => setActiveServer(sIdx)}
                     className={`px-4 py-2 rounded-lg text-[12px] font-medium transition-all ${
                       activeServer === sIdx
-                        ? "bg-primary text-white"
-                        : "bg-white/5 text-white/40 hover:bg-white/10 hover:text-white"
+                        ? "bg-primary text-primary-foreground shadow-lg shadow-primary/20"
+                        : "bg-foreground/5 text-foreground/40 hover:bg-foreground/10 hover:text-foreground"
                     }`}
                   >
                     {server.name}
@@ -86,7 +86,7 @@ export function MovieTabs({
                 <Link
                   key={idx}
                   href={`/xem/${source}/${slug}/${ep.slug || ep.name}`}
-                  className="flex items-center gap-2 px-3 py-2.5 rounded-lg bg-white/[0.03] border border-white/[0.06] text-[12px] text-white/50 hover:bg-primary/10 hover:text-white hover:border-primary/30 transition-all"
+                  className="flex items-center gap-2 px-3 py-2.5 rounded-lg bg-foreground/[0.03] border border-foreground/[0.06] text-[12px] text-foreground/50 hover:bg-primary/10 hover:text-primary hover:border-primary/30 transition-all"
                 >
                   <Play className="w-3 h-3 flex-shrink-0" />
                   <span className="truncate">{ep.name}</span>
@@ -99,24 +99,24 @@ export function MovieTabs({
         {/* ── COLLECTION ── */}
         {activeTab === "collection" && collection && (
           <div className="animate-in fade-in duration-300">
-            <div className="mb-4">
-              <h3 className="text-base font-semibold text-white/90">{collection.name}</h3>
-              <p className="text-[13px] text-white/40 mt-1">{collection.parts?.length} phim trong bộ sưu tập này</p>
+            <div className="mb-6 px-1">
+              <h3 className="text-base font-bold text-foreground">{collection.name}</h3>
+              <p className="text-[13px] text-foreground/40 mt-1">{collection.parts?.length} phim trong bộ sưu tập này</p>
             </div>
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
               {collection.parts?.map((part: any) => (
                 <Link key={part.id} href={`/search?q=${encodeURIComponent(part.title)}`} className="group flex flex-col gap-2">
-                  <div className="relative aspect-[2/3] rounded-xl overflow-hidden bg-white/5 group-hover:-translate-y-1 transition-transform">
+                  <div className="relative aspect-[2/3] rounded-xl overflow-hidden bg-foreground/5 group-hover:-translate-y-1 transition-transform">
                     <img
                       src={part.poster_path ? `https://image.tmdb.org/t/p/w342${part.poster_path}` : "/placeholder-poster.png"}
                       alt={part.title}
                       className="w-full h-full object-cover"
                     />
-                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                      <Info className="w-8 h-8 text-white" />
+                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white">
+                      <Info className="w-8 h-8" />
                     </div>
                   </div>
-                  <p className="text-[12px] font-medium text-white/70 group-hover:text-primary line-clamp-1 truncate">{part.title}</p>
+                  <p className="text-[12px] font-medium text-foreground/70 group-hover:text-primary line-clamp-1 truncate">{part.title}</p>
                 </Link>
               ))}
             </div>
@@ -129,7 +129,7 @@ export function MovieTabs({
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
               {recommendations.map((m: any) => (
                 <Link key={m.id} href={`/search?q=${encodeURIComponent(m.title || m.name)}`} className="group flex flex-col gap-2">
-                  <div className="relative aspect-[2/3] rounded-xl overflow-hidden bg-white/5 group-hover:-translate-y-1 transition-transform">
+                  <div className="relative aspect-[2/3] rounded-xl overflow-hidden bg-foreground/5 group-hover:-translate-y-1 transition-transform">
                     <img
                       src={m.poster_path ? `https://image.tmdb.org/t/p/w342${m.poster_path}` : "/placeholder-poster.png"}
                       alt={m.title || m.name}
@@ -141,8 +141,8 @@ export function MovieTabs({
                     </div>
                   </div>
                   <div>
-                    <p className="text-[13px] font-semibold text-white/80 group-hover:text-white line-clamp-1">{m.title || m.name}</p>
-                    <p className="text-[11px] text-white/30">{m.release_date?.split("-")[0] || m.first_air_date?.split("-")[0]}</p>
+                    <p className="text-[13px] font-semibold text-foreground/80 group-hover:text-primary line-clamp-1">{m.title || m.name}</p>
+                    <p className="text-[11px] text-foreground/30">{m.release_date?.split("-")[0] || m.first_air_date?.split("-")[0]}</p>
                   </div>
                 </Link>
               ))}
