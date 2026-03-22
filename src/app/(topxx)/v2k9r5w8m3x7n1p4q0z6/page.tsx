@@ -12,6 +12,7 @@ export const metadata = {
 };
 
 import { XXBentoGrid } from "@/components/movie/XXBentoGrid";
+import { XXSearchBar } from "@/components/movie/XXSearchBar";
 
 export default async function XXHomePage() {
   const [latestData, javData, uncensoredData, avdbData] = await Promise.all([
@@ -26,6 +27,9 @@ export default async function XXHomePage() {
   return (
     <div className="flex flex-col gap-16 pb-20 mt-[-20px] max-w-7xl mx-auto">
       {heroMovie && <XXHeroSection movie={heroMovie} />}
+      
+      {/* Search Bar */}
+      <XXSearchBar />
       
       {/* Xem Tiếp */}
       <XXContinueWatching />

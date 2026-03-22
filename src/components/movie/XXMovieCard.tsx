@@ -48,11 +48,13 @@ export function XXMovieCard({
 
         {/* Home/History Progress Bar */}
         {progress !== undefined && progress > 0 && (
-          <div className="absolute bottom-0 left-0 right-0 h-1.5 bg-black/40 z-20">
-            <div 
-              className="h-full bg-yellow-500 transition-all duration-1000 shadow-[0_0_10px_#fbbf24]" 
-              style={{ width: `${progress}%` }} 
-            />
+          <div className="absolute bottom-2 inset-x-3 h-1 z-30 pointer-events-none">
+            <div className="w-full h-full bg-black/40 backdrop-blur-md rounded-full overflow-hidden">
+               <div 
+                 className="h-full bg-yellow-500 transition-all duration-1000 shadow-[0_0_12px_#fbbf24]" 
+                 style={{ width: `${progress}%` }} 
+               />
+            </div>
           </div>
         )}
       </Link>
