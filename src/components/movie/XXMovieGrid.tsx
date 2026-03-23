@@ -35,9 +35,15 @@ export function XXMovieGrid({ initialMovies, title, fetchUrl, initialPage, total
           return [...prev, ...newMovies];
         });
         setPage(nextPage);
+      } else {
+        // If no items returned but we requested a next page, it means no more content
+        // Force page to totalPages to stop further observer triggers
+        setPage(totalPages);
       }
     } catch (err) {
       console.error("Failed to load more movies:", err);
+      // On error, let's also increment to avoid retrying the same broken page forever
+      setPage(prev => prev + 1);
     } finally {
       setLoading(false);
     }
