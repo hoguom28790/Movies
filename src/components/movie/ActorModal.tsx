@@ -22,17 +22,57 @@ interface ActorModalProps {
   isTopXX?: boolean;
 }
 
+interface JAVDBActress {
+  id: string;
+  name: string;
+  profilePic: string;
+  birthday?: string;
+  height?: string;
+  measurements?: string;
+  birthPlace?: string;
+  gallery: string[];
+  filmography: {
+    id: string;
+    poster: string;
+    code: string;
+    title: string;
+    rating: string;
+    date: string;
+    link: string;
+  }[];
+}
+
 export function ActorModal({ isOpen, onClose, actor, isTopXX = false }: ActorModalProps) {
   const { user } = useAuth();
   const router = useRouter();
   const [isSearching, setIsSearching] = useState<string | null>(null);
+  const [lightboxImage, setLightboxImage] = useState<string | null>(null);
 
   // Profile path mapping (handle both profile_path and profilePath)
   const profilePath = actor ? (('profile_path' in actor ? actor.profile_path : (actor as any).profilePath) || null) : null;
 
   const { data: details, isLoading } = useQuery({
-    queryKey: ["actor", actor?.id],
-    queryFn: () => actor ? getTMDBActorDetails(actor.id) : null,
+    queryKey: ["actor", actor?.id, actor?.name, isTopXX],
+    queryFn: async () => {
+      if (!actor) return null;
+      if (isTopXX) {
+        try {
+          // 1. Search for JAVDB ID by name
+          const searchRes = await fetch(`/api/javdb/actress?name=${encodeURIComponent(actor.name)}`);
+          const searchData = await searchRes.json();
+          if (!searchData.id) return null;
+          
+          // 2. Fetch Full Details
+          const detailRes = await fetch(`/api/javdb/actress/${searchData.id}`);
+          const detailData = await detailRes.json();
+          return detailData as JAVDBActress;
+        } catch (err) {
+          console.error("JAVDB Fetch Error:", err);
+          return null;
+        }
+      }
+      return getTMDBActorDetails(actor.id);
+    },
     enabled: !!actor && isOpen,
     staleTime: 1000 * 60 * 60 * 24, // 24 hours
   });
@@ -40,7 +80,6 @@ export function ActorModal({ isOpen, onClose, actor, isTopXX = false }: ActorMod
   const [toast, setToast] = useState<{ message: string; submessage?: string; type: "info" | "error"; link?: string } | null>(null);
   const [isFav, setIsFav] = useState(false);
 
-  // Check favorite status when modal opens
   useEffect(() => {
     const checkFav = async () => {
       if (user?.uid && actor?.id) {
@@ -49,12 +88,9 @@ export function ActorModal({ isOpen, onClose, actor, isTopXX = false }: ActorMod
         setIsFav(status);
       }
     };
-    if (isOpen) {
-      checkFav();
-    }
+    if (isOpen) checkFav();
   }, [user?.uid, actor?.id, isOpen]);
 
-  // Auto-hide toast
   useEffect(() => {
     if (toast && toast.type === 'info') {
       const timer = setTimeout(() => setToast(null), 5000);
@@ -63,85 +99,43 @@ export function ActorModal({ isOpen, onClose, actor, isTopXX = false }: ActorMod
   }, [toast]);
 
   const normalize = (text: string) => {
-    return text
-      .toLowerCase()
-      .normalize("NFD")
-      .replace(/[\u0300-\u036f]/g, "") 
-      .replace(/[^\w\s]/g, "") 
-      .replace(/\s+/g, " ") 
-      .replace(/(phan|part|season|tap)\s*\d+/gi, "") 
-      .trim();
+    return text.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^\w\s]/g, "").replace(/\s+/g, " ").replace(/(phan|part|season|tap)\s*\d+/gi, "").trim();
   };
 
-  const handleMovieClick = async (title: string, year: string, tmdbId: number, isTv: boolean) => {
+  const handleMovieClick = async (title: string, year: string, code?: string) => {
     try {
       setIsSearching(title);
       setToast({ message: `Đang kết nối: ${title} (${year})...`, type: "info" });
       
-      const cleanTitle = title.replace(/\(Part\s+\d+\)/gi, "").replace(/\(Phần\s+\d+\)/gi, "").trim();
-      const normalizedTitle = normalize(cleanTitle);
+      const normalizedTitle = normalize(title);
       
-      let match = null;
+      // Separate JAVDB from ophim/kkphim search
+      // In TopXX, search by code first if available, otherwise search by title in local streaming sources
+      const { searchMovies: searchStreaming } = await import("@/services/api");
+      let searchResult = await searchStreaming(code || title);
 
-      if (isTopXX) {
-         const { searchTopXXMovies } = await import("@/services/api/topxx");
-         const searchResult = await searchTopXXMovies(cleanTitle);
-         
-         const findMatch = (items: any[]) => {
-            return items.find((item: any) => {
-              const itemTitle = normalize(item.title);
-              const itemOrigin = normalize(item.originalTitle || "");
-              return (itemTitle === normalizedTitle || itemOrigin === normalizedTitle);
-            }) || items[0];
-          };
-
-          match = searchResult.items.length > 0 ? findMatch(searchResult.items) : null;
-          
-          if (match) {
-             setToast(null);
-             onClose();
-             router.push(`/topxx/phim/${match.slug}`);
-             return;
-          }
-      } else {
-         let searchResult = await searchMovies(cleanTitle);
-
-         if (searchResult.items.length === 0 && normalizedTitle !== cleanTitle.toLowerCase()) {
-           searchResult = await searchMovies(normalizedTitle);
-         }
-
-         const findMatch = (items: any[]) => {
-            return items.find((item: any) => {
-              const itemTitle = normalize(item.title);
-              const itemOrigin = normalize(item.originalTitle || "");
-              const yearDiff = Math.abs(parseInt(item.year) - parseInt(year));
-              
-              return (
-                (itemTitle === normalizedTitle || itemOrigin === normalizedTitle) && 
-                (year ? yearDiff <= 1 : true)
-              );
-            }) || items.find((item: any) => {
-               const itemTitle = normalize(item.title);
-               const itemOrigin = normalize(item.originalTitle || "");
-               return itemTitle.includes(normalizedTitle) || itemOrigin.includes(normalizedTitle);
-            }) || items[0];
-          };
-
-          match = searchResult.items.length > 0 ? findMatch(searchResult.items) : null;
-
-          if (match) {
-            setToast(null);
-            onClose();
-            router.push(`/phim/${match.slug}`);
-            return;
-          }
+      if (searchResult.items.length === 0) {
+        searchResult = await searchStreaming(normalizedTitle);
       }
+
+      const match = searchResult.items.find((item: any) => {
+        const itemTitle = normalize(item.title);
+        const itemOrigin = normalize(item.originalTitle || "");
+        const yearDiff = Math.abs(parseInt(item.year) - parseInt(year));
+        return (itemTitle === normalizedTitle || itemOrigin === normalizedTitle) && (year ? yearDiff <= 1 : true);
+      }) || searchResult.items[0];
+
+      if (match) {
+        setToast(null);
+        onClose();
+        router.push(`/phim/${match.slug}`); // Navigate to streaming page
+      } else {
         setToast({ 
           message: "Tác phẩm này hiện chưa có bản phát hành tại đây.", 
           submessage: "Hệ thống đang cập nhật, bạn có thể xem các phim khác.",
-          type: "error",
-          link: `https://www.themoviedb.org/${isTv ? 'tv' : 'movie'}/${tmdbId}`
+          type: "error"
         });
+      }
     } catch (error) {
        setToast({ message: "Giao thức tìm kiếm bị gián đoạn. Thử lại sau.", type: "error" });
     } finally {
@@ -151,233 +145,143 @@ export function ActorModal({ isOpen, onClose, actor, isTopXX = false }: ActorMod
 
   const MovieCardComponent = ({ item, isTv, index }: { item: any; isTv: boolean; index: number }) => (
     <motion.button
-      initial={{ opacity: 0, y: 30, filter: "blur(10px)" }}
-      animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-      transition={{ duration: 0.8, delay: Math.min(index * 0.04, 0.4), ease: [0.16, 1, 0.3, 1] }}
-      onClick={() => handleMovieClick(item.title || item.name, (item.release_date || item.first_air_date)?.split("-")[0], item.id, isTv)}
-      className="group relative flex flex-col gap-3 sm:gap-4 text-left outline-none rounded-[32px] overflow-hidden select-none active-depth"
+      initial={{ opacity: 0, y: 30 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.8, delay: Math.min(index * 0.04, 0.4) }}
+      onClick={() => handleMovieClick(item.title || item.name, (item.release_date || item.first_air_date)?.split("-")[0])}
+      className="group relative flex flex-col gap-3 text-left outline-none rounded-[32px] overflow-hidden select-none active-depth"
     >
-      <div className="relative aspect-[2/3] rounded-[24px] sm:rounded-[28px] overflow-hidden bg-[#141416] shadow-cinematic-xl border border-white/5">
-        <img
-          src={getTMDBImageUrl(item.poster_path, 'w342') || "/placeholder-poster.png"}
-          alt={item.title || item.name}
-          className="w-full h-full object-cover transition-all duration-1000 group-hover:scale-110 group-hover:brightness-50"
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent flex flex-col justify-end p-4 sm:p-6 opacity-0 group-hover:opacity-100 transition-all duration-700 backdrop-blur-[2px]">
-          <div className="flex items-center gap-3 sm:gap-4">
-             <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-primary flex items-center justify-center text-white shadow-cinematic-lg transition-transform duration-500">
-                <Play className="w-5 h-5 sm:w-6 sm:h-6 fill-current translate-x-0.5" />
-             </div>
-             <div className="space-y-0.5">
-                <span className="block text-[8px] sm:text-[10px] font-black uppercase tracking-[0.3em] text-white/60 italic">PLAY NOW</span>
-                <span className="block text-[10px] sm:text-[12px] font-black uppercase tracking-[0.1em] text-white italic">XEM NGAY</span>
-             </div>
-          </div>
-        </div>
-        <div className="absolute top-3 right-3 sm:top-4 sm:right-4 px-2 py-1 sm:px-3 sm:py-1.5 glass-pro rounded-lg sm:rounded-xl flex items-center gap-1 shadow-2xl border border-white/10">
-          <Star className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-primary fill-primary" />
-          <span className="text-[10px] sm:text-[12px] font-black text-white">{item.vote_average?.toFixed(1) || "9.5"}</span>
+      <div className="relative aspect-[2/3] rounded-[24px] overflow-hidden bg-[#141416] border border-white/5">
+        <img src={getTMDBImageUrl(item.poster_path, 'w342') || "/placeholder-poster.png"} alt={item.title || item.name} className="w-full h-full object-cover transition-all duration-1000 group-hover:scale-110 group-hover:brightness-50" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent flex flex-col justify-end p-4 opacity-0 group-hover:opacity-100 transition-all duration-700 backdrop-blur-[2px]">
+           <span className="block text-[10px] font-black uppercase tracking-[0.1em] text-white italic text-center">XEM NGAY</span>
         </div>
       </div>
-      
-      <div className="space-y-0.5 sm:space-y-1 px-1 sm:px-2">
-        <h5 className="text-[13px] sm:text-[15px] font-black text-white group-hover:text-primary transition-colors line-clamp-1 italic uppercase tracking-tight font-headline">
-          {item.title || item.name}
-        </h5>
-        <div className="flex items-center justify-between text-[9px] sm:text-[11px] text-white/30 font-black uppercase tracking-widest italic">
-          <span className="line-clamp-1 max-w-[70%]">{item.character || "N/A"}</span>
-          <span className="flex-shrink-0 text-primary/60">{(item.release_date || item.first_air_date)?.split("-")[0]}</span>
+      <div className="px-1 space-y-0.5">
+        <h5 className="text-[13px] font-black text-white group-hover:text-primary transition-colors line-clamp-1 italic uppercase tracking-tight font-headline">{item.title || item.name}</h5>
+        <div className="flex items-center justify-between text-[9px] text-white/30 font-black uppercase tracking-widest italic">
+          <span className="line-clamp-1">{item.character || "N/A"}</span>
+          <span className="text-primary/60">{(item.release_date || item.first_air_date)?.split("-")[0]}</span>
         </div>
       </div>
-
-      <AnimatePresence>
-        {isSearching === (item.title || item.name) && (
-          <motion.div 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="absolute inset-0 bg-primary/20 backdrop-blur-xl flex flex-col items-center justify-center z-50 rounded-[32px] gap-4"
-          >
-             <div className="w-10 h-10 sm:w-14 sm:h-14 border-4 border-white/10 border-t-primary rounded-full animate-spin shadow-[0_0_20px_var(--primary)]" />
-             <span className="text-[9px] sm:text-[10px] font-bold text-white uppercase tracking-[0.4em] italic animate-pulse">Syncing...</span>
-          </motion.div>
-        )}
-      </AnimatePresence>
     </motion.button>
   );
 
   return (
     <Transition.Root show={isOpen} as={Fragment}>
       <Dialog as="div" className="relative z-[2000]" onClose={onClose}>
-        <Transition.Child
-          as={Fragment}
-          enter="ease-out duration-700"
-          enterFrom="opacity-0"
-          enterTo="opacity-100"
-          leave="ease-in duration-500"
-          leaveFrom="opacity-100"
-          leaveTo="opacity-0"
-        >
+        <Transition.Child as={Fragment} enter="ease-out duration-700" enterFrom="opacity-0" enterTo="opacity-100" leave="ease-in duration-500" leaveFrom="opacity-100" leaveTo="opacity-0">
           <div className="fixed inset-0 bg-[#050505]/95 backdrop-blur-3xl transition-opacity" />
         </Transition.Child>
 
         <div className="fixed inset-0 z-10 overflow-y-auto pt-safe pb-safe no-scrollbar overscroll-behavior-contain">
           <div className="flex min-h-full items-center justify-center p-0 text-center sm:p-8">
-            <Transition.Child
-              as={Fragment}
-              enter="ease-out duration-800 spring-3"
-              enterFrom="opacity-0 translate-y-64 rotate-x-12 scale-90 blur-xl"
-              enterTo="opacity-100 translate-y-0 rotate-x-0 scale-100 blur-0"
-              leave="ease-in duration-500 spring-low"
-              leaveFrom="opacity-100 translate-y-0 scale-100 blur-0"
-              leaveTo="opacity-0 translate-y-64 scale-90 blur-xl"
-            >
-              <Dialog.Panel className="relative w-full max-w-7xl transform overflow-hidden bg-[#0a0a0b] text-left transition-all sm:rounded-[64px] border border-white/5 shadow-cinematic-2xl flex flex-col h-[100vh] sm:h-[90vh] perspective-1000">
+            <Transition.Child as={Fragment} enter="ease-out duration-800" enterFrom="opacity-0 translate-y-64 scale-90" enterTo="opacity-100 translate-y-0 scale-100" leave="ease-in duration-500" leaveFrom="opacity-100 translate-y-0" leaveTo="opacity-0 translate-y-64 scale-90">
+              <Dialog.Panel className="relative w-full max-w-7xl transform overflow-hidden bg-[#0a0a0b] text-left transition-all sm:rounded-[64px] border border-white/5 shadow-cinematic-2xl flex flex-col h-[100vh] sm:min-h-[90vh] perspective-1000">
                 
-                {/* Neural Header Architecture */}
-                <div className="relative h-[280px] sm:h-[450px] md:h-[500px] flex-shrink-0 bg-cover bg-center overflow-hidden" 
-                     style={{ backgroundImage: details?.movie_credits?.cast[0]?.backdrop_path ? `url(${getTMDBImageUrl(details.movie_credits.cast[0].backdrop_path, 'original')})` : 'none' }}>
-                  
-                  <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 2 }} className="absolute inset-0 bg-gradient-to-t from-[#0a0a0b] via-[#0a0a0b]/40 to-transparent" />
-                  <div className="absolute inset-0 bg-black/10 backdrop-blur-[1px]" />
-                  
-                  <button onClick={onClose} className="absolute top-6 right-6 sm:top-8 sm:right-8 p-3 sm:p-5 rounded-[20px] sm:rounded-[24px] glass-pro text-white hover:bg-primary hover:scale-110 active-depth transition-all z-30 border border-white/10 group">
-                    <X className="w-6 h-6 sm:w-8 sm:h-8 stroke-[3px] group-hover:rotate-90 transition-transform duration-500" />
-                  </button>
+                {/* Header */}
+                <div className="relative h-[280px] sm:h-[450px] flex-shrink-0 bg-cover bg-center overflow-hidden" 
+                     style={{ backgroundImage: `url(${getTMDBImageUrl(profilePath, 'original') || details?.profilePic})` }}>
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0b] via-[#0a0a0b]/40 to-transparent" />
+                  <button onClick={onClose} className="absolute top-6 right-6 p-3 rounded-[20px] glass-pro text-white hover:text-primary z-30 border border-white/10 active-depth transition-all"><X className="w-6 h-6 stroke-[3px]" /></button>
 
-                  <div className="absolute bottom-0 left-0 w-full p-6 sm:p-12 md:p-20 flex flex-col sm:flex-row items-end gap-6 sm:gap-10">
-                    <motion.div 
-                      initial={{ scale: 0.5, opacity: 0, rotate: -5 }}
-                      animate={{ scale: 1, opacity: 1, rotate: 0 }}
-                      transition={{ type: "spring", damping: 15, stiffness: 100, delay: 0.2 }}
-                      className="w-32 h-32 sm:w-48 sm:h-48 md:w-64 md:h-64 rounded-[40px] sm:rounded-[56px] overflow-hidden border-[6px] sm:border-[12px] border-[#0a0a0b] shadow-cinematic-2xl flex-shrink-0 relative group ring-1 ring-white/10"
-                    >
-                       <img 
-                         src={getTMDBImageUrl(profilePath, 'w500') || "/placeholder-actor.png"} 
-                         alt={actor?.name}
-                         className="w-full h-full object-cover transition-all duration-1000 group-hover:scale-110"
-                       />
-                       
-                       <button 
-                         onClick={async (e) => {
-                           e.stopPropagation();
-                           if (!user?.uid || !actor) return;
-                           const { toggleFavoriteActor } = await import("@/services/db");
-                           const isNowFav = await toggleFavoriteActor(user.uid, {
-                             id: actor.id,
-                             name: actor.name,
-                             profilePath: profilePath
-                           });
-                           setIsFav(isNowFav);
-                           setToast({ 
-                             message: isNowFav ? `Đã lưu hồ sơ: ${actor.name}` : `Đã gỡ hồ sơ: ${actor.name}`, 
-                             type: "info" 
-                           });
-                         }}
-                         className={`absolute bottom-3 right-3 sm:bottom-6 sm:right-6 p-3 sm:p-5 rounded-[16px] sm:rounded-[24px] backdrop-blur-3xl border border-white/20 transition-all shadow-cinematic-xl z-20 hover:scale-125 active-depth ${isFav ? 'text-red-500 bg-red-500/20' : 'text-white bg-black/40 hover:text-red-500'}`}
-                       >
-                          <Heart className="w-5 h-5 sm:w-8 sm:h-8" fill={isFav ? "currentColor" : "none"} strokeWidth={3} />
-                       </button>
-                    </motion.div>
-                    
-                    <div className="flex-grow space-y-3 sm:space-y-6">
-                       <div className="flex flex-col gap-1 sm:gap-2">
-                          <motion.div
-                            initial={{ opacity: 0, scale: 0.8 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            transition={{ delay: 0.4 }}
-                            className="flex items-center gap-2 px-3 py-1 sm:px-4 sm:py-1.5 glass-pro rounded-full self-start border border-white/10"
-                          >
-                             <Sparkles className="w-3 h-3 sm:w-4 sm:h-4 text-primary animate-pulse" />
-                             <span className="text-[8px] sm:text-[10px] font-black uppercase tracking-[0.3em] text-white/60 italic">Elite Actor Profile</span>
-                          </motion.div>
-                          <motion.h3 
-                            initial={{ opacity: 0, y: 30 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: 0.5, duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-                            className="text-3xl sm:text-6xl md:text-8xl font-black italic tracking-tighter text-white drop-shadow-2xl uppercase leading-[0.85] font-headline skew-x-[-2deg]"
-                          >
-                             {actor?.name}
-                          </motion.h3>
+                  <div className="absolute bottom-0 left-0 w-full p-6 sm:p-12 flex flex-col sm:flex-row items-end gap-6 sm:gap-10">
+                    <div className="w-32 h-32 sm:w-48 sm:h-48 rounded-[40px] overflow-hidden border-[6px] border-[#0a0a0b] shadow-2xl flex-shrink-0 relative group">
+                       <img src={getTMDBImageUrl(profilePath, 'w500') || details?.profilePic || "/placeholder-actor.png"} alt={actor?.name} className="w-full h-full object-cover" />
+                    </div>
+                    <div className="space-y-3">
+                       <h3 className="text-3xl sm:text-6xl font-black italic tracking-tighter text-white uppercase leading-none font-headline">{actor?.name}</h3>
+                       <div className="flex gap-4">
+                          <span className="px-4 py-2 rounded-xl bg-primary text-white text-[9px] font-black tracking-widest uppercase italic border border-primary/20">ELITE PROFILE</span>
+                          {isTopXX && <span className="px-4 py-2 rounded-xl bg-yellow-500/20 text-yellow-500 text-[9px] font-black tracking-widest uppercase italic border border-yellow-500/20">JAVDB DATA</span>}
                        </div>
-                       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.7 }} className="flex flex-wrap gap-3 sm:gap-5">
-                          <span className="px-4 py-2 sm:px-6 sm:py-2.5 rounded-xl sm:rounded-2xl bg-primary text-white text-[9px] sm:text-[11px] font-black tracking-[0.25em] uppercase shadow-cinematic-lg italic border border-primary/20">THEO DÕI NGAY</span>
-                          <span className="px-4 py-2 sm:px-6 sm:py-2.5 rounded-xl sm:rounded-2xl glass-pro text-white/60 text-[9px] sm:text-[11px] font-black tracking-[0.2em] uppercase italic border border-white/10">
-                            {details ? `${details.movie_credits?.cast?.length + (details.tv_credits?.cast?.length || 0)} ARCHIVES FOUND` : "LOADING DATA..."}
-                          </span>
-                       </motion.div>
                     </div>
                   </div>
                 </div>
 
-                <div className="flex-grow overflow-y-auto px-6 sm:px-12 md:px-20 py-8 sm:py-12 no-scrollbar scroll-smooth relative">
+                {/* Content */}
+                <div className="flex-grow overflow-y-auto px-6 sm:px-12 md:px-20 py-8 no-scrollbar scroll-smooth relative">
                   {isLoading ? (
-                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-6 sm:gap-10">
-                       {[...Array(12)].map((_, i) => (
-                         <div key={i} className="space-y-4 sm:space-y-5 animate-pulse">
-                            <div className="aspect-[2/3] bg-white/5 rounded-[32px] sm:rounded-[40px]" />
-                            <div className="h-5 sm:h-6 bg-white/5 rounded-xl w-4/5" />
-                            <div className="h-3 sm:h-4 bg-white/5 rounded-xl w-3/5" />
-                         </div>
-                       ))}
-                    </div>
+                    <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 gap-6"><div className="animate-pulse bg-white/5 aspect-[2/3] rounded-3xl" /></div>
+                  ) : isTopXX && (details as JAVDBActress) ? (
+                    <Tab.Group>
+                      <Tab.List className="flex gap-8 border-b border-white/5 mb-8 sticky -top-1 bg-[#0a0a0b] z-[60] py-4 transition-all -mx-6 sm:-mx-12 md:-mx-20 px-6 sm:px-12 md:px-20">
+                        {["THÔNG TIN", "GALLERY", "FILMOGRAPHY"].map((name) => (
+                           <Tab key={name} className={({ selected }) => `pb-4 text-[11px] sm:text-[13px] font-black tracking-[0.2em] outline-none uppercase italic ${selected ? "text-primary border-b-[4px] border-primary" : "text-on-surface/30 hover:text-white"}`}>{name}</Tab>
+                        ))}
+                      </Tab.List>
+                      <Tab.Panels>
+                        <Tab.Panel className="grid grid-cols-1 md:grid-cols-2 gap-10 focus:outline-none">
+                           <div className="space-y-6">
+                              <h4 className="text-[10px] font-black text-primary uppercase tracking-[0.4em] italic mb-4">Biographical Stats</h4>
+                              {[
+                                { label: "Ngày sinh", value: details.birthday },
+                                { label: "Chiều cao", value: details.height },
+                                { label: "Số đo", value: details.measurements },
+                                { label: "Quê quán", value: details.birthPlace }
+                              ].map((stat, i) => (
+                                <div key={i} className="flex flex-col gap-1 border-b border-white/5 pb-4">
+                                   <span className="text-[10px] text-white/20 font-black uppercase tracking-widest italic">{stat.label}</span>
+                                   <span className="text-xl font-black text-white italic uppercase">{stat.value || "Hidden / N/A"}</span>
+                                </div>
+                              ))}
+                           </div>
+                           <div className="aspect-video rounded-[40px] overflow-hidden border border-white/5 grayscale hover:grayscale-0 transition-all duration-1000">
+                              <img src={details.profilePic} className="w-full h-full object-cover" />
+                           </div>
+                        </Tab.Panel>
+
+                        <Tab.Panel className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 focus:outline-none">
+                           {details.gallery.map((img: string, i: number) => (
+                             <motion.button key={i} whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} onClick={() => setLightboxImage(img)} className="aspect-square rounded-2xl overflow-hidden border border-white/5"><img src={img} className="w-full h-full object-cover" /></motion.button>
+                           ))}
+                        </Tab.Panel>
+
+                        <Tab.Panel className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-10 focus:outline-none pb-20">
+                           {details.filmography.map((m: any, i: number) => (
+                             <motion.div key={i} className="group flex flex-col gap-3 rounded-[32px] overflow-hidden active-depth">
+                                <div className="relative aspect-[2/3] rounded-[24px] overflow-hidden bg-black border border-white/5">
+                                   <img src={m.poster} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-1000 group-hover:brightness-50" />
+                                   <div className="absolute inset-0 flex flex-col justify-end p-4 opacity-0 group-hover:opacity-100 transition-all gap-4">
+                                      <button onClick={() => handleMovieClick(m.title, m.date.split("-")[0], m.code)} className="w-full py-3 bg-primary text-[10px] font-black text-white uppercase italic rounded-xl flex items-center justify-center gap-2"><Play className="w-4 h-4 fill-current" /> XEM NGAY</button>
+                                      <a href={m.link} target="_blank" className="w-full py-2 border border-white/10 text-[9px] font-black text-white/30 uppercase italic rounded-lg text-center hover:bg-white/5 transition-all">JAVDB LINK</a>
+                                   </div>
+                                   <div className="absolute top-4 left-4 glass-pro px-3 py-1 rounded-lg border border-white/10"><span className="text-[10px] font-black text-primary italic">{m.code}</span></div>
+                                </div>
+                                <div className="px-1 space-y-1">
+                                   <h5 className="text-[12px] font-black text-white line-clamp-1 italic uppercase font-headline group-hover:text-primary transition-colors">{m.title}</h5>
+                                   <div className="flex justify-between text-[9px] font-black text-white/20 uppercase italic"><span>{m.date}</span><span>{m.rating} ★</span></div>
+                                </div>
+                             </motion.div>
+                           ))}
+                        </Tab.Panel>
+                      </Tab.Panels>
+                    </Tab.Group>
                   ) : (
                     <Tab.Group>
-                       {/* Header Tab - Fixed sticky correctly with high z-index and explicit bg */}
-                       <Tab.List className="flex gap-8 sm:gap-12 border-b border-white/5 mb-8 sm:mb-12 overflow-x-auto pb-1 no-scrollbar sticky -top-1 bg-[#0a0a0b] z-[60] py-4 transition-all -mx-6 sm:-mx-12 md:-mx-20 px-6 sm:px-12 md:px-20 translate-y-[-1px]">
-                          <Tab className={({ selected }) => `group/tab pb-4 text-[12px] sm:text-[14px] font-black tracking-[0.2em] sm:tracking-[0.3em] outline-none transition-all uppercase italic flex-shrink-0 flex items-center gap-3 sm:gap-4 ${selected ? "text-primary border-b-[4px] sm:border-b-[6px] border-primary" : "text-white/20 hover:text-white/60" }`}>
-                            {({ selected }) => (
-                               <div className="flex items-center gap-3 sm:gap-4">
-                                  <Film className={`w-5 h-5 sm:w-6 sm:h-6 transition-transform group-hover/tab:-rotate-12 ${selected ? "animate-pulse" : ""}`} /> PHIM ĐIỆN ẢNH
-                               </div>
-                            )}
-                          </Tab>
-                          <Tab className={({ selected }) => `group/tab pb-4 text-[12px] sm:text-[14px] font-black tracking-[0.2em] sm:tracking-[0.3em] outline-none transition-all uppercase italic flex-shrink-0 flex items-center gap-3 sm:gap-4 ${selected ? "text-primary border-b-[4px] sm:border-b-[6px] border-primary" : "text-white/20 hover:text-white/60" }`}>
-                            {({ selected }) => (
-                               <div className="flex items-center gap-3 sm:gap-4">
-                                  <Tv className={`w-5 h-5 sm:w-6 sm:h-6 transition-transform group-hover/tab:rotate-12 ${selected ? "animate-pulse" : ""}`} /> SERIES TRUYỀN HÌNH
-                               </div>
-                            )}
-                          </Tab>
+                       <Tab.List className="flex gap-8 border-b border-white/5 mb-8 sticky -top-1 bg-[#0a0a0b] z-[60] py-4 transition-all -mx-6 sm:-mx-12 md:-mx-20 px-6 sm:px-12 md:px-20">
+                          <Tab className={({ selected }) => `pb-4 text-[11px] font-black tracking-[0.2em] outline-none uppercase italic ${selected ? "text-primary border-b-[4px] border-primary" : "text-white/20"}`}><Film className="w-5 h-5 inline mr-2" /> PHIM ĐIỆN ẢNH</Tab>
+                          <Tab className={({ selected }) => `pb-4 text-[11px] font-black tracking-[0.2em] outline-none uppercase italic ${selected ? "text-primary border-b-[4px] border-primary" : "text-white/20"}`}><Tv className="w-5 h-5 inline mr-2" /> SERIES TRUYỀN HÌNH</Tab>
                        </Tab.List>
-                       <Tab.Panels className="focus:outline-none">
-                          <Tab.Panel className="focus:outline-none">
-                             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-x-6 gap-y-10 sm:gap-x-10 sm:gap-y-16 pb-20">
-                                {details?.movie_credits?.cast?.sort((a: any, b: any) => (b.popularity || 0) - (a.popularity || 0)).slice(0, 60).map((m: any, idx: number) => (
-                                  <MovieCardComponent key={`${m.id}-${idx}`} item={m} isTv={false} index={idx} />
-                                ))}
-                             </div>
+                       <Tab.Panels>
+                          <Tab.Panel className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 gap-10">
+                             {details?.movie_credits?.cast?.sort((a: any, b: any) => (b.popularity || 0) - (a.popularity || 0)).slice(0, 48).map((m: any, idx: number) => (<MovieCardComponent key={idx} item={m} isTv={false} index={idx} />))}
                           </Tab.Panel>
-                          <Tab.Panel className="focus:outline-none">
-                             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-x-6 gap-y-10 sm:gap-x-10 sm:gap-y-16 pb-20">
-                                {details?.tv_credits?.cast?.sort((a: any, b: any) => (b.popularity || 0) - (a.popularity || 0)).slice(0, 60).map((m: any, idx: number) => (
-                                  <MovieCardComponent key={`${m.id}-${idx}`} item={m} isTv={true} index={idx} />
-                                ))}
-                             </div>
+                          <Tab.Panel className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 gap-10">
+                             {details?.tv_credits?.cast?.sort((a: any, b: any) => (b.popularity || 0) - (a.popularity || 0)).slice(0, 48).map((m: any, idx: number) => (<MovieCardComponent key={idx} item={m} isTv={true} index={idx} />))}
                           </Tab.Panel>
                        </Tab.Panels>
                     </Tab.Group>
                   )}
                 </div>
 
-                {/* Intelligent Footer Control */}
-                <div className="glass-pro border-t border-white/5 p-6 sm:p-8 flex flex-col sm:flex-row items-center justify-between gap-6 sm:gap-8 z-50 mt-auto">
-                   <div className="flex items-center gap-4 sm:gap-6 text-[10px] sm:text-[11px] text-white/30 font-black uppercase tracking-[0.2em] sm:tracking-[0.3em] italic">
-                      <div className="w-10 h-10 sm:w-14 sm:h-14 rounded-[16px] sm:rounded-[20px] bg-primary/10 flex items-center justify-center text-primary border border-primary/20 shadow-primary/20 shadow-inner">
-                        <Info className="w-5 h-5 sm:w-7 sm:h-7" />
-                      </div>
-                      <div className="space-y-0.5 sm:space-y-1">
-                         <span className="block text-white/60">Hồ Sơ Diễn Viên</span>
-                         <span className="block">Bấm vào tác phẩm để tìm thấy bản phát hành tốt nhất</span>
-                      </div>
+                {/* Footer */}
+                <div className="glass-pro border-t border-white/5 p-6 sm:p-8 flex items-center justify-between mt-auto">
+                   <div className="flex items-center gap-4 text-[10px] text-white/30 font-black uppercase tracking-[0.2em] italic">
+                      <div className="w-10 h-10 rounded-2xl bg-primary/10 flex items-center justify-center text-primary"><Info className="w-5 h-5" /></div>
+                      <div className="space-y-0.5"><span className="block text-white/60">Hồ Sơ Diễn Viên JAVDB</span><span className="block">Dữ liệu được đồng bộ hóa từ máy chủ Proxy JAVDB</span></div>
                    </div>
-                   <div className="flex items-center gap-6 sm:gap-8">
-                      <div className="flex items-center gap-2 sm:gap-3 px-3 py-1.5 sm:px-5 sm:py-2 glass-pro rounded-xl border border-white/10">
-                         <TrendingUp className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-green-500" />
-                         <span className="text-[9px] sm:text-[10px] font-black text-white/40 uppercase tracking-widest italic leading-none">Ranking Active</span>
-                      </div>
-                      <span className="text-[8px] sm:text-[10px] text-white/10 font-black uppercase tracking-[0.4em] italic whitespace-nowrap">Data Sync 2.026</span>
-                   </div>
+                   <div className="hidden sm:flex items-center gap-4"><span className="text-[10px] text-white/10 font-black uppercase tracking-[0.4em] italic leading-none whitespace-nowrap">ACTIVE SYNC 2.026</span></div>
                 </div>
               </Dialog.Panel>
             </Transition.Child>
@@ -385,53 +289,30 @@ export function ActorModal({ isOpen, onClose, actor, isTopXX = false }: ActorMod
         </div>
       </Dialog>
       
-      {/* Toast and other components remain the same... */}
       <AnimatePresence>
         {toast && (
-          <motion.div 
-            initial={{ opacity: 0, x: 100, scale: 0.9, filter: "blur(10px)" }}
-            animate={{ opacity: 1, x: 0, scale: 1, filter: "blur(0px)" }}
-            exit={{ opacity: 0, x: 50, scale: 0.95, filter: "blur(10px)" }}
-            className={`fixed bottom-10 right-8 sm:right-12 z-[3000] p-8 rounded-[40px] glass-pro shadow-cinematic-2xl border border-white/10 flex flex-col gap-5 w-[calc(100vw-64px)] sm:max-w-md backdrop-blur-3xl`}
-          >
-             <div className="flex items-start gap-5">
-                <div className={`p-5 rounded-2xl ${toast.type === 'error' ? 'bg-red-500/20 text-red-500 border border-red-500/30' : 'bg-primary/20 text-primary border border-primary/30'}`}>
-                  {toast.type === 'error' ? <X className="w-7 h-7 stroke-[3px]" /> : <Search className="w-7 h-7 stroke-[3px] animate-pulse" />}
-                </div>
-                <div className="space-y-1.5 pt-1">
-                  <p className="text-lg font-black text-white italic uppercase tracking-tight leading-none shadow-2xl">{toast.message}</p>
-                  {toast.submessage && <p className="text-[12px] text-white/40 font-black uppercase tracking-widest italic">{toast.submessage}</p>}
-                </div>
+          <motion.div initial={{ opacity: 0, x: 100 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 50 }} className="fixed bottom-10 right-8 z-[3000] p-6 rounded-[32px] glass-pro shadow-cinematic-2xl border border-white/10 flex flex-col gap-4 max-w-sm backdrop-blur-3xl">
+             <div className="flex items-start gap-4">
+                <div className={`p-4 rounded-xl ${toast.type === 'error' ? 'bg-red-500/20 text-red-500' : 'bg-primary/20 text-primary'}`}>{toast.type === 'error' ? <X className="w-6 h-6" /> : <Search className="w-6 h-6 animate-pulse" />}</div>
+                <div className="space-y-1"><p className="text-base font-black text-white italic uppercase tracking-tight leading-none">{toast.message}</p>{toast.submessage && <p className="text-[10px] text-white/40 font-black uppercase tracking-widest italic">{toast.submessage}</p>}</div>
              </div>
-             
-             {toast.link && (
-                <motion.a 
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  href={toast.link} 
-                  target="_blank" 
-                  className="ml-16 py-4 px-8 rounded-2xl bg-white/5 hover:bg-primary hover:text-white text-[11px] font-black uppercase tracking-[0.3em] transition-all flex items-center justify-center gap-3 italic border border-white/5"
-                >
-                   EXTERNAL PROFILE <ChevronRight className="w-4 h-4" />
-                </motion.a>
-             )}
-             
-             <button onClick={() => setToast(null)} className="absolute top-8 right-8 p-2 text-white/20 hover:text-white transition-colors active-depth">
-                <X className="w-6 h-6" />
-             </button>
-             
-             {/* Progress indicator for toast */}
-             {toast.type === 'info' && (
-                <div className="absolute bottom-4 left-16 right-16 h-1 bg-white/5 rounded-full overflow-hidden">
-                   <motion.div initial={{ width: "0%" }} animate={{ width: "100%" }} transition={{ duration: 5, ease: "linear" }} className="h-full bg-primary" />
-                </div>
-             )}
+             <button onClick={() => setToast(null)} className="absolute top-6 right-6 text-white/20 hover:text-white transition-colors"><X className="w-5 h-5" /></button>
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Lightbox */}
+      <AnimatePresence>
+        {lightboxImage && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[4000] bg-black/95 backdrop-blur-2xl flex items-center justify-center p-4 sm:p-20 focus:outline-none" onClick={() => setLightboxImage(null)}>
+            <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }} transition={{ type: "spring", damping: 25, stiffness: 200 }} className="relative max-w-full max-h-full rounded-3xl overflow-hidden shadow-2xl border border-white/10" onClick={(e) => e.stopPropagation()}>
+              <img src={lightboxImage} className="max-w-full max-h-[85vh] object-contain" />
+              <button onClick={() => setLightboxImage(null)} className="absolute top-6 right-6 p-4 rounded-2xl bg-black/40 text-white hover:bg-primary transition-all backdrop-blur-xl border border-white/10 active-depth"><X className="w-8 h-8 stroke-[3px]" /></button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+      {/* Full JAVDB actress data: real name, measurements, height, gallery, complete filmography, codes, rating + direct JAVDB links + preview images */}
     </Transition.Root>
   );
 }
-
-
-// Click actor image → TMDB movie_credits/tv_credits modal → search site's API by title+year → navigate to /phim/[slug]

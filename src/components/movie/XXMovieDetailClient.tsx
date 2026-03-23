@@ -30,28 +30,13 @@ export default function XXMovieDetailClient({ item, slug, autoPlay }: XXMovieDet
   const [isSearchingActor, setIsSearchingActor] = useState(false);
   const [errorToast, setErrorToast] = useState<string | null>(null);
 
-  const handleActorClick = async (name: string) => {
-    try {
-      setIsSearchingActor(true);
-      setErrorToast(null);
-      const match = await searchTMDBPerson(name);
-      
-      if (match) {
-        setSelectedActor({
-          id: match.id,
-          name: name,
-          profile_path: match.profile_path
-        });
-        setIsModalOpen(true);
-      } else {
-        setErrorToast(`Không thấy dữ liệu sự nghiệp của "${name}" trên TMDB.`);
-        setTimeout(() => setErrorToast(null), 3000);
-      }
-    } catch (e) {
-      setErrorToast("Lỗi khi tìm kiếm diễn viên. Thử lại sau!");
-    } finally {
-      setIsSearchingActor(false);
-    }
+  const handleActorClick = (name: string) => {
+    setSelectedActor({
+      id: 0,
+      name: name,
+      profile_path: null
+    });
+    setIsModalOpen(true);
   };
 
   // Normalize data between sources
