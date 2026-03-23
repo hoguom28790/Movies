@@ -16,23 +16,53 @@ async function trySearchOnMirror(mirror: string, name: string) {
     "Referer": mirror
   };
 
-  // Strategies: 1. Exact, 2. Actor filter, 3. No spaces, 4. General search
+  const nameEncoded = encodeURIComponent(name);
   const queries = [
-    `${mirror}/search?q=${encodeURIComponent(name)}&f=actor`,
-    `${mirror}/search?q=${encodeURIComponent(name.replace(/\s+/g, ""))}&f=actor`,
-    `${mirror}/search?q=${encodeURIComponent(name)}&f=all`
+    `${mirror}/search?q=${nameEncoded}&f=actor`,
+    `${mirror}/search?q=${nameEncoded}&f=all`
   ];
 
   for (const queryUrl of queries) {
     try {
-      const res = await fetch(queryUrl, { headers: commonHeaders, redirect: 'follow' });
+      const res = await fetch(queryUrl, { 
+        headers: commonHeaders, 
+        redirect: 'follow',
+        next: { revalidate: 3600 } 
+      });
+      
       if (res.ok) {
         if (res.url.includes("/actors/")) {
            return { id: res.url.split("/").pop()?.split("?")[0] };
         }
+        
         const html = await res.text();
-        const actorMatch = html.match(/\/actors\/([a-zA-Z0-9]+)/);
-        if (actorMatch) return { id: actorMatch[1] };
+        // Smarter extraction: Look for actor boxes specifically
+        // JAVDB actor boxes usually contain the name and the link
+        const nameParts = name.toLowerCase().split(/[ \-]+/).filter(p => p.length > 1);
+        
+        // Find all actor links and score them
+        const actorLinks = Array.from(html.matchAll(/\/actors\/([a-zA-Z0-9]+)/g)).map(m => m[1]);
+        const uniqueLinks = Array.from(new Set(actorLinks));
+        
+        let bestId = null;
+        let maxScore = -1;
+        
+        for (const id of uniqueLinks.slice(0, 10)) {
+           // Find the surrounding text for this ID
+           const regex = new RegExp(`href="\\/actors\\/${id}"[\\s\\S]{0,300}?>([\\s\\S]*?)<\\/`, "i");
+           const match = html.match(regex);
+           if (match) {
+              const textContent = match[1].toLowerCase();
+              const score = nameParts.filter(p => textContent.includes(p)).length;
+              if (score > maxScore) {
+                 maxScore = score;
+                 bestId = id;
+              }
+              if (score === nameParts.length) break; // Perfect match
+           }
+        }
+        
+        if (bestId) return { id: bestId };
       }
     } catch (e) { continue; }
   }
@@ -48,7 +78,6 @@ export async function GET(req: NextRequest) {
   }
 
   try {
-    // Try all mirrors with multi-strategy search
     for (const mirror of JAVDB_MIRRORS) {
       const result = await trySearchOnMirror(mirror, name);
       if (result?.id) {
@@ -58,7 +87,7 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json({ error: "Actress not found across all attempts" }, { status: 404 });
   } catch (error) {
-    console.error("JAVDB Search Epic Failure:", error);
-    return NextResponse.json({ error: "Search logic failed" }, { status: 500 });
+    console.error("JAVDB Global Attack Failure:", error);
+    return NextResponse.json({ error: "Global retrieval failed" }, { status: 500 });
   }
 }
