@@ -34,6 +34,21 @@ export function ActorModal({ isOpen, onClose, actor }: ActorModalProps) {
   });
 
   const [toast, setToast] = useState<{ message: string; submessage?: string; type: "info" | "error"; link?: string } | null>(null);
+  const [isFav, setIsFav] = useState(false);
+
+  // Check favorite status when modal opens
+  React.useEffect(() => {
+    const checkFav = async () => {
+      if (user?.uid && actor?.id) {
+        const { isFavoriteActor } = await import("@/services/db");
+        const status = await isFavoriteActor(user.uid, actor.id);
+        setIsFav(status);
+      }
+    };
+    if (isOpen) {
+      checkFav();
+    }
+  }, [user?.uid, actor?.id, isOpen]);
 
   const normalize = (text: string) => {
     return text
@@ -208,14 +223,15 @@ export function ActorModal({ isOpen, onClose, actor }: ActorModalProps) {
                              name: actor.name,
                              profilePath: actor.profile_path
                            });
+                           setIsFav(isNowFav);
                            setToast({ 
                              message: isNowFav ? `Đã thêm ${actor.name} vào yêu thích ❤️` : `Đã xóa ${actor.name} khỏi yêu thích`, 
                              type: "info" 
                            });
                          }}
-                         className="absolute bottom-2 right-2 p-2.5 rounded-2xl bg-black/60 backdrop-blur-xl border border-white/10 text-white hover:text-red-500 hover:scale-110 active:scale-95 transition-all shadow-2xl z-20"
+                         className={`absolute bottom-2 right-2 p-2.5 rounded-2xl bg-black/60 backdrop-blur-xl border border-white/10 transition-all shadow-2xl z-20 hover:scale-110 active:scale-95 ${isFav ? 'text-red-500 bg-red-500/10' : 'text-white hover:text-red-500'}`}
                        >
-                          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="drop-shadow-sm">
+                          <svg width="20" height="20" viewBox="0 0 24 24" fill={isFav ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="drop-shadow-sm">
                              <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" />
                           </svg>
                        </button>
