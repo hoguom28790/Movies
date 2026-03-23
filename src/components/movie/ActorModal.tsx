@@ -82,14 +82,15 @@ export function ActorModal({ isOpen, onClose, actor, isTopXX = false }: ActorMod
 
   useEffect(() => {
     const checkFav = async () => {
-      if (user?.uid && actor?.id) {
+      const effectiveId = (isTopXX && details) ? (details as any).id : actor?.id;
+      if (user?.uid && effectiveId) {
         const { isFavoriteActor } = await import("@/services/db");
-        const status = await isFavoriteActor(user.uid, actor.id);
+        const status = await isFavoriteActor(user.uid, effectiveId);
         setIsFav(status);
       }
     };
     if (isOpen) checkFav();
-  }, [user?.uid, actor?.id, isOpen]);
+  }, [user?.uid, actor?.id, details, isOpen, isTopXX]);
 
   useEffect(() => {
     if (toast && toast.type === 'info') {
@@ -137,6 +138,34 @@ export function ActorModal({ isOpen, onClose, actor, isTopXX = false }: ActorMod
        setToast({ message: "Giao thức tìm kiếm bị gián đoạn. Thử lại sau.", type: "error" });
     } finally {
       setIsSearching(null);
+    }
+  };
+
+  const handleToggleFav = async () => {
+    if (!user) {
+      setToast({ message: "Vui lòng đăng nhập để yêu thích diễn viên.", type: "error" });
+      return;
+    }
+    if (!actor) return;
+    
+    try {
+      const { toggleFavoriteActor } = await import("@/services/db");
+      const effectiveId = (isTopXX && details) ? (details as any).id : actor.id;
+      if (!effectiveId && !isTopXX) return; // Prevent saving with 0 id for TMDB actors
+
+      const actorData = {
+        id: effectiveId,
+        name: actor.name,
+        profilePath: profilePath
+      };
+      await toggleFavoriteActor(user.uid, actorData);
+      setIsFav(!isFav);
+      setToast({ 
+        message: !isFav ? `Đã thêm ${actor.name} vào yêu thích` : `Đã gỡ ${actor.name} khỏi yêu thích`,
+        type: "info" 
+      });
+    } catch (err) {
+      setToast({ message: "Lỗi khi cập nhật yêu thích.", type: "error" });
     }
   };
 
@@ -194,9 +223,16 @@ export function ActorModal({ isOpen, onClose, actor, isTopXX = false }: ActorMod
                         </div>
                         <div className="space-y-3">
                            <h3 className="text-3xl sm:text-6xl font-black italic tracking-tighter text-white uppercase leading-none font-headline line-clamp-2 md:line-clamp-none">{actor?.name}</h3>
-                           <div className="flex flex-wrap gap-4">
+                           <div className="flex flex-wrap gap-4 items-center">
                               <span className="px-4 py-2 rounded-xl bg-primary text-white text-[9px] font-black tracking-widest uppercase italic border border-primary/20">ELITE PROFILE</span>
                               {isTopXX && <span className="px-4 py-2 rounded-xl bg-yellow-500/20 text-yellow-500 text-[9px] font-black tracking-widest uppercase italic border border-yellow-500/20 shadow-lg shadow-yellow-500/10">JAVDB DATA</span>}
+                              
+                              <button 
+                                onClick={handleToggleFav}
+                                className={`p-3 rounded-2xl border transition-all active:scale-95 flex items-center justify-center ${isFav ? 'bg-red-500 border-red-400 text-white shadow-lg shadow-red-500/40' : 'bg-white/5 border-white/10 text-white/40 hover:text-white hover:bg-white/10'}`}
+                              >
+                                <Heart className={`w-5 h-5 ${isFav ? 'fill-current' : ''}`} />
+                              </button>
                            </div>
                         </div>
                       </div>

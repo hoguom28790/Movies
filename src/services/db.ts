@@ -185,7 +185,7 @@ export async function saveAppTheme(userId: string, appTheme: "light" | "dark" | 
 }
 
 // ================= FAVORITE ACTORS =================
-export async function toggleFavoriteActor(userId: string, actor: { id: number; name: string; profilePath: string | null }) {
+export async function toggleFavoriteActor(userId: string, actor: { id: string | number; name: string; profilePath: string | null }) {
   const docId = `${userId}_${actor.id}`;
   const docRef = doc(db, "favorite_actors", docId);
   const snap = await getDoc(docRef);
@@ -209,7 +209,7 @@ export async function getUserFavoriteActors(userId: string) {
   return snap.docs.map(d => ({ ...d.data() })).sort((a: any, b: any) => b.addedAt - a.addedAt);
 }
 
-export async function isFavoriteActor(userId: string, actorId: number): Promise<boolean> {
+export async function isFavoriteActor(userId: string, actorId: string | number): Promise<boolean> {
   const docId = `${userId}_${actorId}`;
   const snap = await getDoc(doc(db, "favorite_actors", docId));
   return snap.exists();
