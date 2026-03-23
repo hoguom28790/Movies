@@ -2,8 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 
 const JAVDB_BASE = "https://javdb.com";
 
-export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
-  const id = params.id;
+export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
 
   if (!id) {
     return NextResponse.json({ error: "ID is required" }, { status: 400 });
