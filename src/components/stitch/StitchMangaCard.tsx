@@ -130,7 +130,7 @@ export function StitchMangaCard({
                             {title}
                         </h3>
                         <p className="text-white/30 text-[13px] font-black uppercase tracking-widest line-clamp-2 italic leading-relaxed">
-                            {description || "Khám phá câu chuyện hấp dẫn trong tác phẩm này, được tinh chỉnh chuẩn cinematic bởi Hồ Truyện Pro Max."}
+                            {description || "Khám phá câu chuyện hấp dẫn trong tác phẩm này, được tinh chỉnh chuẩn cinematic bởi Hồ Truyện Premium."}
                         </p>
                         <div className="mt-4 flex items-center justify-between">
                              <span className="text-6xl font-black text-white/5 italic font-headline -translate-x-4">#PREMIUM</span>

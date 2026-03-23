@@ -35,12 +35,12 @@
   --font-body: var(--font-inter);
   --font-label: var(--font-inter);
 
-  /* Pro Max Elevations */
+  /* Premium Elevations */
   --shadow-cinematic: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
   --shadow-cinematic-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
   --shadow-cinematic-xl: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
   
-  /* Pro Max Glassmorphism Tokens */
+  /* Premium Glassmorphism Tokens */
   --glass-bg: oklch(100% 0 0 / 5%);
   --glass-border: oklch(100% 0 0 / 10%);
   --glass-blur: 24px;
@@ -71,7 +71,7 @@
   --banner-overlay-dark: linear-gradient(to top, hsl(222.2 84% 4.9% / 100%) 0%, hsl(222.2 84% 4.9% / 60%) 40%, transparent 100%);
   --banner-overlay: var(--banner-overlay-light);
   
-  /* Pro Max Semantic Tokens */
+  /* Premium Semantic Tokens */
   --surface-tonal: 210 40% 96.1%;
   --surface-tonal-foreground: 222.2 47.4% 11.2%;
 }
@@ -188,7 +188,7 @@ body {
 .pb-safe { padding-bottom: max(1rem, env(safe-area-inset-bottom, 0px)); }
 .pt-safe { padding-top: max(1rem, env(safe-area-inset-top, 0px)); }
 
-/* Premium Card Glass Effect - Pro Max Edition */
+/* Premium Card Glass Effect */
 .glass {
   background: var(--glass-bg);
   backdrop-filter: blur(var(--glass-blur));
@@ -390,7 +390,7 @@ html.is-lg-tv {
     max-width: 95% !important;
   }
   
-  /* Optimize Grid for Tablet Landscape (Pro Max) */
+  /* Optimize Grid for Tablet Landscape */
   .grid-cols-2 { grid-template-columns: repeat(4, minmax(0, 1fr)) !important; }
   .sm\:grid-cols-3 { grid-template-columns: repeat(5, minmax(0, 1fr)) !important; }
   .md\:grid-cols-4 { grid-template-columns: repeat(6, minmax(0, 1fr)) !important; }

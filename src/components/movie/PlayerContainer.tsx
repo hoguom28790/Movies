@@ -347,7 +347,7 @@ export function PlayerContainer({ url, isHls, rawEmbedUrl, nextEpisodeUrl, movie
         allowFullScreen
       />
 
-      {/* Skip Intro Overlay - Pro Max Cinematic */}
+      {/* Skip Intro Overlay - Premium Cinematic */}
       <AnimatePresence>
         {skipShow && (
           <motion.div

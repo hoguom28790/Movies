@@ -85,7 +85,7 @@ export function HeroSlider({ movies }: HeroSliderProps) {
               className="flex items-center gap-3 px-6 py-2 glass-pro rounded-full border border-white/10 shadow-cinematic-lg"
             >
                <Sparkles className="w-4 h-4 text-primary animate-pulse" />
-               <span className="text-[11px] font-black uppercase tracking-[0.4em] italic text-white/80">Pro Max Featured</span>
+               <span className="text-[11px] font-black uppercase tracking-[0.4em] italic text-white/80">Nổi Bật</span>
             </motion.div>
 
             <div className="space-y-4">

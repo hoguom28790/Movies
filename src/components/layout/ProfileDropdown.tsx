@@ -61,7 +61,7 @@ export function ProfileDropdown() {
                            <img src={user.photoURL || ""} alt="" className="w-full h-full object-cover" />
                         </div>
                         <div className="space-y-1 overflow-hidden">
-                           <p className="text-[10px] font-black uppercase tracking-[0.3em] text-primary/60 italic leading-none">Pro Member</p>
+                           <p className="text-[10px] font-black uppercase tracking-[0.3em] text-primary/60 italic leading-none">Thành viên</p>
                            <p className="text-sm font-black text-foreground truncate max-w-full italic uppercase tracking-tight">{user.displayName || user.email?.split('@')[0]}</p>
                         </div>
                     </div>
@@ -185,7 +185,7 @@ export function ProfileDropdown() {
 
                     <div className="px-6 py-4 bg-foreground/[0.05] border-t border-white/5 flex items-center justify-between">
                         <p className="text-[9px] text-foreground/20 italic font-black uppercase tracking-[0.2em]">
-                           PRO MAX UI 2026
+                           PREMIUM UI 2026
                         </p>
                         <Heart className="w-3.5 h-3.5 text-primary/40 animate-pulse fill-current" />
                     </div>

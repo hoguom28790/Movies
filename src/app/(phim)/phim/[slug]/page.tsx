@@ -1,3 +1,4 @@
+// Fixed TopXX password format + Removed pro max words + Fixed modal scroll header on both favorites and detail page + iPhone/iPad optimization
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";

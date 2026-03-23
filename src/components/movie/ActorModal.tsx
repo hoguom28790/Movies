@@ -1,3 +1,4 @@
+// Fixed TopXX password format + Removed pro max words + Fixed modal scroll header on both favorites and detail page + iPhone/iPad optimization
 "use client";
 
 import React, { useState, Fragment, useEffect } from "react";
@@ -25,6 +26,9 @@ export function ActorModal({ isOpen, onClose, actor, isTopXX = false }: ActorMod
   const { user } = useAuth();
   const router = useRouter();
   const [isSearching, setIsSearching] = useState<string | null>(null);
+
+  // Profile path mapping (handle both profile_path and profilePath)
+  const profilePath = actor ? (('profile_path' in actor ? actor.profile_path : (actor as any).profilePath) || null) : null;
 
   const { data: details, isLoading } = useQuery({
     queryKey: ["actor", actor?.id],
@@ -96,7 +100,7 @@ export function ActorModal({ isOpen, onClose, actor, isTopXX = false }: ActorMod
           if (match) {
              setToast(null);
              onClose();
-             router.push(`/v2k9r5w8m3x7n1p4q0z6/phim/${match.slug}`);
+             router.push(`/topxx/phim/${match.slug}`);
              return;
           }
       } else {
@@ -133,8 +137,8 @@ export function ActorModal({ isOpen, onClose, actor, isTopXX = false }: ActorMod
           }
       }
         setToast({ 
-          message: "Tác phẩm này hiện chưa có bản Pro Max.", 
-          submessage: "Hệ thống đang cập nhật, bạn có thể xem kho phim chính.",
+          message: "Tác phẩm này hiện chưa có bản phát hành tại đây.", 
+          submessage: "Hệ thống đang cập nhật, bạn có thể xem các phim khác.",
           type: "error",
           link: `https://www.themoviedb.org/${isTv ? 'tv' : 'movie'}/${tmdbId}`
         });
@@ -145,44 +149,44 @@ export function ActorModal({ isOpen, onClose, actor, isTopXX = false }: ActorMod
     }
   };
 
-  const MovieCard = ({ item, isTv, index }: { item: any; isTv: boolean; index: number }) => (
+  const MovieCardComponent = ({ item, isTv, index }: { item: any; isTv: boolean; index: number }) => (
     <motion.button
       initial={{ opacity: 0, y: 30, filter: "blur(10px)" }}
       animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
       transition={{ duration: 0.8, delay: Math.min(index * 0.04, 0.4), ease: [0.16, 1, 0.3, 1] }}
       onClick={() => handleMovieClick(item.title || item.name, (item.release_date || item.first_air_date)?.split("-")[0], item.id, isTv)}
-      className="group relative flex flex-col gap-4 text-left outline-none focus:ring-4 focus:ring-primary/20 rounded-[32px] overflow-hidden select-none active-depth"
+      className="group relative flex flex-col gap-3 sm:gap-4 text-left outline-none rounded-[32px] overflow-hidden select-none active-depth"
     >
-      <div className="relative aspect-[2/3] rounded-[28px] overflow-hidden bg-[#141416] shadow-cinematic-xl border border-white/5">
+      <div className="relative aspect-[2/3] rounded-[24px] sm:rounded-[28px] overflow-hidden bg-[#141416] shadow-cinematic-xl border border-white/5">
         <img
           src={getTMDBImageUrl(item.poster_path, 'w342') || "/placeholder-poster.png"}
           alt={item.title || item.name}
-          className="w-full h-full object-cover transition-all duration-1000 group-hover:scale-110 group-hover:brightness-50 group-hover:rotate-[-1deg]"
+          className="w-full h-full object-cover transition-all duration-1000 group-hover:scale-110 group-hover:brightness-50"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent flex flex-col justify-end p-6 opacity-0 group-hover:opacity-100 transition-all duration-700 backdrop-blur-[2px]">
-          <div className="flex items-center gap-4">
-             <div className="w-12 h-12 rounded-2xl bg-primary flex items-center justify-center text-white shadow-cinematic-lg group-hover:scale-110 transition-transform duration-500">
-                <Play className="w-6 h-6 fill-current translate-x-0.5" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent flex flex-col justify-end p-4 sm:p-6 opacity-0 group-hover:opacity-100 transition-all duration-700 backdrop-blur-[2px]">
+          <div className="flex items-center gap-3 sm:gap-4">
+             <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-primary flex items-center justify-center text-white shadow-cinematic-lg transition-transform duration-500">
+                <Play className="w-5 h-5 sm:w-6 sm:h-6 fill-current translate-x-0.5" />
              </div>
              <div className="space-y-0.5">
-                <span className="block text-[10px] font-black uppercase tracking-[0.3em] text-white/60 italic drop-shadow-md">Unlock Now</span>
-                <span className="block text-[12px] font-black uppercase tracking-[0.1em] text-white italic drop-shadow-md">XEM NGAY</span>
+                <span className="block text-[8px] sm:text-[10px] font-black uppercase tracking-[0.3em] text-white/60 italic">PLAY NOW</span>
+                <span className="block text-[10px] sm:text-[12px] font-black uppercase tracking-[0.1em] text-white italic">XEM NGAY</span>
              </div>
           </div>
         </div>
-        <div className="absolute top-4 right-4 px-3 py-1.5 glass-pro rounded-xl flex items-center gap-1.5 shadow-2xl border border-white/10">
-          <Star className="w-3.5 h-3.5 text-primary fill-primary" />
-          <span className="text-[12px] font-black text-white">{item.vote_average?.toFixed(1) || "9.5"}</span>
+        <div className="absolute top-3 right-3 sm:top-4 sm:right-4 px-2 py-1 sm:px-3 sm:py-1.5 glass-pro rounded-lg sm:rounded-xl flex items-center gap-1 shadow-2xl border border-white/10">
+          <Star className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-primary fill-primary" />
+          <span className="text-[10px] sm:text-[12px] font-black text-white">{item.vote_average?.toFixed(1) || "9.5"}</span>
         </div>
       </div>
       
-      <div className="space-y-1 px-2 transition-transform duration-500 group-hover:translate-x-1">
-        <h5 className="text-[15px] font-black text-white group-hover:text-primary transition-colors line-clamp-1 italic uppercase tracking-tight font-headline">
+      <div className="space-y-0.5 sm:space-y-1 px-1 sm:px-2">
+        <h5 className="text-[13px] sm:text-[15px] font-black text-white group-hover:text-primary transition-colors line-clamp-1 italic uppercase tracking-tight font-headline">
           {item.title || item.name}
         </h5>
-        <div className="flex items-center justify-between text-[11px] text-white/30 font-black uppercase tracking-widest italic overflow-hidden">
-          <span className="line-clamp-1">{item.character || "N/A"}</span>
-          <span className="flex-shrink-0 text-primary/60 ml-2">{(item.release_date || item.first_air_date)?.split("-")[0]}</span>
+        <div className="flex items-center justify-between text-[9px] sm:text-[11px] text-white/30 font-black uppercase tracking-widest italic">
+          <span className="line-clamp-1 max-w-[70%]">{item.character || "N/A"}</span>
+          <span className="flex-shrink-0 text-primary/60">{(item.release_date || item.first_air_date)?.split("-")[0]}</span>
         </div>
       </div>
 
@@ -194,8 +198,8 @@ export function ActorModal({ isOpen, onClose, actor, isTopXX = false }: ActorMod
             exit={{ opacity: 0 }}
             className="absolute inset-0 bg-primary/20 backdrop-blur-xl flex flex-col items-center justify-center z-50 rounded-[32px] gap-4"
           >
-             <div className="w-14 h-14 border-4 border-white/10 border-t-primary rounded-full animate-spin shadow-[0_0_20px_var(--primary)]" />
-             <span className="text-[10px] font-bold text-white uppercase tracking-[0.4em] italic animate-pulse">Syncing...</span>
+             <div className="w-10 h-10 sm:w-14 sm:h-14 border-4 border-white/10 border-t-primary rounded-full animate-spin shadow-[0_0_20px_var(--primary)]" />
+             <span className="text-[9px] sm:text-[10px] font-bold text-white uppercase tracking-[0.4em] italic animate-pulse">Syncing...</span>
           </motion.div>
         )}
       </AnimatePresence>
@@ -217,7 +221,7 @@ export function ActorModal({ isOpen, onClose, actor, isTopXX = false }: ActorMod
           <div className="fixed inset-0 bg-[#050505]/95 backdrop-blur-3xl transition-opacity" />
         </Transition.Child>
 
-        <div className="fixed inset-0 z-10 overflow-y-auto pt-safe pb-safe">
+        <div className="fixed inset-0 z-10 overflow-y-auto pt-safe pb-safe no-scrollbar overscroll-behavior-contain">
           <div className="flex min-h-full items-center justify-center p-0 text-center sm:p-8">
             <Transition.Child
               as={Fragment}
@@ -231,27 +235,27 @@ export function ActorModal({ isOpen, onClose, actor, isTopXX = false }: ActorMod
               <Dialog.Panel className="relative w-full max-w-7xl transform overflow-hidden bg-[#0a0a0b] text-left transition-all sm:rounded-[64px] border border-white/5 shadow-cinematic-2xl flex flex-col h-[100vh] sm:h-[90vh] perspective-1000">
                 
                 {/* Neural Header Architecture */}
-                <div className="relative h-[350px] sm:h-[500px] flex-shrink-0 bg-cover bg-center overflow-hidden" 
+                <div className="relative h-[280px] sm:h-[450px] md:h-[500px] flex-shrink-0 bg-cover bg-center overflow-hidden" 
                      style={{ backgroundImage: details?.movie_credits?.cast[0]?.backdrop_path ? `url(${getTMDBImageUrl(details.movie_credits.cast[0].backdrop_path, 'original')})` : 'none' }}>
                   
                   <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 2 }} className="absolute inset-0 bg-gradient-to-t from-[#0a0a0b] via-[#0a0a0b]/40 to-transparent" />
                   <div className="absolute inset-0 bg-black/10 backdrop-blur-[1px]" />
                   
-                  <button onClick={onClose} className="absolute top-8 right-8 p-5 rounded-[24px] glass-pro text-white hover:bg-primary hover:scale-110 active-depth transition-all z-30 border border-white/10 group">
-                    <X className="w-8 h-8 stroke-[3px] group-hover:rotate-90 transition-transform duration-500" />
+                  <button onClick={onClose} className="absolute top-6 right-6 sm:top-8 sm:right-8 p-3 sm:p-5 rounded-[20px] sm:rounded-[24px] glass-pro text-white hover:bg-primary hover:scale-110 active-depth transition-all z-30 border border-white/10 group">
+                    <X className="w-6 h-6 sm:w-8 sm:h-8 stroke-[3px] group-hover:rotate-90 transition-transform duration-500" />
                   </button>
 
-                  <div className="absolute bottom-0 left-0 w-full p-10 sm:p-20 flex flex-col sm:flex-row items-end gap-10">
+                  <div className="absolute bottom-0 left-0 w-full p-6 sm:p-12 md:p-20 flex flex-col sm:flex-row items-end gap-6 sm:gap-10">
                     <motion.div 
-                      initial={{ scale: 0.5, opacity: 0, rotate: -10 }}
+                      initial={{ scale: 0.5, opacity: 0, rotate: -5 }}
                       animate={{ scale: 1, opacity: 1, rotate: 0 }}
                       transition={{ type: "spring", damping: 15, stiffness: 100, delay: 0.2 }}
-                      className="w-48 h-48 sm:w-64 sm:h-64 rounded-[56px] overflow-hidden border-[12px] border-[#0a0a0b] shadow-cinematic-2xl flex-shrink-0 relative group ring-1 ring-white/10"
+                      className="w-32 h-32 sm:w-48 sm:h-48 md:w-64 md:h-64 rounded-[40px] sm:rounded-[56px] overflow-hidden border-[6px] sm:border-[12px] border-[#0a0a0b] shadow-cinematic-2xl flex-shrink-0 relative group ring-1 ring-white/10"
                     >
                        <img 
-                         src={getTMDBImageUrl(actor?.profile_path || null, 'w500') || ""} 
+                         src={getTMDBImageUrl(profilePath, 'w500') || "/placeholder-actor.png"} 
                          alt={actor?.name}
-                         className="w-full h-full object-cover transition-all duration-1000 group-hover:scale-110 group-hover:rotate-2"
+                         className="w-full h-full object-cover transition-all duration-1000 group-hover:scale-110"
                        />
                        
                        <button 
@@ -262,7 +266,7 @@ export function ActorModal({ isOpen, onClose, actor, isTopXX = false }: ActorMod
                            const isNowFav = await toggleFavoriteActor(user.uid, {
                              id: actor.id,
                              name: actor.name,
-                             profilePath: actor.profile_path
+                             profilePath: profilePath
                            });
                            setIsFav(isNowFav);
                            setToast({ 
@@ -270,35 +274,35 @@ export function ActorModal({ isOpen, onClose, actor, isTopXX = false }: ActorMod
                              type: "info" 
                            });
                          }}
-                         className={`absolute bottom-6 right-6 p-5 rounded-[24px] backdrop-blur-3xl border border-white/20 transition-all shadow-cinematic-xl z-20 hover:scale-125 active-depth ${isFav ? 'text-red-500 bg-red-500/20' : 'text-white bg-black/40 hover:text-red-500'}`}
+                         className={`absolute bottom-3 right-3 sm:bottom-6 sm:right-6 p-3 sm:p-5 rounded-[16px] sm:rounded-[24px] backdrop-blur-3xl border border-white/20 transition-all shadow-cinematic-xl z-20 hover:scale-125 active-depth ${isFav ? 'text-red-500 bg-red-500/20' : 'text-white bg-black/40 hover:text-red-500'}`}
                        >
-                          <Heart className="w-8 h-8" fill={isFav ? "currentColor" : "none"} strokeWidth={3} />
+                          <Heart className="w-5 h-5 sm:w-8 sm:h-8" fill={isFav ? "currentColor" : "none"} strokeWidth={3} />
                        </button>
                     </motion.div>
                     
-                    <div className="flex-grow space-y-6">
-                       <div className="flex flex-col gap-2">
+                    <div className="flex-grow space-y-3 sm:space-y-6">
+                       <div className="flex flex-col gap-1 sm:gap-2">
                           <motion.div
                             initial={{ opacity: 0, scale: 0.8 }}
                             animate={{ opacity: 1, scale: 1 }}
                             transition={{ delay: 0.4 }}
-                            className="flex items-center gap-2 px-4 py-1.5 glass-pro rounded-full self-start border border-white/10"
+                            className="flex items-center gap-2 px-3 py-1 sm:px-4 sm:py-1.5 glass-pro rounded-full self-start border border-white/10"
                           >
-                             <Sparkles className="w-4 h-4 text-primary animate-pulse" />
-                             <span className="text-[10px] font-black uppercase tracking-[0.3em] text-white/60 italic">Elite Actor Profile</span>
+                             <Sparkles className="w-3 h-3 sm:w-4 sm:h-4 text-primary animate-pulse" />
+                             <span className="text-[8px] sm:text-[10px] font-black uppercase tracking-[0.3em] text-white/60 italic">Elite Actor Profile</span>
                           </motion.div>
                           <motion.h3 
                             initial={{ opacity: 0, y: 30 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ delay: 0.5, duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-                            className="text-5xl sm:text-8xl font-black italic tracking-tighter text-white drop-shadow-2xl uppercase leading-[0.85] font-headline skew-x-[-2deg]"
+                            className="text-3xl sm:text-6xl md:text-8xl font-black italic tracking-tighter text-white drop-shadow-2xl uppercase leading-[0.85] font-headline skew-x-[-2deg]"
                           >
                              {actor?.name}
                           </motion.h3>
                        </div>
-                       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.7 }} className="flex flex-wrap gap-5">
-                          <span className="px-6 py-2.5 rounded-2xl bg-primary text-white text-[11px] font-black tracking-[0.25em] uppercase shadow-cinematic-lg italic border border-primary/20">THEO DÕI NGAY</span>
-                          <span className="px-6 py-2.5 rounded-2xl glass-pro text-white/60 text-[11px] font-black tracking-[0.2em] uppercase italic border border-white/10">
+                       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.7 }} className="flex flex-wrap gap-3 sm:gap-5">
+                          <span className="px-4 py-2 sm:px-6 sm:py-2.5 rounded-xl sm:rounded-2xl bg-primary text-white text-[9px] sm:text-[11px] font-black tracking-[0.25em] uppercase shadow-cinematic-lg italic border border-primary/20">THEO DÕI NGAY</span>
+                          <span className="px-4 py-2 sm:px-6 sm:py-2.5 rounded-xl sm:rounded-2xl glass-pro text-white/60 text-[9px] sm:text-[11px] font-black tracking-[0.2em] uppercase italic border border-white/10">
                             {details ? `${details.movie_credits?.cast?.length + (details.tv_credits?.cast?.length || 0)} ARCHIVES FOUND` : "LOADING DATA..."}
                           </span>
                        </motion.div>
@@ -306,47 +310,48 @@ export function ActorModal({ isOpen, onClose, actor, isTopXX = false }: ActorMod
                   </div>
                 </div>
 
-                <div className="flex-grow overflow-y-auto px-10 sm:px-20 py-12 no-scrollbar scroll-smooth">
+                <div className="flex-grow overflow-y-auto px-6 sm:px-12 md:px-20 py-8 sm:py-12 no-scrollbar scroll-smooth relative">
                   {isLoading ? (
-                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-10">
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-6 sm:gap-10">
                        {[...Array(12)].map((_, i) => (
-                         <div key={i} className="space-y-5 animate-pulse">
-                            <div className="aspect-[2/3] bg-white/5 rounded-[40px]" />
-                            <div className="h-6 bg-white/5 rounded-xl w-4/5" />
-                            <div className="h-4 bg-white/5 rounded-xl w-3/5" />
+                         <div key={i} className="space-y-4 sm:space-y-5 animate-pulse">
+                            <div className="aspect-[2/3] bg-white/5 rounded-[32px] sm:rounded-[40px]" />
+                            <div className="h-5 sm:h-6 bg-white/5 rounded-xl w-4/5" />
+                            <div className="h-3 sm:h-4 bg-white/5 rounded-xl w-3/5" />
                          </div>
                        ))}
                     </div>
                   ) : (
                     <Tab.Group>
-                       <Tab.List className="flex gap-12 border-b border-white/5 mb-12 overflow-x-auto pb-1 no-scrollbar sticky top-0 bg-[#0a0a0b]/80 backdrop-blur-3xl z-40 py-4">
-                          <Tab className={({ selected }) => `group/tab pb-6 text-[14px] font-black tracking-[0.3em] outline-none transition-all uppercase italic flex-shrink-0 flex items-center gap-4 ${selected ? "text-primary border-b-[6px] border-primary" : "text-white/20 hover:text-white/60" }`}>
+                       {/* Header Tab - Fixed sticky correctly with high z-index and explicit bg */}
+                       <Tab.List className="flex gap-8 sm:gap-12 border-b border-white/5 mb-8 sm:mb-12 overflow-x-auto pb-1 no-scrollbar sticky -top-1 bg-[#0a0a0b] z-[60] py-4 transition-all -mx-6 sm:-mx-12 md:-mx-20 px-6 sm:px-12 md:px-20 translate-y-[-1px]">
+                          <Tab className={({ selected }) => `group/tab pb-4 text-[12px] sm:text-[14px] font-black tracking-[0.2em] sm:tracking-[0.3em] outline-none transition-all uppercase italic flex-shrink-0 flex items-center gap-3 sm:gap-4 ${selected ? "text-primary border-b-[4px] sm:border-b-[6px] border-primary" : "text-white/20 hover:text-white/60" }`}>
                             {({ selected }) => (
-                               <div className="flex items-center gap-4">
-                                  <Film className={`w-6 h-6 transition-transform group-hover/tab:-rotate-12 ${selected ? "animate-pulse" : ""}`} /> CINEMA PROJECTS
+                               <div className="flex items-center gap-3 sm:gap-4">
+                                  <Film className={`w-5 h-5 sm:w-6 sm:h-6 transition-transform group-hover/tab:-rotate-12 ${selected ? "animate-pulse" : ""}`} /> PHIM ĐIỆN ẢNH
                                </div>
                             )}
                           </Tab>
-                          <Tab className={({ selected }) => `group/tab pb-6 text-[14px] font-black tracking-[0.3em] outline-none transition-all uppercase italic flex-shrink-0 flex items-center gap-4 ${selected ? "text-primary border-b-[6px] border-primary" : "text-white/20 hover:text-white/60" }`}>
+                          <Tab className={({ selected }) => `group/tab pb-4 text-[12px] sm:text-[14px] font-black tracking-[0.2em] sm:tracking-[0.3em] outline-none transition-all uppercase italic flex-shrink-0 flex items-center gap-3 sm:gap-4 ${selected ? "text-primary border-b-[4px] sm:border-b-[6px] border-primary" : "text-white/20 hover:text-white/60" }`}>
                             {({ selected }) => (
-                               <div className="flex items-center gap-4">
-                                  <Tv className={`w-6 h-6 transition-transform group-hover/tab:rotate-12 ${selected ? "animate-pulse" : ""}`} /> SERIES LEGACY
+                               <div className="flex items-center gap-3 sm:gap-4">
+                                  <Tv className={`w-5 h-5 sm:w-6 sm:h-6 transition-transform group-hover/tab:rotate-12 ${selected ? "animate-pulse" : ""}`} /> SERIES TRUYỀN HÌNH
                                </div>
                             )}
                           </Tab>
                        </Tab.List>
                        <Tab.Panels className="focus:outline-none">
                           <Tab.Panel className="focus:outline-none">
-                             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-x-10 gap-y-16">
-                                {details?.movie_credits?.cast?.sort((a: any, b: any) => (b.popularity || 0) - (a.popularity || 0)).slice(0, 48).map((m: any, idx: number) => (
-                                  <MovieCard key={`${m.id}-${idx}`} item={m} isTv={false} index={idx} />
+                             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-x-6 gap-y-10 sm:gap-x-10 sm:gap-y-16 pb-20">
+                                {details?.movie_credits?.cast?.sort((a: any, b: any) => (b.popularity || 0) - (a.popularity || 0)).slice(0, 60).map((m: any, idx: number) => (
+                                  <MovieCardComponent key={`${m.id}-${idx}`} item={m} isTv={false} index={idx} />
                                 ))}
                              </div>
                           </Tab.Panel>
                           <Tab.Panel className="focus:outline-none">
-                             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-x-10 gap-y-16">
-                                {details?.tv_credits?.cast?.sort((a: any, b: any) => (b.popularity || 0) - (a.popularity || 0)).slice(0, 48).map((m: any, idx: number) => (
-                                  <MovieCard key={`${m.id}-${idx}`} item={m} isTv={true} index={idx} />
+                             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-x-6 gap-y-10 sm:gap-x-10 sm:gap-y-16 pb-20">
+                                {details?.tv_credits?.cast?.sort((a: any, b: any) => (b.popularity || 0) - (a.popularity || 0)).slice(0, 60).map((m: any, idx: number) => (
+                                  <MovieCardComponent key={`${m.id}-${idx}`} item={m} isTv={true} index={idx} />
                                 ))}
                              </div>
                           </Tab.Panel>
@@ -356,22 +361,22 @@ export function ActorModal({ isOpen, onClose, actor, isTopXX = false }: ActorMod
                 </div>
 
                 {/* Intelligent Footer Control */}
-                <div className="glass-pro border-t border-white/5 p-8 flex flex-col sm:flex-row items-center justify-between gap-8 z-50">
-                   <div className="flex items-center gap-6 text-[11px] text-white/30 font-black uppercase tracking-[0.3em] italic">
-                      <div className="w-14 h-14 rounded-[20px] bg-primary/10 flex items-center justify-center text-primary border border-primary/20 shadow-primary/20 shadow-inner">
-                        <Info className="w-7 h-7" />
+                <div className="glass-pro border-t border-white/5 p-6 sm:p-8 flex flex-col sm:flex-row items-center justify-between gap-6 sm:gap-8 z-50 mt-auto">
+                   <div className="flex items-center gap-4 sm:gap-6 text-[10px] sm:text-[11px] text-white/30 font-black uppercase tracking-[0.2em] sm:tracking-[0.3em] italic">
+                      <div className="w-10 h-10 sm:w-14 sm:h-14 rounded-[16px] sm:rounded-[20px] bg-primary/10 flex items-center justify-center text-primary border border-primary/20 shadow-primary/20 shadow-inner">
+                        <Info className="w-5 h-5 sm:w-7 sm:h-7" />
                       </div>
-                      <div className="space-y-1">
-                         <span className="block text-white/60">Pro Max Interface Protocol</span>
-                         <span className="block">Bấm vào tác phẩm để tìm thấy bản phát hành cao cấp nhất</span>
+                      <div className="space-y-0.5 sm:space-y-1">
+                         <span className="block text-white/60">Hồ Sơ Diễn Viên</span>
+                         <span className="block">Bấm vào tác phẩm để tìm thấy bản phát hành tốt nhất</span>
                       </div>
                    </div>
-                   <div className="flex items-center gap-8">
-                      <div className="flex items-center gap-3 px-5 py-2 glass-pro rounded-xl border border-white/10">
-                         <TrendingUp className="w-4 h-4 text-green-500" />
-                         <span className="text-[10px] font-black text-white/40 uppercase tracking-widest italic leading-none">Popularity Ranking Active</span>
+                   <div className="flex items-center gap-6 sm:gap-8">
+                      <div className="flex items-center gap-2 sm:gap-3 px-3 py-1.5 sm:px-5 sm:py-2 glass-pro rounded-xl border border-white/10">
+                         <TrendingUp className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-green-500" />
+                         <span className="text-[9px] sm:text-[10px] font-black text-white/40 uppercase tracking-widest italic leading-none">Ranking Active</span>
                       </div>
-                      <span className="text-[10px] text-white/10 font-black uppercase tracking-[0.4em] italic">Data Sync v.2.026</span>
+                      <span className="text-[8px] sm:text-[10px] text-white/10 font-black uppercase tracking-[0.4em] italic whitespace-nowrap">Data Sync 2.026</span>
                    </div>
                 </div>
               </Dialog.Panel>
@@ -379,7 +384,8 @@ export function ActorModal({ isOpen, onClose, actor, isTopXX = false }: ActorMod
           </div>
         </div>
       </Dialog>
-
+      
+      {/* Toast and other components remain the same... */}
       <AnimatePresence>
         {toast && (
           <motion.div 

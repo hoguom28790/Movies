@@ -375,7 +375,7 @@ export function ComicReader({ slug, title, posterUrl, chapter, images: initialIm
         </div>
       )}
 
-      {/* Bottom Interface - Pro Max Cinematic */}
+      {/* Bottom Interface - Premium Cinematic */}
       <AnimatePresence>
         {showNav && (
           <motion.div 

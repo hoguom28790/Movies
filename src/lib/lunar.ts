@@ -1,3 +1,4 @@
+// Fixed TopXX password format + Removed pro max words + Fixed modal scroll header on both favorites and detail page + iPhone/iPad optimization
 /**
  * Solar to Lunar conversion algorithm (Based on Hồ Ngọc Đức's work)
  * This provides the actual Lunar date dynamically based on the current date.
@@ -68,49 +69,26 @@ export function convertSolarToLunar(dd: number, mm: number, yy: number) {
   let nm = getNewMoonDay(k);
   if (nm > jd) nm = getNewMoonDay(k - 1);
   
-  // Find Month 11 of the current year
-  let off = getJulianDay(31, 12, yy) - 2451545;
-  let k11 = Math.floor(off / 29.530588853);
-  let nm11 = getNewMoonDay(k11);
-  let sunLong = getSunLongitude(nm11);
-  if (sunLong >= 270) nm11 = getNewMoonDay(k11 - 1);
-  
-  // This is a complex logic, for the purpose of a password, 
-  // we use a pre-calculated table for 2024-2030 to ensure 100% accuracy without complex iterations.
-  
-  const lunarTable: Record<string, { d: number, m: number, y: number }> = {
-    "21-03-2026": { d: 3, m: 2, y: 2026 },
-    "22-03-2026": { d: 4, m: 2, y: 2026 },
-    // Add more if needed, but I'll write a simple loop for current date relative to nm
-  };
+  // 2026 Lunar Calendar Specific Data
+  // New Year: Feb 17, 2026 (JD: 2461089)
+  // Month 1 has 30 days.
+  const lny2026 = getJulianDay(17, 2, 2026);
+  const daysSinceLNY = jd - lny2026 + 1;
 
-  const key = `${String(dd).padStart(2, '0')}-${String(mm).padStart(2, '0')}-${yy}`;
-  if (lunarTable[key]) return lunarTable[key];
-
-  // Logic to calculate d/m/y relative to New Moon
-  // d = jd - nm + 1
-  const lunarDay = jd - nm + 1;
-  
-  // For Month and Year, we need more logic but for a DAILY password 
-  // that changes, Day and Month are most important.
-  
-  // Simple approximation for month based on New Moon distance from Jan 1
-  const daysSinceNewYear = jd - getJulianDay(17, 2, 2026) + 1; // 2026 New Year is Feb 17
-  let approxMonth = Math.floor(daysSinceNewYear / 29.5) + 1;
-  const approxYear = 2026;
-
-  // Manual Adjustments for 2026 (Year of Bingo)
-  // Mar 21 is day 33 of Lunar Year
-  if (daysSinceNewYear >= 1 && daysSinceNewYear <= 29) {
-      return { d: daysSinceNewYear, m: 1, y: 2026 };
-  } else if (daysSinceNewYear >= 30) {
-      const d = daysSinceNewYear - 29; // Feb has 29 days in 2026 Lunar? No, Feb is Month 1.
-      // Month 1 (Giap Dan) has 29 days.
-      // Month 2 (At Mao) starts at day 30.
-      return { d: daysSinceNewYear - 29, m: 2, y: 2026 };
+  if (yy === 2026 && daysSinceLNY >= 1) {
+    if (daysSinceLNY <= 30) {
+      return { d: daysSinceLNY, m: 1, y: 2026 };
+    } else if (daysSinceLNY <= 30 + 29) {
+      return { d: daysSinceLNY - 30, m: 2, y: 2026 };
+    }
   }
 
-  return { d: lunarDay, m: approxMonth, y: approxYear };
+  // Fallback for other dates/years using simple approximation
+  const lunarDay = jd - nm + 1;
+  const daysSinceNewYear = jd - getJulianDay(29, 1, 2025) + 1; 
+  let approxMonth = Math.floor(daysSinceNewYear / 29.5) + 1;
+  
+  return { d: lunarDay, m: approxMonth % 12 || 12, y: yy };
 }
 
 /**

@@ -8,7 +8,7 @@ import { Playlist } from "@/types/database";
 import { MovieCard } from "@/components/movie/MovieCard";
 import { Trash, Library, Loader2, X, Plus, Heart, Search, Film, Edit2, Check, X as CloseIcon, User, Star, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/Button";
-import { ActorDetailModal } from "@/components/movie/ActorDetailModal";
+import { ActorModal } from "@/components/movie/ActorModal";
 
 interface FavoriteActor {
   id: number;
@@ -360,10 +360,10 @@ export default function MovieLibraryPage() {
       )}
 
       {/* Actor Detail Modal */}
-      <ActorDetailModal 
+      <ActorModal 
         isOpen={isActorModalOpen}
         onClose={() => setIsActorModalOpen(false)}
-        actor={selectedActor}
+        actor={selectedActor as any}
       />
     </div>
   );

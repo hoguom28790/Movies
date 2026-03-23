@@ -29,7 +29,7 @@ export function BentoMovieRow({ title, movies, viewAllHref }: BentoMovieRowProps
               <div className="p-2.5 rounded-2xl bg-primary/10 border border-primary/20 shadow-lg shadow-primary/5">
                 <TrendingUp className="w-5 h-5 text-primary animate-pulse" />
               </div>
-              <h3 className="text-[13px] font-black uppercase tracking-[0.5em] text-white/20 italic">Global Trending Protocol</h3>
+              <h3 className="text-[13px] font-black uppercase tracking-[0.5em] text-white/20 italic">Thịnh Hành</h3>
            </div>
            <h3 className="text-4xl md:text-6xl font-black font-headline tracking-tighter text-white uppercase italic leading-none">
              {title}
@@ -49,7 +49,7 @@ export function BentoMovieRow({ title, movies, viewAllHref }: BentoMovieRowProps
         ref={rowRef}
         className="flex overflow-x-auto hide-scrollbar gap-8 px-6 lg:px-20 snap-x pb-12"
       >
-        {/* Featured Large Card - Pro Max Cinematic Edition */}
+        {/* Featured Large Card */}
         <motion.div 
           initial={{ opacity: 0, x: -50, filter: "blur(20px)" }}
           whileInView={{ opacity: 1, x: 0, filter: "blur(0px)" }}
@@ -72,7 +72,7 @@ export function BentoMovieRow({ title, movies, viewAllHref }: BentoMovieRowProps
               <div className="flex gap-3">
                  <div className="px-5 py-2.5 glass-pro rounded-2xl border border-white/10 flex items-center gap-3 shadow-2xl">
                     <Sparkles className="w-4 h-4 text-primary animate-pulse" />
-                    <span className="text-[10px] font-black text-white/90 uppercase tracking-[0.2em] italic">Pro Max Selection</span>
+                    <span className="text-[10px] font-black text-white/90 uppercase tracking-[0.2em] italic">Đề Xuất</span>
                  </div>
                  <div className="px-5 py-2.5 bg-primary text-white text-[12px] font-black rounded-2xl flex items-center gap-2 shadow-lg shadow-primary/40 border border-primary/20">
                    <Star className="w-4 h-4 fill-current animate-spin-slow" /> 
@@ -98,7 +98,7 @@ export function BentoMovieRow({ title, movies, viewAllHref }: BentoMovieRowProps
           </Link>
         </motion.div>
 
-        {/* Standard Bento Cards - Pro Max Cinematic Styling */}
+        {/* Standard Bento Cards */}
         {others.map((movie, idx) => (
           <motion.div 
             key={movie.slug} 

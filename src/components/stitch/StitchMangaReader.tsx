@@ -178,7 +178,7 @@ export function StitchMangaReader({ media }: StitchMangaReaderProps) {
   return (
     <div className="fixed inset-0 bg-background text-on-surface theme-truyen z-50 flex flex-col overflow-hidden">
       
-      {/* ---------------- TOP TOOLBAR - Pro Max Cinematic ---------------- */}
+      {/* ---------------- TOP TOOLBAR - Premium Cinematic ---------------- */}
       <AnimatePresence>
         {showToolbar && (
           <motion.header 
@@ -372,7 +372,7 @@ export function StitchMangaReader({ media }: StitchMangaReaderProps) {
         </div>
       </main>
 
-      {/* ---------------- BOTTOM PROGRESS BAR - Pro Max Cinematic ---------------- */}
+      {/* ---------------- BOTTOM PROGRESS BAR - Premium Cinematic ---------------- */}
       <footer className={`fixed bottom-0 left-0 right-0 z-50 px-10 pb-10 flex flex-col gap-4 shadow-cinematic-2xl transition-all duration-700 pointer-events-none ${showToolbar ? 'translate-y-0 opacity-100' : 'translate-y-20 opacity-0'}`}>
         <div className="glass-pro bg-black/40 rounded-[40px] px-10 h-24 md:h-28 flex items-center justify-between border border-white/10 relative overflow-hidden pointer-events-auto group/bar">
           {/* Neural Background Glow */}
