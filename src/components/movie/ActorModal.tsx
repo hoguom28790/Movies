@@ -52,7 +52,7 @@ export function ActorModal({ isOpen, onClose, actor, isTopXX = false }: ActorMod
   const profilePath = actor ? (('profile_path' in actor ? actor.profile_path : (actor as any).profilePath) || null) : null;
 
   const { data: details, isLoading } = useQuery({
-    queryKey: ["actor", actor?.id, actor?.name, isTopXX],
+    queryKey: ["actor", actor?.name?.toLowerCase(), isTopXX],
     queryFn: async () => {
       if (!actor) return null;
       if (isTopXX) {
@@ -240,77 +240,99 @@ export function ActorModal({ isOpen, onClose, actor, isTopXX = false }: ActorMod
 
                     {/* Content Section */}
                     <div className="px-6 sm:px-12 md:px-20 py-8 relative">
-                      {isLoading ? (
-                        <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 gap-6"><div className="animate-pulse bg-white/5 aspect-[2/3] rounded-3xl" /></div>
-                      ) : isTopXX && (details as JAVDBActress) ? (
-                        <Tab.Group>
-                          <Tab.List className="flex gap-8 border-b border-white/5 mb-8 sticky top-0 bg-[#0a0a0b] z-[60] py-4 transition-all -mx-6 sm:-mx-12 md:-mx-20 px-6 sm:px-12 md:px-20">
-                            {["THÔNG TIN", "GALLERY", "FILMOGRAPHY"].map((name) => (
-                               <Tab key={name} className={({ selected }) => `pb-4 text-[11px] sm:text-[13px] font-black tracking-[0.2em] outline-none uppercase italic transition-all ${selected ? "text-primary border-b-[4px] border-primary" : "text-white/20 hover:text-white"}`}>{name}</Tab>
-                            ))}
-                          </Tab.List>
-                          <Tab.Panels>
-                            <Tab.Panel className="grid grid-cols-1 md:grid-cols-2 gap-10 focus:outline-none">
-                               <div className="space-y-6">
-                                  <h4 className="text-[10px] font-black text-primary uppercase tracking-[0.5em] italic mb-6">Biographical Stats</h4>
-                                  {[
-                                    { label: "Ngày sinh", value: details.birthday },
-                                    { label: "Chiều cao", value: details.height },
-                                    { label: "Số đo", value: details.measurements },
-                                    { label: "Quê quán", value: details.birthPlace }
-                                  ].map((stat, i) => (
-                                    <div key={i} className="flex flex-col gap-1 border-b border-white/5 pb-4">
-                                       <span className="text-[10px] text-white/20 font-black uppercase tracking-widest italic">{stat.label}</span>
-                                       <span className="text-xl font-black text-white italic uppercase">{stat.value || "Not Disclosed"}</span>
-                                    </div>
-                                  ))}
-                               </div>
-                               <div className="aspect-video rounded-[32px] sm:rounded-[48px] overflow-hidden border border-white/5 grayscale hover:grayscale-0 transition-all duration-1000 shadow-2xl">
-                                  <img src={details.profilePic} className="w-full h-full object-cover" />
-                               </div>
-                            </Tab.Panel>
-
-                            <Tab.Panel className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 sm:gap-6 focus:outline-none">
-                               {details.gallery.map((img: string, i: number) => (
-                                 <motion.button key={i} whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} onClick={() => setLightboxImage(img)} className="aspect-square rounded-2xl overflow-hidden border border-white/5 active-depth shadow-xl"><img src={img} className="w-full h-full object-cover" /></motion.button>
-                               ))}
-                            </Tab.Panel>
-
-                            <Tab.Panel className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-6 sm:gap-10 focus:outline-none pb-20">
-                               {details.filmography.map((m: any, i: number) => (
-                                 <motion.div key={i} className="group flex flex-col gap-3 rounded-[32px] overflow-hidden active-depth">
-                                    <div className="relative aspect-[2/3] rounded-[24px] overflow-hidden bg-black border border-white/5 shadow-xl">
-                                       <img src={m.poster} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-1000 group-hover:brightness-50" />
-                                       <div className="absolute inset-0 flex flex-col justify-end p-4 opacity-0 group-hover:opacity-100 transition-all gap-4 backdrop-blur-[2px]">
-                                          <button onClick={() => handleMovieClick(m.title, m.date.split("-")[0], m.code)} className="w-full py-3 bg-primary text-[10px] font-black text-white uppercase italic rounded-xl flex items-center justify-center gap-2 shadow-2xl"><Play className="w-4 h-4 fill-current" /> XEM NGAY</button>
-                                          <a href={m.link} target="_blank" className="w-full py-2 border border-white/10 text-[9px] font-black text-white/30 uppercase italic rounded-lg text-center hover:bg-white/10 transition-all">JAVDB LINK</a>
-                                       </div>
-                                       <div className="absolute top-4 left-4 glass-pro px-3 py-1 rounded-lg border border-white/10 shadow-xl"><span className="text-[10px] font-black text-primary italic">{m.code}</span></div>
-                                    </div>
-                                    <div className="px-1 space-y-1">
-                                       <h5 className="text-[12px] font-black text-white line-clamp-1 italic uppercase font-headline group-hover:text-primary transition-colors">{m.title}</h5>
-                                       <div className="flex justify-between text-[9px] font-black text-white/20 uppercase italic pb-2"><span>{m.date}</span><span>{m.rating} ★</span></div>
-                                    </div>
-                                 </motion.div>
-                               ))}
-                            </Tab.Panel>
-                          </Tab.Panels>
-                        </Tab.Group>
+                      {isTopXX ? (
+                        isLoading ? (
+                           <div className="space-y-12">
+                              <div className="flex gap-8 border-b border-white/5 pb-4">
+                                 {[1,2,3].map(i => <div key={i} className="w-24 h-4 bg-white/5 animate-pulse rounded-full" />)}
+                              </div>
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+                                 <div className="space-y-6">
+                                    {[1,2,3,4].map(i => <div key={i} className="h-16 bg-white/5 animate-pulse rounded-2xl" />)}
+                                 </div>
+                                 <div className="aspect-video bg-white/5 animate-pulse rounded-[48px]" />
+                              </div>
+                           </div>
+                        ) : details ? (
+                          <Tab.Group>
+                            <Tab.List className="flex gap-8 border-b border-white/5 mb-8 sticky top-0 bg-[#0a0a0b] z-[60] py-4 transition-all -mx-6 sm:-mx-12 md:-mx-20 px-6 sm:px-12 md:px-20">
+                              {["THÔNG TIN", "GALLERY", "FILMOGRAPHY"].map((name) => (
+                                 <Tab key={name} className={({ selected }) => `pb-4 text-[11px] sm:text-[13px] font-black tracking-[0.2em] outline-none uppercase italic transition-all ${selected ? "text-primary border-b-[4px] border-primary" : "text-white/20 hover:text-white"}`}>{name}</Tab>
+                              ))}
+                            </Tab.List>
+                            <Tab.Panels>
+                              <Tab.Panel className="grid grid-cols-1 md:grid-cols-2 gap-10 focus:outline-none">
+                                 <div className="space-y-6">
+                                    <h4 className="text-[10px] font-black text-primary uppercase tracking-[0.5em] italic mb-6">Biographical Stats</h4>
+                                    {[
+                                      { label: "Ngày sinh", value: (details as JAVDBActress).birthday },
+                                      { label: "Chiều cao", value: (details as JAVDBActress).height },
+                                      { label: "Số đo", value: (details as JAVDBActress).measurements },
+                                      { label: "Quê quán", value: (details as JAVDBActress).birthPlace }
+                                    ].map((stat, i) => (
+                                      <div key={i} className="flex flex-col gap-1 border-b border-white/5 pb-4">
+                                         <span className="text-[10px] text-white/20 font-black uppercase tracking-widest italic">{stat.label}</span>
+                                         <span className="text-xl font-black text-white italic uppercase">{stat.value || "Not Disclosed"}</span>
+                                      </div>
+                                    ))}
+                                 </div>
+                                 <div className="aspect-video rounded-[32px] sm:rounded-[48px] overflow-hidden border border-white/5 grayscale hover:grayscale-0 transition-all duration-1000 shadow-2xl">
+                                    <img src={(details as JAVDBActress).profilePic} className="w-full h-full object-cover" />
+                                 </div>
+                              </Tab.Panel>
+  
+                              <Tab.Panel className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 sm:gap-6 focus:outline-none">
+                                 {(details as JAVDBActress).gallery.map((img: string, i: number) => (
+                                   <motion.button key={i} whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} onClick={() => setLightboxImage(img)} className="aspect-square rounded-2xl overflow-hidden border border-white/5 active-depth shadow-xl"><img src={img} className="w-full h-full object-cover" /></motion.button>
+                                 ))}
+                              </Tab.Panel>
+  
+                              <Tab.Panel className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-6 sm:gap-10 focus:outline-none pb-20">
+                                 {(details as JAVDBActress).filmography.map((m: any, i: number) => (
+                                   <motion.div key={i} className="group flex flex-col gap-3 rounded-[32px] overflow-hidden active-depth">
+                                      <div className="relative aspect-[2/3] rounded-[24px] overflow-hidden bg-black border border-white/5 shadow-xl">
+                                         <img src={m.poster} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-1000 group-hover:brightness-50" />
+                                         <div className="absolute inset-0 flex flex-col justify-end p-4 opacity-0 group-hover:opacity-100 transition-all gap-4 backdrop-blur-[2px]">
+                                            <button onClick={() => handleMovieClick(m.title, m.date.split("-")[0], m.code)} className="w-full py-3 bg-primary text-[10px] font-black text-white uppercase italic rounded-xl flex items-center justify-center gap-2 shadow-2xl"><Play className="w-4 h-4 fill-current" /> XEM NGAY</button>
+                                            <a href={m.link} target="_blank" className="w-full py-2 border border-white/10 text-[9px] font-black text-white/30 uppercase italic rounded-lg text-center hover:bg-white/10 transition-all">JAVDB LINK</a>
+                                         </div>
+                                         <div className="absolute top-4 left-4 glass-pro px-3 py-1 rounded-lg border border-white/10 shadow-xl"><span className="text-[10px] font-black text-primary italic">{m.code}</span></div>
+                                      </div>
+                                      <div className="px-1 space-y-1">
+                                         <h5 className="text-[12px] font-black text-white line-clamp-1 italic uppercase font-headline group-hover:text-primary transition-colors">{m.title}</h5>
+                                         <div className="flex justify-between text-[9px] font-black text-white/20 uppercase italic pb-2"><span>{m.date}</span><span>{m.rating} ★</span></div>
+                                      </div>
+                                   </motion.div>
+                                 ))}
+                              </Tab.Panel>
+                            </Tab.Panels>
+                          </Tab.Group>
+                        ) : (
+                          <div className="flex flex-col items-center justify-center py-20 gap-4 opacity-40 italic font-black uppercase tracking-widest text-center">
+                             <TrendingUp className="w-12 h-12 mb-2" />
+                             <p>Hệ thống không tìm thấy dữ liệu JAVDB phù hợp.</p>
+                             <p className="text-[10px]">Cơ sở dữ liệu sẽ sớm được cập nhật</p>
+                          </div>
+                        )
                       ) : (
-                        <Tab.Group>
-                           <Tab.List className="flex gap-8 border-b border-white/5 mb-8 sticky top-0 bg-[#0a0a0b] z-[60] py-4 transition-all -mx-6 sm:-mx-12 md:-mx-20 px-6 sm:px-12 md:px-20">
-                              <Tab className={({ selected }) => `pb-4 text-[11px] sm:text-[13px] font-black tracking-[0.2em] outline-none uppercase italic transition-all ${selected ? "text-primary border-b-[4px] border-primary" : "text-white/20 hover:text-white"}`}><Film className="w-5 h-5 inline mr-2" /> PHIM ĐIỆN ẢNH</Tab>
-                              <Tab className={({ selected }) => `pb-4 text-[11px] sm:text-[13px] font-black tracking-[0.2em] outline-none uppercase italic transition-all ${selected ? "text-primary border-b-[4px] border-primary" : "text-white/20 hover:text-white"}`}><Tv className="w-5 h-5 inline mr-2" /> SERIES TRUYỀN HÌNH</Tab>
-                           </Tab.List>
-                           <Tab.Panels>
-                              <Tab.Panel className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 gap-6 sm:gap-10 pb-20">
-                                 {details?.movie_credits?.cast?.sort((a: any, b: any) => (b.popularity || 0) - (a.popularity || 0)).slice(0, 54).map((m: any, idx: number) => (<MovieCardComponent key={idx} item={m} isTv={false} index={idx} />))}
-                              </Tab.Panel>
-                              <Tab.Panel className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 gap-6 sm:gap-10 pb-20">
-                                 {details?.tv_credits?.cast?.sort((a: any, b: any) => (b.popularity || 0) - (a.popularity || 0)).slice(0, 54).map((m: any, idx: number) => (<MovieCardComponent key={idx} item={m} isTv={true} index={idx} />))}
-                              </Tab.Panel>
-                           </Tab.Panels>
-                        </Tab.Group>
+                        isLoading ? (
+                           <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 gap-6"><div className="animate-pulse bg-white/5 aspect-[2/3] rounded-3xl" /></div>
+                        ) : (
+                          <Tab.Group>
+                             <Tab.List className="flex gap-8 border-b border-white/5 mb-8 sticky top-0 bg-[#0a0a0b] z-[60] py-4 transition-all -mx-6 sm:-mx-12 md:-mx-20 px-6 sm:px-12 md:px-20">
+                                <Tab className={({ selected }) => `pb-4 text-[11px] sm:text-[13px] font-black tracking-[0.2em] outline-none uppercase italic transition-all ${selected ? "text-primary border-b-[4px] border-primary" : "text-white/20 hover:text-white"}`}><Film className="w-5 h-5 inline mr-2" /> PHIM ĐIỆN ẢNH</Tab>
+                                <Tab className={({ selected }) => `pb-4 text-[11px] sm:text-[13px] font-black tracking-[0.2em] outline-none uppercase italic transition-all ${selected ? "text-primary border-b-[4px] border-primary" : "text-white/20 hover:text-white"}`}><Tv className="w-5 h-5 inline mr-2" /> SERIES TRUYỀN HÌNH</Tab>
+                             </Tab.List>
+                             <Tab.Panels>
+                                <Tab.Panel className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 gap-6 sm:gap-10 pb-20">
+                                   {details?.movie_credits?.cast?.sort((a: any, b: any) => (b.popularity || 0) - (a.popularity || 0)).slice(0, 54).map((m: any, idx: number) => (<MovieCardComponent key={idx} item={m} isTv={false} index={idx} />))}
+                                </Tab.Panel>
+                                <Tab.Panel className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 gap-6 sm:gap-10 pb-20">
+                                   {details?.tv_credits?.cast?.sort((a: any, b: any) => (b.popularity || 0) - (a.popularity || 0)).slice(0, 54).map((m: any, idx: number) => (<MovieCardComponent key={idx} item={m} isTv={true} index={idx} />))}
+                                </Tab.Panel>
+                             </Tab.Panels>
+                          </Tab.Group>
+                        )
                       )}
                     </div>
 
