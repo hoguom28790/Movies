@@ -6,8 +6,15 @@ import Link from "next/link";
 import { getUserPlaylists, deletePlaylist, removeMovieFromPlaylist, ensureDefaultPlaylist, createPlaylist, updatePlaylistName } from "@/services/db";
 import { Playlist } from "@/types/database";
 import { MovieCard } from "@/components/movie/MovieCard";
-import { Trash, Library, Loader2, X, Plus, Heart, Search, Film, Edit2, Check, X as CloseIcon, User } from "lucide-react";
+import { Trash, Library, Loader2, X, Plus, Heart, Search, Film, Edit2, Check, X as CloseIcon, User, Star, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/Button";
+import { ActorDetailModal } from "@/components/movie/ActorDetailModal";
+
+interface FavoriteActor {
+  id: number;
+  name: string;
+  profilePath: string | null;
+}
 
 // Separate movie library page in Hồ Phim
 export default function MovieLibraryPage() {
@@ -22,7 +29,9 @@ export default function MovieLibraryPage() {
   const [editNameValue, setEditNameValue] = useState("");
   
   const [activeTab, setActiveTab] = useState<'movies' | 'actors'>('movies');
-  const [favoriteActors, setFavoriteActors] = useState<any[]>([]);
+  const [favoriteActors, setFavoriteActors] = useState<FavoriteActor[]>([]);
+  const [selectedActor, setSelectedActor] = useState<FavoriteActor | null>(null);
+  const [isActorModalOpen, setIsActorModalOpen] = useState(false);
 
   const loadData = async () => {
     if (!user) return;
@@ -34,7 +43,7 @@ export default function MovieLibraryPage() {
       ]);
       
       setPlaylists(movieData);
-      setFavoriteActors(actorData);
+      setFavoriteActors(actorData as FavoriteActor[]);
       
       if (movieData.length > 0 && !activePlaylistId) {
         setActivePlaylistId(movieData[0].id);
@@ -102,6 +111,15 @@ export default function MovieLibraryPage() {
         return p;
       }));
     } catch (err) { }
+  };
+
+  const openActorDetail = (actor: FavoriteActor) => {
+    setSelectedActor({
+      id: actor.id,
+      name: actor.name,
+      profilePath: actor.profilePath
+    });
+    setIsActorModalOpen(true);
   };
 
   if (authLoading || loading) return <div className="p-8 flex justify-center mt-40"><Loader2 className="w-10 h-10 animate-spin text-primary" /></div>;
@@ -274,48 +292,65 @@ export default function MovieLibraryPage() {
         /* Actors Tab Content */
         <div className="animate-in slide-in-from-bottom-4 duration-700">
            {favoriteActors.length === 0 ? (
-              <div className="py-32 text-center bg-foreground/[0.01] rounded-[40px] border border-dashed border-foreground/5 space-y-4">
-                 <div className="w-16 h-16 rounded-full bg-foreground/5 flex items-center justify-center mx-auto mb-6">
-                    <User className="w-8 h-8 text-foreground/20" />
+              <div className="py-32 text-center bg-foreground/[0.01] rounded-[40px] border border-dashed border-foreground/5 space-y-6">
+                 <div className="w-20 h-20 rounded-full bg-foreground/5 flex items-center justify-center mx-auto mb-4 border border-foreground/5 shadow-inner">
+                    <User className="w-10 h-10 text-foreground/10" />
                  </div>
-                 <h3 className="text-2xl font-black italic uppercase tracking-tighter text-foreground/40">Thư viện diễn viên trống</h3>
-                 <p className="text-foreground/10 font-bold uppercase tracking-widest text-xs">Hãy thêm diễn viên bạn yêu thích</p>
+                 <div className="space-y-2">
+                    <h3 className="text-3xl font-black italic uppercase tracking-tighter text-foreground/30">Bạn chưa yêu thích diễn viên nào</h3>
+                    <p className="text-foreground/10 font-bold uppercase tracking-[0.3em] text-[10px]">Thêm diễn viên vào thư viện để xem kho phim của họ</p>
+                 </div>
               </div>
            ) : (
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-8">
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6 md:gap-8">
                  {favoriteActors.map(actor => (
                    <div key={actor.id} className="group relative">
-                      <div className="relative aspect-[1/1] rounded-[32px] overflow-hidden bg-foreground/5 border border-foreground/10 group-hover:border-primary/50 transition-all shadow-xl group-hover:shadow-2xl group-hover:-translate-y-2">
+                      <div 
+                        onClick={() => openActorDetail(actor)}
+                        className="relative aspect-[1/1] rounded-[40px] overflow-hidden bg-foreground/5 border border-foreground/10 group-hover:border-primary/50 transition-all shadow-xl group-hover:shadow-2xl group-hover:-translate-y-2 cursor-pointer"
+                      >
                          <img 
-                           src={actor.profilePath ? `https://image.tmdb.org/t/p/w300${actor.profilePath}` : "/placeholder-actor.png"} 
+                           src={actor.profilePath ? `https://image.tmdb.org/t/p/w500${actor.profilePath}` : "/placeholder-actor.png"} 
                            alt={actor.name}
-                           className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                           className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 group-hover:rotate-1"
                          />
-                         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity p-4 flex flex-col justify-end">
-                             <div className="flex items-center gap-2">
-                                <span className="px-2 py-1 rounded bg-primary text-white text-[8px] font-black uppercase tracking-widest">Yêu Thích</span>
+                         
+                         {/* Hover Overlay */}
+                         <div className="absolute inset-0 bg-gradient-to-t from-primary/90 via-primary/20 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-500 backdrop-blur-[2px] p-6 flex flex-col justify-end items-center">
+                             <div className="w-12 h-12 rounded-2xl bg-white text-primary flex items-center justify-center shadow-2xl scale-50 group-hover:scale-100 transition-transform duration-500 delay-100">
+                                <ArrowRight className="w-6 h-6 stroke-[3px]" />
                              </div>
+                             <span className="text-[10px] font-black text-white uppercase tracking-[0.3em] mt-3 italic drop-shadow-md">Xem Kho Phim</span>
+                         </div>
+                         
+                         {/* Quick Indicators */}
+                         <div className="absolute top-4 left-4 opacity-100 group-hover:opacity-0 transition-opacity">
+                            <div className="px-3 py-1.5 glass-pro rounded-xl flex items-center gap-1.5 border border-white/10 shadow-xl">
+                               <Star className="w-3 h-3 text-primary fill-primary" />
+                               <span className="text-[9px] font-black text-white italic uppercase tracking-widest">Favorite</span>
+                            </div>
                          </div>
                          
                          {/* Remove Button for Actors */}
                          <button 
                            onClick={async (e) => {
                              e.preventDefault();
+                             e.stopPropagation();
                              if (!window.confirm(`Gỡ ${actor.name} khỏi yêu thích?`)) return;
                              const { toggleFavoriteActor } = await import("@/services/db");
                              await toggleFavoriteActor(user!.uid, actor);
                              loadData();
                            }}
-                           className="absolute top-3 right-3 w-10 h-10 rounded-2xl bg-black/60 backdrop-blur-xl border border-white/10 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all scale-75 group-hover:scale-100 hover:bg-red-500 hover:border-red-400 shadow-2xl z-20"
+                           className="absolute top-4 right-4 w-11 h-11 rounded-2xl bg-black/40 backdrop-blur-2xl border border-white/10 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all scale-75 group-hover:scale-100 hover:bg-red-500 hover:border-red-400 shadow-2xl z-30"
                          >
                             <Trash className="w-4 h-4" />
                          </button>
                       </div>
-                      <div className="mt-4 text-center px-2">
-                         <h4 className="text-[14px] font-black uppercase tracking-tight text-foreground group-hover:text-primary transition-colors line-clamp-1 italic">
+                      <div className="mt-5 text-center px-4" onClick={() => openActorDetail(actor)}>
+                         <h4 className="text-[15px] font-black uppercase tracking-tight text-foreground group-hover:text-primary transition-colors line-clamp-1 italic cursor-pointer">
                             {actor.name}
                          </h4>
-                         <p className="text-[10px] font-bold text-foreground/30 uppercase tracking-[0.2em] mt-1">DIỄN VIÊN</p>
+                         <p className="text-[9px] font-bold text-foreground/20 uppercase tracking-[0.25em] mt-1 italic">DIỄN VIÊN ELITE</p>
                       </div>
                    </div>
                  ))}
@@ -323,6 +358,13 @@ export default function MovieLibraryPage() {
            )}
         </div>
       )}
+
+      {/* Actor Detail Modal */}
+      <ActorDetailModal 
+        isOpen={isActorModalOpen}
+        onClose={() => setIsActorModalOpen(false)}
+        actor={selectedActor}
+      />
     </div>
   );
 }
