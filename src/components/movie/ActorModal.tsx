@@ -9,6 +9,8 @@ import { searchMovies } from "@/services/api";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 
+import { useAuth } from "@/contexts/AuthContext";
+
 interface ActorModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -20,6 +22,7 @@ interface ActorModalProps {
 }
 
 export function ActorModal({ isOpen, onClose, actor }: ActorModalProps) {
+  const { user } = useAuth();
   const router = useRouter();
   const [isSearching, setIsSearching] = useState<string | null>(null);
 
