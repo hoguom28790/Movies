@@ -34,6 +34,16 @@
   --font-headline: var(--font-epilogue);
   --font-body: var(--font-inter);
   --font-label: var(--font-inter);
+
+  /* Pro Max Elevations */
+  --shadow-cinematic: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --shadow-cinematic-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  --shadow-cinematic-xl: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  
+  /* Pro Max Glassmorphism Tokens */
+  --glass-bg: oklch(100% 0 0 / 5%);
+  --glass-border: oklch(100% 0 0 / 10%);
+  --glass-blur: 24px;
 }
 
 :root {
@@ -60,6 +70,10 @@
   --banner-overlay-light: linear-gradient(to top, hsl(0 0% 100% / 100%) 0%, hsl(0 0% 100% / 60%) 40%, transparent 100%);
   --banner-overlay-dark: linear-gradient(to top, hsl(222.2 84% 4.9% / 100%) 0%, hsl(222.2 84% 4.9% / 60%) 40%, transparent 100%);
   --banner-overlay: var(--banner-overlay-light);
+  
+  /* Pro Max Semantic Tokens */
+  --surface-tonal: 210 40% 96.1%;
+  --surface-tonal-foreground: 222.2 47.4% 11.2%;
 }
 
 .dark {
@@ -174,14 +188,51 @@ body {
 .pb-safe { padding-bottom: max(1rem, env(safe-area-inset-bottom, 0px)); }
 .pt-safe { padding-top: max(1rem, env(safe-area-inset-top, 0px)); }
 
-/* Premium Card Glass Effect */
+/* Premium Card Glass Effect - Pro Max Edition */
 .glass {
-  background: oklch(100% 0 0 / 5%);
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
-  border: 1px solid oklch(100% 0 0 / 10%);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  background: var(--glass-bg);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  border: 1px solid var(--glass-border);
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
+
+.glass-pro {
+  background: oklch(100% 0 0 / 8%);
+  backdrop-filter: blur(40px) saturate(180%);
+  -webkit-backdrop-filter: blur(40px) saturate(180%);
+  border: 1px solid oklch(100% 0 0 / 15%);
+  box-shadow: var(--shadow-cinematic-lg);
+}
+
+.dark .glass-pro {
+  background: oklch(0% 0 0 / 40%);
+  border: 1px solid oklch(100% 0 0 / 10%);
+}
+
+/* Micro-interactions */
+.hover-glow {
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.hover-glow:hover {
+  box-shadow: 0 0 25px -5px var(--primary);
+  transform: translateY(-4px);
+}
+
+.active-depth:active {
+  transform: scale(0.96) translateY(2px);
+}
+
+/* Cinematic Shadows */
+.shadow-cinematic { box-shadow: var(--shadow-cinematic); }
+.shadow-cinematic-lg { box-shadow: var(--shadow-cinematic-lg); }
+.shadow-cinematic-xl { box-shadow: var(--shadow-cinematic-xl); }
+
+/* Bento Grid Utilities */
+.bento-card {
+  @apply relative overflow-hidden rounded-3xl border border-foreground/5 bg-surface/50 transition-all duration-500 hover:border-primary/20 hover:bg-surface/80;
+}
+
 
 /* Custom Scrollbar */
 ::-webkit-scrollbar { width: 4px; }
@@ -284,51 +335,81 @@ html.is-lg-tv {
 
 /* Premium Delete Button Style - Apple Style */
 .delete-btn-premium {
-  @apply absolute top-5 right-2 z-40 w-10 h-10 rounded-2xl bg-black/60 backdrop-blur-xl border border-white/10 flex items-center justify-center text-white/50 hover:bg-red-500 hover:text-white hover:border-red-400 hover:scale-110 active:scale-95 transition-all shadow-2xl opacity-0 group-hover:opacity-100;
+  @apply absolute top-5 right-2 z-40 w-12 h-12 rounded-[22px] bg-black/40 backdrop-blur-2xl border border-white/10 flex items-center justify-center text-white/40 hover:bg-[#ef4444] hover:text-white hover:border-[#ef4444] hover:scale-110 active:scale-95 transition-all shadow-cinematic-xl opacity-0 group-hover:opacity-100 italic font-black uppercase tracking-tighter;
+}
+
+.delete-btn-premium::after {
+  content: '';
+  @apply absolute inset-0 bg-[#ef4444] blur-[15px] opacity-0 group-hover:opacity-20 transition-opacity;
 }
 
 .is-lg-tv .delete-btn-premium {
-  @apply w-16 h-16 rounded-3xl top-8 right-4;
+  @apply w-20 h-20 rounded-[30px] top-10 right-6;
 }
 
 .is-lg-tv .delete-btn-premium svg {
-  @apply w-8 h-8;
+  @apply w-10 h-10;
 }
 
 /* Premium Progress Bar */
 .progress-bar-premium {
-  @apply absolute left-0 right-0 h-1.5 bg-white/10 rounded-full overflow-hidden z-20 shadow-inner;
+  @apply absolute left-0 right-0 h-2 bg-white/5 rounded-full overflow-hidden z-20 shadow-inner border border-white/5;
 }
 
-.bubble-shadow {
-  box-shadow: 0 0 20px var(--primary);
+/* Cinematic Grain/Noise Overlay */
+.cinema-grain::before {
+  content: "";
+  position: fixed;
+  top: -150%;
+  left: -150%;
+  width: 300%;
+  height: 300%;
+  background: url("https://grainy-gradients.vercel.app/noise.svg");
+  opacity: 0.04;
+  pointer-events: none;
+  z-index: 9999;
+  animation: grain 8s steps(10) infinite;
+}
+
+@keyframes grain {
+  0%, 100% { transform:translate(0, 0) }
+  10% { transform:translate(-5%, -10%) }
+  20% { transform:translate(-15%, 5%) }
+  30% { transform:translate(7%, -25%) }
+  40% { transform:translate(-5%, 25%) }
+  50% { transform:translate(-15%, 10%) }
+  60% { transform:translate(15%, 0%) }
+  70% { transform:translate(0%, 15%) }
+  80% { transform:translate(3%, 35%) }
+  90% { transform:translate(-10%, 10%) }
 }
 
 /* iPad Landscape & Tablet Optimizations */
 @media screen and (min-width: 1024px) and (max-height: 850px) and (orientation: landscape) {
   .container {
-    max-width: 92% !important;
+    max-width: 95% !important;
   }
   
-  /* Optimize Grid for Tablet Landscape */
-  .grid-cols-2 { grid-template-columns: repeat(3, minmax(0, 1fr)) !important; }
-  .sm\:grid-cols-3 { grid-template-columns: repeat(4, minmax(0, 1fr)) !important; }
-  .md\:grid-cols-4 { grid-template-columns: repeat(5, minmax(0, 1fr)) !important; }
-  .lg\:grid-cols-6 { grid-template-columns: repeat(6, minmax(0, 1fr)) !important; }
+  /* Optimize Grid for Tablet Landscape (Pro Max) */
+  .grid-cols-2 { grid-template-columns: repeat(4, minmax(0, 1fr)) !important; }
+  .sm\:grid-cols-3 { grid-template-columns: repeat(5, minmax(0, 1fr)) !important; }
+  .md\:grid-cols-4 { grid-template-columns: repeat(6, minmax(0, 1fr)) !important; }
+  .lg\:grid-cols-6 { grid-template-columns: repeat(8, minmax(0, 1fr)) !important; }
 
   /* Player height adjustment for landscape tablets */
   .aspect-video {
-    max-height: 70vh;
+    max-height: 80vh;
     width: auto;
     margin-left: auto;
     margin-right: auto;
+    @apply border-8 border-black/40 shadow-2xl;
   }
 }
 
 /* Ensure delete buttons are visible on touch devices (iOS/iPadOS) */
 @media (hover: none) {
   .delete-btn-premium {
-    @apply opacity-100 bg-black/80 border-white/20 translate-y-0 scale-100;
+    @apply opacity-100 bg-black/60 border-white/20 translate-y-0 scale-100;
     pointer-events: auto;
   }
   

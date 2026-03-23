@@ -178,97 +178,81 @@ export function StitchMangaReader({ media }: StitchMangaReaderProps) {
   return (
     <div className="fixed inset-0 bg-background text-on-surface theme-truyen z-50 flex flex-col overflow-hidden">
       
-      {/* ---------------- TOP TOOLBAR ---------------- */}
+      {/* ---------------- TOP TOOLBAR - Pro Max Cinematic ---------------- */}
       <AnimatePresence>
         {showToolbar && (
           <motion.header 
-            initial={{ y: -100 }}
-            animate={{ y: 0 }}
-            exit={{ y: -100 }}
-            className="fixed top-0 left-0 right-0 z-[60] bg-surface/90 backdrop-blur-xl border-b border-outline-variant/30 flex items-center justify-between px-4 md:px-8 py-3"
+            initial={{ y: -100, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: -100, opacity: 0 }}
+            className="fixed top-0 left-0 right-0 z-[60] pt-safe px-6 md:px-10 py-6 pointer-events-none"
           >
-            <div className="flex items-center gap-4">
-              <Link href={`/truyen/${media.slug}`} className="p-2 hover:bg-white/5 rounded-full transition-colors">
-                <ChevronLeft size={24} />
-              </Link>
-              <div className="flex flex-col">
-                <h1 className="font-headline font-black text-[12px] md:text-xl uppercase tracking-tighter truncate max-w-[120px] md:max-w-md">
-                  {media.title}
-                </h1>
-                <div className="flex items-center gap-2">
-                   {/* Chapter Jump Dropdown */}
-                    <select 
-                        value={media.chapterName}
-                        onChange={(e) => navigateToChapter(e.target.value)}
-                        className="bg-transparent text-[10px] uppercase tracking-[0.2em] font-black text-primary p-0 border-none focus:outline-none cursor-pointer hover:bg-white/5 rounded px-1 transition-colors"
-                    >
-                        {media.chapters.map(c => (
-                            <option key={c.slug} value={c.slug} className="bg-surface text-on-surface">Ch. {c.name}</option>
-                        ))}
-                    </select>
+            <div className="glass-pro bg-black/40 rounded-[32px] border border-white/10 flex items-center justify-between px-8 py-4 pointer-events-auto h-20 shadow-cinematic-xl">
+              <div className="flex items-center gap-6">
+                <Link href={`/truyen/${media.slug}`} className="p-3 bg-white/5 hover:bg-[#ef4444] rounded-2xl transition-all shadow-lg active-depth group/back">
+                  <ChevronLeft size={24} className="group-hover/back:-translate-x-1 transition-transform" />
+                </Link>
+                <div className="flex flex-col">
+                  <h1 className="font-headline font-black text-[14px] md:text-2xl uppercase tracking-tighter truncate max-w-[150px] md:max-w-md italic flex items-center gap-2">
+                    {media.title}
+                  </h1>
+                  <div className="flex items-center gap-3">
+                     <div className="w-1 h-3 bg-[#ef4444] rounded-full" />
+                     {/* Chapter Jump Dropdown */}
+                      <select 
+                          value={media.chapterName}
+                          onChange={(e) => navigateToChapter(e.target.value)}
+                          className="bg-transparent text-[10px] uppercase tracking-[0.4em] font-black text-[#ef4444] p-0 border-none focus:outline-none cursor-pointer hover:text-white transition-colors"
+                      >
+                          {media.chapters.map(c => (
+                              <option key={c.slug} value={c.slug} className="bg-[#0a0a0b] text-white">Ch. {c.name}</option>
+                          ))}
+                      </select>
+                  </div>
                 </div>
               </div>
-            </div>
 
-            <div className="flex items-center gap-2 md:gap-4 lg:gap-6">
-                {/* Source Quick Switcher */}
-                <div className="hidden sm:flex items-center gap-1.5 p-1 bg-white/[0.03] rounded-xl border border-white/5">
-                    {['otruyen', 'mangadex', 'mangaplus'].map(src => (
-                        <button 
-                            key={src}
-                            onClick={() => switchSource(src)}
-                            className={`px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all ${
-                                media.activeSource === src ? 'bg-primary text-white shadow-lg' : 'text-white/40 hover:text-white/70'
-                            }`}
-                        >
-                            {src.slice(0, 3)}
-                        </button>
-                    ))}
-                </div>
+              <div className="flex items-center gap-4 lg:gap-8">
+                  {/* Source Quick Switcher - Pro Edition */}
+                  <div className="hidden sm:flex items-center gap-2 px-3 py-2 bg-white/5 rounded-[20px] border border-white/5">
+                      {['otruyen', 'mangadex', 'mangaplus'].map(src => (
+                          <button 
+                              key={src}
+                              onClick={() => switchSource(src)}
+                              className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
+                                  media.activeSource === src ? 'bg-[#ef4444] text-white shadow-[0_0_15px_rgba(239,68,68,0.4)]' : 'text-white/20 hover:text-white/60'
+                              }`}
+                          >
+                              {src.slice(0, 3)}
+                          </button>
+                      ))}
+                  </div>
 
-                <div className="hidden lg:flex items-center gap-1.5 p-1 bg-white/[0.03] rounded-xl border border-white/5">
-                        <select 
-                            value={currentPage}
-                            onChange={(e) => {
-                                const page = parseInt(e.target.value);
-                                if (readingMode === 'longstrip' && containerRef.current) {
-                                    const img = containerRef.current.querySelector(`[data-page="${page}"]`);
-                                    img?.scrollIntoView({ behavior: 'smooth' });
-                                }
-                                setCurrentPage(page);
-                            }}
-                            className="bg-transparent text-[10px] font-black uppercase tracking-widest px-3 py-1.5 focus:outline-none cursor-pointer"
-                        >
-                            {media.images.map((_, i) => (
-                                <option key={i} value={i + 1} className="bg-surface">Page {i + 1}</option>
-                            ))}
-                        </select>
-                    </div>
+                  <div className="hidden lg:flex items-center gap-3 bg-white/5 p-2 rounded-2xl">
+                      <button 
+                        disabled={!prevChapter}
+                        onClick={() => prevChapter && navigateToChapter(prevChapter.slug)}
+                        className="p-2 hover:bg-white/10 rounded-xl disabled:opacity-20 disabled:cursor-not-allowed group transition-all"
+                      >
+                        <ChevronLeft className="w-6 h-6 group-active:-translate-x-1 transition-transform" />
+                      </button>
+                      <div className="w-[1px] h-6 bg-white/10" />
+                      <button 
+                        disabled={!nextChapter}
+                        onClick={() => nextChapter && navigateToChapter(nextChapter.slug)}
+                        className="p-2 hover:bg-white/10 rounded-xl disabled:opacity-20 disabled:cursor-not-allowed group transition-all"
+                      >
+                        <ChevronRight className="w-6 h-6 group-active:translate-x-1 transition-transform" />
+                      </button>
+                  </div>
 
-                    <div className="flex items-center gap-1 bg-white/10 p-1 rounded-xl">
-                <button 
-                  disabled={!prevChapter}
-                  onClick={() => prevChapter && navigateToChapter(prevChapter.slug)}
-                  className="p-2 hover:bg-white/10 rounded-lg disabled:opacity-30 disabled:cursor-not-allowed group transition-all"
-                >
-                  <ChevronLeft className="w-5 h-5 group-active:-translate-x-1 transition-transform" />
-                </button>
-                <span className="px-3 text-[10px] font-black uppercase tracking-widest hidden sm:block">NAV</span>
-                <button 
-                  disabled={!nextChapter}
-                  onClick={() => nextChapter && navigateToChapter(nextChapter.slug)}
-                  className="p-2 hover:bg-white/10 rounded-lg disabled:opacity-30 disabled:cursor-not-allowed group transition-all"
-                >
-                  <ChevronRight className="w-5 h-5 group-active:translate-x-1 transition-transform" />
-                </button>
+                  <button 
+                    onClick={() => setShowSettings(true)}
+                    className="p-3.5 bg-white/5 hover:bg-white/10 rounded-2xl transition-all border border-white/5 active-depth"
+                  >
+                    <Settings size={22} className="rotate-0 hover:rotate-90 transition-transform duration-500" />
+                  </button>
               </div>
-
-              <button 
-                onClick={() => setShowSettings(true)}
-                className="p-2 hover:bg-primary-container hover:text-on-primary-container rounded-full transition-all editorial-shadow"
-              >
-                <Settings size={20} />
-              </button>
             </div>
           </motion.header>
         )}
@@ -278,7 +262,7 @@ export function StitchMangaReader({ media }: StitchMangaReaderProps) {
       <main 
         ref={containerRef}
         onScroll={handleScroll}
-        className={`flex-1 overflow-y-auto scrollbar-hide select-none transition-all duration-500 pb-20 md:pb-0 ${showToolbar ? 'pt-20' : 'pt-0'}`}
+        className={`flex-1 overflow-y-auto scrollbar-hide select-none transition-all duration-700 bg-[#050505] pb-24 md:pb-0 ${showToolbar ? 'pt-24' : 'pt-0'}`}
         onClick={() => {
           if (!showSettings) setShowToolbar(!showToolbar);
         }}
@@ -291,7 +275,7 @@ export function StitchMangaReader({ media }: StitchMangaReaderProps) {
                 <div 
                   key={idx} 
                   data-page={idx + 1}
-                  className={`relative w-full flex justify-center bg-surface-container-low/5 mb-2 ${
+                  className={`relative w-full flex justify-center bg-[#050505] mb-2 ${
                     imageFit === 'width' ? 'w-full' : 
                     imageFit === 'height' ? 'h-screen' : ''
                   }`}
@@ -308,10 +292,10 @@ export function StitchMangaReader({ media }: StitchMangaReaderProps) {
                       imageFit === 'width' ? 'w-full max-w-[1000px] h-auto' : 
                       imageFit === 'height' ? 'h-full w-auto object-contain' : 
                       'w-auto h-auto'
-                    } select-none transition-all duration-700`}
+                    } select-none transition-all duration-1000 shadow-cinematic-2xl`}
                   />
-                  <div className="absolute top-4 right-4 text-[9px] font-black text-white/10 uppercase tracking-widest">
-                    P. {idx + 1}
+                  <div className="absolute top-8 right-8 text-[11px] font-black text-white/5 uppercase tracking-[0.4em] italic pointer-events-none">
+                    PAGE {idx + 1} PROTOCOL
                   </div>
                 </div>
               ))}
@@ -325,7 +309,7 @@ export function StitchMangaReader({ media }: StitchMangaReaderProps) {
             </div>
           ) : (
             /* SINGLE PAGE / SWIPER */
-            <div className="w-full h-full flex-1 relative bg-black">
+            <div className="w-full h-full flex-1 relative bg-[#050505]">
               <Swiper
                 modules={[Navigation, Keyboard, Mousewheel, Virtual]}
                 spaceBetween={0}
@@ -345,15 +329,15 @@ export function StitchMangaReader({ media }: StitchMangaReaderProps) {
               >
                 {media.images.map((url, idx) => (
                   <SwiperSlide key={idx} virtualIndex={idx}>
-                    <div className="flex items-center justify-center w-full h-full overflow-hidden p-2 md:p-4">
+                    <div className="flex items-center justify-center w-full h-full overflow-hidden p-4 md:p-8">
                       <img 
                         src={url}
                         alt={`Page ${idx + 1}`}
                         className={`${
-                          imageFit === 'width' ? 'w-full max-w-4xl h-auto' : 
+                          imageFit === 'width' ? 'w-full max-w-5xl h-auto shadow-cinematic-xl rounded-2xl' : 
                           imageFit === 'height' ? 'h-full w-auto object-contain' : 
                           'max-w-full max-h-full'
-                        } transition-transform duration-300`}
+                        } transition-transform duration-500`}
                         style={{ transform: `scale(${zoom})` }}
                       />
                     </div>
@@ -372,14 +356,14 @@ export function StitchMangaReader({ media }: StitchMangaReaderProps) {
                 </SwiperSlide>
 
                 {/* Custom Nav buttons */}
-                <button className="swiper-prev absolute left-0 top-0 bottom-0 w-24 z-10 flex items-center justify-center group">
-                  <div className="w-12 h-12 rounded-full bg-black/40 backdrop-blur-md flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                    <ChevronLeft size={32} />
+                <button className="swiper-prev absolute left-0 top-0 bottom-0 w-32 z-10 flex items-center justify-center group pointer-events-auto">
+                  <div className="w-16 h-16 rounded-full bg-black/40 backdrop-blur-3xl border border-white/5 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all scale-75 group-hover:scale-100 shadow-cinematic-lg">
+                    <ChevronLeft size={40} className="text-[#ef4444]" />
                   </div>
                 </button>
-                <button className="swiper-next absolute right-0 top-0 bottom-0 w-24 z-10 flex items-center justify-center group">
-                  <div className="w-12 h-12 rounded-full bg-black/40 backdrop-blur-md flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                    <ChevronRight size={32} />
+                <button className="swiper-next absolute right-0 top-0 bottom-0 w-32 z-10 flex items-center justify-center group pointer-events-auto">
+                  <div className="w-16 h-16 rounded-full bg-black/40 backdrop-blur-3xl border border-white/5 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all scale-75 group-hover:scale-100 shadow-cinematic-lg">
+                    <ChevronRight size={40} className="text-[#ef4444]" />
                   </div>
                 </button>
               </Swiper>
@@ -388,25 +372,31 @@ export function StitchMangaReader({ media }: StitchMangaReaderProps) {
         </div>
       </main>
 
-      {/* ---------------- BOTTOM PROGRESS BAR ---------------- */}
-      <footer className={`fixed bottom-0 left-0 right-0 z-50 bg-surface/90 backdrop-blur-xl border-t border-outline-variant/30 px-6 py-4 flex flex-col gap-4 shadow-2xl transition-all duration-500 ${showToolbar ? 'translate-y-0 opacity-100' : 'translate-y-full opacity-0'}`}>
-        <div className="flex items-center justify-between gap-6">
-          <div className="flex items-center gap-4 text-[11px] font-black uppercase tracking-widest text-primary">
-            <span className="bg-primary/10 px-3 py-1 rounded-lg">P. {currentPage} / {media.images.length}</span>
-            <span className="opacity-40">{Math.round(readingProgress)}%</span>
-          </div>
-
-          <div className="flex-1 max-w-2xl h-1 bg-white/10 rounded-full group cursor-pointer relative overflow-hidden">
-            <div 
-              className="absolute left-0 top-0 bottom-0 bg-primary group-hover:bg-primary-hover transition-all shadow-[0_0_10px_rgba(var(--primary-rgb),0.5)]"
+      {/* ---------------- BOTTOM PROGRESS BAR - Pro Max Cinematic ---------------- */}
+      <footer className={`fixed bottom-0 left-0 right-0 z-50 px-10 pb-10 flex flex-col gap-4 shadow-cinematic-2xl transition-all duration-700 pointer-events-none ${showToolbar ? 'translate-y-0 opacity-100' : 'translate-y-20 opacity-0'}`}>
+        <div className="glass-pro bg-black/40 rounded-[40px] px-10 h-24 md:h-28 flex items-center justify-between border border-white/10 relative overflow-hidden pointer-events-auto group/bar">
+          {/* Neural Background Glow */}
+          <div className="absolute inset-x-0 bottom-0 h-1 bg-white/5 overflow-hidden">
+            <motion.div 
+              className="h-full bg-[#ef4444] shadow-[0_0_20px_#ef4444] transition-all duration-300 relative"
               style={{ width: `${readingProgress}%` }}
-            />
+            >
+               <div className="absolute top-0 right-0 w-12 h-full bg-white/40 blur-md animate-pulse" />
+            </motion.div>
           </div>
 
-          <div className="flex items-center gap-4">
-             <button onClick={toggleFullscreen} className="p-2 opacity-60 hover:opacity-100 transition-opacity">
-               {isFullscreen ? <Minimize size={20} /> : <Maximize size={20} />}
+          <div className="flex items-center gap-6 text-[12px] font-black uppercase tracking-[0.4em] text-[#ef4444] italic">
+            <span className="bg-[#ef4444]/10 px-5 py-2.5 rounded-[18px]">PAGE {currentPage} / {media.images.length}</span>
+            <span className="opacity-40 animate-pulse">{Math.round(readingProgress)}% COMPLETED</span>
+          </div>
+
+          <div className="flex items-center gap-8 group/ctrl">
+             <button onClick={toggleFullscreen} className="p-4 bg-white/5 hover:bg-[#ef4444] rounded-2xl transition-all shadow-lg active-depth group/btn">
+               {isFullscreen ? <Minimize size={24} /> : <Maximize size={24} />}
              </button>
+             <div className="p-4 text-white/10 text-[10px] font-black uppercase tracking-widest italic hidden xl:block">
+                READER ENGINE v2026
+             </div>
           </div>
         </div>
       </footer>

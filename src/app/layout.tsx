@@ -49,7 +49,7 @@ export default function RootLayout({
       <head>
         <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" />
       </head>
-      <body className="bg-background text-foreground selection:bg-primary/30 antialiased font-sans">
+      <body className="bg-background text-foreground selection:bg-primary/30 antialiased font-sans cinema-grain">
         <QueryProvider>
           <DeviceProvider>
             <ThemeProvider 

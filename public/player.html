@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>VIP Player Pro</title>
+  <title>PRO MAX PLAYER</title>
   <link rel="stylesheet" href="https://cdn.plyr.io/3.7.8/plyr.css" />
   <style>
     body { 
@@ -20,13 +20,14 @@
     .plyr {
       width: 100%;
       height: 100%;
-    }
-    :root {
-      --plyr-color-main: #0063e5; /* Default Blue */
-      --plyr-menu-background: rgba(20, 20, 22, 0.95);
-      --plyr-menu-color: #fff;
-      --plyr-control-spacing: 12px;
+      --plyr-color-main: #3b82f6; /* Default Blue */
+      --plyr-menu-background: rgba(10, 10, 12, 0.95);
+      --plyr-menu-color: #f1f1f1;
+      --plyr-control-spacing: 16px;
       --plyr-font-family: inherit;
+      --plyr-range-thumb-height: 14px;
+      --plyr-range-track-height: 4px;
+      --plyr-control-radius: 12px;
     }
 
     #player-container {
@@ -36,186 +37,197 @@
       touch-action: none;
       -webkit-user-select: none;
       user-select: none;
-      -webkit-touch-callout: none;
+      background: #000;
     }
 
-    #error-msg {
-      display: none;
-      color: white;
-      text-align: center;
-      padding: 2rem;
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      z-index: 10;
-    }
-    
-    #brightness-overlay {
-      position: absolute;
-      inset: 0;
-      background: black;
-      opacity: 0;
-      pointer-events: none;
-      z-index: 2;
-    }
-
-    /* OSD Feedback */
+    /* OSD Feedback - Glass Pro Max */
     #osd {
       position: absolute;
-      top: 15%;
+      top: 10%;
       left: 50%;
       transform: translateX(-50%);
-      background: rgba(0,0,0,0.65);
-      backdrop-filter: blur(8px);
-      -webkit-backdrop-filter: blur(8px);
-      border: 1px solid rgba(255,255,255,0.1);
+      background: rgba(255, 255, 255, 0.03);
+      backdrop-filter: blur(40px) saturate(200%);
+      -webkit-backdrop-filter: blur(40px) saturate(200%);
+      border: 1px solid rgba(255, 255, 255, 0.08);
       color: white;
-      padding: 10px 20px;
-      border-radius: 30px;
+      padding: 14px 40px;
+      border-radius: 48px;
       font-size: 14px;
-      font-weight: 600;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: 0.3em;
+      font-style: italic;
       display: none;
-      z-index: 20;
+      z-index: 200;
       pointer-events: none;
       align-items: center;
-      gap: 8px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+      gap: 16px;
+      box-shadow: 0 40px 100px rgba(0,0,0,0.8), inset 0 0 30px rgba(255,255,255,0.02);
       white-space: nowrap;
+      animation: osdIn 0.4s cubic-bezier(0.16, 1, 0.3, 1);
     }
     
-    /* Center Seek Ripple */
+    @keyframes osdIn {
+      from { top: 5%; opacity: 0; filter: blur(10px); }
+      to { top: 10%; opacity: 1; filter: blur(0px); }
+    }
+    
+    /* Center Seek Ripple - Premium Neural */
     #center-ripple {
       position: absolute;
       top: 50%;
       left: 50%;
-      transform: translate(-50%, -50%) scale(0.5);
-      background: rgba(0,0,0,0.5);
+      transform: translate(-50%, -50%) scale(0.8);
+      background: rgba(255, 255, 255, 0.04);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
       color: white;
       border-radius: 50%;
-      width: 64px;
-      height: 64px;
+      width: 100px;
+      height: 100px;
       display: flex;
       align-items: center;
       justify-content: center;
       opacity: 0;
-      z-index: 5;
+      z-index: 50;
       pointer-events: none;
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+      box-shadow: 0 0 60px rgba(0,0,0,0.5);
     }
     #center-ripple.active {
-      transform: translate(-50%, -50%) scale(1.5);
+      transform: translate(-50%, -50%) scale(1.6);
       opacity: 1;
     }
 
-    /* Overlay Bar (for Volume/Brightness gestures) */
+    /* Gesture Bar - Vertical Neural Scroll */
     #gesture-bar {
       position: absolute;
       top: 50%;
       transform: translateY(-50%);
-      width: 44px;
-      height: 150px;
-      background: rgba(0,0,0,0.5);
-      backdrop-filter: blur(4px);
-      border-radius: 22px;
+      width: 60px;
+      height: 240px;
+      background: rgba(10, 10, 12, 0.3);
+      backdrop-filter: blur(30px) saturate(180%);
+      -webkit-backdrop-filter: blur(30px) saturate(180%);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 30px;
       display: none;
       flex-direction: column;
       align-items: center;
       justify-content: flex-end;
-      padding: 4px;
-      z-index: 10;
+      padding: 10px;
+      z-index: 100;
       pointer-events: none;
+      box-shadow: 0 50px 100px rgba(0,0,0,0.6);
+    }
+    #gesture-bar-bg {
+       width: 100%;
+       flex: 1;
+       background: rgba(255, 255, 255, 0.05);
+       border-radius: 20px;
+       position: relative;
+       overflow: hidden;
+       margin-bottom: 16px;
     }
     #gesture-bar-fill {
-      width: 36px;
-      height: 50%; /* dynamic */
-      background: var(--plyr-color-main);
-      border-radius: 18px;
-      transition: height 0.1s;
+      width: 100%;
+      background: linear-gradient(to top, var(--plyr-color-main), rgba(255, 255, 255, 0.4));
+      border-radius: 20px;
+      transition: height 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      box-shadow: 0 0 30px var(--plyr-color-main);
     }
     #gesture-bar-icon {
-      margin-bottom: 8px;
+       padding: 10px;
+       color: white;
+       filter: drop-shadow(0 0 10px var(--plyr-color-main));
     }
 
-    /* Themes */
-    .theme-topxx {
-      --plyr-color-main: #fbbf24; /* TopXX Yellow */
-    }
-    .theme-truyen {
-      --plyr-color-main: #6366f1; /* Indigo */
-    }
-    
-    /* Mobile-First Touch Target Optimizations */
-    @media (max-width: 768px) {
-      .plyr__controls { padding: 12px 16px !important; }
-      .plyr__control {
-        min-height: 44px !important;
-        min-width: 44px !important;
-        margin: 0 4px !important;
-      }
-      .plyr__menu__container {
-        width: 250px !important;
-      }
-      .plyr__menu__container .plyr__control {
-        min-height: 50px !important;
-        font-size: 15px !important;
-      }
-      .plyr__progress__container {
-        position: absolute;
-        bottom: 56px;
-        left: 0;
-        right: 0;
-        padding: 0 16px !important;
-        margin-bottom: 4px;
-      }
-      .plyr__controls__item.plyr__time {
-        font-size: 13px;
-        font-weight: 500;
-        opacity: 0.8;
-      }
-      /* Hide volume on iOS since it's hardware tied */
-      .plyr--ios .plyr__volume { display: none !important; }
-    }
-    
-    /* Fullscreen layout tweaks */
-    .plyr--fullscreen-active .plyr__controls {
-      padding-bottom: env(safe-area-inset-bottom, 20px) !important;
-      padding-left: env(safe-area-inset-left, 20px) !important;
-      padding-right: env(safe-area-inset-right, 20px) !important;
-    }
-    /* Seek Preview Container */
+    /* Preview - State of Art Cinema */
     #seek-preview {
       position: absolute;
-      bottom: 80px;
+      bottom: 120px;
       left: 0;
-      width: 160px;
-      height: 90px;
+      width: 240px;
+      height: 135px;
       background: #000;
-      border: 2px solid rgba(255,255,255,0.2);
-      border-radius: 8px;
+      border: 2px solid rgba(255, 255, 255, 0.15);
+      border-radius: 24px;
       overflow: hidden;
       display: none;
       pointer-events: none;
-      z-index: 100;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+      z-index: 300;
+      box-shadow: 0 60px 120px rgba(0,0,0,0.9), 0 0 0 1px rgba(255, 255, 255, 0.05);
       transform: translateX(-50%);
+      transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
     }
     #preview-canvas {
       width: 100%;
       height: 100%;
       object-fit: cover;
+      filter: saturate(1.2) contrast(1.1);
     }
     #preview-time {
       position: absolute;
-      bottom: 4px;
-      left: 50%;
-      transform: translateX(-50%);
-      background: rgba(0,0,0,0.8);
+      bottom: 12px;
+      right: 12px;
+      background: rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
       color: white;
-      padding: 2px 6px;
-      border-radius: 4px;
-      font-size: 10px;
-      font-weight: 800;
+      padding: 6px 14px;
+      border-radius: 12px;
+      font-size: 13px;
+      font-weight: 900;
+      font-style: italic;
+      letter-spacing: 0.15em;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      box-shadow: 0 10px 20px rgba(0,0,0,0.5);
+    }
+
+    /* Themes Blue(phim), Red(truyen), Yellow(topxx) */
+    .theme-phim { --plyr-color-main: #3b82f6; }
+    .theme-truyen { --plyr-color-main: #ef4444; }
+    .theme-topxx { --plyr-color-main: #fbbf24; }
+    
+    /* Control Bar Refinement - 100% Glass Cinema */
+    .plyr--full-ui input[type=range] { color: var(--plyr-color-main); }
+    .plyr__control--overlaid { 
+        background: rgba(255, 255, 255, 0.1) !important; 
+        padding: 28px !important; 
+        backdrop-filter: blur(30px); 
+        box-shadow: 0 30px 60px rgba(0,0,0,0.5);
+        border: 1px solid rgba(255,255,255,0.1);
+    }
+    .plyr__controls {
+       background: linear-gradient(transparent, rgba(0, 0, 0, 0.95)) !important;
+       padding: 40px 60px 40px !important;
+       opacity: 0.4;
+       transition: opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1) !important;
+    }
+    .plyr--hover .plyr__controls, .plyr--focus .plyr__controls { opacity: 1; }
+    
+    .plyr__control {
+       border-radius: 16px !important;
+       transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1) !important;
+    }
+    .plyr__control:hover { 
+        background: rgba(255, 255, 255, 0.1) !important; 
+        transform: translateY(-4px) scale(1.1); 
+        color: var(--plyr-color-main) !important;
+    }
+    
+    .plyr__progress__container {
+        margin: 0 0 16px 0 !important;
+    }
+    .plyr__progress__buffer { color: rgba(255,255,255,0.1) !important; }
+
+    @media (max-width: 768px) {
+       .plyr__controls { padding: 24px 20px !important; }
+       .plyr__progress__container { margin: 0 0 12px 0 !important; }
+       #seek-preview { width: 180px; height: 101px; bottom: 100px; border-radius: 16px; }
+       #osd { font-size: 11px; padding: 10px 24px; }
     }
   </style>
   <script src="https://cdn.jsdelivr.net/npm/hls.js@1.3.5"></script>
@@ -225,502 +237,212 @@
   <div id="player-container">
     <video id="video" playsinline crossorigin="anonymous"></video>
     <video id="preview-video" muted playsinline style="display:none;" crossorigin="anonymous"></video>
-    <div id="brightness-overlay"></div>
     <div id="osd"></div>
     
-    <!-- Seek Preview -->
     <div id="seek-preview">
        <canvas id="preview-canvas"></canvas>
        <div id="preview-time">00:00</div>
     </div>
 
-    <!-- Visual Indicator for Seek -->
     <div id="center-ripple">
-      <svg id="ripple-icon" width="32" height="32" viewBox="0 0 24 24" fill="none" class="lucide" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M21 12a9 9 0 1 1-9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/>
-        <path d="M21 3v5h-5"/>
+      <svg id="ripple-icon" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 12a9 9 0 1 1-9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/>
       </svg>
     </div>
 
-    <!-- Vertical Gesture Bar (Volume/Brightness) -->
     <div id="gesture-bar">
-      <div id="gesture-bar-icon">
-        <!-- SVG dynamically inserted -->
+      <div id="gesture-bar-bg">
+        <div id="gesture-bar-fill"></div>
       </div>
-      <div id="gesture-bar-bg" style="width: 100%; flex: 1; background: rgba(255,255,255,0.2); border-radius: 18px; position: relative; overflow: hidden;">
-        <div id="gesture-bar-fill" style="position: absolute; bottom: 0; width: 100%;"></div>
-      </div>
+      <div id="gesture-bar-icon"></div>
     </div>
   </div>
-  
-  <div id="error-msg"></div>
 
   <script>
-    // URL Parsing
     const urlParams = new URLSearchParams(window.location.search);
     const source = urlParams.get('url');
-    const theme = urlParams.get('theme') || 'default';
-    if (theme !== 'default') document.body.classList.add('theme-' + theme);
+    const theme = urlParams.get('theme') || 'phim';
+    document.body.classList.add('theme-' + theme);
 
-    // Elements
     const video = document.getElementById('video');
     const container = document.getElementById('player-container');
-    const errorMsg = document.getElementById('error-msg');
-    const brightnessOverlay = document.getElementById('brightness-overlay');
     const osd = document.getElementById('osd');
     const centerRipple = document.getElementById('center-ripple');
     const rippleIcon = document.getElementById('ripple-icon');
     const gestureBar = document.getElementById('gesture-bar');
     const gestureBarFill = document.getElementById('gesture-bar-fill');
     const gestureBarIcon = document.getElementById('gesture-bar-icon');
-
-    // State
-    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-    let hls;
-    let player;
-    let osdTimer = null;
-    let rippleTimer = null;
-
-    // Seek Preview State
     const previewVideo = document.getElementById('preview-video');
     const seekPreview = document.getElementById('seek-preview');
     const previewCanvas = document.getElementById('preview-canvas');
     const previewContext = previewCanvas.getContext('2d');
     const previewTimeLabel = document.getElementById('preview-time');
-    let previewHls;
-    let isPreviewReady = false;
-    let previewThrottleTimer = null;
 
-    // --- Helpers ---
-    function showOSD(text) {
-      if(!osd) return;
-      osd.innerHTML = text;
+    let player, hls, osdTimer, rippleTimer, previewHls, isPreviewReady = false, previewThrottle;
+
+    function showOSD(text, icon = '') {
+      osd.innerHTML = `<span>${icon}</span> ${text}`;
       osd.style.display = 'flex';
       clearTimeout(osdTimer);
       osdTimer = setTimeout(() => { osd.style.display = 'none'; }, 2000);
     }
 
-    function showRipple(direction, text) {
-      if (!centerRipple) return;
-      // direction: 'forward' or 'backward'
-      const isFwd = direction === 'forward';
-      rippleIcon.innerHTML = isFwd
-        ? `<path d="M21 12a9 9 0 1 1-9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><text x="12" y="15.5" font-family="system-ui" font-size="8" font-weight="bold" text-anchor="middle" fill="white" stroke="none">${text}</text>`
-        : `<path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><text x="12" y="15.5" font-family="system-ui" font-size="8" font-weight="bold" text-anchor="middle" fill="white" stroke="none">${text}</text>`;
-      
-      centerRipple.className = 'active';
+    function showRipple(fwd, text) {
+      rippleIcon.innerHTML = fwd 
+        ? `<path d="M21 12a9 9 0 1 1-9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><text x="12" y="15.5" font-family="system-ui" font-size="7" font-weight="900" text-anchor="middle" fill="white" stroke="none">${text}</text>`
+        : `<path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><text x="12" y="15.5" font-family="system-ui" font-size="7" font-weight="900" text-anchor="middle" fill="white" stroke="none">${text}</text>`;
+      centerRipple.classList.add('active');
       clearTimeout(rippleTimer);
-      rippleTimer = setTimeout(() => { centerRipple.className = ''; }, 400);
+      rippleTimer = setTimeout(() => centerRipple.classList.remove('active'), 400);
     }
 
-    function skip(seconds) {
+    function skip(s) {
       if (!player) return;
-      const targetTime = Math.max(0, Math.min(player.duration, player.currentTime + seconds));
-      player.currentTime = targetTime;
-      showRipple(seconds > 0 ? 'forward' : 'backward', Math.abs(seconds));
-      showOSD(`${seconds > 0 ? '⏩' : '⏪'} ${Math.abs(seconds)}s`);
+      player.currentTime = Math.max(0, Math.min(player.duration, player.currentTime + s));
+      showRipple(s > 0, Math.abs(s));
+      showOSD(`${Math.abs(s)}S`, s > 0 ? '⏩' : '⏪');
     }
 
-    // FIXED: Reliable Seek Mechanism
-    function reliableSeek(time) {
-      if (!video) return;
-      
-      const attempt = (retryCount = 0) => {
-        if (video.readyState >= 1) {
-          video.currentTime = time;
-          // Verify if it actually seeked
-          setTimeout(() => {
-            if (Math.abs(video.currentTime - time) > 1 && retryCount < 5) {
-              attempt(retryCount + 1);
-            }
-          }, 200);
-        } else if (retryCount < 10) {
-          setTimeout(() => attempt(retryCount + 1), 200);
+    function showGestureBar(mode, p) {
+      gestureBar.style.display = 'flex';
+      gestureBar.style.left = mode === 'brightness' ? '30px' : 'auto';
+      gestureBar.style.right = mode === 'volume' ? '30px' : 'auto';
+      gestureBarFill.style.height = `${p}%`;
+      gestureBarIcon.innerHTML = mode === 'brightness' 
+        ? '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M4.93 4.93l1.41 1.41m11.32 11.32l1.41 1.41M2 12h2m16 0h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>'
+        : '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>';
+      clearTimeout(gestureBar.timer);
+      gestureBar.timer = setTimeout(() => gestureBar.style.display = 'none', 1000);
+    }
+
+    function formatTime(s) {
+      const m = Math.floor(s / 60);
+      return `${m.toString().padStart(2,'0')}:${Math.floor(s % 60).toString().padStart(2,'0')}`;
+    }
+
+    function initPreview() {
+      if (isPreviewReady || !source) return;
+      const isM3U8 = source.includes('m3u8');
+      if (isM3U8 && Hls.isSupported()) {
+        previewHls = new Hls({ maxBufferLength: 1, maxMaxBufferLength: 2, autoStartLoad: true, startLevel: 0 });
+        previewHls.loadSource(source);
+        previewHls.attachMedia(previewVideo);
+      } else {
+        previewVideo.src = source;
+      }
+      previewVideo.addEventListener('seeked', () => {
+        previewCanvas.width = 200; previewCanvas.height = 112;
+        previewContext.drawImage(previewVideo, 0, 0, 200, 112);
+      });
+      isPreviewReady = true;
+    }
+
+    function setupInteract() {
+      const p = container.querySelector('.plyr__progress');
+      if (!p) return;
+      const move = (e) => {
+        const r = p.getBoundingClientRect();
+        const x = e.touches ? e.touches[0].clientX : e.clientX;
+        const pct = Math.max(0, Math.min(1, (x - r.left) / r.width));
+        if (player && player.duration) {
+          const t = pct * player.duration;
+          seekPreview.style.display = 'block';
+          seekPreview.style.left = `${x - container.getBoundingClientRect().left}px`;
+          previewTimeLabel.innerText = formatTime(t);
+          if (!isPreviewReady) initPreview();
+          clearTimeout(previewThrottle);
+          previewThrottle = setTimeout(() => { if (previewVideo.readyState >= 1) previewVideo.currentTime = t; }, 50);
         }
       };
-      attempt();
+      p.addEventListener('mousemove', move);
+      p.addEventListener('touchstart', move, {passive:true}); p.addEventListener('touchmove', move, {passive:true});
+      const end = () => seekPreview.style.display = 'none';
+      p.addEventListener('mouseleave', end); p.addEventListener('touchend', end);
     }
 
-    function showGestureBar(mode, percent) {
-      gestureBar.style.display = 'flex';
-      gestureBar.style.left = mode === 'brightness' ? '20px' : 'auto';
-      gestureBar.style.right = mode === 'volume' ? '20px' : 'auto';
-      gestureBarFill.style.height = `${percent}%`;
-
-      if (mode === 'brightness') {
-        gestureBarIcon.innerHTML = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg>`;
-      } else {
-        const isMuted = percent === 0;
-        gestureBarIcon.innerHTML = isMuted 
-          ? `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg>`
-          : `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>`;
-      }
-
-      clearTimeout(gestureBar.timer);
-      gestureBar.timer = setTimeout(() => { gestureBar.style.display = 'none'; }, 1000);
-    }
-
-    // --- Seek Preview Engine ---
-    function initPreviewHls() {
-       if (isPreviewReady || !source) return;
-       const isM3U8 = source.includes('.m3u8') || source.includes('m3u8');
-       
-       if (isM3U8 && Hls.isSupported()) {
-          previewHls = new Hls({ 
-             maxBufferLength: 1, 
-             maxMaxBufferLength: 2, 
-             autoStartLoad: true,
-             startLevel: 0 // Lowest quality for preview
-          });
-          previewHls.loadSource(source);
-          previewHls.attachMedia(previewVideo);
-          isPreviewReady = true;
-       } else {
-          previewVideo.src = source;
-          isPreviewReady = true;
-       }
-
-       previewVideo.addEventListener('seeked', () => {
-          previewCanvas.width = 160;
-          previewCanvas.height = 90;
-          previewContext.drawImage(previewVideo, 0, 0, 160, 90);
-       });
-    }
-
-    function handleProgressBarInteract() {
-       const progress = container.querySelector('.plyr__progress');
-       if (!progress) return;
-
-       const onMove = (e) => {
-          const rect = progress.getBoundingClientRect();
-          const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-          const percent = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
-          
-          if (player && player.duration) {
-             const time = percent * player.duration;
-             const containerRect = container.getBoundingClientRect();
-             const xPos = clientX - containerRect.left;
-             
-             seekPreview.style.display = 'block';
-             seekPreview.style.left = `${xPos}px`;
-             previewTimeLabel.innerText = formatTime(time);
-
-             if (!isPreviewReady) initPreviewHls();
-             
-             clearTimeout(previewThrottleTimer);
-             previewThrottleTimer = setTimeout(() => {
-                if (previewVideo.readyState >= 1) {
-                   previewVideo.currentTime = time;
-                }
-             }, 50);
-          }
-       };
-
-       progress.addEventListener('mousemove', onMove);
-       progress.addEventListener('touchstart', onMove, { passive: true });
-       progress.addEventListener('touchmove', onMove, { passive: true });
-       
-       const onEnd = () => { seekPreview.style.display = 'none'; };
-       progress.addEventListener('mouseleave', onEnd);
-       progress.addEventListener('touchend', onEnd);
-    }
-
-    // --- Complex Touch Gesture Engine ---
-    let tStartX = 0, tStartY = 0, tStartTime = 0;
-    let swipeMode = null; // 'volume', 'brightness', 'seek', 'pip'
-    let tStartVolume = 1, tStartBrightness = 0, tStartSeek = 0;
-    let isSpeedingUp = false, originalSpeed = 1, speedTimer = null;
-    let currentBrightness = 0; // 0 = original, 0.8 = max dimming
-    let lastTapTime = 0, lastTapX = 0;
-
+    let tX, tY, tT, mode, sVol, sBright, sSeek, speedUp = false, lastTap = 0;
     container.addEventListener('touchstart', (e) => {
-      // Ignore UI overlapping
-      if (e.target.closest('.plyr__controls') || e.target.closest('button')) return;
-      const touch = e.touches[0];
-      const rect = container.getBoundingClientRect();
-      
-      tStartX = touch.clientX - rect.left;
-      tStartY = touch.clientY - rect.top;
-      tStartTime = Date.now();
-      swipeMode = null;
-      
-      tStartVolume = player ? player.volume : 1;
-      tStartBrightness = currentBrightness;
-      tStartSeek = player ? player.currentTime : 0;
-
-      // Long press -> 2x Speed
-      originalSpeed = player ? player.speed : 1;
-      speedTimer = setTimeout(() => {
-        if (!swipeMode && player && !player.paused) {
-          isSpeedingUp = true;
-          player.speed = 2;
-          showOSD(`⚡ Tua nhanh 2x (Đang giữ)`);
-          
-          container.classList.add('plyr--hide-controls'); // Hide controls manually when speeding
-        }
+      if (e.target.closest('.plyr__controls')) return;
+      const t = e.touches[0], r = container.getBoundingClientRect();
+      tX = t.clientX - r.left; tY = t.clientY - r.top; tT = Date.now();
+      mode = null; sVol = player.volume; sBright = parseFloat(container.style.filter?.replace('brightness(','') || 1); sSeek = player.currentTime;
+      speedUpTimer = setTimeout(() => {
+         if (!mode && player && !player.paused) {
+            speedUp = true; player.speed = 2; showOSD("2X SPEED", "⚡");
+            container.classList.add('plyr--hide-controls');
+         }
       }, 500);
-    }, { passive: false });
+    });
 
     container.addEventListener('touchmove', (e) => {
-      if (e.target.closest('.plyr__controls')) return;
-      if (isSpeedingUp) { e.preventDefault(); return; } // Lock swipes if long pressing
-
-      const touch = e.touches[0];
-      const rect = container.getBoundingClientRect();
-      const currentX = touch.clientX - rect.left;
-      const currentY = touch.clientY - rect.top;
-      
-      const deltaX = currentX - tStartX;
-      const deltaY = currentY - tStartY;
-
-      if (!swipeMode) {
-        if (Math.abs(deltaY) > 20 && Math.abs(deltaY) > Math.abs(deltaX)) {
-           // Vertical swipe
-           clearTimeout(speedTimer);
-           // If swipe down dramatically, trigger PiP/Exit
-           if (deltaY > 50 && tStartY < 100) {
-              swipeMode = 'pip';
-           } else {
-              swipeMode = tStartX < rect.width / 2 ? 'brightness' : 'volume';
-           }
-        } else if (Math.abs(deltaX) > 20 && Math.abs(deltaX) > Math.abs(deltaY)) {
-           // Horizontal swipe
-           clearTimeout(speedTimer);
-           swipeMode = 'seek';
+      if (e.target.closest('.plyr__controls') || speedUp) return;
+      const t = e.touches[0], r = container.getBoundingClientRect();
+      const dX = (t.clientX - r.left) - tX, dY = (t.clientY - r.top) - tY;
+      if (!mode) {
+        if (Math.abs(dY) > 20 && Math.abs(dY) > Math.abs(dX)) mode = tX < r.width/2 ? 'brightness' : 'volume';
+        else if (Math.abs(dX) > 20) mode = 'seek';
+      }
+      if (mode) {
+        e.preventDefault();
+        if (mode === 'volume') {
+          const v = Math.max(0, Math.min(1, sVol - (dY/r.height)*1.5));
+          player.volume = v; showGestureBar('volume', v*100);
+        } else if (mode === 'brightness') {
+          const b = Math.max(0.2, Math.min(1.5, sBright - (dY/r.height)*1.5));
+          container.style.filter = `brightness(${b})`; showGestureBar('brightness', ((b-0.2)/1.3)*100);
+        } else if (mode === 'seek') {
+          const s = dX * 0.5; showOSD(`${s > 0 ? '+' : ''}${Math.round(s)}S`, '🕒');
         }
       }
-
-      if (swipeMode) e.preventDefault(); // Stop native scrolling
-
-      if (swipeMode === 'volume') {
-        if (isIOS) return; // iOS prevents volume control via JS
-        const deltaVol = -(deltaY / rect.height) * 1.5;
-        let newVol = Math.max(0, Math.min(1, tStartVolume + deltaVol));
-        if (player) player.volume = newVol;
-        showGestureBar('volume', Math.round(newVol * 100));
-      } 
-      else if (swipeMode === 'brightness') {
-        const deltaBright = -(deltaY / rect.height) * 1.5;
-        let newBright = Math.max(0, Math.min(0.8, tStartBrightness - deltaBright));
-        currentBrightness = newBright;
-        brightnessOverlay.style.opacity = currentBrightness;
-        showGestureBar('brightness', Math.round((1 - (currentBrightness / 0.8)) * 100));
-      }
-      else if (swipeMode === 'seek') {
-        // Horizontal Seek: 1 pixel = ~0.5s
-        const seekDelta = deltaX * 0.5; 
-        const newTime = Math.max(0, Math.min(player.duration, tStartSeek + seekDelta));
-        const sign = seekDelta > 0 ? '+' : '';
-        showOSD(`🕒 ${sign}${Math.round(seekDelta)}s (${formatTime(newTime)})`);
-      }
-      else if (swipeMode === 'pip' && deltaY > 80) {
-        if (player && document.pictureInPictureEnabled && !document.pictureInPictureElement) {
-          video.requestPictureInPicture().catch(()=>{});
-        }
-      }
-    }, { passive: false });
+    }, {passive:false});
 
     container.addEventListener('touchend', (e) => {
-      clearTimeout(speedTimer);
-      
-      if (isSpeedingUp) {
-        isSpeedingUp = false;
-        if (player) player.speed = originalSpeed;
-        showOSD(`▶️ Tốc độ bình thường`);
-        return;
+      clearTimeout(speedUpTimer);
+      if (speedUp) { speedUp = false; player.speed = 1; showOSD("NORMAL SPEED", "▶️"); return; }
+      if (mode === 'seek') {
+        const dX = (e.changedTouches[0].clientX - container.getBoundingClientRect().left) - tX;
+        player.currentTime = Math.max(0, Math.min(player.duration, sSeek + dX * 0.5));
+      } else if (!mode && Date.now() - tT < 250) {
+        if (Date.now() - lastTap < 300) {
+           const r = container.getBoundingClientRect();
+           if (tX < r.width * 0.4) skip(-15); else if (tX > r.width * 0.6) skip(15); else player.togglePlay();
+           lastTap = 0;
+        } else lastTap = Date.now();
       }
-
-      if (swipeMode === 'seek') {
-        const touch = e.changedTouches[0];
-        const rect = container.getBoundingClientRect();
-        const deltaX = (touch.clientX - rect.left) - tStartX;
-        const seekDelta = deltaX * 0.5;
-        if (player) player.currentTime = Math.max(0, Math.min(player.duration, tStartSeek + seekDelta));
-      } 
-      else if (!swipeMode) {
-        // Double Tap detection
-        const now = Date.now();
-        const tapLength = now - tStartTime;
-        if (tapLength < 250) { // Fast tap
-          if (now - lastTapTime < 300) {
-            // Double Tap Confirmed!
-            const rect = container.getBoundingClientRect();
-            if (tStartX < rect.width * 0.4) {
-              skip(-15);
-            } else if (tStartX > rect.width * 0.6) {
-              skip(15);
-            } else {
-              // Center double tap = toggle fullscreen or play/pause
-              if (player) player.togglePlay();
-            }
-            lastTapTime = 0; // Reset
-          } else {
-            lastTapTime = now;
-            lastTapX = tStartX;
-          }
-        }
-      }
-      swipeMode = null;
+      mode = null;
     });
 
-    // Format time (s to MM:SS)
-    function formatTime(secs) {
-      if(!secs || isNaN(secs)) return "00:00";
-      const m = Math.floor(secs / 60);
-      const s = Math.floor(secs % 60);
-      return `${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
-    }
-
-    // --- Desktop Keyboard Shortcuts ---
-    window.addEventListener('keydown', (e) => {
-      if (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA') return;
-      if (!player) return;
-
-      const act = () => player.togglePlay();
-
-      switch(e.key.toLowerCase()) {
-        case ' ': case 'k': e.preventDefault(); act(); break;
-        case 'f': e.preventDefault(); player.fullscreen.toggle(); break;
-        case 'm': e.preventDefault(); player.muted = !player.muted; break;
-        case 'j': e.preventDefault(); skip(-15); break;
-        case 'l': e.preventDefault(); skip(15); break;
-        case 'arrowright': e.preventDefault(); skip(15); break;
-        case 'arrowleft': e.preventDefault(); skip(-15); break;
-        case 'arrowup': e.preventDefault(); player.volume = Math.min(1, player.volume + 0.1); showGestureBar('volume', player.volume*100); break;
-        case 'arrowdown': e.preventDefault(); player.volume = Math.max(0, player.volume - 0.1); showGestureBar('volume', player.volume*100); break;
-      }
-    });
-
-    // --- Plyr & HLS Initialization ---
-    function initPlayer(qualityOptions = [], defaultQuality = 0) {
-      const plyrOptions = {
-        controls: [
-          'play-large', 'play', 'progress', 'current-time', 'duration', 'mute', 'volume', 
-          'captions', 'settings', 'pip', 'airplay', 'fullscreen'
-        ],
-        settings: ['quality', 'speed', 'captions'],
+    function initPlayer(q = [], d = 0) {
+      const opts = {
+        controls: ['play-large', 'play', 'progress', 'current-time', 'duration', 'mute', 'volume', 'settings', 'pip', 'fullscreen'],
+        settings: ['quality', 'speed'],
         speed: { selected: 1, options: [0.5, 0.75, 1, 1.25, 1.5, 2] },
         tooltips: { controls: true, seek: true },
-        keyboard: { focused: false, global: false }, // we use custom
-        fullscreen: { iosNative: false, fallback: true }, // Keep UI layer
-        storage: { enabled: true, key: 'disney-player' },
-        hideControls: true, 
+        keyboard: { global: true },
+        fullscreen: { iosNative: false, fallback: true },
+        hideControls: true,
       };
-
-      if (qualityOptions.length > 0) {
-        plyrOptions.quality = {
-          default: defaultQuality,
-          options: qualityOptions,
-          forced: true,
-          onChange: (newQuality) => {
-            if (hls) {
-               if (newQuality === 0) {
-                  hls.currentLevel = -1; // Auto
-               } else {
-                  hls.levels.forEach((level, index) => {
-                     if (level.height === newQuality) hls.currentLevel = index;
-                  });
-               }
-            }
-          }
-        };
-      }
-
-      player = new Plyr(video, plyrOptions);
-
-      // Force Landscape on Fullscreen Enter (Mobile only)
-      player.on('enterfullscreen', () => {
-        if (screen.orientation && screen.orientation.lock) {
-          screen.orientation.lock('landscape').catch(()=>{}); 
-        }
-        window.parent.postMessage({ type: 'ENTER_PSEUDO_FULLSCREEN' }, '*');
-      });
-
-      player.on('exitfullscreen', () => {
-        if (screen.orientation && screen.orientation.unlock) {
-          screen.orientation.unlock().catch(()=>{});
-        }
-        window.parent.postMessage({ type: 'EXIT_PSEUDO_FULLSCREEN' }, '*');
-      });
-
-      // Synchronize Progress to React Wrapper
-      setInterval(() => {
-        if (!video.paused) {
-          window.parent.postMessage({ 
-            type: 'UPDATE_PROGRESS', 
-            time: video.currentTime,
-            duration: video.duration 
-          }, '*');
-        }
-      }, 1000);
-
-      // Setup Seek Preview
-      handleProgressBarInteract();
-
-      // Listen for initial seek from parent
-      window.addEventListener('message', (e) => {
-        if (e.data && e.data.type === 'SEEK') {
-          const targetTime = e.data.time;
-          if (targetTime > 0) {
-            reliableSeek(targetTime);
-            const mins = Math.floor(targetTime / 60);
-            if(mins > 0) showOSD(`Tiếp tục xem từ phút thứ ${mins} 🎬`);
-          }
-        }
-      });
+      if (q.length) opts.quality = { default: d, options: q, forced: true, onChange: (v) => {
+        if (hls) { if (v === 0) hls.currentLevel = -1; else hls.levels.forEach((l, i) => { if (l.height === v) hls.currentLevel = i; }); }
+      }};
+      player = new Plyr(video, opts);
+      player.on('enterfullscreen', () => window.parent.postMessage({ type: 'ENTER_PSEUDO_FULLSCREEN' }, '*'));
+      player.on('exitfullscreen', () => window.parent.postMessage({ type: 'EXIT_PSEUDO_FULLSCREEN' }, '*'));
+      setInterval(() => { if (!video.paused) window.parent.postMessage({ type: 'UPDATE_PROGRESS', time: video.currentTime, duration: video.duration }, '*'); }, 1000);
+      setupInteract();
+      window.addEventListener('message', (e) => { if (e.data?.type === 'SEEK') { video.currentTime = e.data.time; showOSD("Tiếp tục xem...", "🎬"); } });
     }
 
-    // --- Media Loading Engine ---
     if (source) {
-      const isM3U8 = source.includes('.m3u8') || source.includes('m3u8');
-      
+      const isM3U8 = source.includes('m3u8');
       if (isM3U8 && Hls.isSupported()) {
-        hls = new Hls({ maxBufferLength: 30, maxMaxBufferLength: 60 });
-        hls.loadSource(source);
-        hls.attachMedia(video);
-        
-        hls.on(Hls.Events.MANIFEST_PARSED, (event, data) => {
-          // Extract Qualities
-          const availableQualities = hls.levels.map((l) => l.height).sort((a,b) => b-a);
-          availableQualities.unshift(0); // Add 'Auto' (0)
-          
-          initPlayer(availableQualities, 0); // Pass qualities to Plyr
-          
-          // Wait for custom seek before auto playing, handled via interact
+        hls = new Hls({ maxBufferLength: 30 }); hls.loadSource(source); hls.attachMedia(video);
+        hls.on(Hls.Events.MANIFEST_PARSED, () => {
+          const qs = hls.levels.map(l => l.height).sort((a,b) => b-a); qs.unshift(0); initPlayer(qs, 0);
         });
-        
-        hls.on(Hls.Events.ERROR, (event, data) => {
-          if (data.fatal) {
-            switch (data.type) {
-              case Hls.ErrorTypes.NETWORK_ERROR: hls.startLoad(); break;
-              case Hls.ErrorTypes.MEDIA_ERROR: hls.recoverMediaError(); break;
-              default:
-                hls.destroy();
-                container.style.display = 'none';
-                errorMsg.style.display = 'block';
-                errorMsg.innerHTML = '<h2>Lỗi tải Video</h2><p>Vui lòng thử server khác.</p>';
-                break;
-            }
-          }
-        });
-      } else if (video.canPlayType('application/vnd.apple.mpegurl') && isM3U8) {
-        // Native HLS (Safari iOS)
-        video.src = source;
-        initPlayer();
-        video.addEventListener('loadedmetadata', () => {});
-      } else {
-        // MP4
-        video.src = source;
-        initPlayer();
-      }
-
-      window.addEventListener('beforeunload', () => {
-        if (hls) hls.destroy();
-        if (player) player.destroy();
-      });
-    } else {
-      container.style.display = 'none';
+      } else { video.src = source; initPlayer(); }
     }
   </script>
 </body>
 </html>
+

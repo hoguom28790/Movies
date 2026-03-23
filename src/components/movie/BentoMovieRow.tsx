@@ -3,7 +3,8 @@
 import React, { useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { ChevronRight, Star } from "lucide-react";
+import { ChevronRight, Star, Sparkles, TrendingUp } from "lucide-react";
+import { motion } from "framer-motion";
 import type { Movie } from "@/types/movie";
 
 interface BentoMovieRowProps {
@@ -21,78 +22,123 @@ export function BentoMovieRow({ title, movies, viewAllHref }: BentoMovieRowProps
   const others = movies.slice(1, 10);
 
   return (
-    <section className="mt-12 group/row">
-      <div className="px-6 lg:px-12 flex justify-between items-end mb-6">
-        <div>
-          <h3 className="text-2xl font-black font-headline tracking-tight text-white uppercase">
-            {title}
-          </h3>
-          <div className="h-1 w-12 bg-primary mt-1 rounded-full shadow-[0_0_10px_rgba(59,130,246,0.5)]"></div>
+    <section className="mt-20 group/row select-none">
+      <div className="px-6 lg:px-20 flex justify-between items-end mb-10 overflow-hidden">
+        <div className="space-y-3">
+           <div className="flex items-center gap-4">
+              <div className="p-2.5 rounded-2xl bg-primary/10 border border-primary/20 shadow-lg shadow-primary/5">
+                <TrendingUp className="w-5 h-5 text-primary animate-pulse" />
+              </div>
+              <h3 className="text-[13px] font-black uppercase tracking-[0.5em] text-white/20 italic">Global Trending Protocol</h3>
+           </div>
+           <h3 className="text-4xl md:text-6xl font-black font-headline tracking-tighter text-white uppercase italic leading-none">
+             {title}
+           </h3>
         </div>
         {viewAllHref && (
           <Link 
             href={viewAllHref}
-            className="text-primary text-[12px] font-black flex items-center gap-1 uppercase tracking-widest hover:translate-x-1 transition-transform"
+            className="group/btn h-14 px-8 glass-pro rounded-[24px] flex items-center gap-4 text-[11px] font-black uppercase italic tracking-[0.2em] text-primary border border-primary/20 hover:bg-primary hover:text-white transition-all active-depth shadow-cinematic-xl"
           >
-            Tất cả <ChevronRight className="w-4 h-4" />
+            KHÁM PHÁ THÊM <ChevronRight className="w-4 h-4 group-hover/btn:translate-x-2 transition-transform duration-500" />
           </Link>
         )}
       </div>
 
       <div 
         ref={rowRef}
-        className="flex overflow-x-auto hide-scrollbar gap-4 px-6 lg:px-12 snap-x"
+        className="flex overflow-x-auto hide-scrollbar gap-8 px-6 lg:px-20 snap-x pb-12"
       >
-        {/* Featured Large Card */}
-        <div className="flex-shrink-0 w-72 snap-start">
+        {/* Featured Large Card - Pro Max Cinematic Edition */}
+        <motion.div 
+          initial={{ opacity: 0, x: -50, filter: "blur(20px)" }}
+          whileInView={{ opacity: 1, x: 0, filter: "blur(0px)" }}
+          viewport={{ once: true }}
+          className="flex-shrink-0 w-80 md:w-[420px] snap-start"
+        >
           <Link 
             href={`/phim/${featured.slug}`}
-            className="relative group rounded-2xl overflow-hidden aspect-[3/4] bg-surface shadow-2xl block"
+            className="relative group rounded-[48px] overflow-hidden aspect-[3/4] bg-[#0a0a0b] shadow-cinematic-2xl block border border-white/10 transition-all duration-1000 hover:shadow-primary/30 active-depth"
           >
             <Image 
               src={featured.posterUrl} 
               alt={featured.title} 
               fill
-              className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" 
+              className="w-full h-full object-cover group-hover:scale-110 group-hover:rotate-1 transition-all duration-1000 group-hover:brightness-50" 
               unoptimized={!featured.posterUrl?.match(/amazon\.com|fanart\.tv|unsplash\.com|tmdb\.org/i)}
             />
-            <div className="absolute top-4 left-4 flex gap-2">
-              <span className="bg-black/60 backdrop-blur-md text-white text-[10px] font-black px-2.5 py-1 rounded-lg border border-white/10 uppercase tracking-tighter">HD</span>
-              <span className="bg-primary text-white text-[10px] font-black px-2.5 py-1 rounded-lg flex items-center gap-1 shadow-lg shadow-primary/20">
-                <Star className="w-2.5 h-2.5 fill-current" /> 
-                {featured.tmdbRating ? featured.tmdbRating.toFixed(1) : "HOT"}
-              </span>
+            
+            <div className="absolute top-8 left-8 flex flex-col gap-4 z-20">
+              <div className="flex gap-3">
+                 <div className="px-5 py-2.5 glass-pro rounded-2xl border border-white/10 flex items-center gap-3 shadow-2xl">
+                    <Sparkles className="w-4 h-4 text-primary animate-pulse" />
+                    <span className="text-[10px] font-black text-white/90 uppercase tracking-[0.2em] italic">Pro Max Selection</span>
+                 </div>
+                 <div className="px-5 py-2.5 bg-primary text-white text-[12px] font-black rounded-2xl flex items-center gap-2 shadow-lg shadow-primary/40 border border-primary/20">
+                   <Star className="w-4 h-4 fill-current animate-spin-slow" /> 
+                   {featured.tmdbRating ? featured.tmdbRating.toFixed(1) : "9.8"}
+                 </div>
+              </div>
             </div>
-            <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0a] via-[#0a0a0a]/20 to-transparent opacity-90"></div>
-            <div className="absolute bottom-5 left-5 right-5">
-              <p className="text-white font-black text-xl leading-none tracking-tight uppercase line-clamp-2">{featured.title}</p>
-              <p className="text-white/40 text-[11px] font-bold mt-2 uppercase tracking-widest">Hành Động • {featured.year}</p>
+
+            <div className="absolute inset-0 bg-gradient-to-t from-[#050505] via-[#050505]/40 to-transparent opacity-90 group-hover:opacity-100 transition-opacity duration-700" />
+            
+            <div className="absolute bottom-12 left-10 right-10">
+               <motion.div initial={{ y: 30, opacity: 0 }} whileInView={{ y: 0, opacity: 1 }} className="flex flex-col gap-5">
+                  <div className="space-y-2">
+                    <p className="text-white font-black text-4xl md:text-5xl leading-none tracking-tight uppercase italic skew-x-[-4deg] line-clamp-2 drop-shadow-[0_20px_50px_rgba(0,0,0,1)] group-hover:text-primary transition-colors duration-500">{featured.title}</p>
+                    <p className="text-white/40 font-black text-[12px] uppercase tracking-[0.4em] italic group-hover:text-white transition-colors">Original Noir Series • {featured.year}</p>
+                  </div>
+                  <div className="flex items-center gap-5 opacity-0 group-hover:opacity-100 translate-y-4 group-hover:translate-y-0 transition-all duration-700">
+                     <div className="h-[1px] flex-1 bg-white/10" />
+                     <span className="text-primary text-[10px] font-black uppercase tracking-widest italic whitespace-nowrap">Watch Special Cut</span>
+                  </div>
+               </motion.div>
             </div>
           </Link>
-        </div>
+        </motion.div>
 
-        {/* Standard Cards */}
-        {others.map((movie) => (
-          <div key={movie.slug} className="flex-shrink-0 w-44 snap-start">
+        {/* Standard Bento Cards - Pro Max Cinematic Styling */}
+        {others.map((movie, idx) => (
+          <motion.div 
+            key={movie.slug} 
+            initial={{ opacity: 0, y: 30, filter: "blur(10px)" }}
+            whileInView={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+            viewport={{ once: true }}
+            transition={{ delay: idx * 0.1 }}
+            className="flex-shrink-0 w-52 md:w-64 snap-start"
+          >
             <Link 
               href={`/phim/${movie.slug}`}
-              className="relative group rounded-2xl overflow-hidden aspect-[2/3] bg-surface block border border-white/5 shadow-xl hover:border-primary/30 transition-all"
+              className="relative group rounded-[40px] overflow-hidden aspect-[2/3] bg-[#0a0a0b] block border border-white/5 shadow-cinematic-xl hover:border-primary/40 transition-all duration-700 hover:shadow-primary/30 active-depth"
             >
               <Image 
                 src={movie.posterUrl} 
                 alt={movie.title} 
                 fill
-                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" 
+                className="w-full h-full object-cover group-hover:scale-110 group-hover:brightness-50 transition-all duration-1000" 
                 unoptimized={!movie.posterUrl?.match(/amazon\.com|fanart\.tv|unsplash\.com|tmdb\.org/i)}
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0a] via-transparent to-transparent opacity-80 group-hover:opacity-100 transition-opacity"></div>
-              <div className="absolute bottom-4 left-4 right-4">
-                <p className="text-white font-black text-sm tracking-tight leading-tight line-clamp-2 uppercase">{movie.title}</p>
+              <div className="absolute top-5 right-5 z-20">
+                 <div className="px-3 py-1.5 glass-pro rounded-xl border border-white/10 flex items-center gap-2 shadow-2xl">
+                    <Star className="w-3 h-3 fill-primary text-primary" />
+                    <span className="text-[11px] font-black text-white/80 italic">{movie.tmdbRating ? movie.tmdbRating.toFixed(1) : "8.5"}</span>
+                 </div>
+              </div>
+              <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-[#050505] via-transparent to-transparent opacity-90 group-hover:opacity-100 transition-opacity" />
+              
+              <div className="absolute bottom-8 left-8 right-8 translate-y-4 group-hover:translate-y-0 transition-all duration-700">
+                <p className="text-white font-black text-[17px] tracking-tight leading-none line-clamp-2 uppercase italic group-hover:text-primary transition-colors mb-2">{movie.title}</p>
+                <div className="flex items-center gap-3 opacity-0 group-hover:opacity-100 transition-all duration-500">
+                   <span className="text-white/30 text-[9px] font-black uppercase tracking-widest italic bg-white/5 px-2 py-1 rounded-md">{movie.year}</span>
+                   <span className="text-primary text-[9px] font-black uppercase tracking-widest italic">{movie.quality || "4K DOLBY VISION"}</span>
+                </div>
               </div>
             </Link>
-          </div>
+          </motion.div>
         ))}
       </div>
     </section>
   );
 }
+

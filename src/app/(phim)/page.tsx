@@ -88,6 +88,7 @@ export default async function Home() {
               year={movie.year}
               quality={movie.quality}
               originalTitle={movie.originalTitle}
+              score={movie.imdbRating || movie.tmdbRating}
             />
           ))}
         </div>

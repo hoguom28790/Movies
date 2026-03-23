@@ -337,67 +337,81 @@ export function PlayerContainer({ url, isHls, rawEmbedUrl, nextEpisodeUrl, movie
       ? (isPortrait 
           ? `fixed top-0 left-full w-[100vh] h-[100vw] rotate-90 origin-top-left z-[9999] bg-black ${isIOS ? 'p-safe' : ''}` 
           : `fixed inset-0 w-screen h-screen z-[9999] bg-black ${isIOS ? 'p-safe' : ''}`)
-      : "w-full aspect-video relative shadow-2xl bg-black overflow-hidden"
+      : "w-full aspect-video relative shadow-cinematic-2xl bg-black overflow-hidden rounded-[32px] border border-white/5"
     }>
       <iframe
         id="main-player"
         key={iframeSrc}
         src={iframeSrc}
-        className="w-full h-full border-0 absolute inset-0 rounded-[var(--radius)]"
+        className="w-full h-full border-0 absolute inset-0 rounded-[28px]"
         allowFullScreen
       />
 
-      {/* Skip Intro Overlay - Refined UI */}
+      {/* Skip Intro Overlay - Pro Max Cinematic */}
       <AnimatePresence>
         {skipShow && (
           <motion.div
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: 20 }}
-            className={`absolute bottom-20 right-4 z-[100] flex flex-col gap-2 pointer-events-auto`}
+            initial={{ opacity: 0, x: 50, filter: "blur(10px)" }}
+            animate={{ opacity: 1, x: 0, filter: "blur(0px)" }}
+            exit={{ opacity: 0, x: 50, filter: "blur(10px)" }}
+            className={`absolute bottom-24 right-8 z-[100] flex flex-col gap-4 pointer-events-auto`}
           >
             <motion.div 
-               whileHover={{ scale: 1.05 }}
+               whileHover={{ scale: 1.05, y: -2 }}
                whileTap={{ scale: 0.95 }}
-               className="relative"
+               className="relative group"
             >
+              {/* Pulse Glow Effect */}
+              <div className="absolute inset-0 bg-[#ef4444] blur-[20px] opacity-20 group-hover:opacity-40 transition-opacity rounded-2xl" />
+              
               <Button
                 onClick={() => handleSeek(skipShow.endTime + 0.5)}
-                className="bg-black/60 backdrop-blur-xl text-white border border-white/10 shadow-2xl px-4 py-2 h-10 gap-2 hover:bg-primary hover:border-primary transition-all text-[12px] font-black uppercase tracking-widest rounded-xl"
+                className="relative glass-pro bg-black/40 text-white border border-white/10 shadow-cinematic-xl px-7 py-4 h-auto gap-4 hover:bg-[#ef4444] hover:border-[#ef4444] transition-all text-[13px] font-black uppercase tracking-[0.2em] italic rounded-2xl group-hover:shadow-[0_0_30px_rgba(239,68,68,0.3)]"
               >
-                <SkipForward className="w-4 h-4 fill-current" />
+                <SkipForward className="w-5 h-5 fill-current animate-pulse" />
                 Bỏ qua mở đầu
               </Button>
             </motion.div>
             
-            <div className="flex items-center justify-end px-1">
-              <label className="flex items-center gap-2 cursor-pointer group">
-                <input
-                  type="checkbox"
-                  checked={!!userSettings?.autoSkipIntro}
-                  onChange={(e) => autoSkipMutation.mutate(e.target.checked)}
-                  className="w-3.5 h-3.5 rounded border-white/20 bg-black/40 text-primary focus:ring-primary accent-primary cursor-pointer"
-                />
-                <span className="text-[9px] font-black text-white/40 group-hover:text-white/80 transition-colors uppercase tracking-[0.2em]">Tự động</span>
+            <div className="flex items-center justify-end px-2">
+              <label className="flex items-center gap-3 cursor-pointer group/toggle">
+                <div className="relative w-8 h-4 bg-white/10 rounded-full border border-white/5 transition-colors group-hover/toggle:bg-white/20">
+                    <input
+                      type="checkbox"
+                      checked={!!userSettings?.autoSkipIntro}
+                      onChange={(e) => autoSkipMutation.mutate(e.target.checked)}
+                      className="absolute inset-x-0 w-full h-full opacity-0 cursor-pointer z-10"
+                    />
+                    <motion.div 
+                        animate={{ x: userSettings?.autoSkipIntro ? 16 : 0 }}
+                        className={`w-4 h-4 rounded-full shadow-lg ${userSettings?.autoSkipIntro ? 'bg-[#ef4444]' : 'bg-white/40'}`}
+                    />
+                </div>
+                <span className="text-[10px] font-black text-white/30 group-hover/toggle:text-white/60 transition-colors uppercase tracking-[0.3em] italic">AUTOSKIP</span>
               </label>
             </div>
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* Toast Notification */}
+      {/* Toast Notification - Neural Glass */}
       <AnimatePresence>
         {toast && (
           <motion.div
-            initial={{ opacity: 0, y: -20, scale: 0.9 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: -20, scale: 0.9 }}
-            className="absolute top-12 left-1/2 -translate-x-1/2 z-[200] px-5 py-3 rounded-2xl bg-black/80 backdrop-blur-xl border border-white/10 text-white text-[13px] font-bold shadow-2xl flex items-center gap-3 whitespace-nowrap pointer-events-auto"
+            initial={{ opacity: 0, y: -30, scale: 0.9, filter: "blur(20px)" }}
+            animate={{ opacity: 1, y: 0, scale: 1, filter: "blur(0px)" }}
+            exit={{ opacity: 0, y: -30, scale: 0.9, filter: "blur(20px)" }}
+            className="absolute top-12 left-1/2 -translate-x-1/2 z-[200] px-8 py-5 rounded-[24px] glass-pro bg-black/60 border border-white/10 text-white text-[14px] font-black italic uppercase tracking-widest shadow-cinematic-2xl flex items-center gap-4 whitespace-nowrap pointer-events-auto"
           >
+            <div className="w-2.5 h-2.5 rounded-full bg-[#ef4444] animate-pulse shadow-[0_0_10px_#ef4444]" />
             {toast}
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Ambient Neural Glow for Cinema Feel */}
+      <div className="absolute top-0 left-0 w-48 h-48 bg-[#3b82f6]/5 rounded-full blur-[80px] pointer-events-none" />
+      <div className="absolute bottom-0 right-0 w-64 h-64 bg-[#ef4444]/5 rounded-full blur-[100px] pointer-events-none" />
     </div>
   );
 }

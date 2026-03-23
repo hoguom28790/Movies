@@ -5,7 +5,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { getUserHistory, deleteFromHistory } from "@/services/db";
 import { HistoryEntry } from "@/types/database";
 import { MovieCard } from "./MovieCard";
-import { History, X, ChevronRight } from "lucide-react";
+import { History, ChevronRight } from "lucide-react";
 import Link from "next/link";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { FreeMode } from "swiper/modules";
@@ -44,47 +44,68 @@ export function MovieContinueWatching() {
   if (loading || items.length === 0) return null;
 
   return (
-    <section className="container mx-auto px-6 lg:px-12 py-10 animate-in fade-in duration-1000">
-      <div className="flex items-center justify-between mb-8">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center border border-primary/20">
-            <History className="w-5 h-5 text-primary" />
+    <section className="container mx-auto px-6 lg:px-20 py-16 animate-in fade-in slide-in-from-bottom-12 duration-1000">
+      <div className="flex items-center justify-between mb-12">
+        <div className="flex items-center gap-6">
+          <div className="w-16 h-16 rounded-[24px] bg-primary/10 flex items-center justify-center border border-primary/20 shadow-lg shadow-primary/5">
+            <History className="w-8 h-8 text-primary animate-pulse" />
           </div>
-          <h3 className="text-xl md:text-2xl font-black font-headline tracking-tight text-foreground uppercase italic">
-            Xem Tiếp
-          </h3>
+          <div className="space-y-2">
+            <h3 className="text-3xl md:text-5xl font-black font-headline tracking-tighter text-white uppercase italic leading-none drop-shadow-xl">
+              XEM TIẾP
+            </h3>
+            <p className="text-[11px] md:text-[12px] text-white/20 font-black uppercase tracking-[0.4em] italic group-hover:text-primary transition-colors">
+              RESUME ARCHIVE PROTOCOL • 2026
+            </p>
+          </div>
         </div>
-        <Link href="/lich-su" className="text-primary text-[11px] font-black flex items-center gap-1 uppercase tracking-widest hover:translate-x-1 transition-all">
-          Lịch sử của bạn <ChevronRight className="h-4 w-4" />
+        
+        <Link 
+          href="/lich-su" 
+          className="group flex items-center gap-4 px-8 py-4 rounded-[24px] glass-pro bg-black/40 text-[11px] font-black uppercase tracking-[0.2em] italic text-primary border border-primary/20 hover:bg-primary hover:text-white hover:shadow-[0_0_30px_rgba(var(--primary-rgb),0.3)] transition-all duration-700 active-depth"
+        >
+          ALL HISTORY 
+          <ChevronRight className="h-4 w-4 transition-transform group-hover:translate-x-2" />
         </Link>
       </div>
 
-      <Swiper
-        modules={[FreeMode]}
-        freeMode={true}
-        spaceBetween={16}
-        slidesPerView="auto"
-        className="!overflow-visible"
-      >
-        {items.map((item) => {
-          const progressPercent = item.durationSeconds && item.durationSeconds > 0 
-            ? Math.min(100, Math.round((item.progressSeconds / item.durationSeconds) * 100))
-            : 50;
+      <div className="relative group/swiper">
+        <Swiper
+          modules={[FreeMode]}
+          freeMode={true}
+          spaceBetween={28}
+          slidesPerView="auto"
+          className="!overflow-visible"
+        >
+          {items.map((item, idx) => {
+            const progressPercent = item.durationSeconds && item.durationSeconds > 0 
+              ? Math.min(100, Math.round((item.progressSeconds / item.durationSeconds) * 100))
+              : 50;
 
-          return (
-            <SwiperSlide key={item.movieSlug} className="!w-[180px] sm:!w-[220px]">
-              <MovieCard 
-                title={item.movieTitle}
-                slug={item.movieSlug}
-                posterUrl={item.posterUrl}
-                episodeText={`Tập ${item.episodeName}`}
-                progress={progressPercent}
-                onDelete={(e) => handleDelete(item.movieSlug, e)}
-              />
-            </SwiperSlide>
-          );
-        })}
-      </Swiper>
+            return (
+              <SwiperSlide key={item.movieSlug} className="!w-[200px] sm:!w-[280px]">
+                <div className="group/item relative">
+                   <MovieCard 
+                    title={item.movieTitle}
+                    slug={item.movieSlug}
+                    posterUrl={item.posterUrl}
+                    episodeText={`Episode ${item.episodeName}`}
+                    progress={progressPercent}
+                    onDelete={(e) => handleDelete(item.movieSlug, e)}
+                    index={idx}
+                  />
+                  {/* Subtle Label Enhancement */}
+                  <div className="absolute top-4 left-4 z-50 opacity-0 group-hover/item:opacity-100 transition-opacity duration-500 pointer-events-none">
+                     <div className="px-3 py-1 bg-black/60 backdrop-blur-xl border border-white/10 rounded-lg text-[8px] font-black text-white uppercase tracking-widest italic">
+                        Paused at {progressPercent}%
+                     </div>
+                  </div>
+                </div>
+              </SwiperSlide>
+            );
+          })}
+        </Swiper>
+      </div>
     </section>
   );
 }

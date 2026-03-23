@@ -69,6 +69,7 @@ export function MovieRow({ title, movies, viewAllHref }: MovieRowProps) {
               year={movie.year}
               quality={movie.quality}
               originalTitle={movie.originalTitle}
+              score={movie.imdbRating || movie.tmdbRating}
             />
           </div>
         ))}

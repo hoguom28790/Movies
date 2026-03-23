@@ -1,9 +1,10 @@
 "use client";
 
-import React, { useState, useRef, useEffect, useCallback } from "react";
+import React, { useState, useRef, useCallback } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ChevronDown } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import { getLunarAuthPass } from "@/lib/lunar";
 
 const GENRES = [
@@ -68,7 +69,7 @@ interface DropdownConfig {
 const dropdowns: DropdownConfig[] = [
   { id: "genre", label: "Thể loại", items: GENRES, basePath: "/the-loai", cols: 4 },
   { id: "country", label: "Quốc gia", items: COUNTRIES, basePath: "/quoc-gia", cols: 4 },
-  { id: "year", label: "Năm", items: YEARS, basePath: "/nam", cols: 4 },
+  { id: "year", label: "Năm", items: YEARS, basePath: "/nam", cols: 3 },
 ];
 
 import { TOPXX_PATH } from "@/lib/constants";
@@ -105,15 +106,7 @@ export function NavMenu({ mode }: NavMenuProps) {
   const pathname = usePathname();
   const isComicSection = mode === "truyen" || pathname.startsWith("/truyen") || pathname.startsWith("/doc");
 
-  useEffect(() => {
-    const handler = (e: MouseEvent) => {
-      if (navRef.current && !navRef.current.contains(e.target as Node)) {
-        setOpenId(null);
-      }
-    };
-    document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
-  }, []);
+  // The useEffect for mousedown outside navRef is removed as per the diff.
 
   const currentDropdowns = isComicSection ? [
     { id: "truyen-the-loai", label: "Thể loại Truyện", items: [
@@ -181,59 +174,64 @@ export function NavMenu({ mode }: NavMenuProps) {
   ] : directLinks.filter(l => l.href !== "/truyen");
 
   return (
-    <nav ref={navRef} className="flex items-center gap-0.5">
+    <nav ref={navRef} className="flex items-center gap-1">
       {currentDropdowns.map((dd) => (
         <div key={dd.id} className="relative">
           <button
             onClick={() => setOpenId(openId === dd.id ? null : dd.id)}
             onMouseEnter={() => { clearCloseTimer(); setOpenId(dd.id); }}
             onMouseLeave={scheduleClose}
-            className={`flex items-center gap-1 px-3 py-2 transition-colors ${
-              isComicSection ? "font-headline uppercase tracking-wider text-[10.5px] font-black" : "text-[13px] font-medium"
+            className={`flex items-center gap-1.5 px-4 py-2 rounded-xl transition-all active-depth ${
+              isComicSection ? "font-headline uppercase tracking-wider text-[11px] font-black" : "text-[14px] font-semibold"
             } ${
-              openId === dd.id ? "text-primary" : "text-foreground/50 hover:text-foreground"
+              openId === dd.id ? "text-primary bg-primary/10" : "text-foreground/50 hover:text-foreground hover:bg-foreground/5"
             }`}
           >
             {dd.label}
-            <ChevronDown className={`h-3.5 w-3.5 transition-transform duration-200 ${openId === dd.id ? "rotate-180" : ""}`} />
+            <ChevronDown className={`h-4 w-4 transition-transform duration-300 ${openId === dd.id ? "rotate-180" : ""}`} />
           </button>
 
-          {openId === dd.id && (
-            <div
-              onMouseEnter={clearCloseTimer}
-              onMouseLeave={scheduleClose}
-              className="absolute top-full left-1/2 -translate-x-1/2 mt-1 rounded-xl bg-surface/95 backdrop-blur-xl border border-foreground/[0.08] shadow-2xl shadow-black/20 p-4 z-50 animate-in fade-in slide-in-from-top-2 duration-150"
-              style={{ minWidth: `${dd.cols * 140}px` }}
-            >
-              <div
-                className="grid gap-x-2 gap-y-0"
-                style={{ gridTemplateColumns: `repeat(${dd.cols}, minmax(0, 1fr))` }}
+          <AnimatePresence>
+            {openId === dd.id && (
+              <motion.div
+                initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
+                onMouseEnter={clearCloseTimer}
+                onMouseLeave={scheduleClose}
+                className="absolute top-full left-1/2 -translate-x-1/2 mt-2 p-4 z-50 glass-pro rounded-[24px] shadow-cinematic-xl"
+                style={{ minWidth: `${dd.cols * 130}px` }}
               >
-                {dd.items.map((item) => (
-                  <Link
-                    key={item.slug}
-                    href={isComicSection ? `/truyen?genre=${item.slug}` : `${dd.basePath}/${item.slug}`}
-                    onClick={(e) => {
-                      if (item.slug === "phim-18") {
-                        const correctPass = getLunarAuthPass();
-                        
-                        const pass = window.prompt(`Nhập mật khẩu để tiếp tục:`);
-                        if (pass !== correctPass) {
-                          e.preventDefault();
-                          alert(`Mật khẩu không chính xác! Vui lòng thử lại.`);
-                          return;
+                <div
+                  className="grid gap-x-1 gap-y-1"
+                  style={{ gridTemplateColumns: `repeat(${dd.cols}, minmax(0, 1fr))` }}
+                >
+                  {dd.items.map((item) => (
+                    <Link
+                      key={item.slug}
+                      href={isComicSection ? `/truyen?genre=${item.slug}` : `${dd.basePath}/${item.slug}`}
+                      onClick={(e) => {
+                        if (item.slug === "phim-18") {
+                          const correctPass = getLunarAuthPass();
+                          const pass = window.prompt(`Nhập mật khẩu để tiếp tục:`);
+                          if (pass !== correctPass) {
+                            e.preventDefault();
+                            alert(`Mật khẩu không chính xác! Vui lòng thử lại.`);
+                            return;
+                          }
                         }
-                      }
-                      setOpenId(null);
-                    }}
-                    className="px-3 py-2 text-[13px] text-foreground/50 hover:text-foreground hover:bg-foreground/5 rounded-lg transition-colors whitespace-nowrap"
-                  >
-                    {item.name}
-                  </Link>
-                ))}
-              </div>
-            </div>
-          )}
+                        setOpenId(null);
+                      }}
+                      className="px-3 py-2 text-[13px] font-medium text-foreground/50 hover:text-primary hover:bg-primary/5 rounded-xl transition-all active-depth whitespace-nowrap"
+                    >
+                      {item.name}
+                    </Link>
+                  ))}
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       ))}
 
@@ -241,10 +239,10 @@ export function NavMenu({ mode }: NavMenuProps) {
         <Link
           key={link.href}
           href={link.href}
-          className={`px-3 py-2 transition-colors ${
-            isComicSection ? "font-headline uppercase tracking-wider text-[10.5px] font-black" : "text-[13px] font-medium"
+          className={`px-4 py-2 rounded-xl transition-all active-depth ${
+            isComicSection ? "font-headline uppercase tracking-wider text-[11px] font-black" : "text-[14px] font-semibold"
           } ${
-            pathname === link.href ? "text-primary" : "text-foreground/50 hover:text-foreground"
+            pathname === link.href ? "text-primary bg-primary/10" : "text-foreground/50 hover:text-foreground hover:bg-foreground/5"
           }`}
         >
           {link.label}

@@ -1,7 +1,8 @@
 import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Play } from 'lucide-react';
+import { Play, X, Star } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 interface MovieCardProps {
   title: string;
@@ -13,94 +14,124 @@ interface MovieCardProps {
   subText?: string;
   originalTitle?: string;
   progress?: number;
+  score?: string | number;
   onDelete?: (e: React.MouseEvent) => void;
+  index?: number;
 }
 
 export function MovieCard({ 
-  title, slug, posterUrl, year, quality, episodeText, subText, originalTitle, progress, onDelete 
+  title, slug, posterUrl, year, quality, episodeText, subText, originalTitle, progress, score, onDelete, index = 0
 }: MovieCardProps) {
   return (
-    <div className="group relative flex flex-col gap-2 transition-all duration-300">
+    <motion.div 
+      initial={{ opacity: 0, y: 30, filter: "blur(10px)" }}
+      whileInView={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+      viewport={{ once: true, margin: "-10%" }}
+      transition={{ duration: 0.8, delay: Math.min(index * 0.04, 0.4), ease: [0.16, 1, 0.3, 1] }}
+      className="group relative flex flex-col gap-4"
+    >
       <Link 
         href={`/phim/${slug}`} 
-        className="relative aspect-[2/3] w-full overflow-hidden rounded-xl bg-surface transition-all duration-300 md:group-hover:-translate-y-1 md:group-hover:shadow-2xl md:group-hover:shadow-black/50 active:scale-[0.98] md:active:scale-100"
+        className="relative aspect-[2/3] w-full overflow-hidden rounded-[32px] bg-[#141416] transition-all duration-700 hover:shadow-primary/20 hover:shadow-2xl active-depth border border-white/5"
       >
         <Image 
           src={posterUrl} 
           alt={title} 
           fill
           sizes="(max-width: 640px) 50vw, (max-width: 1024px) 25vw, 15vw"
-          className="object-cover transition-transform duration-500 md:group-hover:scale-105"
+          className="object-cover transition-all duration-1000 group-hover:scale-110 group-hover:rotate-[-1deg] group-hover:brightness-50"
           unoptimized={!posterUrl?.match(/amazon\.com|fanart\.tv|unsplash\.com|tmdb\.org/i)}
           priority={false}
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 md:group-hover:opacity-100 transition-opacity duration-300" />
         
-        {/* Episode badge top-left */}
-        {episodeText && (
-          <div className="absolute top-2 left-2 rounded-md bg-primary/90 px-2 py-0.5 text-[10px] font-semibold text-white">
-            {episodeText}
-          </div>
-        )}
-
-        {/* Quality badge top-right */}
-        {quality && (
-          <div className="absolute top-2 right-2 rounded-md bg-black/60 backdrop-blur-sm px-2 py-0.5 text-[10px] font-medium text-white/80">
-            {quality}
-          </div>
-        )}
-
-        {/* Sub text bottom-left */}
-        {subText && (
-          <div className="absolute bottom-2 left-2 rounded-md bg-black/60 backdrop-blur-sm px-2 py-0.5 text-[10px] font-medium text-white/70">
-            {subText}
-          </div>
-        )}
-
-        {/* Play button on hover */}
-        <div className="absolute inset-0 flex items-center justify-center opacity-0 transition-opacity duration-300 md:group-hover:opacity-100 pointer-events-none">
-          <div className="bg-white/15 backdrop-blur-sm rounded-full p-3.5">
-            <Play className="h-6 w-6 text-white fill-white translate-x-0.5" />
+        {/* Cinematic Intelligent Overlays */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
+        <div className="absolute inset-0 ring-1 ring-white/10 ring-inset rounded-[32px] group-hover:ring-primary/40 transition-all duration-700" />
+        
+        {/* Superior Badges System */}
+        <div className="absolute top-4 left-4 right-4 flex justify-between items-start z-20 pointer-events-none">
+          {score && (
+            <motion.div initial={{ x: -10, opacity: 0 }} whileInView={{ x: 0, opacity: 1 }} className="flex items-center gap-1.5 px-3 py-1.5 glass-pro rounded-2xl border border-white/10 shadow-xl overflow-hidden">
+               <Star className="w-3.5 h-3.5 fill-primary text-primary" />
+               <span className="text-[10px] font-black italic uppercase tracking-widest text-white">{score}</span>
+            </motion.div>
+          )}
+          
+          <div className="flex flex-col gap-2 items-end">
+            {(quality || episodeText) && (
+              <div className="flex gap-2">
+                 {quality && (
+                   <div className="px-2.5 py-1 glass-pro rounded-xl text-[9px] font-black text-white/90 uppercase tracking-[0.2em] border border-white/10">
+                     {quality}
+                   </div>
+                 )}
+                 {year && (
+                   <div className="px-2.5 py-1 glass-pro rounded-xl text-[9px] font-black text-white/50 border border-white/10">
+                     {year}
+                   </div>
+                 )}
+              </div>
+            )}
+            {episodeText && (
+               <div className="px-4 py-1.5 bg-primary/90 backdrop-blur-3xl rounded-xl text-[10px] font-black text-white shadow-cinematic-lg uppercase italic tracking-widest border border-primary/20">
+                 {episodeText}
+               </div>
+            )}
           </div>
         </div>
 
-        {/* Home/History Progress Bar */}
+        {/* Play Intelligence Icon */}
+        <div className="absolute inset-0 flex items-center justify-center opacity-0 scale-50 transition-all duration-700 group-hover:opacity-100 group-hover:scale-100 pointer-events-none">
+          <div className="bg-primary/20 backdrop-blur-3xl rounded-full p-6 border border-primary/30 shadow-primary/40 shadow-2xl transition-transform group-hover:scale-110">
+            <Play className="h-10 w-10 text-white fill-current translate-x-1" />
+          </div>
+        </div>
+
+        {/* Progress Tracker (2026 Style) */}
         {progress !== undefined && progress > 0 && (
-          <div className="absolute bottom-2 inset-x-2 h-1 z-30 pointer-events-none">
-            <div className="w-full h-full bg-black/40 backdrop-blur-md rounded-full overflow-hidden">
-               <div 
-                 className="h-full bg-primary transition-all duration-1000 shadow-[0_0_12px_var(--primary)]" 
-                 style={{ width: `${progress}%` }} 
-               />
-            </div>
+          <div className="absolute bottom-0 inset-x-0 h-2 bg-black/40 backdrop-blur-xl overflow-hidden z-20">
+             <motion.div 
+               initial={{ width: 0 }}
+               whileInView={{ width: `${progress}%` }}
+               transition={{ duration: 1.5, ease: [0.16, 1, 0.3, 1] }}
+               className="h-full bg-primary shadow-[0_0_20px_var(--primary)] relative" 
+             >
+                <div className="absolute right-0 top-0 h-full w-2 bg-white/40 blur-[2px] animate-pulse" />
+             </motion.div>
           </div>
         )}
-      </Link>
 
-      {/* Standardized Delete Button */}
-      {onDelete && (
-         <button 
-           onClick={onDelete}
-           className="delete-btn-premium !top-2 !right-2"
-         >
-            <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-              <path d="M18 6L6 18M6 6l12 12" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-         </button>
-      )}
+        {/* Destruction Control (Delete) */}
+        {onDelete && (
+           <button 
+             onClick={(e) => { e.preventDefault(); e.stopPropagation(); onDelete(e); }}
+             className="absolute top-4 right-4 z-40 w-12 h-12 rounded-[20px] bg-black/60 backdrop-blur-2xl border border-white/10 flex items-center justify-center text-white/40 hover:bg-red-500 hover:text-white hover:border-red-400 hover:scale-110 active-depth transition-all opacity-0 group-hover:opacity-100 shadow-2xl"
+           >
+              <X className="w-6 h-6 stroke-[3px]" />
+           </button>
+        )}
+      </Link>
       
-      <div className="flex flex-col gap-0.5 px-0.5 mt-1">
+      {/* Title & Metadata (Premium Layout) */}
+      <div className="flex flex-col gap-1.5 px-2 mt-2">
         <Link 
           href={`/phim/${slug}`} 
-          className="text-[14px] sm:text-[15px] md:text-[16px] font-semibold text-foreground/90 hover:text-foreground line-clamp-2 transition-colors leading-[1.4]" 
+          className="text-[17px] font-black text-white/90 group-hover:text-primary line-clamp-2 transition-all duration-500 leading-tight uppercase italic tracking-tight font-headline group-hover:translate-x-1" 
           title={title}
         >
           {title}
         </Link>
-        {originalTitle && (
-          <span className="text-[12px] sm:text-[13px] text-foreground/40 line-clamp-1">{originalTitle}</span>
-        )}
+        <div className="flex items-center gap-3 overflow-hidden">
+           {originalTitle && (
+            <span className="text-[10px] font-black text-white/20 line-clamp-1 italic uppercase tracking-[0.2em]">{originalTitle}</span>
+           )}
+           {subText && (
+            <span className="flex-shrink-0 text-[9px] font-black text-primary/60 uppercase tracking-widest bg-primary/5 px-2 py-0.5 rounded-lg border border-primary/10">{subText}</span>
+           )}
+        </div>
       </div>
-    </div>
+    </motion.div>
   );
 }
+
+

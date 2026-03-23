@@ -120,6 +120,11 @@ export default async function ComicHomePage({
            category="Nổi bật"
            posterColor={heroHq?.posterColor}
            priority={true}
+           secondaryComics={secondaryComics.map((c: any) => ({
+             title: c.name,
+             slug: c.slug,
+             imageUrl: `${domain_cdn}/uploads/comics/${c.thumb_url}`
+           }))}
         />
       )}
 
@@ -167,6 +172,7 @@ export default async function ComicHomePage({
                 variant="vertical"
                 lastChapter={comic.chaptersLatest?.[0]?.chapter_name ? `Ch. ${comic.chaptersLatest[0].chapter_name}` : ""}
                 category={comic.category?.[0]?.name || "Manga"}
+                index={idx}
               />
             ))}
           </div>
