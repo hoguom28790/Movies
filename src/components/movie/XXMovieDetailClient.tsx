@@ -41,8 +41,12 @@ export default function XXMovieDetailClient({ item, slug, autoPlay }: XXMovieDet
 
   // Normalize data between sources
   const isAVDB = item.source === 'avdb';
-  const title = isAVDB ? item.title : (item.trans?.find((t: any) => t.locale === "vi")?.title || item.trans?.[0]?.title);
-  const content = isAVDB ? item.content : (item.trans?.find((t: any) => t.locale === "vi")?.content || item.trans?.[0]?.content);
+  // Priority: Always look for Vietnamese ('vi') translation first, even for AVDB sources if available
+  const viTrans = item.trans?.find((t: any) => t.locale === "vi");
+  const fallbackTrans = item.trans?.[0];
+  
+  const title = viTrans?.title || fallbackTrans?.title || item.title || "Untitled";
+  const content = viTrans?.content || fallbackTrans?.content || item.content || "Nội dung đang cập nhật...";
   const poster = isAVDB ? item.posterUrl : item.thumbnail;
   
   // Normalize sources/servers
