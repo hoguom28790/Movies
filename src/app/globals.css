@@ -304,9 +304,37 @@ html.is-lg-tv {
   box-shadow: 0 0 20px var(--primary);
 }
 
+/* iPad Landscape & Tablet Optimizations */
+@media screen and (min-width: 1024px) and (max-height: 850px) and (orientation: landscape) {
+  .container {
+    max-width: 92% !important;
+  }
+  
+  /* Optimize Grid for Tablet Landscape */
+  .grid-cols-2 { grid-template-columns: repeat(3, minmax(0, 1fr)) !important; }
+  .sm\:grid-cols-3 { grid-template-columns: repeat(4, minmax(0, 1fr)) !important; }
+  .md\:grid-cols-4 { grid-template-columns: repeat(5, minmax(0, 1fr)) !important; }
+  .lg\:grid-cols-6 { grid-template-columns: repeat(6, minmax(0, 1fr)) !important; }
+
+  /* Player height adjustment for landscape tablets */
+  .aspect-video {
+    max-height: 70vh;
+    width: auto;
+    margin-left: auto;
+    margin-right: auto;
+  }
+}
+
 /* Ensure delete buttons are visible on touch devices (iOS/iPadOS) */
 @media (hover: none) {
   .delete-btn-premium {
-    @apply opacity-100 bg-black/80 border-white/20;
+    @apply opacity-100 bg-black/80 border-white/20 translate-y-0 scale-100;
+    pointer-events: auto;
+  }
+  
+  /* Show hidden controls on touch */
+  .group:hover .opacity-0,
+  .group:active .opacity-0 {
+    @apply opacity-100;
   }
 }

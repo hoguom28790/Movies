@@ -347,32 +347,38 @@ export function PlayerContainer({ url, isHls, rawEmbedUrl, nextEpisodeUrl, movie
         allowFullScreen
       />
 
-      {/* Skip Intro Overlay */}
+      {/* Skip Intro Overlay - Refined UI */}
       <AnimatePresence>
         {skipShow && (
           <motion.div
-            initial={{ opacity: 0, scale: 0.9, y: 20 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.9, y: 20 }}
-            className="absolute bottom-16 right-6 z-[100] flex flex-col gap-2 pointer-events-auto"
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: 20 }}
+            className={`absolute bottom-20 right-4 z-[100] flex flex-col gap-2 pointer-events-auto`}
           >
-            <Button
-              onClick={() => handleSeek(skipShow.endTime + 0.5)}
-              className="bg-primary/90 backdrop-blur-md text-white border border-primary/20 shadow-2xl px-6 py-6 h-12 gap-3 hover:scale-105 transition-all text-sm font-bold tracking-wide uppercase"
+            <motion.div 
+               whileHover={{ scale: 1.05 }}
+               whileTap={{ scale: 0.95 }}
+               className="relative"
             >
-              <SkipForward className="w-5 h-5 fill-current" />
-              Bỏ qua phần mở đầu
-            </Button>
+              <Button
+                onClick={() => handleSeek(skipShow.endTime + 0.5)}
+                className="bg-black/60 backdrop-blur-xl text-white border border-white/10 shadow-2xl px-4 py-2 h-10 gap-2 hover:bg-primary hover:border-primary transition-all text-[12px] font-black uppercase tracking-widest rounded-xl"
+              >
+                <SkipForward className="w-4 h-4 fill-current" />
+                Bỏ qua mở đầu
+              </Button>
+            </motion.div>
             
-            <div className="flex items-center justify-between px-2">
+            <div className="flex items-center justify-end px-1">
               <label className="flex items-center gap-2 cursor-pointer group">
                 <input
                   type="checkbox"
                   checked={!!userSettings?.autoSkipIntro}
                   onChange={(e) => autoSkipMutation.mutate(e.target.checked)}
-                  className="w-4 h-4 rounded border-white/20 bg-black/40 text-primary focus:ring-primary accent-primary"
+                  className="w-3.5 h-3.5 rounded border-white/20 bg-black/40 text-primary focus:ring-primary accent-primary cursor-pointer"
                 />
-                <span className="text-[11px] font-bold text-white/50 group-hover:text-white transition-colors uppercase tracking-widest">Tự động bỏ qua</span>
+                <span className="text-[9px] font-black text-white/40 group-hover:text-white/80 transition-colors uppercase tracking-[0.2em]">Tự động</span>
               </label>
             </div>
           </motion.div>

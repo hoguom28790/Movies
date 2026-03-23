@@ -1,8 +1,17 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/Button";
-import { ChevronLeft, ChevronRight, ArrowLeft, Play } from "lucide-react";
-import { PlayerContainer } from "@/components/movie/PlayerContainer";
+import { ChevronLeft, ChevronRight, ArrowLeft, Play, Loader2 } from "lucide-react";
+import dynamic from "next/dynamic";
+
+const PlayerContainer = dynamic(() => import("@/components/movie/PlayerContainer").then(mod => mod.PlayerContainer), {
+  ssr: false,
+  loading: () => (
+    <div className="w-full aspect-video bg-black/60 backdrop-blur-3xl border border-white/5 rounded-[40px] flex items-center justify-center animate-pulse">
+       <Loader2 className="w-10 h-10 text-primary animate-spin" />
+    </div>
+  )
+});
 
 async function fetchMovieData(source: string, slug: string) {
   let url = "";

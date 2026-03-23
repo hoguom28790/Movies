@@ -193,6 +193,29 @@ export function ActorModal({ isOpen, onClose, actor }: ActorModalProps) {
                          alt={actor?.name}
                          className="w-full h-full object-cover"
                        />
+                       
+                       {/* Floating Heart Button for Actor Profile */}
+                       <button 
+                         onClick={async (e) => {
+                           e.stopPropagation();
+                           if (!user?.uid || !actor) return;
+                           const { toggleFavoriteActor } = await import("@/services/db");
+                           const isNowFav = await toggleFavoriteActor(user.uid, {
+                             id: actor.id,
+                             name: actor.name,
+                             profilePath: actor.profile_path
+                           });
+                           setToast({ 
+                             message: isNowFav ? `Đã thêm ${actor.name} vào yêu thích ❤️` : `Đã xóa ${actor.name} khỏi yêu thích`, 
+                             type: "info" 
+                           });
+                         }}
+                         className="absolute bottom-2 right-2 p-2.5 rounded-2xl bg-black/60 backdrop-blur-xl border border-white/10 text-white hover:text-red-500 hover:scale-110 active:scale-95 transition-all shadow-2xl z-20"
+                       >
+                          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="drop-shadow-sm">
+                             <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" />
+                          </svg>
+                       </button>
                     </div>
                     <div className="flex-grow space-y-2">
                        <h3 className="text-3xl sm:text-5xl font-black italic tracking-tighter text-foreground drop-shadow-lg">

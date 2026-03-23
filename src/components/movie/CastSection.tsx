@@ -3,7 +3,11 @@
 import React, { useState } from "react";
 import Image from "next/image";
 import { getTMDBImageUrl } from "@/services/tmdb";
-import { ActorModal } from "./ActorModal";
+import dynamic from "next/dynamic";
+
+const ActorModal = dynamic(() => import("./ActorModal").then(mod => mod.ActorModal), {
+  ssr: false
+});
 
 interface CastSectionProps {
   actors: any[];

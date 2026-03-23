@@ -3,11 +3,17 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Play, Calendar, Globe, Tag, Users, ArrowLeft, Server, Info, Search, X } from "lucide-react";
-import { XXPlayer } from "@/components/layout/XXPlayer";
+import dynamic from "next/dynamic";
+
+const XXPlayer = dynamic(() => import("@/components/layout/XXPlayer").then(mod => mod.XXPlayer), {
+  ssr: false
+});
 import { XXFavoriteBtn } from "@/components/movie/XXFavoriteBtn";
 import { XXPlaylistBtn } from "@/components/movie/XXPlaylistBtn";
 import { Button } from "@/components/ui/Button";
-import { ActorModal } from "@/components/movie/ActorModal";
+const ActorModal = dynamic(() => import("@/components/movie/ActorModal").then(mod => mod.ActorModal), {
+  ssr: false
+});
 import { searchTMDBPerson } from "@/services/tmdb";
 
 interface XXMovieDetailClientProps {
