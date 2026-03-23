@@ -185,9 +185,12 @@ export function ActorModal({ isOpen, onClose, actor, isTopXX = false }: ActorMod
       </div>
       <div className="px-1 space-y-0.5">
         <h5 className="text-[13px] font-black text-white group-hover:text-primary transition-colors line-clamp-1 italic uppercase tracking-tight font-headline">{item.title || item.name}</h5>
-        <div className="flex items-center justify-between text-[9px] text-white/30 font-black uppercase tracking-widest italic">
-          <span className="line-clamp-1">{item.character || "Character"}</span>
-          <span className="text-primary/60">{(item.release_date || item.first_air_date)?.split("-")[0]}</span>
+        <div className="flex items-center justify-between text-[9px] font-black uppercase tracking-widest italic">
+          <span className="text-white/30 line-clamp-1 flex-grow pr-4">{item.original_title || item.original_name || "Original Title"}</span>
+          <div className="flex items-center gap-1.5 text-primary">
+            <Star className="w-2.5 h-2.5 fill-current" />
+            <span>{(item.vote_average || 0).toFixed(1)}</span>
+          </div>
         </div>
       </div>
     </motion.button>
