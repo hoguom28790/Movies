@@ -127,8 +127,8 @@ export function ActorDetailModal({ isOpen, onClose, actor }: ActorDetailModalPro
       if (match) {
         setToast(null);
         onClose();
-        // Router.push(`/xem/${slug}`) as requested
-        router.push(`/xem/${match.slug}`);
+        // Router.push(`/phim/${slug}`) to detail page (avoids 404 from /xem/[slug])
+        router.push(`/phim/${match.slug}`);
         return;
       }
 
