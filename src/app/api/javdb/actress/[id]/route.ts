@@ -19,61 +19,80 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
     });
 
     if (!res.ok) {
-      throw new Error("Failed to fetch from JAVDB");
+      throw new Error(`Failed to fetch from JAVDB. Status: ${res.status}`);
     }
 
     const html = await res.text();
 
-    // 1. Scrape Information
+    // 1. Scrape Biographical Information
     const info: any = {};
     
-    // Name
+    // Name - Look for h2 title with class title is-4
     const nameMatch = html.match(/<h2 class="title is-4">([\s\S]*?)<\/h2>/);
-    info.name = nameMatch ? nameMatch[1].trim() : "Unknown";
+    info.name = nameMatch ? nameMatch[1].replace(/<[^>]+>/g, '').trim() : "Unknown";
 
-    // Profile Image
+    // Profile Image - Look for div class avatar
     const avatarMatch = html.match(/<div class="avatar" style="background-image: url\((.*?)\)/);
     info.profilePic = avatarMatch ? avatarMatch[1] : "";
 
-    // Stats
+    // Stats - Look for labels and values in points
     const statsMatches = html.matchAll(/<p class="is-size-7">([\s\S]*?): ([\s\S]*?)<\/p>/g);
     for (const match of statsMatches) {
       const key = match[1].trim();
-      const value = match[2].trim();
+      const value = match[2].replace(/<[^>]+>/g, '').trim();
       
-      if (key === "生日") info.birthday = value;
-      if (key === "身高") info.height = value;
-      if (key === "三圍") info.measurements = value;
-      if (key === "出生地") info.birthPlace = value;
+      if (key === "生日" || key.includes("Birthday")) info.birthday = value;
+      if (key === "身高" || key.includes("Height")) info.height = value;
+      if (key === "三圍" || key.includes("Measurements")) info.measurements = value;
+      if (key === "出生地" || key.includes("Birthplace")) info.birthPlace = value;
     }
 
-    // 2. Filmography
+    // 2. Filmography - Divide into individual item blocks for robust parsing
     const filmography: any[] = [];
-    // Pattern for movie cards: <a class="box" href="/v/([a-zA-Z0-9]+)" ...> ... <div class="video-title">([A-Z0-9-]+) (.*?)</div>
-    // This is a rough pattern, might need refinement based on exact HTML
-    const movieMatches = html.matchAll(/<a href="\/v\/([a-zA-Z0-9]+)"[\s\S]*?>[\s\S]*?<img src="(.*?)"[\s\S]*?<div class="video-title"><strong>([A-Z0-9-]+)<\/strong> (.*?)<\/div>[\s\S]*?<span class="value">([\d\.-]+)<\/span>[\s\S]*?<div class="meta">([\d-]+)<\/div>/g);
-    
-    for (const match of movieMatches) {
-      filmography.push({
-        id: match[1],
-        poster: match[2],
-        code: match[3],
-        title: match[4],
-        rating: match[5],
-        date: match[6],
-        link: `${JAVDB_BASE}/v/${match[3].toLowerCase()}`
-      });
+    const movieBlocks = html.split(/<div class="item">|<div class="grid-item">/);
+    movieBlocks.shift(); // Remove the part before the first item
+
+    for (const block of movieBlocks) {
+      // Each block contains one movie card
+      const idMatch = block.match(/href="\/v\/([a-zA-Z0-9]+)"/);
+      const posterMatch = block.match(/<img (?:lazy-)?src="(.*?)"/);
+      const uidMatch = block.match(/class="uid">([\s\S]*?)<\/div>|<strong>([\s\S]*?)<\/strong>/);
+      const titleMatch = block.match(/class="video-title">([\s\S]*?)<\/div>/);
+      const ratingMatch = block.match(/class="value">([\d\.-]+)<\/span>/);
+      const dateMatch = block.match(/class="meta">([\d-]+)<\/div>/);
+
+      if (idMatch && (posterMatch || uidMatch)) {
+         const code = uidMatch ? (uidMatch[1] || uidMatch[2]).replace(/<[^>]+>/g, '').trim() : "N/A";
+         const movieTitle = titleMatch ? titleMatch[1].replace(/<[^>]+>/g, '').replace(code, '').trim() : "Untitled";
+         
+         filmography.push({
+           id: idMatch[1],
+           poster: posterMatch ? posterMatch[1] : "",
+           code: code,
+           title: movieTitle,
+           rating: ratingMatch ? ratingMatch[1] : "N/A",
+           date: dateMatch ? dateMatch[1] : "N/A",
+           link: `${JAVDB_BASE}/v/${idMatch[1]}`
+         });
+      }
     }
 
-    // 3. Gallery (Preview images from the top section if available)
+    // 3. Gallery - Preview images or posters from related content
     const gallery: string[] = [];
+    // JAVDB often has preview gallery images with fancybox
     const galleryMatches = html.matchAll(/<a href="(.*?)" data-fancybox="gallery">/g);
     for (const match of galleryMatches) {
-      gallery.push(match[1]);
+      if (match[1] && !gallery.includes(match[1])) {
+        gallery.push(match[1]);
+      }
     }
 
-    // Fallback Logic placeholder (If JAVDB Scraper returns empty, try fallback APIs if you have them)
-    // For now we fulfill the requirement with a solid scraper + placeholders for fallbacks
+    // Secondary gallery search (common posters/thumbnails as a fallback if no explicit gallery)
+    if (gallery.length === 0 && filmography.length > 0) {
+      filmography.slice(0, 10).forEach(m => {
+        if (m.poster) gallery.push(m.poster);
+      });
+    }
 
     return NextResponse.json({
       id,
@@ -82,7 +101,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
       filmography
     });
   } catch (error) {
-    console.error("JAVDB Actress Detail Error:", error);
-    return NextResponse.json({ error: "Failed to fetch detail" }, { status: 500 });
+    console.error("JAVDB Actress Detail Internal Error:", error);
+    return NextResponse.json({ error: "Failed to scrape details" }, { status: 500 });
   }
 }
