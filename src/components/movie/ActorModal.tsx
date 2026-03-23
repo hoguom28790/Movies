@@ -19,9 +19,10 @@ interface ActorModalProps {
     name: string;
     profile_path: string | null;
   } | null;
+  isTopXX?: boolean;
 }
 
-export function ActorModal({ isOpen, onClose, actor }: ActorModalProps) {
+export function ActorModal({ isOpen, onClose, actor, isTopXX = false }: ActorModalProps) {
   const { user } = useAuth();
   const router = useRouter();
   const [isSearching, setIsSearching] = useState<string | null>(null);
@@ -69,44 +70,69 @@ export function ActorModal({ isOpen, onClose, actor }: ActorModalProps) {
       const cleanTitle = title.replace(/\(Part\s+\d+\)/gi, "").replace(/\(Phần\s+\d+\)/gi, "").trim();
       const normalizedTitle = normalize(cleanTitle);
       
-      console.log(`[ActorModal] Searching for: "${title}" | Normalized: "${normalizedTitle}" | Year: ${year}`);
+      console.log(`[ActorModal] Searching for: "${title}" | Normalized: "${normalizedTitle}" | Year: ${year} | TopXX: ${isTopXX}`);
 
-      // Strategy 1: Search with cleaned title
-      let searchResult = await searchMovies(cleanTitle);
-      console.log(`[ActorModal] Search API Response (Clean Title):`, searchResult.items.length, "results");
+      let match = null;
 
-      // Strategy 2: If no results, search with normalized title
-      if (searchResult.items.length === 0 && normalizedTitle !== cleanTitle.toLowerCase()) {
-        searchResult = await searchMovies(normalizedTitle);
-        console.log(`[ActorModal] Search API Response (Normalized):`, searchResult.items.length, "results");
-      }
+      if (isTopXX) {
+         const { searchTopXXMovies } = await import("@/services/api/topxx");
+         const searchResult = await searchTopXXMovies(cleanTitle);
+         
+         const findMatch = (items: any[]) => {
+            return items.find((item: any) => {
+              const itemTitle = normalize(item.title);
+              const itemOrigin = normalize(item.originalTitle || "");
+              return (itemTitle === normalizedTitle || itemOrigin === normalizedTitle);
+            }) || items[0];
+          };
 
-      // Finding strategy
-      const findMatch = (items: any[]) => {
-        return items.find((item: any) => {
-          const itemTitle = normalize(item.title);
-          const itemOrigin = normalize(item.originalTitle || "");
-          const yearDiff = Math.abs(parseInt(item.year) - parseInt(year));
+          match = searchResult.items.length > 0 ? findMatch(searchResult.items) : null;
           
-          return (
-            (itemTitle === normalizedTitle || itemOrigin === normalizedTitle) && 
-            (year ? yearDiff <= 1 : true)
-          );
-        }) || items.find((item: any) => {
-           const itemTitle = normalize(item.title);
-           const itemOrigin = normalize(item.originalTitle || "");
-           return itemTitle.includes(normalizedTitle) || itemOrigin.includes(normalizedTitle);
-        }) || items[0];
-      };
-
-      const match = searchResult.items.length > 0 ? findMatch(searchResult.items) : null;
-
-      if (match) {
-        console.log(`[ActorModal] Match found: ${match.title} (${match.year}) -> /phim/${match.slug}`);
-        setToast(null);
-        onClose();
-        router.push(`/phim/${match.slug}`);
+          if (match) {
+             console.log(`[ActorModal] TopXX match found: ${match.title} -> /v2k9r5w8m3x7n1p4q0z6/phim/${match.slug}`);
+             setToast(null);
+             onClose();
+             router.push(`/v2k9r5w8m3x7n1p4q0z6/phim/${match.slug}`);
+             return;
+          }
       } else {
+         // Strategy 1: Search with cleaned title
+         let searchResult = await searchMovies(cleanTitle);
+         console.log(`[ActorModal] Search API Response (Clean Title):`, searchResult.items.length, "results");
+
+         // Strategy 2: If no results, search with normalized title
+         if (searchResult.items.length === 0 && normalizedTitle !== cleanTitle.toLowerCase()) {
+           searchResult = await searchMovies(normalizedTitle);
+           console.log(`[ActorModal] Search API Response (Normalized):`, searchResult.items.length, "results");
+         }
+
+         const findMatch = (items: any[]) => {
+            return items.find((item: any) => {
+              const itemTitle = normalize(item.title);
+              const itemOrigin = normalize(item.originalTitle || "");
+              const yearDiff = Math.abs(parseInt(item.year) - parseInt(year));
+              
+              return (
+                (itemTitle === normalizedTitle || itemOrigin === normalizedTitle) && 
+                (year ? yearDiff <= 1 : true)
+              );
+            }) || items.find((item: any) => {
+               const itemTitle = normalize(item.title);
+               const itemOrigin = normalize(item.originalTitle || "");
+               return itemTitle.includes(normalizedTitle) || itemOrigin.includes(normalizedTitle);
+            }) || items[0];
+          };
+
+          match = searchResult.items.length > 0 ? findMatch(searchResult.items) : null;
+
+          if (match) {
+            console.log(`[ActorModal] Match found: ${match.title} (${match.year}) -> /phim/${match.slug}`);
+            setToast(null);
+            onClose();
+            router.push(`/phim/${match.slug}`);
+            return;
+          }
+      }
         console.warn(`[ActorModal] No match found for: ${title}`);
         setToast({ 
           message: "Phim này hiện chưa có trên hệ thống.", 
@@ -114,7 +140,6 @@ export function ActorModal({ isOpen, onClose, actor }: ActorModalProps) {
           type: "error",
           link: `https://www.themoviedb.org/${isTv ? 'tv' : 'movie'}/${tmdbId}`
         });
-      }
     } catch (error) {
        console.error("Search error:", error);
        setToast({ message: "Lỗi hệ thống khi tìm kiếm. Vui lòng thử lại sau.", type: "error" });

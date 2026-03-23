@@ -274,6 +274,7 @@ export default function XXMovieDetailClient({ item, slug, autoPlay }: XXMovieDet
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         actor={selectedActor}
+        isTopXX={true}
       />
 
       {isSearchingActor && (

@@ -23,6 +23,7 @@ export default function XXLibraryPage() {
   const { user } = useAuth();
   const [playlists, setPlaylists] = useState<XXPlaylist[]>([]);
   const [favorites, setFavorites] = useState<XXFavoriteEntry[]>([]);
+  const [favoriteActors, setFavoriteActors] = useState<any[]>([]);
   const [activeTab, setActiveTab] = useState<string>("favorites");
   const [activePlaylistId, setActivePlaylistId] = useState<string | null>(null);
   const [isCreating, setIsCreating] = useState(false);
@@ -32,28 +33,32 @@ export default function XXLibraryPage() {
   const [editNameValue, setEditNameValue] = useState("");
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      setLoading(true);
-      try {
-        if (user) {
-          const [cloudPl, cloudFav] = await Promise.all([
-            getUserXXFirestorePlaylists(user.uid),
-            getXXFirestoreFavorites(user.uid)
-          ]);
-          setPlaylists(cloudPl);
-          setFavorites(cloudFav);
-        } else {
-          setPlaylists(getXXPlaylists());
-          setFavorites(getXXFavorites());
-        }
-      } catch (e) {
+  const fetchData = async () => {
+    setLoading(true);
+    try {
+      if (user) {
+        const [cloudPl, cloudFav, actorFav] = await Promise.all([
+          getUserXXFirestorePlaylists(user.uid),
+          getXXFirestoreFavorites(user.uid),
+          (await import("@/services/db")).getUserFavoriteActors(user.uid)
+        ]);
+        setPlaylists(cloudPl);
+        setFavorites(cloudFav);
+        setFavoriteActors(actorFav);
+      } else {
         setPlaylists(getXXPlaylists());
         setFavorites(getXXFavorites());
-      } finally {
-        setLoading(false);
+        setFavoriteActors([]);
       }
-    };
+    } catch (e) {
+      setPlaylists(getXXPlaylists());
+      setFavorites(getXXFavorites());
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
     fetchData();
   }, [user]);
 
@@ -107,7 +112,7 @@ export default function XXLibraryPage() {
     renameXXPlaylist(activePlaylistId, editNameValue.trim());
     
     if (user) {
-       const pl = playlists.find(p => p.id === activePlaylistId);
+       const pl = playlists.find((p: XXPlaylist) => p.id === activePlaylistId);
        if (pl) {
          pl.name = editNameValue.trim();
          await saveXXFirestorePlaylist(user.uid, pl);
@@ -119,17 +124,17 @@ export default function XXLibraryPage() {
   };
 
   const startEditing = () => {
-    const pl = playlists.find(p => p.id === activePlaylistId);
+    const pl = playlists.find((p: XXPlaylist) => p.id === activePlaylistId);
     if (pl) {
       setEditNameValue(pl.name);
       setIsEditingName(true);
     }
   };
 
-  const activePlaylist = playlists.find(p => p.id === activePlaylistId);
+  const activePlaylist = playlists.find((p: XXPlaylist) => p.id === activePlaylistId);
   const displayMovies = activeTab === "favorites" ? favorites : (activePlaylist?.movies || []);
   
-  const filteredMovies = displayMovies.filter(m => 
+  const filteredMovies = displayMovies.filter((m: XXFavoriteEntry) => 
     m.movieTitle.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
@@ -157,7 +162,7 @@ export default function XXLibraryPage() {
           <div className="space-y-6">
              <h1 className="text-4xl font-black text-foreground uppercase italic tracking-tighter select-none">Thư Viện</h1>
              
-             <div className="space-y-1">
+             <div className="space-y-3">
                 <button 
                   onClick={() => { setActiveTab("favorites"); setActivePlaylistId(null); setIsEditingName(false); }}
                   className={`w-full flex items-center justify-between p-4 rounded-2xl transition-all border ${
@@ -171,6 +176,23 @@ export default function XXLibraryPage() {
                     <span className="font-black uppercase text-sm tracking-widest text-[11px]">Phim Đã Lưu</span>
                   </div>
                   <span className="text-[10px] font-black opacity-40">{favorites.length}</span>
+                </button>
+
+                <button 
+                  onClick={() => { setActiveTab("actors"); setActivePlaylistId(null); setIsEditingName(false); }}
+                  className={`w-full flex items-center justify-between p-4 rounded-2xl transition-all border ${
+                    activeTab === "actors" 
+                      ? "bg-primary text-black border-primary shadow-xl shadow-primary/20" 
+                      : "bg-foreground/5 text-foreground/50 border-foreground/5 hover:bg-foreground/10 hover:text-foreground"
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                     <svg width="20" height="20" viewBox="0 0 24 24" fill={activeTab === "actors" ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" />
+                     </svg>
+                    <span className="font-black uppercase text-sm tracking-widest text-[11px]">Diễn Viên</span>
+                  </div>
+                  <span className="text-[10px] font-black opacity-40">{favoriteActors.length}</span>
                 </button>
              </div>
           </div>
@@ -204,7 +226,7 @@ export default function XXLibraryPage() {
             )}
 
             <div className="space-y-2">
-              {playlists.map(pl => (
+              {playlists.map((pl: XXPlaylist) => (
                 <div 
                   key={pl.id}
                   className={`group flex items-center justify-between p-4 rounded-2xl transition-all cursor-pointer border ${
@@ -241,96 +263,152 @@ export default function XXLibraryPage() {
 
         {/* Main Content */}
         <main className="flex-1 space-y-10">
-           {/* Search & Header */}
-           <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-              <div className="space-y-2">
-                 <div className="flex items-center gap-4">
-                    {isEditingName && activeTab === "playlist" ? (
-                      <form onSubmit={handleRenamePlaylist} className="flex items-center gap-2">
-                         <input 
-                           autoFocus
-                           type="text"
-                           value={editNameValue}
-                           onChange={(e) => setEditNameValue(e.target.value)}
-                           className="bg-foreground/10 border border-foreground/20 rounded-xl px-4 py-2 text-2xl md:text-4xl font-black text-foreground uppercase italic tracking-tighter outline-none focus:border-yellow-500/50"
-                         />
-                         <button type="submit" className="p-2 bg-yellow-500 rounded-xl text-black hover:bg-foreground transition-colors">
-                            <Check className="w-6 h-6" />
-                         </button>
-                         <button type="button" onClick={() => setIsEditingName(false)} className="p-2 bg-foreground/5 rounded-xl text-foreground hover:bg-red-500 transition-colors">
-                            <CloseIcon className="w-6 h-6" />
-                         </button>
-                      </form>
-                    ) : (
-                      <>
-                        <h2 className="text-primaryxl md:text-5xl font-black text-foreground tracking-tighter uppercase italic">
-                           {activeTab === "favorites" ? "Phim Đã Lưu" : (activePlaylist?.name || "Chọn Playlist")}
-                        </h2>
-                        {activeTab === "playlist" && (
+           {activeTab === "actors" ? (
+             <div className="space-y-12">
+                <h2 className="text-primaryxl md:text-5xl font-black text-foreground tracking-tighter uppercase italic">Diễn Viên Yêu Thích</h2>
+                
+                {favoriteActors.length === 0 ? (
+                  <div className="py-32 flex flex-col items-center justify-center text-center bg-foreground/[0.02] rounded-[40px] border border-dashed border-foreground/5">
+                    <div className="w-20 h-20 rounded-full bg-foreground/5 flex items-center justify-center mb-6">
+                      <Heart className="w-8 h-8 text-foreground/10" />
+                    </div>
+                    <p className="text-foreground/20 font-black uppercase tracking-[0.2em]">Chưa có diễn viên yêu thích</p>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-5 gap-8">
+                    {favoriteActors.map(actor => (
+                      <div key={actor.id} className="group relative">
+                        <div className="relative aspect-[1/1] rounded-[32px] overflow-hidden bg-foreground/5 border border-foreground/10 group-hover:border-primary/50 transition-all shadow-xl group-hover:shadow-2xl group-hover:-translate-y-2">
+                          <img 
+                            src={actor.profilePath ? `https://image.tmdb.org/t/p/w300${actor.profilePath}` : "/placeholder-actor.png"} 
+                            alt={actor.name}
+                            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                          />
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity p-4 flex flex-col justify-end">
+                              <div className="flex items-center gap-2">
+                                 <span className="px-2 py-1 rounded bg-primary text-black text-[8px] font-black uppercase tracking-widest">Yêu Thích</span>
+                              </div>
+                          </div>
+                          
+                          {/* Remove Button for Actors */}
                           <button 
-                            onClick={startEditing}
-                            className="p-3 rounded-2xl bg-foreground/5 text-foreground/40 hover:text-yellow-500 hover:bg-foreground/10 transition-all ml-2"
+                            onClick={async (e) => {
+                              e.preventDefault();
+                              if (!window.confirm(`Gỡ ${actor.name} khỏi yêu thích?`)) return;
+                              const { toggleFavoriteActor } = await import("@/services/db");
+                              await toggleFavoriteActor(user!.uid, actor);
+                              fetchData();
+                            }}
+                            className="absolute top-3 right-3 w-10 h-10 rounded-2xl bg-black/60 backdrop-blur-xl border border-white/10 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all scale-75 group-hover:scale-100 hover:bg-red-500 hover:border-red-400 shadow-2xl z-20"
                           >
-                             <Edit2 className="w-6 h-6" />
+                             <X className="w-4 h-4" />
                           </button>
-                        )}
-                      </>
-                    )}
-                 </div>
-                 <p className="text-foreground/30 text-sm font-bold uppercase tracking-widest">
-                    {filteredMovies.length} bộ phim
-                 </p>
-              </div>
-
-              <div className="relative group max-w-sm w-full">
-                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-foreground/20 group-focus-within:text-yellow-500 transition-colors" />
-                 <input 
-                   type="text" 
-                   placeholder="Tìm trong danh sách..." 
-                   value={searchQuery}
-                   onChange={(e) => setSearchQuery(e.target.value)}
-                   className="w-full bg-foreground/5 border border-foreground/10 rounded-2xl pl-12 pr-6 py-4 text-sm text-foreground focus:outline-none focus:border-yellow-500/50 focus:bg-foreground/10 transition-all font-medium"
-                 />
-              </div>
-           </div>
-
-           {/* Movie Grid */}
-           {filteredMovies.length === 0 ? (
-             <div className="py-32 flex flex-col items-center justify-center text-center bg-foreground/[0.02] rounded-[40px] border border-dashed border-foreground/5">
-                <div className="w-20 h-20 rounded-full bg-foreground/5 flex items-center justify-center mb-6">
-                   <Play className="w-8 h-8 text-foreground/10" />
-                </div>
-                <p className="text-foreground/20 font-black uppercase tracking-[0.2em]">Danh sách này còn trống</p>
-                <Link href="/v2k9r5w8m3x7n1p4q0z6" className="mt-8">
-                   <Button variant="secondary" className="rounded-2xl border-foreground/10 px-8 py-6 h-auto font-black uppercase tracking-widest text-[11px]">Khám phá kho phim</Button>
-                </Link>
+                        </div>
+                        <div className="mt-4 text-center px-2">
+                          <h4 className="text-[14px] font-black uppercase tracking-tight text-foreground group-hover:text-primary transition-colors line-clamp-1 italic">
+                             {actor.name}
+                          </h4>
+                          <p className="text-[10px] font-bold text-foreground/30 uppercase tracking-[0.2em] mt-1 text-yellow-500/50">DIỄN VIÊN</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
              </div>
            ) : (
-             <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8">
-                {filteredMovies.map((movie) => (
-                  <div key={`${movie.movieCode}-${movie.addedAt}`} className="relative group">
-                     <XXMovieCard 
-                       title={movie.movieTitle}
-                       slug={movie.movieCode}
-                       posterUrl={movie.posterUrl}
-                     />
-                     
-                     <div className="absolute -top-2 -right-2 z-30">
-                        <button 
-                          onClick={(e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            handleRemoveMovie(movie);
-                          }}
-                          className="delete-btn-premium"
-                          title="Xóa"
-                        >
-                           <X className="w-4 h-4" />
-                        </button>
+             <>
+               {/* Search & Header */}
+               <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+                  <div className="space-y-2">
+                     <div className="flex items-center gap-4">
+                        {isEditingName && activeTab === "playlist" ? (
+                          <form onSubmit={handleRenamePlaylist} className="flex items-center gap-2">
+                             <input 
+                               autoFocus
+                               type="text"
+                               value={editNameValue}
+                               onChange={(e) => setEditNameValue(e.target.value)}
+                               className="bg-foreground/10 border border-foreground/20 rounded-xl px-4 py-2 text-2xl md:text-4xl font-black text-foreground uppercase italic tracking-tighter outline-none focus:border-yellow-500/50"
+                             />
+                             <button type="submit" className="p-2 bg-yellow-500 rounded-xl text-black hover:bg-foreground transition-colors">
+                                <Check className="w-6 h-6" />
+                             </button>
+                             <button type="button" onClick={() => setIsEditingName(false)} className="p-2 bg-foreground/5 rounded-xl text-foreground hover:bg-red-500 transition-colors">
+                                <CloseIcon className="w-6 h-6" />
+                             </button>
+                          </form>
+                        ) : (
+                          <>
+                            <h2 className="text-primaryxl md:text-5xl font-black text-foreground tracking-tighter uppercase italic">
+                               {activeTab === "favorites" ? "Phim Đã Lưu" : (activePlaylist?.name || "Chọn Playlist")}
+                            </h2>
+                            {activeTab === "playlist" && (
+                              <button 
+                                onClick={startEditing}
+                                className="p-3 rounded-2xl bg-foreground/5 text-foreground/40 hover:text-yellow-500 hover:bg-foreground/10 transition-all ml-2"
+                              >
+                                 <Edit2 className="w-6 h-6" />
+                              </button>
+                            )}
+                          </>
+                        )}
                      </div>
+                     <p className="text-foreground/30 text-sm font-bold uppercase tracking-widest">
+                        {filteredMovies.length} bộ phim
+                     </p>
                   </div>
-                ))}
-             </div>
+
+                  <div className="relative group max-w-sm w-full">
+                     <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-foreground/20 group-focus-within:text-yellow-500 transition-colors" />
+                     <input 
+                       type="text" 
+                       placeholder="Tìm trong danh sách..." 
+                       value={searchQuery}
+                       onChange={(e) => setSearchQuery(e.target.value)}
+                       className="w-full bg-foreground/5 border border-foreground/10 rounded-2xl pl-12 pr-6 py-4 text-sm text-foreground focus:outline-none focus:border-yellow-500/50 focus:bg-foreground/10 transition-all font-medium"
+                     />
+                  </div>
+               </div>
+
+               {/* Movie Grid */}
+               {filteredMovies.length === 0 ? (
+                 <div className="py-32 flex flex-col items-center justify-center text-center bg-foreground/[0.02] rounded-[40px] border border-dashed border-foreground/5">
+                    <div className="w-20 h-20 rounded-full bg-foreground/5 flex items-center justify-center mb-6">
+                       <Play className="w-8 h-8 text-foreground/10" />
+                    </div>
+                    <p className="text-foreground/20 font-black uppercase tracking-[0.2em]">Danh sách này còn trống</p>
+                    <Link href="/v2k9r5w8m3x7n1p4q0z6" className="mt-8">
+                       <Button variant="secondary" className="rounded-2xl border-foreground/10 px-8 py-6 h-auto font-black uppercase tracking-widest text-[11px]">Khám phá kho phim</Button>
+                    </Link>
+                 </div>
+               ) : (
+                 <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8">
+                    {filteredMovies.map((movie) => (
+                      <div key={`${movie.movieCode}-${movie.addedAt}`} className="relative group">
+                         <XXMovieCard 
+                           title={movie.movieTitle}
+                           slug={movie.movieCode}
+                           posterUrl={movie.posterUrl}
+                         />
+                         
+                         <div className="absolute -top-2 -right-2 z-30">
+                            <button 
+                              onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                handleRemoveMovie(movie);
+                              }}
+                              className="delete-btn-premium"
+                              title="Xóa"
+                            >
+                               <X className="w-4 h-4" />
+                            </button>
+                         </div>
+                      </div>
+                    ))}
+                 </div>
+               )}
+             </>
            )}
         </main>
       </div>
