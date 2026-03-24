@@ -39,26 +39,49 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ name
 
   try {
     console.log("Searching JAVDB for: " + name);
-    const searchPath = `/search?q=${encodeURIComponent(name)}&f=actress`;
-    const searchResult = await fetchWithMirrors(searchPath, headers);
+    let searchHtml = "";
+    let searchUrl = "";
     
-    const searchHtml = searchResult.html;
-    const $search = cheerio.load(searchHtml);
+    // Try different search filters
+    const filters = ["actress", "actor", "all"];
+    let searchResult: any = null;
+    
+    for (const filter of filters) {
+       try {
+          const path = `/search?q=${encodeURIComponent(name)}&f=${filter}`;
+          searchResult = await fetchWithMirrors(path, headers);
+          if (searchResult.html.includes("actor-box") || searchResult.html.includes("item")) {
+             searchHtml = searchResult.html;
+             searchUrl = searchResult.url;
+             break;
+          }
+       } catch (e) { continue; }
+    }
+    
+    if (!searchHtml && searchResult) {
+       searchHtml = searchResult.html;
+       searchUrl = searchResult.url;
+    }
+
+    const $search = cheerio.load(searchHtml || "");
     
     // Bước 1: Parse slug
     let slug = "";
-    const href = $search(".item, .actress, .actor-box").find("a[href^='/a/']").first().attr("href");
     
-    if (href && href.startsWith("/a/")) {
-       slug = href.replace("/a/", "");
-    }
-    
-    if (searchResult.url.includes("/a/")) {
-       slug = searchResult.url.split("/").pop()?.split("?")[0] || "";
+    // Check if we were redirected to detail page
+    if (searchUrl.includes("/a/")) {
+       slug = searchUrl.split("/").pop()?.split("?")[0] || "";
+    } else {
+       // Look for actress link in results
+       const actressLink = $search(".item a[href^='/a/'], .actor-box a[href^='/a/'], a[href^='/a/']").first();
+       const href = actressLink.attr("href");
+       if (href && href.startsWith("/a/")) {
+          slug = href.replace("/a/", "");
+       }
     }
 
     if (!slug) {
-       console.log("Slug not found, trying name as fallback slug");
+       console.log("Slug not found in search results, using name-based fallback");
        slug = name.toLowerCase().replace(/\s+/g, "-");
     }
 
@@ -67,16 +90,19 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ name
     // Bước 2: Fetch detail page
     const detailPath = `/a/${slug}`;
     const detailResult = await fetchWithMirrors(detailPath, headers);
-    
     const html = detailResult.html;
+    
     console.log("Fetched detail page length: " + html.length);
+    if (html.length < 2000) {
+       console.log("Warning: HTML length suspiciously short. Content start: " + html.substring(0, 500));
+    }
     
     const $ = cheerio.load(html);
     
     const data: any = {
        source: "javdb",
        id: slug,
-       stageName: $("h1.title, .title.is-4").first().text().trim() || name,
+       stageName: $("h1.title, .title.is-4, .title").first().text().trim() || name,
        realName: "N/A",
        birthDate: "N/A",
        measurements: "N/A",
@@ -85,53 +111,61 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ name
        studio: "Various",
        debutYear: "N/A",
        status: "Active",
-       profileImage: $(".avatar img, img.profile").first().attr("src") || "",
+       profileImage: $(".avatar img, img.profile, .actor-avatar img").first().attr("src") || "",
        gallery: [],
        filmography: []
     };
 
-    // Parse info panel
-    $(".panel-block, p.is-size-7").each((_, el) => {
+    // Parse info panel - More robust matching
+    $("p.is-size-7, .panel-block").each((_, el) => {
        const text = $(el).text();
        const val = text.includes(":") ? text.split(":")[1].trim() : "";
        
-       if (text.includes("Real Name") || text.includes("本名")) data.realName = val;
-       if (text.includes("Birthday") || text.includes("生年月日")) data.birthDate = val;
-       if (text.includes("Measurements") || text.includes("スリーサイズ")) data.measurements = val;
-       if (text.includes("Height") || text.includes("身長")) data.height = val;
-       if (text.includes("Birthplace") || text.includes("出身地")) data.birthPlace = val;
+       if (/real name|本名/i.test(text)) data.realName = val;
+       if (/birthday|生日|生年月日/i.test(text)) data.birthDate = val;
+       if (/measurements|三圍|スリーサイズ/i.test(text)) data.measurements = val;
+       if (/height|身高|身長/i.test(text)) data.height = val;
+       if (/birthplace|出生地/i.test(text)) data.birthPlace = val;
     });
 
     // Gallery section
-    $(".preview-images a, .gallery a, .preview-images img").each((_, el) => {
+    $(".preview-images a, .gallery a, .preview-images img, .gallery img").each((_, el) => {
        const src = $(el).attr("href") || $(el).attr("src");
-       if (src && !data.gallery.includes(src) && !src.includes("avatar")) {
-          data.gallery.push(src);
+       if (src && !data.gallery.includes(src) && !src.includes("avatar") && !src.includes("logo")) {
+          data.gallery.push(src.startsWith("//") ? "https:" + src : src);
        }
     });
 
     // Filmography grid
-    $(".movie-list .item, .grid-item, .item").each((_, el) => {
+    $(".movie-list .item, .grid-item, .item, .video-box").each((_, el) => {
        const $item = $(el);
-       const code = $item.find(".uid, strong").first().text().trim();
-       const title = $item.find(".video-title, .title").first().text().trim();
-       const poster = $item.find("img").first().attr("src");
-       const year = $item.find(".meta").first().text().split("-")[0].trim();
-       const rating = $item.find(".value").first().text().trim();
+       const code = $item.find(".uid, strong, .code").first().text().trim();
+       const title = $item.find(".video-title, .title, .name").first().text().trim();
+       const poster = $item.find("img").first().attr("src") || $item.find("img").first().attr("data-src");
+       const year = $item.find(".meta, .date").first().text().split("-")[0].trim();
+       const rating = $item.find(".value, .score").first().text().trim();
 
-       if (code && code !== data.stageName) {
+       if (code && code !== data.stageName && code.length > 2) {
            data.filmography.push({
                code,
                title: title.startsWith(code) ? title.replace(code, '').trim() : title,
-               poster: poster?.startsWith("//") ? "https:" + poster : poster,
+               poster: poster?.startsWith("//") ? "https:" + poster : (poster?.startsWith("/") ? "https://javdb.com" + poster : poster),
                year: year || "N/A",
                rating: rating || "N/A"
            });
        }
     });
 
+    // If still no real name, try to extract from title (Stage Name (Real Name))
+    if (data.realName === "N/A" && data.stageName.includes("(")) {
+       const match = data.stageName.match(/(.*?)\((.*?)\)/);
+       if (match) {
+          data.stageName = match[1].trim();
+          data.realName = match[2].trim();
+       }
+    }
+
     console.log("Parsed actress data: " + JSON.stringify(data, null, 2));
-    
     return NextResponse.json(data);
 
   } catch (error: any) {
