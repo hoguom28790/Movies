@@ -3,8 +3,10 @@ import * as cheerio from "cheerio";
 
 const JAVDB_MIRRORS = [
   "https://javdb34.com",
+  "https://javdb35.com",
+  "https://javdb36.com",
   "https://javdb00.com",
-  "https://javdb30.com",
+  "https://javdb001.com",
   "https://javdb.one",
   "https://javdb.com"
 ];
@@ -13,24 +15,36 @@ async function fetchWithMirrors(path: string, headers: any) {
   for (const mirror of JAVDB_MIRRORS) {
     try {
       const url = mirror + path;
-      const res = await fetch(url, { headers, cache: "no-store" });
+      const mirrorHeaders = { ...headers, "Referer": mirror + "/" };
+      const res = await fetch(url, { headers: mirrorHeaders, cache: "no-store" });
+      
       if (res.ok) {
         const text = await res.text();
-        // Detect dead or parked mirrors like choto.click
-        if (text.includes("choto.click") || text.includes("Domain Reserved") || text.length < 500) {
-           console.warn(`Mirror ${mirror} returned parked/empty page`);
+        // Detect dead/parked mirrors or Cloudflare challenges
+        const isCloudflare = text.includes("cf-browser-verification") || text.includes("Cloudflare") || text.includes("Ray ID");
+        const isParked = text.includes("choto.click") || text.includes("Domain Reserved") || text.includes("parked");
+        
+        if (isParked || (isCloudflare && text.length < 5000)) {
+           console.warn(`Mirror ${mirror} returned blocked/parked page (Length: ${text.length})`);
            continue;
         }
+        
+        if (text.length < 1500 && !text.includes("actor-box") && !text.includes("item")) {
+           console.warn(`Mirror ${mirror} returned suspiciously short content`);
+           continue;
+        }
+
         return { html: text, url: res.url, mirrorUsed: mirror, ok: true, status: res.status };
       }
-      if (res.status === 403) {
-        console.warn(`Mirror ${mirror} returned 403 Forbidden`);
+      
+      if (res.status === 403 || res.status === 429) {
+        console.warn(`Mirror ${mirror} returned ${res.status}`);
       }
     } catch (e) {
       console.warn(`Mirror ${mirror} failed:`, e);
     }
   }
-  throw new Error("All JAVDB mirrors failed or were blocked/parked");
+  throw new Error("All JAVDB mirrors are currently blocking Vercel server requests (Cloudflare Challenge)");
 }
 
 // FINAL JAVDB scraper fix: search first → get slug → parse detail with real selectors + full debug logs
