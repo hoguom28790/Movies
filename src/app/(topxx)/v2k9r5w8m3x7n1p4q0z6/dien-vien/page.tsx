@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { Search, User2, Loader2 } from "lucide-react";
-import { ActorModal } from "@/components/movie/ActorModal";
+import { XXActorModal } from "@/components/movie/XXActorModal";
 
 const BASE_URL = "https://topxx.vip/api/v1";
 
@@ -98,11 +98,10 @@ export default function XXActorsPage() {
                 ))}
             </div>
 
-            <ActorModal 
+            <XXActorModal 
               isOpen={isModalOpen}
               onClose={() => setIsModalOpen(false)}
               actor={selectedActor}
-              isTopXX={true}
             />
         </div>
     );

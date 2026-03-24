@@ -10,7 +10,7 @@ const XXPlayer = dynamic(() => import("@/components/layout/XXPlayer").then(mod =
 });
 import { XXWatchlistBtn } from "@/components/movie/XXWatchlistBtn";
 import { Button } from "@/components/ui/Button";
-const ActorModal = dynamic(() => import("@/components/movie/ActorModal").then(mod => mod.ActorModal), {
+const XXActorModal = dynamic(() => import("@/components/movie/XXActorModal").then(mod => mod.XXActorModal), {
   ssr: false
 });
 import { searchTMDBPerson } from "@/services/tmdb";
@@ -256,11 +256,10 @@ export default function XXMovieDetailClient({ item, slug, autoPlay }: XXMovieDet
     <>
       {contentBody}
 
-      <ActorModal 
+      <XXActorModal 
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         actor={selectedActor}
-        isTopXX={true}
       />
 
       {isSearchingActor && (
