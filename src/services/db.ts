@@ -185,7 +185,14 @@ export async function saveAppTheme(userId: string, appTheme: "light" | "dark" | 
 }
 
 // ================= FAVORITE ACTORS =================
-export async function toggleFavoriteActor(userId: string, actor: { id: string | number; name: string; profilePath: string | null }) {
+export interface FavoriteActor {
+  id: string | number;
+  name: string;
+  profilePath: string | null;
+  type?: 'movie' | 'topxx';
+}
+
+export async function toggleFavoriteActor(userId: string, actor: FavoriteActor) {
   const docId = `${userId}_${actor.id}`;
   const docRef = doc(db, "favorite_actors", docId);
   const snap = await getDoc(docRef);
@@ -203,10 +210,13 @@ export async function toggleFavoriteActor(userId: string, actor: { id: string | 
   }
 }
 
-export async function getUserFavoriteActors(userId: string) {
-  const q = query(collection(db, "favorite_actors"), where("userId", "==", userId));
+export async function getUserFavoriteActors(userId: string, type?: 'movie' | 'topxx') {
+  let q = query(collection(db, "favorite_actors"), where("userId", "==", userId));
+  if (type) {
+    q = query(q, where("type", "==", type));
+  }
   const snap = await getDocs(q);
-  return snap.docs.map(d => ({ ...d.data() })).sort((a: any, b: any) => b.addedAt - a.addedAt);
+  return snap.docs.map(d => ({ id: d.id, ...d.data() }) as FavoriteActor & { addedAt: number }).sort((a, b) => b.addedAt - a.addedAt);
 }
 
 export async function isFavoriteActor(userId: string, actorId: string | number): Promise<boolean> {

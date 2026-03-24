@@ -69,11 +69,20 @@ export default function MovieHistoryPage() {
         </div>
       ) : (
         <div className="grid grid-cols-2 xs:grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6 sm:gap-8 animate-in fade-in duration-700">
-          {items.map(item => {
-            // Calculate progress percentage
+          {items.map((item, idx) => {
+            // Precise progress calculation
             const progressPercent = item.durationSeconds && item.durationSeconds > 0 
-              ? Math.min(100, Math.round((item.progressSeconds / item.durationSeconds) * 100))
-              : item.progressSeconds > 0 ? 50 : 0; // Fallback to 50 if duration unknown but progress exists
+              ? Math.max(2, Math.min(100, Math.round((item.progressSeconds / item.durationSeconds) * 100)))
+              : (item.progressSeconds > 0 ? 2 : 0);
+
+            const formatTime = (s: number) => {
+              const h = Math.floor(s / 3600);
+              const m = Math.floor((s % 3600) / 60);
+              return h > 0 ? `${h}h${m}m` : `${m}m`;
+            };
+            const pText = item.progressSeconds > 0 ? `Xem đến ${formatTime(item.progressSeconds)} (${progressPercent}%)` : "Mới xem";
+            const watchSource = (item as any).source || 'ophim';
+            const watchHref = `/xem/${watchSource}/${item.movieSlug}/${encodeURIComponent(item.episodeName || '1')}`;
 
             return (
               <MovieCard 
@@ -83,6 +92,9 @@ export default function MovieHistoryPage() {
                 posterUrl={item.posterUrl}
                 episodeText={`Tập ${item.episodeName}`}
                 progress={progressPercent}
+                progressText={pText}
+                customHref={watchHref}
+                index={idx}
                 onDelete={(e) => handleDelete(item.movieSlug, e)}
               />
             );

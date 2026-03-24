@@ -43,7 +43,7 @@ export default function MovieLibraryPage() {
       await ensureDefaultPlaylist(user.uid);
       const [movieData, actorData] = await Promise.all([
         getUserPlaylists(user.uid),
-        (await import("@/services/db")).getUserFavoriteActors(user.uid)
+        (await import("@/services/db")).getUserFavoriteActors(user.uid, 'movie')
       ]);
       
       setPlaylists(movieData);
@@ -320,7 +320,10 @@ export default function MovieLibraryPage() {
                         className="relative aspect-[1/1] rounded-[40px] overflow-hidden bg-foreground/5 border border-foreground/10 group-hover:border-primary/50 transition-all shadow-xl group-hover:shadow-2xl group-hover:-translate-y-2 cursor-pointer"
                       >
                          <img 
-                           src={actor.profilePath ? `https://image.tmdb.org/t/p/w500${actor.profilePath}` : "/placeholder-actor.png"} 
+                           src={actor.profilePath?.startsWith('http') 
+                             ? actor.profilePath 
+                             : (actor.profilePath ? `https://image.tmdb.org/t/p/w500${actor.profilePath}` : "/placeholder-actor.png")
+                           } 
                            alt={actor.name}
                            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 group-hover:rotate-1"
                          />

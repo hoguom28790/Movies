@@ -92,7 +92,8 @@ export function ActorModal({ isOpen, onClose, actor }: ActorModalProps) {
       await toggleFavoriteActor(user.uid, {
         id: actor.id,
         name: actor.name,
-        profilePath: (actor.profile_path || null) as (string | null)
+        profilePath: (actor.profile_path || null) as (string | null),
+        type: 'movie'
       });
       setIsFav(!isFav);
     } catch (err) {}

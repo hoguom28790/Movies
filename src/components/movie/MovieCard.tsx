@@ -40,7 +40,7 @@ export function MovieCard({
         className="relative aspect-[2/3] w-full overflow-hidden rounded-[32px] bg-[#141416] transition-all duration-700 hover:shadow-primary/20 hover:shadow-2xl active-depth border border-white/5"
       >
         <Image 
-          src={posterUrl} 
+          src={posterUrl || "/placeholder-poster.png"} 
           alt={title} 
           fill
           sizes="(max-width: 640px) 50vw, (max-width: 1024px) 25vw, 15vw"
@@ -48,6 +48,11 @@ export function MovieCard({
           unoptimized={!posterUrl?.match(/amazon\.com|fanart\.tv|unsplash\.com|tmdb\.org/i)}
           priority={false}
         />
+        {!posterUrl && (
+          <div className="absolute inset-0 flex items-center justify-center p-6 text-center">
+             <span className="text-xs font-black text-white/20 uppercase italic tracking-widest">{title}</span>
+          </div>
+        )}
         
         {/* Cinematic Intelligent Overlays */}
         <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700" />

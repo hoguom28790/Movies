@@ -149,7 +149,8 @@ export function XXActorModal({ isOpen, onClose, actor }: XXActorModalProps) {
       await toggleFavoriteActor(user.uid, {
         id: effectiveId,
         name: actor.name,
-        profilePath: (details?.profileImage || actor.profile_path || null) as (string | null)
+        profilePath: (details?.profileImage || actor.profile_path || null) as (string | null),
+        type: 'topxx'
       });
       setIsFav(!isFav);
     } catch (err) {}
