@@ -18,21 +18,25 @@ interface XXMovieCardProps {
 export function XXMovieCard({ 
   title, slug, posterUrl, year, quality, progress, progressText, onDelete 
 }: XXMovieCardProps) {
+  const [imgError, setImgError] = React.useState(false);
   return (
     <div className="group relative flex flex-col gap-3 transition-all duration-500 hover:z-10">
       <Link 
         href={`/v2k9r5w8m3x7n1p4q0z6/phim/${slug}`} 
         className="relative aspect-[7/10] w-full overflow-hidden rounded-[32px] bg-surface transition-all duration-700 group-hover:-translate-y-2 group-hover:shadow-[0_20px_40px_-10px_rgba(0,0,0,0.8)] border border-white/5 active:scale-95"
       >
-        <Image 
-          src={posterUrl} 
-          alt={title} 
-          fill
-          sizes="(max-width: 640px) 50vw, (max-width: 1024px) 25vw, 15vw"
-          className="object-cover transition-transform duration-[2000ms] group-hover:scale-110 opacity-90 group-hover:opacity-100"
-          unoptimized
-          priority={false}
-        />
+        <div className="relative w-full h-full">
+          <Image 
+            src={imgError || !posterUrl ? "/placeholder-poster.png" : posterUrl} 
+            alt={title} 
+            fill
+            sizes="(max-width: 640px) 50vw, (max-width: 1024px) 25vw, 15vw"
+            className="object-cover transition-transform duration-[2000ms] group-hover:scale-110 opacity-90 group-hover:opacity-100"
+            unoptimized
+            onError={() => setImgError(true)}
+            priority={false}
+          />
+        </div>
         
         {/* Quality Badge */}
         {quality && (
@@ -50,17 +54,17 @@ export function XXMovieCard({
 
         {/* Home/History Progress Bar */}
         {progress !== undefined && (
-          <div className="absolute bottom-0 inset-x-0 h-1 bg-black/60 backdrop-blur-xl z-20">
+          <div className="absolute bottom-0 inset-x-0 h-2 bg-black/80 backdrop-blur-3xl z-20 overflow-hidden shadow-[0_-10px_30px_rgba(0,0,0,0.5)]">
              <motion.div 
                initial={{ width: 0 }}
                animate={{ width: `${Math.max(2, progress)}%` }}
                transition={{ duration: 1.5, ease: [0.16, 1, 0.3, 1], delay: 0.2 }}
-               className="h-full bg-yellow-500 shadow-[0_0_20px_#fbbf24] relative" 
+               className="h-full bg-yellow-500 shadow-[0_0_25px_#fbbf24] relative" 
              >
-                <div className="absolute right-0 top-0 h-full w-8 bg-white/40 blur-[4px] animate-pulse" />
+                <div className="absolute right-0 top-0 h-full w-12 bg-white/30 blur-[6px] animate-pulse" />
              </motion.div>
              {progressText && (
-                <div className="absolute bottom-1.5 left-3 px-1.5 py-0.5 glass-pro bg-yellow-400/40 rounded-sm text-[8px] font-black text-yellow-500 uppercase tracking-widest whitespace-nowrap drop-shadow-[0_2px_10px_rgba(0,0,0,1)] border border-yellow-500/20 z-30">
+                <div className="absolute bottom-3 left-4 px-2 py-0.5 glass-pro bg-yellow-400/60 rounded-md text-[9px] font-black text-yellow-600 uppercase tracking-widest whitespace-nowrap drop-shadow-[0_2px_15px_rgba(0,0,0,1)] border border-yellow-500/20 z-30 shadow-2xl">
                    {progressText}
                 </div>
              )}

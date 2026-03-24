@@ -70,19 +70,21 @@ export default function MovieHistoryPage() {
       ) : (
         <div className="grid grid-cols-2 xs:grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6 sm:gap-8 animate-in fade-in duration-700">
           {items.map((item, idx) => {
-            // Precise progress calculation
             const progressPercent = item.durationSeconds && item.durationSeconds > 0 
-              ? Math.max(2, Math.min(100, Math.round((item.progressSeconds / item.durationSeconds) * 100)))
-              : (item.progressSeconds > 0 ? 2 : 0);
+              ? Math.max(5, Math.min(100, Math.round((item.progressSeconds / item.durationSeconds) * 100)))
+              : (item.progressSeconds > 0 ? 15 : 0);
 
             const formatTime = (s: number) => {
+              if (!s) return "0m";
               const h = Math.floor(s / 3600);
               const m = Math.floor((s % 3600) / 60);
               return h > 0 ? `${h}h${m}m` : `${m}m`;
             };
-            const pText = item.progressSeconds > 0 ? `Xem đến ${formatTime(item.progressSeconds)} (${progressPercent}%)` : "Mới xem";
+            
+            const displayEpisode = (String(item.episodeName) === "0") ? "1" : (item.episodeName || "1");
+            const pText = item.progressSeconds > 0 ? `${formatTime(item.progressSeconds)} (${progressPercent}%)` : "Mới xem";
             const watchSource = (item as any).source || 'ophim';
-            const watchHref = `/xem/${watchSource}/${item.movieSlug}/${encodeURIComponent(item.episodeName || '1')}`;
+            const watchHref = `/xem/${watchSource}/${item.movieSlug}/${encodeURIComponent(displayEpisode)}`;
 
             return (
               <MovieCard 
@@ -90,8 +92,8 @@ export default function MovieHistoryPage() {
                 title={item.movieTitle}
                 slug={item.movieSlug}
                 posterUrl={item.posterUrl}
-                episodeText={`Tập ${item.episodeName}`}
-                progress={progressPercent}
+                episodeText={`Tập ${displayEpisode}`}
+                progress={progressPercent || undefined}
                 progressText={pText}
                 customHref={watchHref}
                 index={idx}

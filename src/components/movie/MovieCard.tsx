@@ -26,6 +26,7 @@ interface MovieCardProps {
 export function MovieCard({ 
   title, slug, posterUrl, year, quality, episodeText, subText, originalTitle, progress, progressText, customHref, score, onDelete, index = 0
 }: MovieCardProps) {
+  const [imgError, setImgError] = React.useState(false);
   const linkHref = customHref || `/phim/${slug}`;
   return (
     <motion.div 
@@ -39,15 +40,18 @@ export function MovieCard({
         href={linkHref} 
         className="relative aspect-[2/3] w-full overflow-hidden rounded-[32px] bg-[#141416] transition-all duration-700 hover:shadow-primary/20 hover:shadow-2xl active-depth border border-white/5"
       >
-        <Image 
-          src={posterUrl || "/placeholder-poster.png"} 
-          alt={title} 
-          fill
-          sizes="(max-width: 640px) 50vw, (max-width: 1024px) 25vw, 15vw"
-          className="object-cover transition-all duration-1000 group-hover:scale-110 group-hover:rotate-[-1deg] group-hover:brightness-50"
-          unoptimized={!posterUrl?.match(/amazon\.com|fanart\.tv|unsplash\.com|tmdb\.org/i)}
-          priority={false}
-        />
+        <div className="relative w-full h-full">
+          <Image 
+            src={imgError || !posterUrl ? "/placeholder-poster.png" : posterUrl} 
+            alt={title} 
+            fill
+            sizes="(max-width: 640px) 50vw, (max-width: 1024px) 25vw, 15vw"
+            className="object-cover transition-all duration-1000 group-hover:scale-110 group-hover:rotate-[-1deg] group-hover:brightness-50"
+            unoptimized={posterUrl?.match(/amazon\.com|fanart\.tv|unsplash\.com|tmdb\.org/i) ? false : true}
+            onError={() => setImgError(true)}
+            priority={false}
+          />
+        </div>
         {!posterUrl && (
           <div className="absolute inset-0 flex items-center justify-center p-6 text-center">
              <span className="text-xs font-black text-white/20 uppercase italic tracking-widest">{title}</span>
@@ -99,17 +103,17 @@ export function MovieCard({
 
         {/* Home/History Progress Bar */}
         {progress !== undefined && (
-          <div className="absolute bottom-0 inset-x-0 h-1 bg-black/60 backdrop-blur-xl z-20">
+          <div className="absolute bottom-0 inset-x-0 h-2 bg-black/80 backdrop-blur-3xl z-20 overflow-hidden shadow-[0_-10px_30px_rgba(0,0,0,0.5)]">
              <motion.div 
                initial={{ width: 0 }}
                animate={{ width: `${Math.max(2, progress)}%` }}
                transition={{ duration: 1.5, ease: [0.16, 1, 0.3, 1], delay: 0.2 }}
-               className="h-full bg-primary shadow-[0_0_20px_oklch(65%_0.25_250)] relative" 
+               className="h-full bg-primary shadow-[0_0_25px_oklch(65%_0.3_260)] relative" 
              >
-                <div className="absolute right-0 top-0 h-full w-8 bg-white/40 blur-[4px] animate-pulse" />
+                <div className="absolute right-0 top-0 h-full w-12 bg-white/30 blur-[6px] animate-pulse" />
              </motion.div>
              {progressText && (
-                <div className="absolute bottom-1.5 left-3 px-1.5 py-0.5 glass-pro bg-primary/40 rounded-sm text-[8px] font-black text-white uppercase tracking-widest whitespace-nowrap drop-shadow-[0_2px_10px_rgba(0,0,0,1)] border border-primary/20 z-30">
+                <div className="absolute bottom-3 left-4 px-2 py-0.5 glass-pro bg-primary/60 rounded-md text-[9px] font-black text-white uppercase tracking-widest whitespace-nowrap drop-shadow-[0_2px_15px_rgba(0,0,0,1)] border border-primary/20 z-30 shadow-2xl">
                    {progressText}
                 </div>
              )}

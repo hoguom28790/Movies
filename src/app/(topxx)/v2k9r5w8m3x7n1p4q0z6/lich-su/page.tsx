@@ -123,6 +123,7 @@ export default function XXHistoryPage() {
               slug={item.movieCode}
               posterUrl={item.posterUrl}
               progress={item.durationSeconds > 0 ? Math.min(100, Math.round((item.progressSeconds / item.durationSeconds) * 100)) : (item.progressSeconds > 0 ? 50 : 0)}
+              progressText={formatProgress(item.progressSeconds, item.durationSeconds)}
               onDelete={(e) => handleRemoveItem(item.movieCode, e)}
             />
           ))}
