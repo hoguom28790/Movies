@@ -107,20 +107,20 @@ export default async function WatchPage({
               <ArrowLeft className="w-4 h-4" /> Quay lại thông tin
            </Link>
            
-           <div className="flex items-center gap-4">
-              <div className="relative group">
-                <Button variant="secondary" size="sm" className="h-9 px-4 gap-2 bg-primary/10 text-primary border border-primary/20 hover:bg-primary/20 transition-all font-black text-[11px] uppercase italic rounded-xl">
+           <div className="flex items-center gap-4 z-[100] relative">
+              <div className="relative group/src">
+                <button className="h-9 px-4 gap-2 bg-primary/10 text-primary border border-primary/20 hover:bg-primary/20 transition-all font-black text-[11px] uppercase italic rounded-xl flex items-center justify-center">
                    <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
                    Nguồn: {source.toUpperCase()}
-                </Button>
+                </button>
                 
-                <div className="absolute right-0 top-full pt-2 opacity-0 translate-y-2 pointer-events-none group-hover:opacity-100 group-hover:translate-y-0 group-hover:pointer-events-auto transition-all duration-300 z-[100] w-48">
-                  <div className="bg-[#0f1115] border border-white/5 rounded-2xl shadow-2xl p-2 overflow-hidden backdrop-blur-3xl">
+                <div className="absolute right-0 top-full pt-2 opacity-0 -translate-y-2 pointer-events-none group-hover/src:opacity-100 group-hover/src:translate-y-0 group-hover/src:pointer-events-auto transition-all duration-300 z-[1000] w-48">
+                  <div className="bg-[#0f1115] border border-white/5 rounded-2xl shadow-2xl p-2 overflow-hidden backdrop-blur-3xl ring-1 ring-white/10">
                     <p className="px-3 py-2 text-[9px] font-black text-white/20 uppercase tracking-widest italic border-b border-white/5 mb-1 text-center">Chọn nguồn phát</p>
                     {AVAILABLE_SOURCES
                       .filter(src => isTopXX ? src.type === "tx" : src.type === "hop")
                       .map((src) => (
-                        <Link key={src.id} href={`/xem/${src.id}/${slug}/${episode}`} replace scroll={false}>
+                        <Link key={src.id} href={`/xem/${src.id}/${slug}/${episode}`} replace scroll={false} className="block">
                           <button className={`w-full text-left px-4 py-2.5 text-[11px] font-black uppercase italic rounded-xl transition-all mb-1 last:mb-0 ${source === src.id ? "bg-primary text-white shadow-lg shadow-primary/20" : "text-white/40 hover:bg-white/5 hover:text-white"}`}>
                             {src.name}
                           </button>

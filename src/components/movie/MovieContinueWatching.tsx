@@ -91,7 +91,7 @@ export function MovieContinueWatching() {
                         const m = Math.floor((s % 3600) / 60);
                         return h > 0 ? `${h}h${m}m` : `${m}m`;
                       };
-                      const pText = item.progressSeconds > 0 ? `Xem đến ${formatTime(item.progressSeconds)}` : "Mới xem";
+                      const progressText = item.progressSeconds > 0 ? `Xem đến ${formatTime(item.progressSeconds)} (${progressPercent}%)` : "Mới xem";
                       // Find best fallback source
                       const watchSource = (item as any).source || 'ophim';
                       const watchHref = `/xem/${watchSource}/${item.movieSlug}/${encodeURIComponent(item.episodeName || '1')}`;
@@ -103,7 +103,7 @@ export function MovieContinueWatching() {
                           posterUrl={item.posterUrl}
                           episodeText={`Tập ${item.episodeName}`}
                           progress={progressPercent}
-                          progressText={pText}
+                          progressText={progressText}
                           customHref={watchHref}
                           onDelete={(e) => handleDelete(item.movieSlug, e)}
                           index={idx}

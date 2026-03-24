@@ -2,6 +2,7 @@ import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Play } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 interface XXMovieCardProps {
   title: string;
@@ -49,19 +50,22 @@ export function XXMovieCard({
 
         {/* Home/History Progress Bar */}
         {progress !== undefined && progress > 0 && (
-          <div className="absolute bottom-2 inset-x-3 h-1 z-30 pointer-events-none">
-            <div className="w-full h-full bg-black/40 backdrop-blur-md rounded-full overflow-hidden">
-               <div 
-                 className="h-full bg-yellow-500 transition-all duration-1000 shadow-[0_0_12px_#fbbf24] relative" 
-                 style={{ width: `${progress}%` }} 
-               >
+          <div className="absolute bottom-0 inset-x-0 h-[3px] bg-black/40 backdrop-blur-xl overflow-hidden z-20">
+             <div className="w-full h-full bg-black/40 backdrop-blur-md rounded-full overflow-hidden">
+                <motion.div 
+                  initial={{ width: 0 }}
+                  animate={{ width: `${progress}%` }}
+                  transition={{ duration: 1.5, ease: [0.16, 1, 0.3, 1], delay: 0.2 }}
+                  className="h-full bg-yellow-500 shadow-[0_0_12px_#fbbf24] relative" 
+                >
                    {progressText && (
-                      <div className="absolute top-1/2 left-2 -translate-y-1/2 text-[6px] font-black text-black/80 uppercase tracking-widest whitespace-nowrap overflow-hidden">
+                      <div className="absolute -top-[14px] left-3 px-1.5 py-0.5 glass-pro bg-yellow-500/10 rounded-sm text-[7px] font-black text-yellow-500 uppercase tracking-widest whitespace-nowrap drop-shadow-lg scale-90 origin-left border border-yellow-500/10 opacity-0 group-hover:opacity-100 transition-opacity">
                          {progressText}
                       </div>
                    )}
-               </div>
-            </div>
+                   <div className="absolute right-0 top-0 h-full w-4 bg-white/40 blur-[4px] animate-pulse" />
+                </motion.div>
+             </div>
           </div>
         )}
       </Link>

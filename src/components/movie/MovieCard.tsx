@@ -94,16 +94,16 @@ export function MovieCard({
 
         {/* Progress Tracker (2026 Style) */}
         {progress !== undefined && progress > 0 && (
-          <div className="absolute bottom-0 inset-x-0 h-2 bg-black/40 backdrop-blur-xl overflow-hidden z-20">
+          <div className="absolute bottom-0 inset-x-0 h-[3px] bg-black/40 backdrop-blur-xl overflow-hidden z-20">
              <motion.div 
                initial={{ width: 0 }}
-               whileInView={{ width: `${progress}%` }}
-               transition={{ duration: 1.5, ease: [0.16, 1, 0.3, 1] }}
-               className="h-full bg-primary shadow-[0_0_20px_var(--primary)] relative" 
+               animate={{ width: `${progress}%` }}
+               transition={{ duration: 1.5, ease: [0.16, 1, 0.3, 1], delay: 0.2 }}
+               className="h-full bg-primary shadow-[0_0_15px_rgba(var(--primary-rgb),0.8)] relative" 
              >
-                <div className="absolute right-0 top-0 h-full w-2 bg-white/40 blur-[2px] animate-pulse" />
+                <div className="absolute right-0 top-0 h-full w-4 bg-white/30 blur-[4px] animate-pulse" />
                 {progressText && (
-                   <div className="absolute top-1/2 left-4 -translate-y-1/2 text-[7px] font-black text-white/80 uppercase tracking-widest whitespace-nowrap drop-shadow-lg">
+                   <div className="absolute -top-[14px] left-3 px-1.5 py-0.5 glass-pro rounded-sm text-[7px] font-black text-white/90 uppercase tracking-widest whitespace-nowrap drop-shadow-lg scale-90 origin-left border border-white/5 opacity-0 group-hover:opacity-100 transition-opacity">
                       {progressText}
                    </div>
                 )}

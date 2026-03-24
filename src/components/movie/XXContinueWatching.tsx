@@ -90,7 +90,7 @@ export function XXContinueWatching() {
                   const m = Math.floor((s % 3600) / 60);
                   return h > 0 ? `${h}h${m}m` : `${m}m`;
                 };
-                const pText = item.progressSeconds > 0 ? `${formatTime(item.progressSeconds)}` : "";
+                const pText = item.progressSeconds > 0 ? `Xem đến ${formatTime(item.progressSeconds)} (${progressPercent}%)` : "Mới xem";
                 return (
                   <XXMovieCard 
                     title={item.movieTitle}

@@ -94,42 +94,46 @@ export function XXActorModal({ isOpen, onClose, actor }: XXActorModalProps) {
 
   const handleMovieClick = async (title: string, year: string, code?: string) => {
     try {
-      console.log(`[ACTOR] Searching slug for title: ${title}, code: ${code}, year: ${year}`);
-      setToast({ message: `Đang tìm kiếm phim: ${title}...`, type: "info" });
+      console.log(`[TOPXX-ACTOR] Searching for: ${title} (${code})`);
+      setToast({ message: `Đang kết nối kho phim TopXX cho: ${code || title}...`, type: "info" });
       
-      const { searchMovies: searchStreaming } = await import("@/services/api");
+      const { searchMovies: searchTopXX } = await import("@/services/api/index"); // Assume index exports search
       const { normalizeTitle } = await import("@/lib/normalize");
       
-      const normalizedTitle = normalizeTitle(title);
-      let searchRes = await searchStreaming(code || title);
+      // SEARCH TOPXX FIRST (Since it's a TopXX actress)
+      const query = code || title;
+      const res = await fetch(`/api/topxx/search?q=${encodeURIComponent(query)}`);
+      const searchRes = await res.json();
       
-      // Fallback searches
-      if (searchRes.items.length === 0) searchRes = await searchStreaming(normalizedTitle);
-      if (searchRes.items.length === 0 && year) searchRes = await searchStreaming(`${normalizedTitle} ${year}`);
-
-      const match = searchRes.items.find((item: any) => {
-        const itemYear = parseInt(item.year);
-        const targetYear = parseInt(year);
-        const titleMatch = normalizeTitle(item.title).includes(normalizedTitle) || 
-                         normalizeTitle(item.originalTitle).includes(normalizedTitle) ||
-                         (code && item.title.includes(code));
-        const yearMatch = year ? Math.abs(itemYear - targetYear) <= 1 : true;
-        return titleMatch && yearMatch;
-      }) || searchRes.items[0];
+      let match = searchRes.items?.find((item: any) => {
+        const itemCode = (item.movie_code || item.origin_name || "").toLowerCase();
+        const targetCode = (code || "").toLowerCase();
+        return itemCode.includes(targetCode) || normalizeTitle(item.title) === normalizeTitle(title);
+      }) || searchRes.items?.[0];
 
       if (match) {
-        console.log(`[ACTOR] Found slug: ${match.slug}`);
-        setToast({ message: `Đã kết nối! Chuyển hướng đến ${match.title}...`, type: "info" });
+        setToast({ message: `Đã tìm thấy! Chuyển hướng đến ${match.title}...`, type: "info" });
         setTimeout(() => {
            onClose();
-           router.push(`/phim/${match.slug}`); 
+           router.push(`/v2k9r5w8m3x7n1p4q0z6/phim/${match.slug}`); 
         }, 500);
       } else {
-        setToast({ message: "Phim này chưa có trên nền tảng Hồ Phim.", type: "error" });
+        // Falling back to Hồ Phim search just in case
+        setToast({ message: "Phim chưa có bản Full. Thử tìm bản Hồ Phim...", type: "info" });
+        const { searchMovies: searchStreaming } = await import("@/services/api");
+        const hopRes = await searchStreaming(query);
+        const hopMatch = hopRes.items[0];
+        
+        if (hopMatch) {
+            onClose();
+            router.push(`/phim/${hopMatch.slug}`);
+        } else {
+            setToast({ message: `Phim ${code || title} hiện chưa có trên hệ thống.`, type: "error" });
+        }
       }
     } catch (error) {
        console.error("[ACTOR] Search failed:", error);
-       setToast({ message: "Lỗi hệ thống khi tìm kiếm phim.", type: "error" });
+       setToast({ message: "Máy chủ TopXX đang bận. Thử lại sau.", type: "error" });
     }
   };
 
