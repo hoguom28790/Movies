@@ -2,9 +2,9 @@ import { NextRequest, NextResponse } from "next/server";
 import * as cheerio from "cheerio";
 
 const JAVDB_MIRRORS = [
-  "https://javdb521.com",
   "https://javdb34.com",
   "https://javdb00.com",
+  "https://javdb30.com",
   "https://javdb.one",
   "https://javdb.com"
 ];
@@ -16,16 +16,21 @@ async function fetchWithMirrors(path: string, headers: any) {
       const res = await fetch(url, { headers, cache: "no-store" });
       if (res.ok) {
         const text = await res.text();
-        return { html: text, url: res.url, ok: true, status: res.status };
+        // Detect dead or parked mirrors like choto.click
+        if (text.includes("choto.click") || text.includes("Domain Reserved") || text.length < 500) {
+           console.warn(`Mirror ${mirror} returned parked/empty page`);
+           continue;
+        }
+        return { html: text, url: res.url, mirrorUsed: mirror, ok: true, status: res.status };
       }
       if (res.status === 403) {
         console.warn(`Mirror ${mirror} returned 403 Forbidden`);
       }
     } catch (e) {
-      console.warn(`Mirror ${mirror} failed, trying next...`);
+      console.warn(`Mirror ${mirror} failed:`, e);
     }
   }
-  throw new Error("All JAVDB mirrors failed");
+  throw new Error("All JAVDB mirrors failed or were blocked/parked");
 }
 
 // FINAL JAVDB scraper fix: search first → get slug → parse detail with real selectors + full debug logs
@@ -108,6 +113,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ name
        syncTime: new Date().toISOString(),
        debug: {
           slug,
+          mirrorUsed: detailResult?.mirrorUsed || searchResult?.mirrorUsed || "N/A",
           searchUrl,
           searchStatus: searchResult?.status || "N/A",
           htmlLength: html.length,
