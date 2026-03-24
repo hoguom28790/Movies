@@ -46,7 +46,7 @@ export function ActorModal({ isOpen, onClose, actor }: ActorModalProps) {
     const checkFav = async () => {
       if (user?.uid && actor?.id) {
         const { isFavoriteActor } = await import("@/services/db");
-        const status = await isFavoriteActor(user.uid, actor.id);
+        const status = await isFavoriteActor(user.uid, actor.id, 'movie');
         setIsFav(status);
       }
     };

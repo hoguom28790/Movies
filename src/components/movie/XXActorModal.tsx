@@ -81,7 +81,7 @@ export function XXActorModal({ isOpen, onClose, actor }: XXActorModalProps) {
       const effectiveId = details?.id || actor?.id;
       if (user?.uid && effectiveId) {
         const { isFavoriteActor } = await import("@/services/db");
-        const status = await isFavoriteActor(user.uid, effectiveId);
+        const status = await isFavoriteActor(user.uid, effectiveId, 'topxx');
         setIsFav(status);
       }
     };
