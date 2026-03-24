@@ -11,7 +11,7 @@ import { MovieRatings } from "@/components/movie/MovieRatings";
 import { CastSection } from "@/components/movie/CastSection";
 import { TraktWatchedBadge } from "@/components/movie/TraktWatchedBadge";
 
-async function fetchMovieData(slug: string) {
+async function fetchMovieData(slug: string, query?: string) {
   try {
     const fetchWithSources = async (s: string) => {
       const [ng, kk, op] = await Promise.allSettled([
@@ -35,11 +35,13 @@ async function fetchMovieData(slug: string) {
 
     // 0. Handle search-based slugs (e.g., search?q=Title)
     let finalSlug = slug;
-    if (slug.includes("search?q=") || slug.includes("search%3Fq%3D")) {
-        const queryStr = decodeURIComponent(slug).split("q=")[1];
+    const searchTarget = query || (slug.includes("search?q=") ? slug.split("q=")[1] : null);
+    
+    if (slug === "search" || searchTarget) {
+        const queryStr = searchTarget || "";
         if (queryStr) {
             const { searchMovies } = await import("@/services/api");
-            const res = await searchMovies(queryStr);
+            const res = await searchMovies(decodeURIComponent(queryStr));
             if (res.items.length > 0) finalSlug = res.items[0].slug;
         }
     }
@@ -76,11 +78,17 @@ async function fetchRelated(genre: string) {
   }
 }
  
-export default async function MovieDetailsPage({ params }: { params: Promise<{ slug: string }> }) {
-  const { slug } = await params;
+export default async function MovieDetailsPage({ 
+  params, 
+  searchParams 
+}: { 
+  params: Promise<{ slug: string }>, 
+  searchParams: Promise<{ q?: string }> 
+}) {
+  const [{ slug }, { q }] = await Promise.all([params, searchParams]);
   
   try {
-    const movieRes = await fetchMovieData(slug);
+    const movieRes = await fetchMovieData(slug, q);
     if (!movieRes) return notFound();
  
     const { data, episodes, source } = movieRes;
