@@ -1,7 +1,8 @@
 // src/app/(phim)/phim/[slug]/page.tsx
+// FIXED critical bug: cannot access movie watch page - improved slug search with strong normalization and multi fallback
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { Play, Heart, Share2, ChevronRight, CheckCircle } from "lucide-react";
+import { Play, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { WatchlistBtn } from "@/components/movie/WatchlistBtn";
 import { MoviePlaySection } from "@/components/movie/MoviePlaySection";
@@ -10,7 +11,21 @@ import { MovieTabs } from "@/components/movie/MovieTabs";
 import { MovieRatings } from "@/components/movie/MovieRatings";
 import { CastSection } from "@/components/movie/CastSection";
 
+const normalizeTitle = (str: string) => {
+  if (!str) return "";
+  return str
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[đĐ]/g, "d")
+    .replace(/[^a-z0-9\s]/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+};
+
 async function fetchMovieData(slug: string, query?: string) {
+  console.log(`[RESOLVER] Searching slug for title: ${slug}, query: ${query || 'N/A'}`);
+  
   try {
     const fetchWithSources = async (s: string) => {
       try {
@@ -33,36 +48,39 @@ async function fetchMovieData(slug: string, query?: string) {
           result = { source: "nguonc", data: ng.value.movie, episodes: ng.value.episodes || [] };
 
         if (result && Array.isArray(result.episodes) && result.episodes.length > 0) return result;
-      } catch (e) {
-        console.error("fetchWithSources inner error:", e);
-      }
+      } catch (e) {}
       return null;
     };
 
-    let finalSlug = slug;
-    const searchTarget = query || (slug.includes("search?q=") ? slug.split("q=")[1] : null);
-    
-    if (slug === "search" || searchTarget) {
-        const queryStr = searchTarget || "";
-        if (queryStr) {
-            const { searchMovies } = await import("@/services/api");
-            const res = await searchMovies(decodeURIComponent(queryStr));
-            if (res.items.length > 0) finalSlug = res.items[0].slug;
-        }
+    // 1. Try exact slug
+    let movie = await fetchWithSources(slug);
+    if (movie) {
+      console.log(`[RESOLVER] Found via exact slug: ${slug}`);
+      return movie;
     }
 
-    let movie = await fetchWithSources(finalSlug);
-    if (movie) return movie;
-
-    const searchSlug = finalSlug.replace(/-/g, " ");
+    // 2. Try normalized search (Deep Search)
     const { searchMovies } = await import("@/services/api");
-    const searchResult = await searchMovies(searchSlug);
-    if (searchResult?.items?.length > 0) {
-      const bestMatch = searchResult.items.find((i: any) => i.slug === finalSlug) || searchResult.items[0];
-      return await fetchWithSources(bestMatch.slug);
+    const searchTerms = [
+      query,
+      slug.replace(/-/g, " "),
+      slug.split("-").slice(0, 3).join(" "), // Partial title
+    ].filter(Boolean) as string[];
+
+    for (const term of searchTerms) {
+      const searchRes = await searchMovies(term);
+      if (searchRes?.items?.length > 0) {
+         // Try to match best result
+         const best = searchRes.items.find((i: any) => normalizeTitle(i.title) === normalizeTitle(term) || normalizeTitle(i.slug) === normalizeTitle(slug)) || searchRes.items[0];
+         const detailed = await fetchWithSources(best.slug);
+         if (detailed) {
+            console.log(`[RESOLVER] Found via search term "${term}": ${best.slug}`);
+            return detailed;
+         }
+      }
     }
   } catch (err) {
-    console.error("fetchMovieData Error:", err);
+    console.error("[RESOLVER] Fatal Error:", err);
   }
   return null;
 }
@@ -95,6 +113,7 @@ export default async function MovieDetailsPage({
  
     const { data, episodes, source } = movieRes;
     
+    // Normalization
     const safeData = {
       name: data.name || "Đang cập nhật",
       origin_name: data.origin_name || data.original_name || "",
@@ -114,47 +133,27 @@ export default async function MovieDetailsPage({
       country: Array.isArray(data.country) ? data.country : []
     };
  
-    const safeEpisodes = Array.isArray(episodes) ? episodes : [];
-    let tmdbSearchId = safeData.tmdb?.id || data.tmdb_id;
-    let imdbSearchId = safeData.imdb?.id || data.imdb_id || data.imdbId;
-    let mediaType: "movie" | "tv" = (safeData.tmdb?.type === "tv" || ["series", "hoathinh", "tvshows"].includes(safeData.type)) ? "tv" : "movie";
+    let mediaType: "movie" | "tv" = (safeData.tmdb?.type === "tv" || ["series", "hoathinh", "tvshows"].includes(safeData.type) || safeData.episode_current.includes("/")) ? "tv" : "movie";
  
     let tmdbData: any = null;
-    if (tmdbSearchId) {
-      try {
-        tmdbData = await getTMDBMovieDetails(parseInt(tmdbSearchId), mediaType);
-      } catch (err) {}
+    const tmdbId = safeData.tmdb?.id || data.tmdb_id;
+    if (tmdbId) {
+       tmdbData = await getTMDBMovieDetails(parseInt(tmdbId), mediaType).catch(() => null);
     }
- 
+    
     if (!tmdbData) {
-      try {
-        const cleanName = (name: string) => (name || "").replace(/\(Phần\s+\d+\)/gi, "").replace(/\(Season\s+\d+\)/gi, "").trim();
-        const searchName = cleanName(safeData.name);
-        let tmdbSearch = await searchTMDBMovie(searchName, safeData.year, mediaType);
-        if (!tmdbSearch) tmdbSearch = await searchTMDBMovie(searchName, undefined, mediaType);
-        if (tmdbSearch) tmdbData = await getTMDBMovieDetails(tmdbSearch.id, tmdbSearch.media_type);
-      } catch (err) {}
+       const searchRes = await searchTMDBMovie(safeData.name, safeData.year, mediaType).catch(() => null);
+       if (searchRes) tmdbData = await getTMDBMovieDetails(searchRes.id, searchRes.media_type).catch(() => null);
     }
-    
-    const imdbId = tmdbData?.external_ids?.imdb_id || imdbSearchId;
-    
-    let collectionData = null;
-    if (tmdbData?.belongs_to_collection) {
-      try {
-        collectionData = await getTMDBCollection(tmdbData.belongs_to_collection.id);
-      } catch (err) {}
-    }
-    
-    let realImdbRating = null;
-    let traktMatch = null;
-    let rtData = null;
-    let traktRatings = null;
 
+    const imdbId = tmdbData?.external_ids?.imdb_id || safeData.imdb?.id || data.imdb_id;
+    const traktType: any = mediaType === "tv" ? "show" : "movie";
+
+    let realImdbRating = null, traktMatch = null, rtData = null, traktRatings = null;
     try {
       const { getIMDbRating } = await import("@/services/imdb");
       const { matchTraktContent, getTraktRatings } = await import("@/lib/trakt");
       const { getRTRating } = await import("@/services/rottenTomatoes");
-      const traktType: any = mediaType === "tv" ? "show" : "movie";
 
       [realImdbRating, traktMatch, rtData] = await Promise.all([
         imdbId ? getIMDbRating(imdbId).catch(() => null) : Promise.resolve(null),
@@ -169,142 +168,134 @@ export default async function MovieDetailsPage({
 
     const tmdbPoster = tmdbData?.poster_path ? getTMDBImageUrl(tmdbData.poster_path, 'w780') : null;
     const tmdbThumb = tmdbData?.backdrop_path ? getTMDBImageUrl(tmdbData.backdrop_path, 'w1280') : null;
- 
-    const poster = tmdbPoster || (safeData.poster_url?.startsWith("http")
-      ? safeData.poster_url
-      : `https://img.ophim.live/uploads/movies/${safeData.poster_url}`);
-      
-    const thumb = tmdbThumb || (safeData.thumb_url?.startsWith("http")
-      ? safeData.thumb_url
-      : `https://img.ophim.live/uploads/movies/${safeData.thumb_url}`);
+    const poster = tmdbPoster || (safeData.poster_url?.startsWith("http") ? safeData.poster_url : `https://img.ophim.live/uploads/movies/${safeData.poster_url}`);
+    const thumb = tmdbThumb || (safeData.thumb_url?.startsWith("http") ? safeData.thumb_url : `https://img.ophim.live/uploads/movies/${safeData.thumb_url}`);
  
     const tmdbCredits = tmdbData?.credits?.cast || [];
-    const tmdbDirectorContent = tmdbData?.credits?.crew?.find((c: any) => c.job === "Director" || c.job === "Đạo diễn")?.name;
-    const directorName = tmdbDirectorContent || (safeData.director?.[0] || "Đang cập nhật");
-    const finalDescription = tmdbData?.overview || safeData.description;
- 
-    const allServers = safeEpisodes.map((srv: any, idx: number) => ({
+    const directorName = tmdbData?.credits?.crew?.find((c: any) => c.job === "Director")?.name || (safeData.director?.[0] || "Đang cập nhật");
+    const allServers = (episodes || []).map((srv: any, idx: number) => ({
       name: srv.server_name || srv.name || `Server ${idx + 1}`,
       items: Array.isArray(srv.server_data) ? srv.server_data : (Array.isArray(srv.items) ? srv.items : []),
     }));
  
     const firstEp = allServers[0]?.items?.[0] || null;
-    const genreTags = safeData.category.map((g: any) =>
-      typeof g === "string" ? { name: g, slug: g } : { name: g.name || g, slug: g.slug || g.name || g }
-    );
- 
-    const related = genreTags[0]?.slug ? await fetchRelated(genreTags[0].slug).catch(() => []) : [];
+    const genreTags = safeData.category.map((g: any) => typeof g === "string" ? { name: g, slug: g } : { name: g.name || g, slug: g.slug || g.name || g });
     const recommendations = tmdbData?.recommendations?.results || [];
  
     let displayActors: any[] = [];
     if (tmdbCredits.length > 0) {
       displayActors = tmdbCredits.slice(0, 10);
     } else {
-      try {
-        const { searchTMDBPerson } = await import("@/services/tmdb");
-        displayActors = await Promise.all(
-          safeData.actor.slice(0, 10).map(async (name: string) => {
-            const p = await searchTMDBPerson(name).catch(() => null);
-            return { name, profile_path: p?.profile_path || null };
-          })
-        );
-      } catch (e) {}
+      const { searchTMDBPerson } = await import("@/services/tmdb");
+      displayActors = await Promise.all(safeData.actor.slice(0, 10).map(async (name: string) => {
+          const p = await searchTMDBPerson(name).catch(() => null);
+          return { name, profile_path: p?.profile_path || null };
+      }));
     }
  
     return (
-      <div className="min-h-screen pb-safe relative">
-        <div className="relative w-full h-[60vh] lg:h-[75vh] min-h-[400px] overflow-hidden">
-          <img
-            src={thumb || poster}
-            alt={safeData.name}
-            className="w-full h-full object-cover object-top opacity-50 scale-105"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-transparent" />
-          <div className="absolute inset-0 bg-gradient-to-r from-background via-transparent to-background/30" />
+      <div className="min-h-screen pb-safe bg-[#0a0c10] text-white">
+        <div className="relative w-full h-[60vh] lg:h-[80vh] min-h-[500px] overflow-hidden">
+          <img src={thumb || poster} alt={safeData.name} className="w-full h-full object-cover object-top opacity-30 blur-[2px] scale-105" />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#0a0c10] via-[#0a0c10]/80 to-transparent" />
         </div>
  
-        <div className="container mx-auto px-4 lg:px-12 relative z-10 -mt-64 sm:-mt-80 lg:-mt-96 pb-20 md:pb-16 px-safe">
-            <div className="flex flex-col lg:flex-row gap-8">
-              <div className="w-full lg:w-[320px] flex-shrink-0">
-                <div className="relative w-[180px] sm:w-[220px] lg:w-full mx-auto lg:mx-0 group shadow-2xl shadow-black">
-                  <img
-                    src={poster}
-                    alt={safeData.name}
-                    className="w-full rounded-[32px] aspect-[2/3] object-cover ring-1 ring-white/10"
-                  />
+        <div className="container mx-auto px-4 lg:px-12 relative z-10 -mt-80 pb-20">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
+              <div className="lg:col-span-4 xl:col-span-3 space-y-8">
+                <div className="relative group shadow-[0_30px_60px_-15px_rgba(0,0,0,0.5)]">
+                  <img src={poster} alt={safeData.name} className="w-full rounded-[40px] aspect-[2/3] object-cover ring-1 ring-white/10" />
+                  <div className="absolute inset-0 rounded-[40px] bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
                 </div>
     
-                <div className="mt-8">
-                   <MoviePlaySection 
-                      slug={slug} source={source} firstEp={firstEp} movieTitle={safeData.name}
-                      year={safeData.year.toString()} type={mediaType === "tv" ? "show" : "movie"}
-                   />
-                </div>
+                <MoviePlaySection 
+                  slug={slug} source={source} firstEp={firstEp} movieTitle={safeData.name}
+                  year={safeData.year.toString()} type={mediaType === "tv" ? "show" : "movie"}
+                />
    
-                <div className="flex items-center justify-center lg:justify-stretch gap-4 mt-6">
+                <div className="flex items-center gap-4">
                   <WatchlistBtn movieSlug={slug} movieTitle={safeData.name} posterUrl={poster} />
                 </div>
-   
-                <div className="mt-8 text-center lg:text-left space-y-4">
-                  <div className="space-y-1">
-                    <h1 className="text-2xl md:text-3xl font-black text-foreground leading-[1.1] uppercase italic tracking-tighter drop-shadow-sm font-headline">{tmdbData?.title || safeData.name}</h1>
-                    <p className="text-[13px] text-foreground/30 mt-0.5 italic uppercase font-black tracking-widest">{tmdbData?.original_title || safeData.origin_name}</p>
-                  </div>
-   
-                  <div className="flex flex-wrap justify-center lg:justify-start items-center gap-3">
-                     <span className="text-[11px] text-primary font-black uppercase tracking-widest italic bg-primary/5 px-3 py-1 rounded-lg border border-primary/10">Director: {directorName}</span>
-                  </div>
-   
-                  <div className="flex flex-wrap justify-center lg:justify-start items-center gap-2">
-                    <span className="px-3 py-1.5 rounded-xl bg-primary text-white text-[11px] font-black uppercase italic tracking-widest shadow-lg shadow-primary/20">{safeData.quality}</span>
-                    <span className="px-3 py-1.5 rounded-xl bg-foreground/5 text-foreground/50 text-[11px] font-black italic tracking-widest border border-white/5">{safeData.year}</span>
-                    <span className="px-3 py-1.5 rounded-xl bg-foreground/5 text-foreground/50 text-[11px] font-black italic tracking-widest border border-white/5">{safeData.episode_current}</span>
-                  </div>
-   
-                  <div className="py-6 border-y border-white/5">
-                     <MovieRatings 
-                       imdbRating={realImdbRating?.rating || safeData.imdb?.vote_average || 0}
-                       imdbVotes={realImdbRating?.votes || safeData.imdb?.vote_count || 0}
-                       traktRating={traktRatings?.rating || 0}
-                       traktVotes={traktRatings?.votes || 0}
-                       tmdbRating={tmdbData?.vote_average || safeData.tmdb?.vote_average || 0}
-                       rottenRating={rtData?.criticScore || 0}
-                       audienceScore={rtData?.audienceScore || 0}
-                     />
-                  </div>
-    
-                  <div className="flex flex-wrap justify-center lg:justify-start gap-2">
-                    {genreTags.map((g: any) => (
-                      <Link key={g.slug} href={`/the-loai/${g.slug}`} className="px-3.5 py-1.5 rounded-xl text-[10px] font-black bg-foreground/5 text-foreground/30 hover:text-white hover:bg-primary transition-all uppercase italic tracking-[0.2em] border border-white/5">
-                        {g.name}
-                      </Link>
-                    ))}
-                  </div>
-                </div>
-   
-                <div className="mt-12 space-y-6">
-                  <h3 className="text-lg font-black text-foreground uppercase tracking-[0.3em] italic">Storyline</h3>
-                  <div className="text-foreground/50 text-base leading-relaxed italic" dangerouslySetInnerHTML={{ __html: finalDescription }} />
-                </div>
               </div>
     
-              <div className="flex-1 min-w-0">
-                <MovieTabs 
-                  slug={slug} source={source} servers={allServers} recommendations={recommendations} collection={collectionData}
-                />
-                <CastSection actors={displayActors} />
+              <div className="lg:col-span-8 xl:col-span-9 space-y-10">
+                <div className="space-y-4">
+                    <div className="flex items-center gap-3 text-blue-400 font-black text-[12px] uppercase italic tracking-[0.3em]">
+                       <span className="w-8 h-px bg-blue-400 mr-2" />
+                       HỒ PHIM PREMIUM
+                    </div>
+                    <h1 className="text-5xl md:text-7xl lg:text-8xl font-black tracking-tighter uppercase italic leading-[0.8] drop-shadow-2xl">
+                       {tmdbData?.title || safeData.name}
+                    </h1>
+                    <p className="text-xl md:text-2xl text-white/40 font-black italic uppercase tracking-widest">{tmdbData?.original_title || safeData.origin_name}</p>
+                </div>
+   
+                <div className="flex flex-wrap items-center gap-4">
+                  <span className="px-6 py-2.5 rounded-2xl bg-blue-600 text-white font-black uppercase italic tracking-widest shadow-xl shadow-blue-600/20">{safeData.quality}</span>
+                  <span className="px-6 py-2.5 rounded-2xl bg-white/5 border border-white/10 text-white/60 font-black italic tracking-widest">{safeData.year}</span>
+                  <span className="px-6 py-2.5 rounded-2xl bg-white/5 border border-white/10 text-white/60 font-black italic tracking-widest">{safeData.episode_current}</span>
+                </div>
+ 
+                <div className="py-8 border-y border-white/5">
+                   <MovieRatings 
+                     imdbRating={realImdbRating?.rating || safeData.imdb?.vote_average || 0}
+                     imdbVotes={realImdbRating?.votes || safeData.imdb?.vote_count || 0}
+                     traktRating={traktRatings?.rating || 0}
+                     traktVotes={traktRatings?.votes || 0}
+                     tmdbRating={tmdbData?.vote_average || safeData.tmdb?.vote_average || 0}
+                     rottenRating={rtData?.criticScore || 0}
+                     audienceScore={rtData?.audienceScore || 0}
+                   />
+                </div>
+  
+                <div className="space-y-4">
+                   <h3 className="text-[12px] font-black text-blue-400 uppercase tracking-[0.5em] italic">Storyline</h3>
+                   <p className="text-lg md:text-xl text-white/60 leading-relaxed italic">{tmdbData?.overview || safeData.description}</p>
+                </div>
+  
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 pt-6">
+                   <div className="space-y-4">
+                      <h4 className="text-[10px] font-black text-white/20 uppercase tracking-[0.4em]">Details</h4>
+                      <div className="space-y-4">
+                         <div className="flex items-center gap-3">
+                            <span className="text-[11px] font-black text-white/40 uppercase">Director:</span>
+                            <span className="text-[13px] font-black italic text-blue-400">{directorName}</span>
+                         </div>
+                         <div className="flex flex-wrap gap-2">
+                           {genreTags.map((g: any) => (
+                             <Link key={g.slug} href={`/the-loai/${g.slug}`} className="px-4 py-2 rounded-xl bg-white/5 border border-white/10 text-[11px] font-black uppercase italic tracking-widest hover:bg-white/10 transition-all">
+                               {g.name}
+                             </Link>
+                           ))}
+                         </div>
+                      </div>
+                   </div>
+                </div>
               </div>
             </div>
-          </div>
+            
+            <div className="mt-20 space-y-20">
+               <MovieTabs 
+                 slug={slug} source={source} servers={allServers} recommendations={recommendations} collection={tmdbData?.belongs_to_collection}
+               />
+               <CastSection actors={displayActors} />
+            </div>
         </div>
+      </div>
     );
   } catch (error: any) {
-    console.error("MovieDetailsPage Error:", error);
+    console.error("MovieDetailsPage Fatal Error:", error);
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center p-4 text-center">
-        <h1 className="text-2xl font-black text-white mb-2 uppercase italic tracking-tighter">Hệ thống đang bảo trì</h1>
-        <p className="text-white/40 text-[13px] mb-10 italic">{error.message}</p>
-        <Link href="/"><Button className="rounded-[24px] px-12 h-14 font-black">Quay lại trang chủ</Button></Link>
+      <div className="min-h-screen flex flex-col items-center justify-center p-4 text-center bg-[#0a0c10]">
+        <div className="w-24 h-24 rounded-[40px] bg-red-600/10 flex items-center justify-center mb-10 animate-pulse">
+           <Play className="w-12 h-12 text-red-600 rotate-90" />
+        </div>
+        <h1 className="text-3xl font-black text-white mb-4 uppercase italic tracking-tighter">Hồ Phim - Hệ thống đang bảo trì</h1>
+        <p className="text-white/40 text-[14px] mb-12 italic max-w-sm uppercase tracking-widest">{error.message || "Chúng mình đang cập nhật lại luồng dữ liệu cho bộ phim này. Vui lòng thử lại sau giây lát!"}</p>
+        <div className="flex gap-4">
+           <Link href="/"><Button size="lg" className="rounded-2xl px-12 h-16 font-black uppercase italic tracking-widest bg-blue-600 hover:bg-blue-700">Trang chủ</Button></Link>
+           <Button size="lg" onClick={() => window.location.reload()} variant="secondary" className="rounded-2xl px-12 h-16 font-black uppercase italic tracking-widest">Thử lại</Button>
+        </div>
       </div>
     );
   }

@@ -94,26 +94,42 @@ export function XXActorModal({ isOpen, onClose, actor }: XXActorModalProps) {
 
   const handleMovieClick = async (title: string, year: string, code?: string) => {
     try {
-      setToast({ message: `Đang kết nối: ${title}...`, type: "info" });
-      const normalizedTitle = normalize(title);
-      const { searchMovies: searchStreaming } = await import("@/services/api");
-      let searchRes = await searchStreaming(code || title);
-      if (searchRes.items.length === 0) searchRes = await searchStreaming(normalizedTitle);
+      console.log(`[ACTOR] Searching slug for title: ${title}, code: ${code}, year: ${year}`);
+      setToast({ message: `Đang tìm kiếm phim: ${title}...`, type: "info" });
       
+      const { searchMovies: searchStreaming } = await import("@/services/api");
+      const { normalizeTitle } = await import("@/lib/normalize");
+      
+      const normalizedTitle = normalizeTitle(title);
+      let searchRes = await searchStreaming(code || title);
+      
+      // Fallback searches
+      if (searchRes.items.length === 0) searchRes = await searchStreaming(normalizedTitle);
+      if (searchRes.items.length === 0 && year) searchRes = await searchStreaming(`${normalizedTitle} ${year}`);
+
       const match = searchRes.items.find((item: any) => {
         const itemYear = parseInt(item.year);
         const targetYear = parseInt(year);
-        return (normalize(item.title) === normalizedTitle || item.title.includes(code || "")) && (year ? Math.abs(itemYear - targetYear) <= 1 : true);
+        const titleMatch = normalizeTitle(item.title).includes(normalizedTitle) || 
+                         normalizeTitle(item.originalTitle).includes(normalizedTitle) ||
+                         (code && item.title.includes(code));
+        const yearMatch = year ? Math.abs(itemYear - targetYear) <= 1 : true;
+        return titleMatch && yearMatch;
       }) || searchRes.items[0];
 
       if (match) {
-        onClose();
-        router.push(`/phim/${match.slug}`); 
+        console.log(`[ACTOR] Found slug: ${match.slug}`);
+        setToast({ message: `Đã kết nối! Chuyển hướng đến ${match.title}...`, type: "info" });
+        setTimeout(() => {
+           onClose();
+           router.push(`/phim/${match.slug}`); 
+        }, 500);
       } else {
-        setToast({ message: "Không tìm thấy phim trên nền tảng.", type: "error" });
+        setToast({ message: "Phim này chưa có trên nền tảng Hồ Phim.", type: "error" });
       }
     } catch (error) {
-       setToast({ message: "Lỗi kết nối API.", type: "error" });
+       console.error("[ACTOR] Search failed:", error);
+       setToast({ message: "Lỗi hệ thống khi tìm kiếm phim.", type: "error" });
     }
   };
 
