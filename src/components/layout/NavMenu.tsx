@@ -184,7 +184,7 @@ export function NavMenu({ mode }: NavMenuProps) {
             className={`flex items-center gap-1.5 px-4 py-2 rounded-xl transition-all active-depth ${
               isComicSection ? "font-headline uppercase tracking-wider text-[11px] font-black" : "text-[14px] font-semibold"
             } ${
-              openId === dd.id ? "text-primary bg-primary/10" : "text-foreground/50 hover:text-foreground hover:bg-foreground/5"
+              openId === dd.id ? "text-primary bg-primary/10" : "text-foreground/90 hover:text-foreground hover:bg-foreground/5"
             }`}
           >
             {dd.label}
@@ -223,7 +223,7 @@ export function NavMenu({ mode }: NavMenuProps) {
                         }
                         setOpenId(null);
                       }}
-                      className="px-3 py-2 text-[13px] font-medium text-foreground/50 hover:text-primary hover:bg-primary/5 rounded-xl transition-all active-depth whitespace-nowrap"
+                      className="px-3 py-2 text-[13px] font-bold text-foreground/80 hover:text-primary hover:bg-primary/5 rounded-xl transition-all active-depth whitespace-nowrap"
                     >
                       {item.name}
                     </Link>
@@ -242,7 +242,7 @@ export function NavMenu({ mode }: NavMenuProps) {
           className={`px-4 py-2 rounded-xl transition-all active-depth ${
             isComicSection ? "font-headline uppercase tracking-wider text-[11px] font-black" : "text-[14px] font-semibold"
           } ${
-            pathname === link.href ? "text-primary bg-primary/10" : "text-foreground/50 hover:text-foreground hover:bg-foreground/5"
+            pathname === link.href ? "text-primary bg-primary/10" : "text-foreground/90 hover:text-foreground hover:bg-foreground/5"
           }`}
         >
           {link.label}

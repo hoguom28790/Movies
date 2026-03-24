@@ -206,7 +206,7 @@ body {
 }
 
 .dark .glass-pro {
-  background: oklch(0% 0 0 / 40%);
+  background: oklch(0% 0 0 / 70%);
   border: 1px solid oklch(100% 0 0 / 10%);
 }
 

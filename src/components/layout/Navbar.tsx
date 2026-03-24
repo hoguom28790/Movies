@@ -101,7 +101,7 @@ export function Navbar({ mode: initialMode }: NavbarProps) {
               <div className="flex items-center gap-1.5 sm:gap-3">
                 <Link
                   href={isComicSection ? "/truyen/search" : "/search"}
-                  className="p-3 rounded-2xl text-foreground/40 hover:text-primary hover:bg-primary/10 transition-all active-depth"
+                  className="p-3 rounded-2xl text-foreground/70 hover:text-primary hover:bg-primary/10 transition-all active-depth"
                   title="Tìm kiếm"
                 >
                   <Search className="h-5 w-5 stroke-[2.5px]" />
@@ -110,7 +110,7 @@ export function Navbar({ mode: initialMode }: NavbarProps) {
                 <Link
                   href={isComicSection ? "/truyen/lich-su" : "/lich-su"}
                   className={`p-3 rounded-2xl transition-all active-depth ${
-                    (pathname === "/lich-su" || pathname === "/truyen/lich-su") ? "bg-primary text-white shadow-lg shadow-primary/30" : "text-foreground/40 hover:bg-foreground/5 hover:text-foreground"
+                    (pathname === "/lich-su" || pathname === "/truyen/lich-su") ? "bg-primary text-white shadow-lg shadow-primary/30" : "text-foreground/70 hover:bg-foreground/5 hover:text-foreground"
                   }`}
                   title="Lịch sử"
                 >
@@ -124,7 +124,7 @@ export function Navbar({ mode: initialMode }: NavbarProps) {
                 <Link
                   href={isComicSection ? "/truyen/yeu-thich" : "/yeu-thich"}
                   className={`p-3 rounded-2xl transition-all active-depth ${
-                    (pathname === "/yeu-thich" || pathname === "/truyen/yeu-thich") ? "bg-primary text-white shadow-lg shadow-primary/30" : "text-foreground/40 hover:bg-foreground/5 hover:text-foreground"
+                    (pathname === "/yeu-thich" || pathname === "/truyen/yeu-thich") ? "bg-primary text-white shadow-lg shadow-primary/30" : "text-foreground/70 hover:bg-foreground/5 hover:text-foreground"
                   }`}
                   title="Yêu thích"
                 >
