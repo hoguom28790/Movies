@@ -2,10 +2,11 @@ import { NextRequest, NextResponse } from "next/server";
 import * as cheerio from "cheerio";
 
 const JAVDB_MIRRORS = [
-  "https://javdb.com",
+  "https://javdb521.com",
   "https://javdb34.com",
   "https://javdb00.com",
-  "https://javdb.one"
+  "https://javdb.one",
+  "https://javdb.com"
 ];
 
 async function fetchWithMirrors(path: string, headers: any) {
@@ -108,8 +109,10 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ name
        debug: {
           slug,
           searchUrl,
+          searchStatus: searchResult?.status || "N/A",
           htmlLength: html.length,
-          isBlocked: html.includes("Checking your browser") || html.includes("Access denied")
+          isBlocked: html.includes("Checking your browser") || html.includes("Access denied") || html.includes("captcha"),
+          htmlSnippet: html.substring(0, 500)
        },
        id: slug,
        stageName: $("h1.title, .title.is-4, .title").first().text().trim() || name,
