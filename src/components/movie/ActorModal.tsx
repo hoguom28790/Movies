@@ -18,6 +18,7 @@ interface ActorModalProps {
     id: number | string;
     name: string;
     profile_path?: string | null;
+    profilePath?: string| null; // Add camelCase variant
   } | null;
 }
 
@@ -26,6 +27,13 @@ export function ActorModal({ isOpen, onClose, actor }: ActorModalProps) {
   const router = useRouter();
   const [toast, setToast] = useState<{ message: string; type: "info" | "error" } | null>(null);
   const [isFav, setIsFav] = useState(false);
+
+  // Unified profile path resolution
+  const effectiveProfilePath = actor?.profile_path || actor?.profilePath || null;
+  const isExternalImage = effectiveProfilePath?.startsWith('http');
+  const profileImageUrl = isExternalImage 
+    ? effectiveProfilePath 
+    : (getTMDBImageUrl(effectiveProfilePath, 'w500') || "/placeholder-actor.png");
 
   const { data: details, isLoading } = useQuery({
     queryKey: ["actor-details", actor?.id],
@@ -115,7 +123,7 @@ export function ActorModal({ isOpen, onClose, actor }: ActorModalProps) {
                 <div className="flex-grow overflow-y-auto no-scrollbar scroll-smooth">
                     <div className="p-8 sm:p-12 md:p-16 flex flex-col sm:flex-row gap-10 items-center sm:items-end bg-gradient-to-b from-primary/10 to-transparent">
                         <div className="w-40 h-40 sm:w-56 sm:h-56 rounded-full overflow-hidden border-8 border-[#0a0a0b] shadow-2xl flex-shrink-0">
-                           <img src={getTMDBImageUrl(actor?.profile_path || null, 'w500') || "/placeholder-actor.png"} className="w-full h-full object-cover" />
+                           <img src={profileImageUrl || undefined} className="w-full h-full object-cover" />
                         </div>
                         <div className="space-y-4 text-center sm:text-left pb-4">
                            <h3 className="text-4xl sm:text-6xl font-black italic tracking-tighter text-white uppercase leading-none font-headline">{actor?.name}</h3>
