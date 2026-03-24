@@ -97,7 +97,7 @@ export function ActorModal({ isOpen, onClose, actor, isTopXX }: ActorModalProps)
         { label: "Ngày sinh", value: d.birthDate, icon: Calendar },
         { label: "Số đo 3 vòng", value: d.measurements, icon: Ruler },
         { label: "Chiều cao", value: d.height, icon: Ruler },
-        { label: "Quế quán", value: d.birthPlace || "N/A", icon: MapPin },
+        { label: "Quê quán", value: d.birthPlace || "N/A", icon: MapPin },
         { label: "Studio", value: d.studio || "Official", icon: Tv },
         { label: "Năm Debut", value: d.debutYear || "N/A", icon: Play },
         { label: "Trạng thái", value: d.status || "Active", icon: TrendingUp }
@@ -279,7 +279,7 @@ export function ActorModal({ isOpen, onClose, actor, isTopXX }: ActorModalProps)
                                (details as any)?.movie_credits?.cast?.slice(0, 15).map((m: any, i: number) => (
                                 <motion.div key={i} initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }} className="group flex flex-col gap-5">
                                    <div className="relative aspect-[2/3] rounded-[42px] overflow-hidden bg-black border border-white/5 shadow-2xl group-hover:shadow-indigo-400/20 transition-all duration-500">
-                                      <img src={getTMDBImageUrl(m.poster_path)} className="w-full h-full object-cover group-hover:scale-110 group-hover:brightness-50 transition-all duration-1000" />
+                                      <img src={getTMDBImageUrl(m.poster_path) ?? undefined} className="w-full h-full object-cover group-hover:scale-110 group-hover:brightness-50 transition-all duration-1000" />
                                       <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-500 translate-y-12 group-hover:translate-y-0 text-center p-6">
                                          <Link href={`/phim/${m.id}`} className="w-full py-4 bg-indigo-500 text-white text-[12px] font-black uppercase italic rounded-2xl shadow-lg hover:scale-110 transition-all">
                                             XEM CHI TIẾT
