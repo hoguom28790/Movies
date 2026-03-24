@@ -252,13 +252,20 @@ export function ActorModal({ isOpen, onClose, actor, isTopXX }: ActorModalProps)
                                             {m.code}
                                          </div>
                                       </div>
-                                      <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-500 translate-y-12 group-hover:translate-y-0">
-                                         <a href={`/search?q=${encodeURIComponent(m.code)}`} className="px-8 py-4 bg-primary text-black text-[12px] font-black uppercase italic rounded-2xl shadow-cinematic-lg hover:scale-110 active:scale-95 transition-all">
+                                      <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 opacity-0 group-hover:opacity-100 transition-all duration-500 translate-y-12 group-hover:translate-y-0 text-center">
+                                         <a href={`/search?q=${encodeURIComponent(m.code)}`} className="w-40 py-3.5 bg-primary text-black text-[11px] font-black uppercase italic rounded-2xl shadow-cinematic-lg hover:scale-105 active:scale-95 transition-all">
                                             XEM NGAY
+                                         </a>
+                                         <a 
+                                            href={`https://javdb.com/search?q=${m.code}&f=all`} 
+                                            target="_blank"
+                                            className="w-40 py-3.5 glass-pro text-white text-[10px] font-black uppercase italic rounded-2xl border border-white/10 hover:bg-white/10 transition-all"
+                                         >
+                                            XEM TRÊN JAVDB
                                          </a>
                                       </div>
                                    </div>
-                                   <div className="flex flex-col gap-1.5 px-4">
+                                   <div className="flex flex-col gap-1.5 px-4 text-center sm:text-left">
                                       <span className="text-[10px] font-black text-primary uppercase italic tracking-widest">{m.year} • RATING {m.rating}</span>
                                       <h5 className="font-black text-lg text-white/90 line-clamp-2 uppercase italic tracking-tight leading-tight group-hover:text-primary transition-colors">{m.title}</h5>
                                    </div>
