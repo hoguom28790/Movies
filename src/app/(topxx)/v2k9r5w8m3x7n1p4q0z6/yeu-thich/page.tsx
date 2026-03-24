@@ -16,10 +16,12 @@ import {
   deleteXXFirestorePlaylist,
   toggleXXFirestoreFavorite
 } from "@/services/topxxFirestore";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import { XXMovieCard } from "@/components/movie/XXMovieCard";
 
 export default function XXLibraryPage() {
+  const router = useRouter();
   const { user } = useAuth();
   const [playlists, setPlaylists] = useState<XXPlaylist[]>([]);
   const [favorites, setFavorites] = useState<XXFavoriteEntry[]>([]);
@@ -287,10 +289,21 @@ export default function XXLibraryPage() {
                             } 
                             alt={actor.name}
                             className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                            onError={(e) => { e.currentTarget.src = "/placeholder-actor.png" }}
                           />
                           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity p-4 flex flex-col justify-end">
                               <div className="flex items-center gap-2">
-                                 <span className="px-2 py-1 rounded bg-primary text-black text-[8px] font-black uppercase tracking-widest">Yêu Thích</span>
+                                 <button 
+                                   onClick={(e) => {
+                                      e.preventDefault();
+                                      e.stopPropagation();
+                                      router.push(`/v2k9r5w8m3x7n1p4q0z6/search?q=${encodeURIComponent(actor.name)}`);
+                                   }}
+                                   className="px-4 py-2 rounded-xl bg-primary text-black text-[10px] font-black uppercase tracking-widest flex items-center gap-2 hover:scale-105 transition-transform"
+                                 >
+                                    <Search className="w-3 h-3" /> Tìm Phim
+                                 </button>
+                                 <span className="px-2 py-1 rounded bg-white/10 text-white text-[8px] font-black uppercase tracking-widest border border-white/10">Yêu Thích</span>
                               </div>
                           </div>
                           

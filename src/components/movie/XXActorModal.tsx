@@ -171,7 +171,7 @@ export function XXActorModal({ isOpen, onClose, actor }: XXActorModalProps) {
                       <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0b] via-[#0a0a0b]/60 to-transparent" />
                       <div className="absolute bottom-0 left-0 w-full p-8 sm:p-16 md:p-20 flex flex-col sm:flex-row items-end gap-10 sm:gap-14">
                         <div className="w-44 h-44 sm:w-64 sm:h-64 rounded-[56px] overflow-hidden border-[10px] border-[#0a0a0b] shadow-2xl flex-shrink-0 relative group">
-                           <img src={details?.profileImage || actor?.profile_path || actor?.profilePath || ""} alt={actor?.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-2000" />
+                           <img src={details?.profileImage || actor?.profile_path || actor?.profilePath || ""} alt={actor?.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-2000" onError={(e) => { (e.target as any).src = "/placeholder-actor.png" }} />
                         </div>
                         <div className="space-y-6 pb-6">
                            <div className="space-y-2">
