@@ -9,6 +9,9 @@ import { MovieContinueWatching } from "@/components/movie/MovieContinueWatching"
 import { CategoryShortcuts } from "@/components/movie/CategoryShortcuts";
 import { getTrendingMovies, getTMDBImageUrl } from "@/services/tmdb";
 import { BentoMovieRow } from "@/components/movie/BentoMovieRow";
+import { RouteErrorToast } from "@/components/movie/RouteErrorToast";
+import { Suspense } from "react";
+
 export default async function Home() {
   const [latestData, phimBoData, phimLeData, hoatHinhData, trendingData] = await Promise.allSettled([
     getLatestMovies(1),

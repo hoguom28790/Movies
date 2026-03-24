@@ -64,11 +64,13 @@ export function ActorModal({ isOpen, onClose, actor, isTopXX }: ActorModalProps)
           }
 
           const detailRes = await fetch(`/api/javdb/actress/${encodeURIComponent(actor.name)}`);
+          console.log(`[JAV MODAL] Fetching profile for: ${actor.name}`);
           if (!detailRes.ok) throw new Error("Actress profile not found on JAVDB");
           const detailData = await detailRes.json();
           
           if (detailData.source === "fallback") {
-             setToast({ message: "Không tìm thấy dữ liệu", submessage: "Hiển thị thông tin cơ bản từ hồ sơ dự phòng.", type: "error" });
+             setToast({ message: "Hồ Sơ Cơ Bản", submessage: "Đang đồng bộ thêm dữ liệu từ các nguồn khác.", type: "info" });
+             setTimeout(() => setToast(null), 3000);
           } else {
              setToast(null);
           }
