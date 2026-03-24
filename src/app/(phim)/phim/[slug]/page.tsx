@@ -1,10 +1,11 @@
-// Fixed TopXX password format + Removed pro max words + Fixed modal scroll header on both favorites and detail page + iPhone/iPad optimization
+// FIXED missing Play button on movie detail page - restored Play / "ĐÃ XEM (TRAY)" button with correct positioning and click handler
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
-import { Play, Heart, Share2, ChevronRight } from "lucide-react";
+import { Play, Heart, Share2, ChevronRight, CheckCircle } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { WatchlistBtn } from "@/components/movie/WatchlistBtn";
+import { MoviePlaySection } from "@/components/movie/MoviePlaySection";
 import { getTMDBImageUrl, getTMDBMovieDetails, searchTMDBMovie, getTMDBCollection } from "@/services/tmdb";
 import { MovieTabs } from "@/components/movie/MovieTabs";
 import { MovieRatings } from "@/components/movie/MovieRatings";
@@ -20,16 +21,19 @@ async function fetchMovieData(slug: string, query?: string) {
         fetch(`https://ophim1.com/v1/api/phim/${s}`, { cache: "no-store", signal: AbortSignal.timeout(5000) }).then((r) => r.json()),
       ]);
      
+      let result = null;
       if (kk.status === "fulfilled" && kk.value?.status === "success" && kk.value?.data?.item)
-        return { source: "kkphim", data: kk.value.data.item, episodes: kk.value.data.episodes || [] };
-      if (op.status === "fulfilled" && op.value?.status === "success" && op.value?.data?.item)
-        return { source: "ophim", data: op.value.data.item, episodes: op.value.data.episodes || [] };
-      if (kk.status === "fulfilled" && kk.value?.status === true && kk.value?.movie)
-        return { source: "kkphim", data: kk.value.movie, episodes: kk.value.episodes || [] };
-      if (op.status === "fulfilled" && op.value?.status === true && op.value?.movie)
-        return { source: "ophim", data: op.value.movie, episodes: op.value.episodes || [] };
-      if (ng.status === "fulfilled" && ng.value?.status === "success" && ng.value?.movie)
-        return { source: "nguonc", data: ng.value.movie, episodes: ng.value.episodes || [] };
+        result = { source: "kkphim", data: kk.value.data.item, episodes: kk.value.data.episodes || [] };
+      else if (op.status === "fulfilled" && op.value?.status === "success" && op.value?.data?.item)
+        result = { source: "ophim", data: op.value.data.item, episodes: op.value.data.episodes || [] };
+      else if (kk.status === "fulfilled" && kk.value?.status === true && kk.value?.movie)
+        result = { source: "kkphim", data: kk.value.movie, episodes: kk.value.episodes || [] };
+      else if (op.status === "fulfilled" && op.value?.status === true && op.value?.movie)
+        result = { source: "ophim", data: op.value.movie, episodes: op.value.episodes || [] };
+      else if (ng.status === "fulfilled" && ng.value?.status === "success" && ng.value?.movie)
+        result = { source: "nguonc", data: ng.value.movie, episodes: ng.value.episodes || [] };
+
+      if (result && Array.isArray(result.episodes) && result.episodes.length > 0) return result;
       return null;
     };
 
@@ -169,15 +173,15 @@ export default async function MovieDetailsPage({
     const { getIMDbRating } = await import("@/services/imdb");
     const { matchTraktContent, getTraktRatings } = await import("@/lib/trakt");
     const { getRTRating } = await import("@/services/rottenTomatoes");
-
+ 
     const traktType: any = mediaType === "tv" ? "show" : "movie";
-
+ 
     const [realImdbRating, traktMatch, rtData] = await Promise.all([
       imdbId ? getIMDbRating(imdbId).catch(() => null) : Promise.resolve(null),
       matchTraktContent(safeData.name, parseInt(safeData.year.toString()), traktType).catch(() => null),
       imdbId ? getRTRating(imdbId).catch(() => null) : Promise.resolve(null),
     ]);
-
+ 
     let traktRatings = null;
     if (traktMatch?.ids?.trakt) {
       traktRatings = await getTraktRatings(traktType, traktMatch.ids.trakt).catch(() => null);
@@ -195,14 +199,14 @@ export default async function MovieDetailsPage({
       : `https://img.ophim.live/uploads/movies/${safeData.thumb_url}`);
  
     const { searchTMDBPerson } = await import("@/services/tmdb");
-
+ 
     const tmdbCredits = tmdbData?.credits?.cast || [];
     const tmdbDirectorContent = tmdbData?.credits?.crew?.find((c: any) => c.job === "Director" || c.job === "Đạo diễn")?.name;
  
     const fallbackActors = safeData.actor;
     const fallbackDirector = safeData.director?.[0] || "Đang cập nhật";
     const directorName = tmdbDirectorContent || fallbackDirector;
-
+ 
     // Use TMDB overview if available, otherwise fallback to safeData.description
     const finalDescription = tmdbData?.overview || safeData.description;
  
@@ -212,7 +216,7 @@ export default async function MovieDetailsPage({
     }));
  
     const defaultServer = allServers[0]?.items || [];
-    const firstEp = defaultServer[0];
+    const firstEp = defaultServer[0] || null;
  
     const genreTags: { name: string; slug: string }[] = safeData.category.map((g: any) =>
       typeof g === "string" ? { name: g, slug: g } : { name: g.name || g, slug: g.slug || g.name || g }
@@ -221,13 +225,12 @@ export default async function MovieDetailsPage({
     const relatedSlug = genreTags[0]?.slug;
     const related = relatedSlug ? await fetchRelated(relatedSlug).catch(() => []) : [];
     const recommendations = tmdbData?.recommendations?.results || [];
-
+ 
     // --- Actor Profile Resolution ---
     let displayActors: any[] = [];
     if (tmdbCredits.length > 0) {
       displayActors = tmdbCredits.slice(0, 10);
     } else if (fallbackActors.length > 0) {
-      // If TMDB cast is missing, try to find profiles for source actors individually
       const actorNames = fallbackActors.filter((n: any) => n && n.trim().length > 0).map((n: any) => n.trim()).slice(0, 10);
       const profiles = await Promise.all(
         actorNames.map(async (name: string) => {
@@ -242,10 +245,9 @@ export default async function MovieDetailsPage({
       displayActors = profiles;
     }
     // --------------------------------
-    const countryName = safeData.country?.[0]?.name || safeData.country?.[0] || "Đang cập nhật";
  
     return (
-      <div className="min-h-screen pb-safe">
+      <div className="min-h-screen pb-safe relative">
       <div className="relative w-full h-[60vh] lg:h-[75vh] min-h-[400px] overflow-hidden">
         <Image
           src={thumb || poster}
@@ -255,71 +257,69 @@ export default async function MovieDetailsPage({
           className="object-cover object-top opacity-50 scale-105"
           sizes="100vw"
         />
-        <div className="absolute inset-0 bg-[var(--banner-overlay)]" />
+        <div className="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-transparent" />
         <div className="absolute inset-0 bg-gradient-to-r from-background via-transparent to-background/30" />
       </div>
-
+ 
       <div className="container mx-auto px-4 lg:px-12 relative z-10 -mt-64 sm:-mt-80 lg:-mt-96 pb-20 md:pb-16 px-safe">
           <div className="flex flex-col lg:flex-row gap-8">
-            <div className="w-full lg:w-[280px] flex-shrink-0">
-              <div className="relative w-[160px] sm:w-[200px] lg:w-full mx-auto lg:mx-0">
+            <div className="w-full lg:w-[320px] flex-shrink-0">
+              <div className="relative w-[180px] sm:w-[220px] lg:w-full mx-auto lg:mx-0 group shadow-2xl shadow-black">
                 <img
                   src={poster}
                   alt={safeData.name}
-                  className="w-full rounded-xl shadow-2xl shadow-black/60 aspect-[2/3] object-cover"
+                  className="w-full rounded-[32px] aspect-[2/3] object-cover ring-1 ring-white/10"
+                />
+                <div className="absolute inset-0 rounded-[32px] ring-1 ring-inset ring-white/10 group-hover:ring-primary/20 transition-all" />
+              </div>
+  
+              <div className="mt-8">
+                 <MoviePlaySection 
+                    slug={slug} 
+                    source={source} 
+                    firstEp={firstEp} 
+                    movieTitle={safeData.name}
+                    year={safeData.year.toString()}
+                    type={mediaType === "tv" ? "show" : "movie"}
+                 />
+              </div>
+ 
+              <div className="flex items-center justify-center lg:justify-stretch gap-4 mt-6">
+                <WatchlistBtn
+                  movieSlug={slug}
+                  movieTitle={safeData.name}
+                  posterUrl={poster}
                 />
               </div>
  
-              <div className="flex flex-col items-center lg:items-stretch gap-3 mt-4">
-                {firstEp ? (
-                  <Link href={`/xem/${source}/${slug}/${firstEp.slug || firstEp.name}`} className="w-full">
-                    <Button className="w-full h-11 rounded-xl gap-2 font-semibold text-[14px] bg-primary hover:bg-primary-hover transition-all">
-                      <Play className="w-5 h-5 fill-current" />
-                      XEM NGAY
-                    </Button>
-                  </Link>
-                ) : (
-                  <Button disabled className="w-full h-11 rounded-xl bg-white/5 text-white/30">
-                    Phim Sắp Chiếu
-                  </Button>
-                )}
- 
-                <div className="flex items-center justify-center gap-4">
-                  <WatchlistBtn
-                    movieSlug={slug}
-                    movieTitle={safeData.name}
-                    posterUrl={poster}
-                  />
+              <div className="mt-8 text-center lg:text-left space-y-4">
+                <div className="space-y-1">
+                  <h1 className="text-2xl md:text-3xl font-black text-foreground leading-[1.1] uppercase italic tracking-tighter drop-shadow-sm font-headline">{tmdbData?.title || safeData.name}</h1>
+                  <p className="text-[13px] text-foreground/30 mt-0.5 italic uppercase font-black tracking-widest">
+                    {tmdbData?.original_title || safeData.origin_name}
+                  </p>
                 </div>
-              </div>
  
-              <div className="mt-6 text-center lg:text-left">
-                <h1 className="text-xl font-bold text-foreground leading-snug">{tmdbData?.title || safeData.name}</h1>
-                <p className="text-[13px] text-foreground/30 mt-0.5 italic">
-                  {tmdbData?.original_title || safeData.origin_name}
-                </p>
-                <div className="mt-2 flex items-center gap-1.5">
-                   <span className="text-[12px] text-foreground/40 font-medium">Đạo diễn:</span>
-                   <span className="text-[12px] text-primary font-bold tracking-wide uppercase">{directorName}</span>
+                <div className="flex flex-wrap justify-center lg:justify-start items-center gap-3">
+                   <div className="flex items-center gap-2">
+                     <span className="text-[11px] text-foreground/30 font-black uppercase tracking-widest italic">Đạo diễn:</span>
+                     <span className="text-[11px] text-primary font-black uppercase tracking-widest italic bg-primary/5 px-3 py-1 rounded-lg border border-primary/10">{directorName}</span>
+                   </div>
                 </div>
-
-                <div className="flex flex-wrap justify-center lg:justify-start items-center gap-2 mt-3">
-                  <TraktWatchedBadge 
-                    movieTitle={safeData.name} 
-                    year={tmdbData?.release_date?.split("-")[0] || tmdbData?.first_air_date?.split("-")[0] || safeData.year} 
-                  />
-                  <span className="px-2.5 py-1 rounded-md bg-primary/20 text-primary text-[11px] font-semibold">
+ 
+                <div className="flex flex-wrap justify-center lg:justify-start items-center gap-2">
+                  <span className="px-3 py-1.5 rounded-xl bg-primary text-white text-[11px] font-black uppercase italic tracking-widest shadow-lg shadow-primary/20">
                     {safeData.quality}
                   </span>
-                  <span className="px-2.5 py-1 rounded-md bg-foreground/5 text-foreground/50 text-[11px] font-medium">
+                  <span className="px-3 py-1.5 rounded-xl bg-foreground/5 text-foreground/50 text-[11px] font-black italic tracking-widest border border-white/5">
                     {tmdbData?.release_date?.split("-")[0] || tmdbData?.first_air_date?.split("-")[0] || safeData.year}
                   </span>
-                  <span className="px-2.5 py-1 rounded-md bg-foreground/5 text-foreground/50 text-[11px] font-medium">
+                  <span className="px-3 py-1.5 rounded-xl bg-foreground/5 text-foreground/50 text-[11px] font-black italic tracking-widest border border-white/5">
                     {safeData.episode_current}
                   </span>
                 </div>
-
-                <div className="mt-8 mb-4">
+ 
+                <div className="py-6 border-y border-white/5">
                    <MovieRatings 
                      imdbRating={realImdbRating?.rating || safeData.imdb?.vote_average || 0}
                      imdbVotes={realImdbRating?.votes || safeData.imdb?.vote_count || 0}
@@ -330,14 +330,14 @@ export default async function MovieDetailsPage({
                      audienceScore={rtData?.audienceScore || 0}
                    />
                 </div>
- 
+  
                 {genreTags.length > 0 && (
-                  <div className="flex flex-wrap justify-center lg:justify-start gap-1.5 mt-3">
+                  <div className="flex flex-wrap justify-center lg:justify-start gap-2">
                     {genreTags.map((g) => (
                       <Link
                         key={g.slug}
                         href={`/the-loai/${g.slug}`}
-                        className="px-2.5 py-1 rounded-md text-[11px] bg-foreground/5 text-foreground/40 hover:text-primary hover:bg-foreground/10 transition-all font-medium"
+                        className="px-3.5 py-1.5 rounded-xl text-[10px] font-black bg-foreground/5 text-foreground/30 hover:text-white hover:bg-primary transition-all uppercase italic tracking-[0.2em] border border-white/5"
                       >
                         {g.name}
                       </Link>
@@ -346,20 +346,18 @@ export default async function MovieDetailsPage({
                 )}
               </div>
  
-
- 
-              <div className="mt-8">
-                <div className="flex items-center gap-2 mb-4">
-                  <div className="w-1.5 h-6 bg-primary rounded-full shadow-[0_0_10px_rgba(var(--primary),0.5)]" />
-                  <h3 className="text-xl font-black text-foreground uppercase tracking-wider">Giới thiệu</h3>
+              <div className="mt-12 space-y-6">
+                <div className="flex items-center gap-4">
+                  <div className="w-1.5 h-6 bg-primary rounded-full shadow-[0_0_15px_rgba(var(--primary),0.5)]" />
+                  <h3 className="text-lg font-black text-foreground uppercase tracking-[0.3em] italic">Storyline</h3>
                 </div>
                 <div 
-                  className="text-foreground/60 text-base leading-relaxed max-w-4xl"
+                  className="text-foreground/50 text-base leading-relaxed italic"
                   dangerouslySetInnerHTML={{ __html: finalDescription }}
                 />
               </div>
             </div>
- 
+  
             <div className="flex-1 min-w-0">
               <MovieTabs 
                 slug={slug}
@@ -368,7 +366,7 @@ export default async function MovieDetailsPage({
                 recommendations={recommendations}
                 collection={collectionData}
               />
- 
+  
               <CastSection actors={displayActors} />
             </div>
           </div>
@@ -379,15 +377,15 @@ export default async function MovieDetailsPage({
     console.error("MovieDetailsPage Error:", error);
     return (
       <div className="min-h-screen flex flex-col items-center justify-center p-4 text-center">
-        <div className="w-16 h-16 rounded-full bg-red-500/10 flex items-center justify-center mb-6">
-          <Play className="w-8 h-8 text-red-500 rotate-90" />
+        <div className="w-20 h-20 rounded-[32px] bg-red-500/10 flex items-center justify-center mb-8 shadow-2xl">
+          <Play className="w-10 h-10 text-red-500 rotate-90" />
         </div>
-        <h1 className="text-xl font-bold text-white mb-2">Ối! Có lỗi xảy ra</h1>
-        <p className="text-white/40 text-sm max-w-xs mb-8">
-          Chúng mình không thể tải thông tin bộ phim này lúc này. Vui lòng thử lại sau hoặc chọn phim khác nhé!
+        <h1 className="text-2xl font-black text-white mb-2 uppercase italic tracking-tighter">Hệ thống đang bảo trì</h1>
+        <p className="text-white/40 text-[13px] font-medium max-w-xs mb-10 italic uppercase tracking-widest">
+           Chúng mình đang nâng cấp dữ liệu cho bộ phim này. Vui lòng quay lại sau vài phút!
         </p>
         <Link href="/">
-          <Button className="rounded-xl px-8 h-11">
+          <Button className="rounded-[24px] px-12 h-14 font-black uppercase italic tracking-widest text-[13px]">
             Quay lại trang chủ
           </Button>
         </Link>
