@@ -9,10 +9,6 @@ import { MovieContinueWatching } from "@/components/movie/MovieContinueWatching"
 import { CategoryShortcuts } from "@/components/movie/CategoryShortcuts";
 import { getTrendingMovies, getTMDBImageUrl } from "@/services/tmdb";
 import { BentoMovieRow } from "@/components/movie/BentoMovieRow";
-import { RouteErrorToast } from "@/components/movie/RouteErrorToast";
-import { Suspense } from "react";
-import { normalizeMovieTitle } from "@/utils/movieUtils";
-
 export default async function Home() {
   const [latestData, phimBoData, phimLeData, hoatHinhData, trendingData] = await Promise.allSettled([
     getLatestMovies(1),
@@ -57,7 +53,7 @@ export default async function Home() {
             id: m.id.toString(),
             title: m.title || m.name,
             originalTitle: m.original_title || m.original_name || "",
-            slug: normalizeMovieTitle(m.title || m.name),
+            slug: `search?q=${encodeURIComponent(m.title || m.name)}`,
             posterUrl: getTMDBImageUrl(m.poster_path) || "",
             thumbUrl: getTMDBImageUrl(m.backdrop_path) || "",
             year: m.release_date?.split("-")[0] || "2025",
@@ -65,7 +61,7 @@ export default async function Home() {
             source: 'ophim',
             tmdbRating: m.vote_average
           })) as any} 
-          viewAllHref="/phim-moi"
+          viewAllHref="/top-trending"
         />
       )}
 

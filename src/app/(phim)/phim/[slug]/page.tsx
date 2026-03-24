@@ -11,18 +11,13 @@ import { MovieRatings } from "@/components/movie/MovieRatings";
 import { CastSection } from "@/components/movie/CastSection";
 import { TraktWatchedBadge } from "@/components/movie/TraktWatchedBadge";
 
-import { normalizeMovieTitle, cleanTitle } from "@/utils/movieUtils";
-import { redirect } from "next/navigation";
-
 async function fetchMovieData(slug: string) {
   try {
     const fetchWithSources = async (s: string) => {
-      // Clean slug first
-      const cleanS = s.trim().toLowerCase();
       const [ng, kk, op] = await Promise.allSettled([
-        fetch(`https://phim.nguonc.com/api/film/${cleanS}`, { cache: "no-store", signal: AbortSignal.timeout(5000) }).then((r) => r.json()),
-        fetch(`https://phimapi.com/v1/api/phim/${cleanS}`, { cache: "no-store", signal: AbortSignal.timeout(5000) }).then((r) => r.json()),
-        fetch(`https://ophim1.com/v1/api/phim/${cleanS}`, { cache: "no-store", signal: AbortSignal.timeout(5000) }).then((r) => r.json()),
+        fetch(`https://phim.nguonc.com/api/film/${s}`, { cache: "no-store", signal: AbortSignal.timeout(5000) }).then((r) => r.json()),
+        fetch(`https://phimapi.com/v1/api/phim/${s}`, { cache: "no-store", signal: AbortSignal.timeout(5000) }).then((r) => r.json()),
+        fetch(`https://ophim1.com/v1/api/phim/${s}`, { cache: "no-store", signal: AbortSignal.timeout(5000) }).then((r) => r.json()),
       ]);
      
       if (kk.status === "fulfilled" && kk.value?.status === "success" && kk.value?.data?.item)
@@ -38,43 +33,32 @@ async function fetchMovieData(slug: string) {
       return null;
     };
 
-    // 0. Decode and handle search-based slugs
-    const decodedSlug = decodeURIComponent(slug);
-    console.log(`[ROUTE FIX] Resolving slug: ${decodedSlug}`);
+    // 0. Handle search-based slugs (e.g., search?q=Title)
+    let finalSlug = slug;
+    if (slug.includes("search?q=") || slug.includes("search%3Fq%3D")) {
+        const queryStr = decodeURIComponent(slug).split("q=")[1];
+        if (queryStr) {
+            const { searchMovies } = await import("@/services/api");
+            const res = await searchMovies(queryStr);
+            if (res.items.length > 0) finalSlug = res.items[0].slug;
+        }
+    }
 
     // 1. Try exact slug fetch
-    let movie = await fetchWithSources(slug);
+    let movie = await fetchWithSources(finalSlug);
     if (movie) return movie;
 
-    // 2. Intensive Search Fallback
-    const searchKeywords = [
-       decodedSlug.replace(/-/g, " "),
-       cleanTitle(decodedSlug.replace(/-/g, " ")),
-       normalizeMovieTitle(decodedSlug)
-    ];
-
+    // 2. Fallback: Search by normalized slug
+    const searchSlug = finalSlug.replace(/-/g, " ");
     const { searchMovies } = await import("@/services/api");
-    for (const kw of Array.from(new Set(searchKeywords))) {
-       if (!kw || kw.length < 2) continue;
-       console.log(`[ROUTE FALLBACK] Attempting search with keywords: ${kw}`);
-       try {
-         const res = await searchMovies(kw);
-         if (res.items && res.items.length > 0) {
-            // Priority 1: Exact slug match in search
-            const exactMatch = res.items.find((i: any) => i.slug === slug);
-            if (exactMatch) return await fetchWithSources(exactMatch.slug);
-            
-            // Priority 2: Best guess match
-            const bestId = res.items[0].slug;
-            console.log(`[ROUTE FALLBACK] Search succeeded, resolving to: ${bestId}`);
-            return await fetchWithSources(bestId);
-         }
-       } catch (e) {
-         console.warn(`[ROUTE FALLBACK] Search failed for ${kw}`, e);
-       }
+    const searchResult = await searchMovies(searchSlug);
+    if (searchResult?.items?.length > 0) {
+      // Find best match in search results
+      const bestMatch = searchResult.items.find((i: any) => i.slug === finalSlug) || searchResult.items[0];
+      return await fetchWithSources(bestMatch.slug);
     }
   } catch (err) {
-    console.error("fetchMovieData Panic Error:", err);
+    console.error("fetchMovieData Error:", err);
   }
   return null;
 }
@@ -97,10 +81,7 @@ export default async function MovieDetailsPage({ params }: { params: Promise<{ s
   
   try {
     const movieRes = await fetchMovieData(slug);
-    if (!movieRes) {
-       console.error(`[ROUTE FATAL] Could not resolve movie detail for: ${slug}. Redirecting to safety.`);
-       redirect("/?notfound=1");
-    }
+    if (!movieRes) return notFound();
  
     const { data, episodes, source } = movieRes;
     
