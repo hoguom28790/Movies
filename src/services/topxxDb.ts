@@ -169,3 +169,8 @@ export function isMovieInPlaylist(playlistId: string, movieCode: string): boolea
   const playlist = playlists.find(p => p.id === playlistId);
   return playlist?.movies.some(m => m.movieCode === movieCode) || false;
 }
+
+export function isMovieInAnyXXPlaylist(movieCode: string): boolean {
+  const playlists = getXXPlaylists();
+  return playlists.some(p => p.movies.some(m => m.movieCode === movieCode));
+}

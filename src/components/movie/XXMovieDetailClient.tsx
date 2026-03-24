@@ -8,8 +8,7 @@ import dynamic from "next/dynamic";
 const XXPlayer = dynamic(() => import("@/components/layout/XXPlayer").then(mod => mod.XXPlayer), {
   ssr: false
 });
-import { XXFavoriteBtn } from "@/components/movie/XXFavoriteBtn";
-import { XXPlaylistBtn } from "@/components/movie/XXPlaylistBtn";
+import { XXWatchlistBtn } from "@/components/movie/XXWatchlistBtn";
 import { Button } from "@/components/ui/Button";
 const ActorModal = dynamic(() => import("@/components/movie/ActorModal").then(mod => mod.ActorModal), {
   ssr: false
@@ -106,8 +105,7 @@ export default function XXMovieDetailClient({ item, slug, autoPlay }: XXMovieDet
                       <div className="flex items-center gap-2 px-4 py-1.5 bg-yellow-500 text-black font-black text-[10px] rounded-xl uppercase italic shadow-lg shadow-yellow-500/20">
                         {isAVDB ? "AVDB PREMIUM" : "TOPXX VIP"}
                       </div>
-                      <XXFavoriteBtn movieCode={movieCode} movieTitle={title} posterUrl={poster} />
-                      <XXPlaylistBtn movieCode={movieCode} movieTitle={title} posterUrl={poster} />
+                       <XXWatchlistBtn movieCode={movieCode} movieTitle={title} posterUrl={poster} />
                    </div>
 
                    <h3 className="text-[10px] font-black text-foreground/20 uppercase tracking-[0.4em] mb-6 flex items-center gap-3">
@@ -201,8 +199,7 @@ export default function XXMovieDetailClient({ item, slug, autoPlay }: XXMovieDet
                  </Button>
                  
                  <div className="flex items-center gap-4 w-full md:w-auto">
-                    <XXFavoriteBtn movieCode={movieCode} movieTitle={title} posterUrl={poster} />
-                    <XXPlaylistBtn movieCode={movieCode} movieTitle={title} posterUrl={poster} />
+                     <XXWatchlistBtn movieCode={movieCode} movieTitle={title} posterUrl={poster} />
                  </div>
               </div>
            </div>

@@ -5,7 +5,7 @@ import Link from "next/link";
 import { Play, Info, Calendar, Plus } from "lucide-react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/Button";
-import { XXFavoriteBtn } from "@/components/movie/XXFavoriteBtn";
+import { XXWatchlistBtn } from "@/components/movie/XXWatchlistBtn";
 import { useDevice } from "@/contexts/DeviceContext";
 
 interface Movie {
@@ -122,7 +122,7 @@ export function XXHeroSection({ movie }: XXHeroSectionProps) {
                   <Info className={`${isIPhone ? "w-5 h-5 mr-3" : "w-8 h-8 mr-4"}`} /> Details
                 </Button>
               </Link>
-              <XXFavoriteBtn movieCode={movie.id} movieTitle={movie.title} posterUrl={movie.posterUrl} />
+              <XXWatchlistBtn movieCode={movie.id} movieTitle={movie.title} posterUrl={movie.posterUrl} />
             </div>
           </div>
         </motion.div>
