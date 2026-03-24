@@ -13,33 +13,53 @@ import { TraktWatchedBadge } from "@/components/movie/TraktWatchedBadge";
 
 async function fetchMovieData(slug: string) {
   try {
-    const [ng, kk, op] = await Promise.allSettled([
-      fetch(`https://phim.nguonc.com/api/film/${slug}`, { cache: "no-store", signal: AbortSignal.timeout(5000) }).then((r) => r.json()),
-      fetch(`https://phimapi.com/v1/api/phim/${slug}`, { cache: "no-store", signal: AbortSignal.timeout(5000) }).then((r) => r.json()),
-      fetch(`https://ophim1.com/v1/api/phim/${slug}`, { cache: "no-store", signal: AbortSignal.timeout(5000) }).then((r) => r.json()),
-    ]);
-   
-    // KKPhim v1 handle
-    if (kk.status === "fulfilled" && kk.value?.status === "success" && kk.value?.data?.item) {
-      const item = kk.value.data.item;
-      return { source: "kkphim", data: item, episodes: kk.value.data.episodes || item.episodes || [] };
+    const fetchWithSources = async (s: string) => {
+      const [ng, kk, op] = await Promise.allSettled([
+        fetch(`https://phim.nguonc.com/api/film/${s}`, { cache: "no-store", signal: AbortSignal.timeout(5000) }).then((r) => r.json()),
+        fetch(`https://phimapi.com/v1/api/phim/${s}`, { cache: "no-store", signal: AbortSignal.timeout(5000) }).then((r) => r.json()),
+        fetch(`https://ophim1.com/v1/api/phim/${s}`, { cache: "no-store", signal: AbortSignal.timeout(5000) }).then((r) => r.json()),
+      ]);
+     
+      if (kk.status === "fulfilled" && kk.value?.status === "success" && kk.value?.data?.item)
+        return { source: "kkphim", data: kk.value.data.item, episodes: kk.value.data.episodes || [] };
+      if (op.status === "fulfilled" && op.value?.status === "success" && op.value?.data?.item)
+        return { source: "ophim", data: op.value.data.item, episodes: op.value.data.episodes || [] };
+      if (kk.status === "fulfilled" && kk.value?.status === true && kk.value?.movie)
+        return { source: "kkphim", data: kk.value.movie, episodes: kk.value.episodes || [] };
+      if (op.status === "fulfilled" && op.value?.status === true && op.value?.movie)
+        return { source: "ophim", data: op.value.movie, episodes: op.value.episodes || [] };
+      if (ng.status === "fulfilled" && ng.value?.status === "success" && ng.value?.movie)
+        return { source: "nguonc", data: ng.value.movie, episodes: ng.value.episodes || [] };
+      return null;
+    };
+
+    // 0. Handle search-based slugs (e.g., search?q=Title)
+    let finalSlug = slug;
+    if (slug.includes("search?q=") || slug.includes("search%3Fq%3D")) {
+        const queryStr = decodeURIComponent(slug).split("q=")[1];
+        if (queryStr) {
+            const { searchMovies } = await import("@/services/api");
+            const res = await searchMovies(queryStr);
+            if (res.items.length > 0) finalSlug = res.items[0].slug;
+        }
     }
-    // OPhim v1 handle
-    if (op.status === "fulfilled" && op.value?.status === "success" && op.value?.data?.item) {
-      const item = op.value.data.item;
-      return { source: "ophim", data: item, episodes: op.value.data.episodes || item.episodes || [] };
+
+    // 1. Try exact slug fetch
+    let movie = await fetchWithSources(finalSlug);
+    if (movie) return movie;
+
+    // 2. Fallback: Search by normalized slug
+    const searchSlug = finalSlug.replace(/-/g, " ");
+    const { searchMovies } = await import("@/services/api");
+    const searchResult = await searchMovies(searchSlug);
+    if (searchResult?.items?.length > 0) {
+      // Find best match in search results
+      const bestMatch = searchResult.items.find((i: any) => i.slug === finalSlug) || searchResult.items[0];
+      return await fetchWithSources(bestMatch.slug);
     }
-    // Fallbacks to old engines if v1 fails
-    if (kk.status === "fulfilled" && kk.value?.status === true && kk.value?.movie)
-      return { source: "kkphim", data: kk.value.movie, episodes: kk.value.episodes || kk.value.movie.episodes || [] };
-    if (op.status === "fulfilled" && op.value?.status === true && op.value?.movie)
-      return { source: "ophim", data: op.value.movie, episodes: op.value.episodes || op.value.movie.episodes || [] };
-    if (ng.status === "fulfilled" && ng.value?.status === "success" && ng.value?.movie)
-      return { source: "nguonc", data: ng.value.movie, episodes: ng.value.episodes || ng.value.movie.episodes || [] };
   } catch (err) {
     console.error("fetchMovieData Error:", err);
   }
- 
   return null;
 }
  

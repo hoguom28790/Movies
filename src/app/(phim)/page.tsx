@@ -53,7 +53,7 @@ export default async function Home() {
             id: m.id.toString(),
             title: m.title || m.name,
             originalTitle: m.original_title || m.original_name || "",
-            slug: `search?q=${encodeURIComponent(m.title || m.name)}`,
+            slug: m.title || m.name,
             posterUrl: getTMDBImageUrl(m.poster_path) || "",
             thumbUrl: getTMDBImageUrl(m.backdrop_path) || "",
             year: m.release_date?.split("-")[0] || "2025",
@@ -61,7 +61,7 @@ export default async function Home() {
             source: 'ophim',
             tmdbRating: m.vote_average
           })) as any} 
-          viewAllHref="/top-trending"
+          viewAllHref="/phim-moi"
         />
       )}
 
