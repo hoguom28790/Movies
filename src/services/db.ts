@@ -211,12 +211,18 @@ export async function toggleFavoriteActor(userId: string, actor: FavoriteActor) 
 }
 
 export async function getUserFavoriteActors(userId: string, type?: 'movie' | 'topxx') {
-  let q = query(collection(db, "favorite_actors"), where("userId", "==", userId));
-  if (type) {
-    q = query(q, where("type", "==", type));
-  }
+  const q = query(collection(db, "favorite_actors"), where("userId", "==", userId));
   const snap = await getDocs(q);
-  return snap.docs.map(d => ({ id: d.id, ...d.data() }) as FavoriteActor & { addedAt: number }).sort((a, b) => b.addedAt - a.addedAt);
+  const actors = snap.docs.map(d => ({ ...d.data() }) as FavoriteActor & { addedAt: number });
+  
+  // Filter client-side to handle legacy entries (undefined type = movie)
+  const filtered = actors.filter(actor => {
+    if (!type) return true;
+    if (type === 'movie') return !actor.type || actor.type === 'movie';
+    return actor.type === 'topxx';
+  });
+
+  return filtered.sort((a, b) => b.addedAt - a.addedAt);
 }
 
 export async function isFavoriteActor(userId: string, actorId: string | number): Promise<boolean> {

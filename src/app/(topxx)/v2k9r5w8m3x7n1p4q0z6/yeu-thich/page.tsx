@@ -40,7 +40,7 @@ export default function XXLibraryPage() {
         const [cloudPl, cloudFav, actorFav] = await Promise.all([
           getUserXXFirestorePlaylists(user.uid),
           getXXFirestoreFavorites(user.uid),
-          (await import("@/services/db")).getUserFavoriteActors(user.uid)
+          (await import("@/services/db")).getUserFavoriteActors(user.uid, 'topxx')
         ]);
         setPlaylists(cloudPl);
         setFavorites(cloudFav);
@@ -280,7 +280,10 @@ export default function XXLibraryPage() {
                       <div key={actor.id} className="group relative">
                         <div className="relative aspect-[1/1] rounded-[32px] overflow-hidden bg-foreground/5 border border-foreground/10 group-hover:border-primary/50 transition-all shadow-xl group-hover:shadow-2xl group-hover:-translate-y-2">
                           <img 
-                            src={actor.profilePath ? `https://image.tmdb.org/t/p/w300${actor.profilePath}` : "/placeholder-actor.png"} 
+                            src={actor.profilePath?.startsWith('http') 
+                              ? actor.profilePath 
+                              : (actor.profilePath ? `https://image.tmdb.org/t/p/w300${actor.profilePath}` : "/placeholder-actor.png")
+                            } 
                             alt={actor.name}
                             className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                           />
