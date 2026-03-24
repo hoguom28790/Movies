@@ -105,6 +105,12 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ name
     const data: any = {
        source: "javdb",
        syncTime: new Date().toISOString(),
+       debug: {
+          slug,
+          searchUrl,
+          htmlLength: html.length,
+          isBlocked: html.includes("Checking your browser") || html.includes("Access denied")
+       },
        id: slug,
        stageName: $("h1.title, .title.is-4, .title").first().text().trim() || name,
        realName: "N/A",
@@ -120,25 +126,37 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ name
        filmography: []
     };
 
-    // Parse info panel - More robust matching
-    $("p.is-size-7, .panel-block").each((_, el) => {
-       const text = $(el).text();
-       const val = text.includes(":") ? text.split(":")[1].trim() : "";
+    // Parse info panel - Surgical approach
+    $("p.is-size-7, .panel-block, .panel-block p").each((_, el) => {
+       const $el = $(el);
+       const text = $el.text();
+       const label = $el.find("strong, b").first().text().trim();
+       const val = text.replace(label, "").replace(":", "").trim();
        
-       if (/real name|本名/i.test(text)) data.realName = val;
-       if (/birthday|生日|生年月日/i.test(text)) data.birthDate = val;
-       if (/measurements|三圍|スリーサイズ/i.test(text)) data.measurements = val;
-       if (/height|身高|身長/i.test(text)) data.height = val;
-       if (/birthplace|出生地/i.test(text)) data.birthPlace = val;
+       if (/real name|本名/i.test(label || text)) data.realName = val || data.realName;
+       if (/birthday|生日|生年月日/i.test(label || text)) data.birthDate = val || data.birthDate;
+       if (/measurements|三圍|スリーサイズ/i.test(label || text)) data.measurements = val || data.measurements;
+       if (/height|身高|身長/i.test(label || text)) data.height = val || data.height;
+       if (/birthplace|出生地/i.test(label || text)) data.birthPlace = val || data.birthPlace;
     });
 
-    // Gallery section
-    $(".preview-images a, .gallery a, .preview-images img, .gallery img").each((_, el) => {
-       const src = $(el).attr("href") || $(el).attr("src");
-       if (src && !data.gallery.includes(src) && !src.includes("avatar") && !src.includes("logo")) {
-          data.gallery.push(src.startsWith("//") ? "https:" + src : src);
+    // Gallery section - Include high-res from Fancybox
+    $(".preview-images a, .gallery a").each((_, el) => {
+       const href = $(el).attr("href");
+       if (href && !data.gallery.includes(href)) {
+          data.gallery.push(href.startsWith("//") ? "https:" + href : href);
        }
     });
+    
+    // Fallback Gallery from images
+    if (data.gallery.length === 0) {
+       $(".preview-images img, .gallery img").each((_, el) => {
+          const src = $(el).attr("src") || $(el).attr("data-src");
+          if (src && !data.gallery.includes(src) && !src.includes("avatar")) {
+             data.gallery.push(src.startsWith("//") ? "https:" + src : src);
+          }
+       });
+    }
 
     // Filmography grid
     $(".movie-list .item, .grid-item, .item, .video-box").each((_, el) => {
@@ -161,13 +179,20 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ name
     });
 
     // If still no real name, try to extract from title (Stage Name (Real Name))
-    if (data.realName === "N/A" && data.stageName.includes("(")) {
+    if ((data.realName === "N/A" || !data.realName) && data.stageName.includes("(")) {
        const match = data.stageName.match(/(.*?)\((.*?)\)/);
        if (match) {
           data.stageName = match[1].trim();
           data.realName = match[2].trim();
        }
     }
+
+    // Sanitize results
+    Object.keys(data).forEach(key => {
+       if (data[key] === "N/A" || !data[key]) {
+          // Keep as N/A or default
+       }
+    });
 
     console.log("Parsed actress data: " + JSON.stringify(data, null, 2));
     return NextResponse.json(data);
