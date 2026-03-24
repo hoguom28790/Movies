@@ -51,15 +51,23 @@ export function XXActorModal({ isOpen, onClose, actor }: XXActorModalProps) {
   const [isFav, setIsFav] = useState(false);
 
   const { data: details, isLoading } = useQuery({
-    queryKey: ["actor-javlib", actor?.name?.toLowerCase()],
+    queryKey: ["actor-javdb", actor?.name?.toLowerCase()],
     queryFn: async () => {
       if (!actor) return null;
       try {
-        const detailRes = await fetch(`/api/javlibrary/actress/${encodeURIComponent(actor.name)}`);
+        console.log("Fetching JAVDB data for:", actor.name);
+        const detailRes = await fetch(`/api/javdb/actress/${encodeURIComponent(actor.name)}`);
         if (!detailRes.ok) throw new Error("Metadata unreachable");
-        return (await detailRes.json()) as JAVLibraryActress;
+        const json = await detailRes.json();
+        
+        if (json.toast) {
+           setToast({ message: json.toast, type: "info" });
+           setTimeout(() => setToast(null), 3000);
+        }
+        
+        return json;
       } catch (err) {
-        console.error("JAVLIB Error:", err);
+        console.error("JAVDB Sync Error:", err);
         return null;
       }
     },
@@ -149,7 +157,7 @@ export function XXActorModal({ isOpen, onClose, actor }: XXActorModalProps) {
                            </div>
                            <div className="flex flex-wrap gap-5 items-center">
                               <span className="px-6 py-3 rounded-2xl bg-primary text-white text-[11px] font-black tracking-widest uppercase italic border border-primary/20 shadow-lg">PRIMARY ARTIST</span>
-                              {details?.source === "javlibrary" ? <span className="px-6 py-3 rounded-2xl bg-yellow-500/10 text-yellow-500 text-[11px] font-black tracking-widest uppercase italic border border-yellow-500/20">JAVLIBRARY SYNC</span> : <span className="px-6 py-3 rounded-2xl bg-yellow-500/10 text-yellow-500 text-[11px] font-black tracking-widest uppercase italic border border-yellow-500/20">FALLBACK MODE</span>}
+                              {details?.source === "javdb" ? <span className="px-6 py-3 rounded-2xl bg-yellow-500/10 text-yellow-500 text-[11px] font-black tracking-widest uppercase italic border border-yellow-500/20">JAVDB SYNC</span> : <span className="px-6 py-3 rounded-2xl bg-yellow-500/10 text-yellow-500 text-[11px] font-black tracking-widest uppercase italic border border-yellow-500/20">FALLBACK MODE</span>}
                               <button onClick={handleToggleFav} className={`p-4 rounded-2xl border transition-all active-depth ${isFav ? 'bg-[#ef4444] border-[#ef4444] text-white shadow-lg' : 'bg-white/5 border-white/10 text-white/40 hover:text-white hover:bg-white/10'}`}><Heart className={`w-7 h-7 ${isFav ? 'fill-current' : ''}`} /></button>
                            </div>
                         </div>
