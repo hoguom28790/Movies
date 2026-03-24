@@ -58,7 +58,10 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ name
         slug = searchRes.url.split("/").pop()?.split("?")[0] || "";
       } else {
         const $search = cheerio.load(searchRes.html);
-        const href = $search("a.item, .actress-item a, .actor-box a").filter((_, el) => $(el).attr("href")?.startsWith("/a/")).first().attr("href");
+        const href = $search("a.item, .actress-item a, .actor-box a").filter((_, el) => {
+          const h = $(el).attr("href");
+          return typeof h === "string" && h.startsWith("/a/");
+        }).first().attr("href");
         if (href) slug = href.replace("/a/", "");
       }
     }
