@@ -16,6 +16,7 @@ interface XXActorModalProps {
     id: number | string;
     name: string;
     profile_path?: string | null;
+    profilePath?: string | null;
   } | null;
 }
 
@@ -170,7 +171,7 @@ export function XXActorModal({ isOpen, onClose, actor }: XXActorModalProps) {
                       <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0b] via-[#0a0a0b]/60 to-transparent" />
                       <div className="absolute bottom-0 left-0 w-full p-8 sm:p-16 md:p-20 flex flex-col sm:flex-row items-end gap-10 sm:gap-14">
                         <div className="w-44 h-44 sm:w-64 sm:h-64 rounded-[56px] overflow-hidden border-[10px] border-[#0a0a0b] shadow-2xl flex-shrink-0 relative group">
-                           <img src={details?.profileImage || actor?.profile_path || ""} alt={actor?.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-2000" />
+                           <img src={details?.profileImage || actor?.profile_path || actor?.profilePath || ""} alt={actor?.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-2000" />
                         </div>
                         <div className="space-y-6 pb-6">
                            <div className="space-y-2">
@@ -180,6 +181,15 @@ export function XXActorModal({ isOpen, onClose, actor }: XXActorModalProps) {
                            <div className="flex flex-wrap gap-5 items-center">
                               <span className="px-6 py-3 rounded-2xl bg-primary text-white text-[11px] font-black tracking-widest uppercase italic border border-primary/20 shadow-lg">PRIMARY ARTIST</span>
                               {details?.source === "javlibrary" ? <span className="px-6 py-3 rounded-2xl bg-yellow-500/10 text-yellow-500 text-[11px] font-black tracking-widest uppercase italic border border-yellow-500/20">JAVLIB SYNC</span> : details?.source === "javdb" ? <span className="px-6 py-3 rounded-2xl bg-yellow-500/10 text-yellow-500 text-[11px] font-black tracking-widest uppercase italic border border-yellow-500/20">JAVDB SYNC</span> : <span className="px-6 py-3 rounded-2xl bg-yellow-500/10 text-yellow-500 text-[11px] font-black tracking-widest uppercase italic border border-yellow-500/20">FALLBACK MODE</span>}
+                              <button 
+                                onClick={() => {
+                                  onClose();
+                                  router.push(`/v2k9r5w8m3x7n1p4q0z6/search?q=${encodeURIComponent(actor?.name || "")}`);
+                                }}
+                                className="flex items-center gap-2 px-6 py-3 rounded-2xl bg-white/5 border border-white/10 text-white/60 hover:text-primary hover:bg-white/10 transition-all font-black uppercase italic tracking-widest text-[11px]"
+                              >
+                                 <Search className="w-4 h-4" /> TẤT CẢ PHIM
+                              </button>
                               <button onClick={handleToggleFav} className={`p-4 rounded-2xl border transition-all active-depth ${isFav ? 'bg-[#ef4444] border-[#ef4444] text-white shadow-lg' : 'bg-white/5 border-white/10 text-white/40 hover:text-white hover:bg-white/10'}`}><Heart className={`w-7 h-7 ${isFav ? 'fill-current' : ''}`} /></button>
                            </div>
                         </div>
