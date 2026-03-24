@@ -1,220 +1,174 @@
 import { NextRequest, NextResponse } from "next/server";
-import * as cheerio from "cheerio";
 
-const JAVDB_MIRRORS = ["https://javdb.com", "https://javdb36.com", "https://javdb00.com", "https://jav34.com"];
-const JAVLIB_MIRRORS = ["https://www.javlibrary.com/en", "https://www.n81z.com/en"];
+const JAVDB_MIRRORS = ["https://javdb.com", "https://javdb34.com", "https://javdb00.com", "https://javdb.one"];
+const JAVLIB_MIRRORS = ["https://www.javlibrary.com/en", "https://www.n81z.com/en", "https://www.e93k.com/en"];
 
 const headers = {
-  "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36",
-  "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8",
+  "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+  "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
+  "Accept-Language": "en-US,en;q=0.9",
+  "Cache-Control": "no-cache",
   "Cookie": "over18=1; locale=en; theme=dark"
 };
 
-/**
- * FINAL FIX JAVDB actress scraper with Cheerio parsing + detailed console logs
- */
-export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  const { id } = await params;
-  const name = decodeURIComponent(id);
-  
-  console.log(`[SCRAPER] START - Searching for: ${name}`);
+// IMPROVED: Combined Scraper (Bio from JavLib, Movies from JAVDB)
+async function fetchActressData(name: string) {
+  let javdbData: any = null;
+  let javlibData: any = null;
 
-  try {
-    let result = await searchJavDB(name);
-    
-    if (!result) {
-      console.log(`[SCRAPER] JAVDB failed for ${name}. Trying JavLibrary fallback...`);
-      result = await searchJavLibrary(name);
-    }
-
-    if (!result) {
-      console.log(`[SCRAPER] ALL SOURCES FAILED for ${name}. Returning dummy data.`);
-      return NextResponse.json(getDummyData(name));
-    }
-
-    console.log(`[SCRAPER] SUCCESS - Parsed ${result.stageName} from ${result.source}`);
-    return NextResponse.json(result);
-
-  } catch (error: any) {
-    console.error(`[SCRAPER] CRITICAL ERROR:`, error.message);
-    return NextResponse.json(getDummyData(name));
-  }
-}
-
-async function searchJavDB(name: string) {
+  // 1. Fetch from JAVDB for high-quality Gallery and Filmography
   for (const mirror of JAVDB_MIRRORS) {
     try {
-      console.log(`[JAVDB] Searching ${mirror}...`);
-      const searchUrl = `${mirror}/search?q=${encodeURIComponent(name)}&f=actor`;
-      const res = await fetch(searchUrl, { headers, signal: AbortSignal.timeout(8000) });
-      if (!res.ok) continue;
-
-      const html = await res.text();
-      const $ = cheerio.load(html);
+      const searchRes = await fetch(`${mirror}/search?q=${encodeURIComponent(name)}&f=actor`, { headers, signal: AbortSignal.timeout(6000) });
+      if (!searchRes.ok) continue;
+      const html = await searchRes.text();
       
-      // Get first actress slug
-      const slug = $(".item a, .actors a").first().attr("href")?.split("/").pop();
-      if (!slug) continue;
-
-      console.log(`[JAVDB] Found slug: ${slug}. Fetching detail...`);
-      const detailUrl = `${mirror}/actors/${slug}`;
-      const detailRes = await fetch(detailUrl, { headers, signal: AbortSignal.timeout(8000) });
-      if (!detailRes.ok) continue;
-
-      const detailHtml = await detailRes.text();
-      return parseJavDB(detailHtml, slug, name);
-    } catch (err: any) {
-      console.warn(`[JAVDB] Mirror ${mirror} failed: ${err.message}`);
+      // Target the specific actor box to avoid sidebar/trending links
+      const actorMatch = html.match(/<a href="\/actors\/([a-zA-Z0-9]+)"[^>]*class="box"[^>]*>/) || html.match(/\/actors\/([a-zA-Z0-9]+)/);
+      if (actorMatch) {
+         const slug = actorMatch[1];
+         const detailRes = await fetch(`${mirror}/actors/${slug}`, { headers, signal: AbortSignal.timeout(6000) });
+         if (detailRes.ok) javdbData = parseJavDB(await detailRes.text(), slug);
+         if (javdbData) break;
+      }
+    } catch (e) {
+      console.warn(`[JAVDB] Mirror ${mirror} failed:`, e);
     }
   }
-  return null;
-}
 
-function parseJavDB(html: string, slug: string, fallbackName: string) {
-  const $ = cheerio.load(html);
-  
-  const stageName = $(".title.is-4, h1").first().text().trim() || fallbackName;
-  
-  const getVal = (labels: string[]) => {
-    let val = "N/A";
-    $(".actor-section stong, strong").each((_, el) => {
-      const labelText = $(el).text();
-      if (labels.some(l => labelText.includes(l))) {
-        val = $(el).next(".value").text().trim() || $(el).parent().text().replace(labelText, "").trim();
-      }
-    });
-    return val;
-  };
-
-  const realName = getVal(["Real Name", "Name", "本名"]) || stageName;
-  const birthDate = getVal(["Birth Date", "Birthday", "生年月日"]);
-  const measurements = getVal(["Measurements"]) || getVal(["スリーサイズ"]);
-  const height = getVal(["Height", "身長"]);
-  const birthPlace = getVal(["Birthplace", "出身地"]);
-
-  let profileImage = $(".avatar, .profile img").first().attr("src") || $(".avatar").css("background-image")?.replace(/url\(["']?(.*?)["']?\)/, "$1");
-  if (profileImage?.startsWith("//")) profileImage = "https:" + profileImage;
-
-  // Gallery
-  const gallery: string[] = [];
-  $(".tile-item, .preview-images a, .gallery a").each((_, el) => {
-    const href = $(el).attr("href");
-    if (href && href.match(/\.jpg|\.png/)) gallery.push(href);
-  });
-
-  // Filmography
-  const filmography: any[] = [];
-  $(".item").each((_, el) => {
-    const code = $(el).find("strong").first().text().trim();
-    const title = $(el).find(".video-title, .title").text().trim();
-    const poster = $(el).find("img").attr("src");
-    const year = $(el).find(".meta, .date").text().split(",")[0].trim();
-    const rating = $(el).find(".score, .rating").text().trim() || "8.5";
-
-    if (code && title) {
-      filmography.push({
-        code,
-        title,
-        year,
-        rating,
-        poster: poster?.startsWith("//") ? "https:" + poster : poster,
-        previewImage: poster?.replace("/thumbs/", "/covers/").replace("/t_", "/")
-      });
-    }
-  });
-
-  // If gallery empty, use posters as requested by previous patterns for completeness
-  const finalGallery = gallery.length > 0 ? gallery : filmography.slice(0, 12).map(f => f.poster);
-
-  return {
-    source: "javdb",
-    id: slug,
-    stageName,
-    realName,
-    birthDate,
-    measurements,
-    height,
-    birthPlace,
-    profileImage,
-    gallery: finalGallery,
-    filmography,
-    status: "Active"
-  };
-}
-
-async function searchJavLibrary(name: string) {
+  // 2. Fetch from JavLibrary for reliable Bio Stats (Measurements, Birthdate)
   for (const mirror of JAVLIB_MIRRORS) {
     try {
-      console.log(`[JAVLIB] Searching ${mirror}...`);
       const searchUrl = `${mirror}/vl_star.php?&keyword=${encodeURIComponent(name)}`;
-      const res = await fetch(searchUrl, { headers, signal: AbortSignal.timeout(8000) });
-      if (!res.ok) continue;
-
-      const html = await res.text();
-      const $ = cheerio.load(html);
-      
-      const id = $("div.star a").first().attr("href")?.split("=").pop();
-      if (!id) continue;
-
-      const detailUrl = `${mirror}/star.php?id=${id}`;
-      const detailRes = await fetch(detailUrl, { headers, signal: AbortSignal.timeout(8000) });
-      if (!detailRes.ok) continue;
-
-      return parseJavLibrary(await detailRes.text(), id);
+      const searchRes = await fetch(searchUrl, { headers, signal: AbortSignal.timeout(6000) });
+      if (!searchRes.ok) continue;
+      const html = await searchRes.text();
+      const idMatch = html.match(/star\.php\?id=([a-zA-Z0-9]+)/);
+      if (idMatch) {
+         const id = idMatch[1];
+         const detailRes = await fetch(`${mirror}/star.php?id=${id}`, { headers, signal: AbortSignal.timeout(6000) });
+         if (detailRes.ok) javlibData = parseJavLibrary(await detailRes.text(), id);
+         if (javlibData) break;
+      }
     } catch {}
   }
-  return null;
+
+  // Merge Data
+  if (!javdbData && !javlibData) return null;
+
+  const final = {
+    source: javdbData ? "javdb" : "javlibrary",
+    id: javdbData?.id || javlibData?.id,
+    stageName: javdbData?.stageName || javlibData?.stageName || name,
+    realName: javlibData?.realName || javdbData?.realName || name,
+    birthDate: javlibData?.birthDate && javlibData.birthDate !== "N/A" ? javlibData.birthDate : (javdbData?.birthDate || "Đang cập nhật..."),
+    measurements: javlibData?.measurements && javlibData.measurements !== "N/A" ? javlibData.measurements : (javdbData?.measurements || "N/A"),
+    height: javlibData?.height && javlibData.height !== "N/A" ? javlibData.height : (javdbData?.height || "N/A"),
+    birthPlace: javdbData?.birthPlace || javlibData?.birthPlace || "N/A",
+    profileImage: javdbData?.profileImage || javlibData?.profileImage || "",
+    gallery: javdbData?.gallery || [],
+    filmography: javdbData?.filmography || javlibData?.filmography || [],
+    status: "Active"
+  };
+
+  return final;
+}
+
+function parseJavDB(html: string, id: string) {
+  const getVal = (label: string) => {
+    const regex = new RegExp(`<strong>${label}:<\\/strong>\\s*<span class="value">(.*?)<\\/span>`, "i");
+    const match = html.match(regex);
+    return match ? match[1].trim() : null;
+  };
+
+  const stageName = (html.match(/<h2 class="title is-4">([\s\S]*?)<\/h2>/) || ["", "N/A"])[1].trim();
+  const realName = getVal("Real Name") || getVal("Name") || stageName;
+  const birthDate = getVal("Birth Date");
+  const measurements = getVal("Measurements");
+  const height = getVal("Height");
+  const birthPlace = getVal("Birthplace");
+
+  const profileMatch = html.match(/<div class="avatar"[\s\S]*?url\((.*?)\)/) || html.match(/<img class="avatar" src="(.*?)"/);
+  let profileImage = profileMatch ? profileMatch[1].replace(/['"]/g, "") : "";
+  if (profileImage.startsWith("//")) profileImage = "https:" + profileImage;
+
+  const gallery: string[] = [];
+  const gallMatches = html.matchAll(/<a href="(https:\/\/[^"]+\.jpg)" target="_blank" class="tile-item">/g);
+  for (const match of gallMatches) gallery.push(match[1]);
+
+  const filmography: any[] = [];
+  const items = html.split('<div class="item">');
+  items.shift();
+  for (const item of items) {
+    const code = (item.match(/<strong>(.*?)<\/strong>/) || ["", ""])[1];
+    const title = (item.match(/<div class="video-title">(.*?)<\/div>/) || ["", ""])[1];
+    const poster = (item.match(/<img src="(.*?)"/) || ["", ""])[1];
+    const year = (item.match(/<div class="meta">(.*?)<\/div>/) || ["", ""])[1];
+    if (code && title) {
+      filmography.push({
+        code, title, year: year.split(",")[0].trim(),
+        poster: poster.startsWith("//") ? "https:" + poster : poster,
+        rating: (item.match(/<span class="score">(.*?)<\/span>/) || ["", "8.5"])[1]
+      });
+    }
+  }
+
+  return { id, stageName, realName, birthDate, measurements, height, birthPlace, profileImage, gallery, filmography };
 }
 
 function parseJavLibrary(html: string, id: string) {
-  const $ = cheerio.load(html);
+  const stageName = (html.match(/<div class="star">[\s\S]*?">([\s\S]*?)<\/a>/) || ["", "N/A"])[1].trim();
+  const profileImage = (html.match(/<img src="(.*?)" alt=".*?"/i) || ["", ""])[1].replace(/^\/\//, "https://");
   
-  const stageName = $(".star h2").text().trim() || $(".star a").first().text().trim();
-  const profileImage = $("#star_graffiti img").attr("src")?.replace(/^\/\//, "https://");
-
-  const getBio = (label: string) => {
-    return $(`.star table td:contains("${label}")`).next().text().trim() || "N/A";
+  const getStat = (label: string) => {
+    const regex = new RegExp(`${label}:<\\/td>\\s*<td>(.*?)<\\/td>`, "i");
+    const match = html.match(regex);
+    return match ? match[1].trim() : "N/A";
   };
+
+  const birthDate = getStat("Birthday");
+  const measurements = getStat("Measurements");
+  const height = getStat("Height");
 
   const filmography: any[] = [];
-  $(".video").each((_, el) => {
-    const code = $(el).find(".id").text().trim();
-    const title = $(el).find("img").attr("title");
-    const poster = $(el).find("img").attr("src")?.replace(/^\/\//, "https://");
-    if (code && title) {
-      filmography.push({ code, title, year: "N/A", rating: "8.0", poster });
-    }
-  });
+  const vids = html.split('<div class="video"');
+  vids.shift();
+  for (const v of vids) {
+    const code = (v.match(/<div class="id">(.*?)<\/div>/) || ["", ""])[1];
+    const title = (v.match(/title="(.*?)"/) || ["", ""])[1];
+    const poster = (v.match(/<img src="(.*?)"/) || ["", ""])[1].replace(/^\/\//, "https://");
+    if (code && title) filmography.push({ code, title, year: "N/A", rating: "8.0", poster });
+  }
 
-  return {
-    source: "javlibrary",
-    id,
-    stageName,
-    realName: stageName,
-    birthDate: getBio("Birthday"),
-    measurements: getBio("Measurements"),
-    height: getBio("Height"),
-    birthPlace: "N/A",
-    profileImage,
-    gallery: [],
-    filmography,
-    status: "Active"
-  };
+  return { id, stageName, realName: stageName, birthDate, measurements, height, profileImage, filmography };
 }
 
-function getDummyData(name: string) {
-  return {
-    source: "fallback",
-    id: "dummy",
-    stageName: name,
-    realName: "Đang cập nhật",
-    birthDate: "Đang cập nhật",
-    measurements: "N/A",
-    height: "N/A",
-    birthPlace: "N/A",
-    profileImage: "https://www.themoviedb.org/assets/2/v4/glyphicons/basic/glyphicons-basic-4-user-grey-d8fe577334c25c13f68ea4431354011c1e4d69771fe0512f300c6d9c6239091b.svg",
-    gallery: [],
-    filmography: [],
-    status: "Dữ liệu đang được cập nhật..."
-  };
+export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  const decodedName = decodeURIComponent(id);
+
+  try {
+    const data = await fetchActressData(decodedName);
+
+    if (!data) {
+      return NextResponse.json({
+        source: "fallback",
+        id: decodedName,
+        stageName: decodedName,
+        realName: decodedName,
+        birthDate: "Đang cập nhật...",
+        measurements: "N/A",
+        height: "N/A",
+        birthPlace: "N/A",
+        profileImage: "https://www.themoviedb.org/assets/2/v4/glyphicons/basic/glyphicons-basic-4-user-grey-d8fe577334c25c13f68ea4431354011c1e4d69771fe0512f300c6d9c6239091b.svg",
+        gallery: [],
+        filmography: [],
+        status: "Dữ liệu đang được đồng bộ..."
+      });
+    }
+
+    return NextResponse.json(data);
+  } catch (error: any) {
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
 }

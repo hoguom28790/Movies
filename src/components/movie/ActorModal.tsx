@@ -1,16 +1,15 @@
 "use client";
 
-import React, { Fragment, useState } from 'react';
+import React, { Fragment, useState, useEffect } from 'react';
 import { Dialog, Transition, Tab } from '@headlessui/react';
 import { 
   X, User, Calendar, MapPin, Ruler, Smile, Tv, 
   Play, TrendingUp, Sparkles, Image as ImageIcon,
-  Heart, Share2, Info, Star
+  Heart, Share2, Info, Star, ChevronRight
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { getTMDBActorDetails, getTMDBImageUrl } from '@/services/tmdb';
 import { useQuery } from '@tanstack/react-query';
-import Link from 'next/link';
 
 interface ActorModalProps {
   isOpen: boolean;
@@ -55,7 +54,7 @@ export function ActorModal({ isOpen, onClose, actor, isTopXX }: ActorModalProps)
   const profilePath = actor ? (actor.profile_path || actor.profilePath || null) : null;
 
   const { data: details, isLoading } = useQuery({
-    queryKey: ["actor-details", actor?.name?.toLowerCase(), isTopXX, actor?.id],
+    queryKey: ["actor-javdb", actor?.name?.toLowerCase(), isTopXX],
     queryFn: async () => {
       if (!actor) return null;
       if (isTopXX) {
@@ -65,6 +64,7 @@ export function ActorModal({ isOpen, onClose, actor, isTopXX }: ActorModalProps)
           }
 
           const detailRes = await fetch(`/api/javdb/actress/${encodeURIComponent(actor.name)}`);
+          console.log(`[JAV MODAL] Fetching profile for: ${actor.name}`);
           if (!detailRes.ok) throw new Error("Actress profile not found on JAVDB");
           const detailData = await detailRes.json();
           
@@ -84,7 +84,7 @@ export function ActorModal({ isOpen, onClose, actor, isTopXX }: ActorModalProps)
       return getTMDBActorDetails(actor.id as number);
     },
     enabled: !!actor && isOpen,
-    staleTime: 1000 * 60 * 30,
+    staleTime: 1000 * 60 * 30, // 30 minutes
   });
 
   const getActorStats = () => {
@@ -125,12 +125,10 @@ export function ActorModal({ isOpen, onClose, actor, isTopXX }: ActorModalProps)
             <Transition.Child as={Fragment} enter="ease-out duration-700" enterFrom="opacity-0 translate-y-12 scale-95" enterTo="opacity-100 translate-y-0 scale-100" leave="ease-in duration-400" leaveFrom="opacity-100 translate-y-0 scale-100" leaveTo="opacity-0 translate-y-12 scale-95">
               <Dialog.Panel className="relative w-full max-w-7xl h-full md:h-auto min-h-screen md:min-h-[85vh] bg-[#0a0a0b] text-white overflow-hidden shadow-cinematic-3xl md:rounded-[64px] border border-white/5 flex flex-col">
                 
-                {/* Header */}
+                {/* Fixed Header with Visual Flourish */}
                 <div className="sticky top-0 z-50 flex items-center justify-between px-8 md:px-16 py-8 md:py-10 bg-gradient-to-b from-[#0a0a0b] via-[#0a0a0b]/90 to-transparent">
                   <div className="flex flex-col gap-1">
-                    <motion.span initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} className={`text-[11px] font-black uppercase italic tracking-[0.4em] ${isTopXX ? 'text-primary' : 'text-indigo-400'}`}>
-                      {isTopXX ? 'Actress Intelligence Profile' : 'Thông tin diễn viên'}
-                    </motion.span>
+                    <motion.span initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} className="text-[11px] font-black text-primary uppercase italic tracking-[0.4em]">Actress Intelligence Profile</motion.span>
                     <Dialog.Title className="text-4xl md:text-6xl font-black italic uppercase tracking-tighter leading-none">{actor?.name}</Dialog.Title>
                   </div>
                   <button onClick={onClose} className="w-14 h-14 md:w-16 md:h-16 rounded-[24px] bg-white/5 hover:bg-white/10 flex items-center justify-center text-white/40 hover:text-white transition-all active:scale-90 border border-white/10 group">
@@ -141,12 +139,12 @@ export function ActorModal({ isOpen, onClose, actor, isTopXX }: ActorModalProps)
                 <div className="flex-1 overflow-y-auto custom-scrollbar px-8 md:px-16 pb-20">
                   <Tab.Group>
                     <Tab.List className="flex items-center gap-10 md:gap-14 border-b border-white/5 mb-14 overflow-x-auto pb-4 custom-scrollbar scrollbar-hide">
-                      {['Hồ sơ', 'Bộ sưu tập', 'Phim tham gia'].map((tn) => (
-                        <Tab key={tn} className={({ selected }) => `text-sm font-black uppercase italic tracking-[0.2em] transition-all outline-none pb-4 relative whitespace-nowrap ${selected ? (isTopXX ? 'text-primary' : 'text-indigo-400') : 'text-white/20 hover:text-white/40'}`}>
+                      {['Thông tin cá nhân', 'Bộ sưu tập (Gallery)', 'Phim tiêu biểu'].map((tn) => (
+                        <Tab key={tn} className={({ selected }) => `text-sm font-black uppercase italic tracking-[0.2em] transition-all outline-none pb-4 relative whitespace-nowrap ${selected ? 'text-primary' : 'text-white/20 hover:text-white/40'}`}>
                           {({ selected }) => (
                             <>
                               {tn}
-                              {selected && <motion.div layoutId="tab-active" className={`absolute bottom-0 left-0 right-0 h-1 rounded-full ${isTopXX ? 'bg-primary shadow-[0_0_20px_var(--primary)]' : 'bg-indigo-400 shadow-[0_0_20px_rgba(129,140,248,0.5)]'}`} />}
+                              {selected && <motion.div layoutId="tab-active" className="absolute bottom-0 left-0 right-0 h-1 bg-primary rounded-full shadow-[0_0_20px_var(--primary)]" />}
                             </>
                           )}
                         </Tab>
@@ -159,18 +157,18 @@ export function ActorModal({ isOpen, onClose, actor, isTopXX }: ActorModalProps)
                         <div className="space-y-16">
                            <div className="space-y-8">
                               <div className="flex items-center gap-6">
-                                <div className="h-px flex-1 bg-gradient-to-r from-white/10 to-transparent" />
+                                <div className="h-px flex-1 bg-gradient-to-r from-primary/40 to-transparent" />
                                 <span className="text-[11px] font-black text-white/20 uppercase tracking-[0.5em] italic">Biographical Data</span>
-                                <div className={`h-1.5 w-24 rounded-full ${isTopXX ? 'bg-primary/40' : 'bg-indigo-400/40'}`} />
+                                <div className="h-1.5 w-24 bg-primary/40 rounded-full" />
                               </div>
                               <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-12 gap-y-10">
                                 {getActorStats().map((stat, i) => (
                                   <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.08 }} key={i} className="flex flex-col gap-3 group">
                                      <div className="flex items-center gap-3">
-                                        <stat.icon className={`w-4 h-4 transition-colors ${isTopXX ? 'text-primary/40 group-hover:text-primary' : 'text-indigo-400/40 group-hover:text-indigo-400'}`} />
+                                        <stat.icon className="w-4 h-4 text-primary/40 group-hover:text-primary transition-colors" />
                                         <span className="text-[11px] text-white/20 font-black uppercase tracking-widest italic">{stat.label}</span>
                                      </div>
-                                     <span className={`text-2xl sm:text-3xl font-black text-white italic uppercase tracking-tighter transition-colors duration-500 ${isTopXX ? 'group-hover:text-primary' : 'group-hover:text-indigo-400'}`}>{stat.value || "N/A"}</span>
+                                     <span className="text-2xl sm:text-3xl font-black text-white italic uppercase tracking-tighter group-hover:text-primary transition-colors duration-500">{stat.value || "Protected"}</span>
                                   </motion.div>
                                 ))}
                               </div>
@@ -178,26 +176,20 @@ export function ActorModal({ isOpen, onClose, actor, isTopXX }: ActorModalProps)
                            
                            <div className="space-y-10">
                               <div className="flex items-center gap-6">
-                                <div className="h-px flex-1 bg-gradient-to-r from-white/10 to-transparent" />
-                                <span className="text-[11px] font-black text-white/20 uppercase tracking-[0.5em] italic">{isTopXX ? 'Verification Profile' : 'Tiểu sử'}</span>
-                                <div className={`h-1.5 w-24 rounded-full ${isTopXX ? 'bg-primary/40' : 'bg-indigo-400/40'}`} />
+                                <div className="h-px flex-1 bg-gradient-to-r from-primary/40 to-transparent" />
+                                <span className="text-[11px] font-black text-white/20 uppercase tracking-[0.5em] italic">Verification Profile</span>
+                                <div className="h-1.5 w-24 bg-primary/40 rounded-full" />
                               </div>
                               <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} className="p-10 rounded-[48px] glass-pro border border-white/10 bg-white/[0.02] flex flex-col md:flex-row items-center gap-10">
-                                 <div className={`w-32 h-32 rounded-[32px] overflow-hidden p-2 shadow-2xl border-2 ${isTopXX ? 'border-primary/20' : 'border-indigo-400/20'}`}>
+                                 <div className="w-32 h-32 rounded-[32px] overflow-hidden border-2 border-primary/20 p-2 shadow-2xl">
                                     <img src={(isTopXX ? (details as JAVDBActress)?.profileImage : getTMDBImageUrl(profilePath)) || ""} className="w-full h-full object-cover rounded-[24px]" />
                                  </div>
                                  <div className="flex-1 space-y-4 text-center md:text-left">
-                                    <h4 className="text-2xl font-black italic uppercase tracking-tighter text-white">
-                                      {isTopXX ? 'PROFILE SYNCED WITH JAVDB' : `${actor?.name?.toUpperCase()}`}
-                                    </h4>
-                                    <p className="text-sm font-medium text-white/40 leading-relaxed uppercase tracking-wider italic line-clamp-4">
-                                      {isTopXX 
-                                        ? "Giao thức tìm kiếm tự động đã được kích hoạt. Thông tin diễn viên được lấy trực tiếp từ JAVDB với độ chính xác cao nhất." 
-                                        : (details as any)?.biography || "Thông tin tiểu sử của diễn viên đang được cập nhật."}
-                                    </p>
+                                    <h4 className="text-2xl font-black italic uppercase tracking-tighter text-white">PROFILE SYNCED WITH JAVDB</h4>
+                                    <p className="text-sm font-medium text-white/40 leading-relaxed uppercase tracking-wider italic">Giao thức tìm kiếm tự động đã được kích hoạt. Thông tin diễn viên được lấy trực tiếp từ JAVDB với độ chính xác cao nhất.</p>
                                  </div>
                                  <div className="h-20 w-px bg-white/5 hidden md:block" />
-                                 {isTopXX ? <Sparkles className="w-12 h-12 text-primary/20 animate-pulse" /> : <Info className="w-12 h-12 text-indigo-400/20" />}
+                                 <Sparkles className="w-12 h-12 text-primary/20 animate-pulse" />
                               </motion.div>
                            </div>
                         </div>
@@ -209,8 +201,8 @@ export function ActorModal({ isOpen, onClose, actor, isTopXX }: ActorModalProps)
                               <div className="absolute inset-0 flex items-end p-12 translate-y-6 group-hover:translate-y-0 transition-all duration-700">
                                  <div className="glass-pro p-8 rounded-[36px] border border-white/10 w-full flex items-center justify-between shadow-2xl">
                                     <div className="flex flex-col gap-1">
-                                      <span className="text-[11px] font-black text-white/30 uppercase italic tracking-widest">{isTopXX ? 'Protocol Verified' : 'TMDB Identity'}</span>
-                                      <span className="text-xl font-black text-white italic uppercase tracking-tighter">{isTopXX ? 'OFFICIAL ID: JAV-SYNC' : `ID: ${(details as any)?.id || '000'}`}</span>
+                                      <span className="text-[11px] font-black text-white/30 uppercase italic tracking-widest">Protocol Verified</span>
+                                      <span className="text-xl font-black text-white italic uppercase tracking-tighter">OFFICIAL ID: JAV-SYNC</span>
                                     </div>
                                     <Heart className="w-8 h-8 text-primary/40 hover:text-red-500 transition-colors pointer-events-auto cursor-pointer" />
                                  </div>
@@ -225,7 +217,7 @@ export function ActorModal({ isOpen, onClose, actor, isTopXX }: ActorModalProps)
                             {isTopXX ? (
                               ((details as JAVDBActress)?.gallery?.length || 0) > 0 ? (
                                 (details as JAVDBActress).gallery.map((img, i) => (
-                                  <motion.button key={i} initial={{ opacity: 0, scale: 0.9 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true }} transition={{ delay: i * 0.05 }} onClick={() => setLightboxImage(img)} className="group relative aspect-square rounded-[40px] overflow-hidden border border-white/5 bg-white/[0.02]">
+                                  <motion.button key={i} initial={{ opacity: 0, scale: 0.9 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true }} transition={{ delay: i * 0.05 }} onClick={() => setLightboxImage(img)} className="group relative aspect-square rounded-[40px] overflow-hidden border border-white/5 active-depth bg-white/[0.02]">
                                      <img src={img} className="w-full h-full object-cover group-hover:scale-110 transition-all duration-1000 group-hover:brightness-50" />
                                      <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                                         <ImageIcon className="w-10 h-10 text-white" />
@@ -239,10 +231,10 @@ export function ActorModal({ isOpen, onClose, actor, isTopXX }: ActorModalProps)
                                  </div>
                               )
                             ) : (
-                               <div className="col-span-full py-40 flex flex-col items-center justify-center opacity-30 italic font-black uppercase text-center gap-6">
-                                  <ImageIcon className="w-20 h-20" />
-                                  <p className="text-xl">Gallery limited to TopXX.</p>
-                               </div>
+                              <div className="col-span-full py-40 flex flex-col items-center justify-center opacity-30 italic font-black uppercase text-center gap-6">
+                                 <ImageIcon className="w-20 h-20" />
+                                 <p className="text-xl">Gallery limited to TopXX.</p>
+                              </div>
                             )}
                          </div>
                       </Tab.Panel>
@@ -254,44 +246,29 @@ export function ActorModal({ isOpen, onClose, actor, isTopXX }: ActorModalProps)
                               (details as JAVDBActress)?.filmography?.map((m, i) => (
                                 <motion.div key={i} initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }} className="group flex flex-col gap-5">
                                    <div className="relative aspect-[2/3] rounded-[42px] overflow-hidden bg-black border border-white/5 shadow-2xl group-hover:shadow-primary/20 transition-all duration-500">
-                                      <img src={m.poster} className="w-full h-full object-cover group-hover:scale-110 group-hover:brightness-50 transition-all duration-1000" />
+                                      <img src={m.poster} className="w-full h-full object-cover group-hover:scale-110 group-hover:rotate-1 group-hover:brightness-50 transition-all duration-1000" />
                                       <div className="absolute top-6 left-6 flex flex-col gap-2">
                                          <div className="px-3 py-1.5 glass-pro rounded-xl text-[10px] font-black text-white uppercase italic tracking-widest border border-white/10">
                                             {m.code}
                                          </div>
                                       </div>
-                                      <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 opacity-0 group-hover:opacity-100 transition-all duration-500 translate-y-12 group-hover:translate-y-0 text-center">
-                                         <a href={`/search?q=${encodeURIComponent(m.code)}`} className="w-40 py-3.5 bg-primary text-black text-[11px] font-black uppercase italic rounded-2xl shadow-cinematic-lg hover:scale-105 active:scale-95 transition-all">
+                                      <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-500 translate-y-12 group-hover:translate-y-0">
+                                         <a href={`/search?q=${encodeURIComponent(m.code)}`} className="px-8 py-4 bg-primary text-black text-[12px] font-black uppercase italic rounded-2xl shadow-cinematic-lg hover:scale-110 active:scale-95 transition-all">
                                             XEM NGAY
-                                         </a>
-                                         <a href={`https://javdb.com/search?q=${m.code}&f=all`} target="_blank" className="w-40 py-3.5 glass-pro text-white text-[10px] font-black uppercase italic rounded-2xl border border-white/10 hover:bg-white/10 transition-all">
-                                            XEM TRÊN JAVDB
                                          </a>
                                       </div>
                                    </div>
-                                   <div className="flex flex-col gap-1.5 px-4 text-center sm:text-left">
+                                   <div className="flex flex-col gap-1.5 px-4">
                                       <span className="text-[10px] font-black text-primary uppercase italic tracking-widest">{m.year} • RATING {m.rating}</span>
                                       <h5 className="font-black text-lg text-white/90 line-clamp-2 uppercase italic tracking-tight leading-tight group-hover:text-primary transition-colors">{m.title}</h5>
                                    </div>
                                 </motion.div>
                               ))
                             ) : (
-                               (details as any)?.movie_credits?.cast?.slice(0, 15).map((m: any, i: number) => (
-                                <motion.div key={i} initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }} className="group flex flex-col gap-5">
-                                   <div className="relative aspect-[2/3] rounded-[42px] overflow-hidden bg-black border border-white/5 shadow-2xl group-hover:shadow-indigo-400/20 transition-all duration-500">
-                                      <img src={getTMDBImageUrl(m.poster_path) ?? undefined} className="w-full h-full object-cover group-hover:scale-110 group-hover:brightness-50 transition-all duration-1000" />
-                                      <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-500 translate-y-12 group-hover:translate-y-0 text-center p-6">
-                                         <Link href={`/phim/${m.id}`} className="w-full py-4 bg-indigo-500 text-white text-[12px] font-black uppercase italic rounded-2xl shadow-lg hover:scale-110 transition-all">
-                                            XEM CHI TIẾT
-                                         </Link>
-                                      </div>
-                                   </div>
-                                   <div className="flex flex-col gap-1.5 px-4">
-                                      <span className="text-[10px] font-black text-indigo-400 uppercase italic tracking-widest">{m.release_date?.split("-")[0] || "N/A"} • {m.vote_average?.toFixed(1) || "7.5"}</span>
-                                      <h5 className="font-black text-lg text-white/90 line-clamp-2 uppercase italic tracking-tight leading-tight group-hover:text-indigo-400 transition-colors">{m.title || m.name}</h5>
-                                   </div>
-                                </motion.div>
-                               ))
+                               <div className="col-span-full py-40 flex flex-col items-center justify-center opacity-30 italic font-black uppercase text-center gap-6">
+                                  <Tv className="w-20 h-20" />
+                                  <p className="text-xl">Movies fetched via TMDB standard.</p>
+                               </div>
                             )}
                          </div>
                       </Tab.Panel>
@@ -299,7 +276,7 @@ export function ActorModal({ isOpen, onClose, actor, isTopXX }: ActorModalProps)
                   </Tab.Group>
                 </div>
 
-                {/* Toast */}
+                {/* Intelligent Dynamic Toast */}
                 <AnimatePresence>
                   {toast && (
                     <motion.div initial={{ y: 100, opacity: 0, scale: 0.9 }} animate={{ y: 0, opacity: 1, scale: 1 }} exit={{ y: 100, opacity: 0, scale: 0.9 }} className="fixed bottom-12 left-1/2 -translate-x-1/2 z-[2000] min-w-[340px]">
@@ -311,16 +288,22 @@ export function ActorModal({ isOpen, onClose, actor, isTopXX }: ActorModalProps)
                              <h4 className={`text-xl font-black italic uppercase tracking-tighter ${toast.type === 'error' ? 'text-red-500' : 'text-primary'}`}>{toast.message}</h4>
                              <p className="text-[12px] font-black italic uppercase tracking-widest text-white/40">{toast.submessage}</p>
                           </div>
+                          {toast.type === 'info' && (
+                             <div className="ml-4">
+                                <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 2, ease: "linear" }} className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full shadow-[0_0_10px_var(--primary)]" />
+                             </div>
+                          )}
                        </div>
                     </motion.div>
                   )}
                 </AnimatePresence>
+
               </Dialog.Panel>
             </Transition.Child>
           </div>
         </div>
 
-        {/* Lightbox */}
+        {/* Improved Lightbox */}
         <AnimatePresence>
           {lightboxImage && (
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[3000] flex items-center justify-center p-4 md:p-20 bg-black/98" onClick={() => setLightboxImage(null)}>
@@ -329,6 +312,14 @@ export function ActorModal({ isOpen, onClose, actor, isTopXX }: ActorModalProps)
                   <button onClick={() => setLightboxImage(null)} className="absolute top-10 right-10 w-16 h-16 rounded-[24px] bg-black/60 backdrop-blur-xl flex items-center justify-center text-white border border-white/10 hover:bg-primary hover:text-black transition-all">
                      <X className="w-8 h-8" />
                   </button>
+                  <div className="absolute bottom-10 left-1/2 -translate-x-1/2 flex items-center gap-6">
+                     <button className="h-14 px-8 glass-pro rounded-2xl text-[11px] font-black uppercase italic tracking-widest text-white border border-white/10 flex items-center gap-3 hover:bg-white/10 transition-all">
+                        <Share2 className="w-4 h-4" /> Share
+                     </button>
+                     <button className="h-14 px-8 bg-primary text-black rounded-2xl text-[11px] font-black uppercase italic tracking-widest flex items-center gap-3 hover:scale-105 active:scale-95 transition-all">
+                        <Star className="w-4 h-4" /> Best Quality
+                     </button>
+                  </div>
                </motion.div>
             </motion.div>
           )}
