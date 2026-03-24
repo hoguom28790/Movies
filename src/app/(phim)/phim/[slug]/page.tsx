@@ -274,7 +274,7 @@ export default async function MovieDetailsPage({
                   </div>
     
                   <div className="flex flex-wrap justify-center lg:justify-start gap-2">
-                    {genreTags.map((g) => (
+                    {genreTags.map((g: any) => (
                       <Link key={g.slug} href={`/the-loai/${g.slug}`} className="px-3.5 py-1.5 rounded-xl text-[10px] font-black bg-foreground/5 text-foreground/30 hover:text-white hover:bg-primary transition-all uppercase italic tracking-[0.2em] border border-white/5">
                         {g.name}
                       </Link>
