@@ -51,12 +51,13 @@ export function XXActorModal({ isOpen, onClose, actor }: XXActorModalProps) {
   const [isFav, setIsFav] = useState(false);
 
   const { data: details, isLoading } = useQuery({
-    queryKey: ["actor-javdb", actor?.name?.toLowerCase()],
+    queryKey: ["actor-javlib", actor?.name?.toLowerCase()],
     queryFn: async () => {
       if (!actor) return null;
       try {
-        console.log("Fetching JAVDB data for:", actor.name);
-        const detailRes = await fetch(`/api/javdb/actress/${encodeURIComponent(actor.name)}`);
+        console.log("Fetching JavLibrary data for:", actor.name);
+        // Switched to JavLibrary primary scraper for stable actress data
+        const detailRes = await fetch(`/api/javlibrary/actress/${encodeURIComponent(actor.name)}`);
         if (!detailRes.ok) throw new Error("Metadata unreachable");
         const json = await detailRes.json();
         
@@ -67,7 +68,7 @@ export function XXActorModal({ isOpen, onClose, actor }: XXActorModalProps) {
         
         return json;
       } catch (err) {
-        console.error("JAVDB Sync Error:", err);
+        console.error("JavLibrary Sync Error:", err);
         return null;
       }
     },
@@ -157,7 +158,7 @@ export function XXActorModal({ isOpen, onClose, actor }: XXActorModalProps) {
                            </div>
                            <div className="flex flex-wrap gap-5 items-center">
                               <span className="px-6 py-3 rounded-2xl bg-primary text-white text-[11px] font-black tracking-widest uppercase italic border border-primary/20 shadow-lg">PRIMARY ARTIST</span>
-                              {details?.source === "javdb" ? <span className="px-6 py-3 rounded-2xl bg-yellow-500/10 text-yellow-500 text-[11px] font-black tracking-widest uppercase italic border border-yellow-500/20">JAVDB SYNC</span> : <span className="px-6 py-3 rounded-2xl bg-yellow-500/10 text-yellow-500 text-[11px] font-black tracking-widest uppercase italic border border-yellow-500/20">FALLBACK MODE</span>}
+                              {details?.source === "javlibrary" ? <span className="px-6 py-3 rounded-2xl bg-yellow-500/10 text-yellow-500 text-[11px] font-black tracking-widest uppercase italic border border-yellow-500/20">JAVLIB SYNC</span> : details?.source === "javdb" ? <span className="px-6 py-3 rounded-2xl bg-yellow-500/10 text-yellow-500 text-[11px] font-black tracking-widest uppercase italic border border-yellow-500/20">JAVDB SYNC</span> : <span className="px-6 py-3 rounded-2xl bg-yellow-500/10 text-yellow-500 text-[11px] font-black tracking-widest uppercase italic border border-yellow-500/20">FALLBACK MODE</span>}
                               <button onClick={handleToggleFav} className={`p-4 rounded-2xl border transition-all active-depth ${isFav ? 'bg-[#ef4444] border-[#ef4444] text-white shadow-lg' : 'bg-white/5 border-white/10 text-white/40 hover:text-white hover:bg-white/10'}`}><Heart className={`w-7 h-7 ${isFav ? 'fill-current' : ''}`} /></button>
                            </div>
                         </div>
@@ -219,7 +220,7 @@ export function XXActorModal({ isOpen, onClose, actor }: XXActorModalProps) {
                                             <img src={m.poster} className="w-full h-full object-cover group-hover:scale-115 transition-transform duration-1500 group-hover:brightness-[0.25]" />
                                             <div className="absolute inset-0 flex flex-col justify-end p-8 opacity-0 group-hover:opacity-100 transition-all duration-700 gap-5 translate-y-6 group-hover:translate-y-0 backdrop-blur-[2px]">
                                                <button onClick={() => handleMovieClick(m.title, m.year, m.code)} className="w-full py-5 bg-primary text-[12px] font-black text-white uppercase italic rounded-[24px] flex items-center justify-center gap-4 shadow-2xl active-depth hover:bg-[#2563eb] transition-all hover:scale-[1.05]"><Play className="w-6 h-6 fill-current" /> XEM NGAY</button>
-                                               <a href={`https://www.javlibrary.com/en/?v=${m.code.replace(/[-\s]/g, "").toLowerCase()}`} target="_blank" className="w-full py-4 glass-pro border border-white/10 text-[10px] font-black text-white/50 hover:text-white uppercase italic rounded-2xl flex items-center justify-center gap-3 hover:bg-white/10 transition-all"><ExternalLink className="w-4 h-4" /> ON JAVLIBRARY</a>
+                                               <a href={`https://www.javlibrary.com/en/vl_searchbyid.php?keyword=${m.code.replace(/[-\s]/g, "").toLowerCase()}`} target="_blank" className="w-full py-4 glass-pro border border-white/10 text-[10px] font-black text-white/50 hover:text-white uppercase italic rounded-2xl flex items-center justify-center gap-3 hover:bg-white/10 transition-all"><ExternalLink className="w-4 h-4" /> ON JAVLIBRARY</a>
                                             </div>
                                             <div className="absolute top-6 left-6 glass-pro px-5 py-2 rounded-2xl border border-white/10 shadow-2xl"><span className="text-[12px] font-black text-primary italic uppercase tracking-widest">{m.code}</span></div>
                                             {m.rating !== "N/A" && <div className="absolute top-6 right-6 bg-yellow-500/10 backdrop-blur-2xl px-3 py-1.5 rounded-2xl border border-yellow-500/20 shadow-2xl flex items-center gap-2"><Star className="w-4 h-4 text-yellow-500 fill-current" /><span className="text-[12px] font-black text-yellow-500">{m.rating}</span></div>}
