@@ -92,18 +92,18 @@ export function MovieCard({
           </div>
         </div>
 
-        {/* Progress Tracker (2026 Style) */}
-        {progress !== undefined && progress > 0 && (
-          <div className="absolute bottom-0 inset-x-0 h-[3px] bg-black/40 backdrop-blur-xl overflow-hidden z-20">
+        {/* Home/History Progress Bar */}
+        {progress !== undefined && (
+          <div className="absolute bottom-0 inset-x-0 h-1 bg-black/60 backdrop-blur-xl overflow-hidden z-20">
              <motion.div 
                initial={{ width: 0 }}
                animate={{ width: `${progress}%` }}
                transition={{ duration: 1.5, ease: [0.16, 1, 0.3, 1], delay: 0.2 }}
-               className="h-full bg-primary shadow-[0_0_15px_rgba(var(--primary-rgb),0.8)] relative" 
+               className="h-full bg-primary shadow-[0_0_15px_rgba(var(--primary-rgb),1)] relative" 
              >
-                <div className="absolute right-0 top-0 h-full w-4 bg-white/30 blur-[4px] animate-pulse" />
+                <div className="absolute right-0 top-0 h-full w-8 bg-white/40 blur-[4px] animate-pulse" />
                 {progressText && (
-                   <div className="absolute -top-[14px] left-3 px-1.5 py-0.5 glass-pro rounded-sm text-[7px] font-black text-white/90 uppercase tracking-widest whitespace-nowrap drop-shadow-lg scale-90 origin-left border border-white/5 opacity-0 group-hover:opacity-100 transition-opacity">
+                   <div className="absolute -top-[16px] left-3 px-1.5 py-0.5 glass-pro bg-primary/20 rounded-sm text-[8px] font-black text-white uppercase tracking-widest whitespace-nowrap drop-shadow-[0_2px_4px_rgba(0,0,0,1)] scale-100 origin-left border border-primary/20">
                       {progressText}
                    </div>
                 )}

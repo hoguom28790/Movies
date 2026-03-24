@@ -49,23 +49,21 @@ export function XXMovieCard({
         </div>
 
         {/* Home/History Progress Bar */}
-        {progress !== undefined && progress > 0 && (
-          <div className="absolute bottom-0 inset-x-0 h-[3px] bg-black/40 backdrop-blur-xl overflow-hidden z-20">
-             <div className="w-full h-full bg-black/40 backdrop-blur-md rounded-full overflow-hidden">
-                <motion.div 
-                  initial={{ width: 0 }}
-                  animate={{ width: `${progress}%` }}
-                  transition={{ duration: 1.5, ease: [0.16, 1, 0.3, 1], delay: 0.2 }}
-                  className="h-full bg-yellow-500 shadow-[0_0_12px_#fbbf24] relative" 
-                >
-                   {progressText && (
-                      <div className="absolute -top-[14px] left-3 px-1.5 py-0.5 glass-pro bg-yellow-500/10 rounded-sm text-[7px] font-black text-yellow-500 uppercase tracking-widest whitespace-nowrap drop-shadow-lg scale-90 origin-left border border-yellow-500/10 opacity-0 group-hover:opacity-100 transition-opacity">
-                         {progressText}
-                      </div>
-                   )}
-                   <div className="absolute right-0 top-0 h-full w-4 bg-white/40 blur-[4px] animate-pulse" />
-                </motion.div>
-             </div>
+        {progress !== undefined && (
+          <div className="absolute bottom-0 inset-x-0 h-1 bg-black/60 backdrop-blur-xl overflow-hidden z-20">
+             <motion.div 
+               initial={{ width: 0 }}
+               animate={{ width: `${progress}%` }}
+               transition={{ duration: 1.5, ease: [0.16, 1, 0.3, 1], delay: 0.2 }}
+               className="h-full bg-yellow-500 shadow-[0_0_20px_#fbbf24] relative" 
+             >
+                <div className="absolute right-0 top-0 h-full w-8 bg-white/40 blur-[4px] animate-pulse" />
+                {progressText && (
+                   <div className="absolute -top-[16px] left-3 px-1.5 py-0.5 glass-pro bg-yellow-400/20 rounded-sm text-[8px] font-black text-yellow-500 uppercase tracking-widest whitespace-nowrap drop-shadow-[0_2px_4px_rgba(0,0,0,1)] scale-100 origin-left border border-yellow-500/20">
+                      {progressText}
+                   </div>
+                )}
+             </motion.div>
           </div>
         )}
       </Link>

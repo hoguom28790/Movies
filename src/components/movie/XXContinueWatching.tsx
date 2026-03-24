@@ -79,8 +79,8 @@ export function XXContinueWatching() {
       >
         {items.map((item) => {
            const progressPercent = item.durationSeconds && item.durationSeconds > 0 
-            ? Math.min(100, Math.round((item.progressSeconds / item.durationSeconds) * 100))
-            : (item.progressSeconds > 0 ? 50 : 0);
+            ? Math.max(2, Math.min(100, Math.round((item.progressSeconds / item.durationSeconds) * 100)))
+            : (item.progressSeconds > 0 ? 2 : 0);
 
            return (
             <SwiperSlide key={item.movieCode} className="!w-[160px] sm:!w-[200px]">
