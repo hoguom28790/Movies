@@ -56,7 +56,7 @@ export default function XXMovieDetailClient({ item, slug, autoPlay }: XXMovieDet
       }))
     : (item.sources || []);
 
-  const movieCode = isAVDB ? `av-${item.id}` : item.code;
+  const movieCode = isAVDB ? `av-${item.id}` : (item.id || item.code || slug);
 
   useEffect(() => {
     if (autoPlay) {

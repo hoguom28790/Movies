@@ -14,6 +14,7 @@ import {
   getUserXXFirestorePlaylists, 
   saveXXFirestorePlaylist 
 } from "@/services/topxxFirestore";
+import { saveXXPlaylists } from "@/services/topxxDb";
 import { Plus, Check, X as CloseIcon, Loader2 } from "lucide-react";
 
 interface XXPlaylistModalProps {
@@ -44,8 +45,12 @@ export function XXPlaylistModal({ isOpen, onClose, movieCode, movieTitle, poster
           // Try to get from cloud first
           const cloudData = await getUserXXFirestorePlaylists(user.uid);
           if (isMounted) {
-             // Combine with local if needed, but for now cloud is source of truth if logged in
-             setPlaylists(cloudData.length > 0 ? cloudData : getXXPlaylists());
+             const finalPlaylists = cloudData.length > 0 ? cloudData : getXXPlaylists();
+             setPlaylists(finalPlaylists);
+             // CRITICAL: Sync cloud data back to local storage so topxxDb functions work
+             if (cloudData.length > 0) {
+               saveXXPlaylists(cloudData);
+             }
           }
         } else {
           setPlaylists(getXXPlaylists());
@@ -87,23 +92,33 @@ export function XXPlaylistModal({ isOpen, onClose, movieCode, movieTitle, poster
   };
 
   const toggleMovieInPlaylist = async (playlist: XXPlaylist) => {
+    if (!movieCode) return;
     setProcessingId(playlist.id);
     const hasMovie = playlist.movies.some(m => m.movieCode === movieCode);
 
     try {
+      // 1. Update LOCAL UI STATE immediately
+      setPlaylists(prev => prev.map(p => {
+        if (p.id === playlist.id) {
+          const newMovies = hasMovie 
+            ? p.movies.filter(m => m.movieCode !== movieCode)
+            : [{ movieCode, movieTitle, posterUrl, addedAt: Date.now() }, ...p.movies];
+          return { ...p, movies: newMovies };
+        }
+        return p;
+      }));
+
+      // 2. Persistent update (LocalStorage)
       if (hasMovie) {
         removeMovieFromXXPlaylist(playlist.id, movieCode);
       } else {
         addMovieToXXPlaylist(playlist.id, { movieCode, movieTitle, posterUrl });
       }
       
-      // Update local state
-      const updatedPlaylists = getXXPlaylists();
-      setPlaylists(updatedPlaylists);
-      
-      // Sync to cloud if user is logged in
+      // 3. Sync to cloud if user is logged in
       if (user) {
-        const updatedPl = updatedPlaylists.find(p => p.id === playlist.id);
+        const latestPlaylists = getXXPlaylists();
+        const updatedPl = latestPlaylists.find(p => p.id === playlist.id);
         if (updatedPl) {
           await saveXXFirestorePlaylist(user.uid, updatedPl);
         }

@@ -171,6 +171,12 @@ export function isMovieInPlaylist(playlistId: string, movieCode: string): boolea
 }
 
 export function isMovieInAnyXXPlaylist(movieCode: string): boolean {
+  if (!movieCode) return false;
   const playlists = getXXPlaylists();
   return playlists.some(p => p.movies.some(m => m.movieCode === movieCode));
+}
+
+export function saveXXPlaylists(playlists: XXPlaylist[]) {
+  if (typeof window === 'undefined') return;
+  localStorage.setItem(PLAYLISTS_KEY, JSON.stringify(playlists));
 }

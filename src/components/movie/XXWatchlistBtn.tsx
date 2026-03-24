@@ -22,6 +22,11 @@ export function XXWatchlistBtn({ movieCode, movieTitle, posterUrl }: XXWatchlist
   const [showPlaylistModal, setShowPlaylistModal] = useState(false);
 
   const checkSavedStatus = () => {
+    if (!movieCode) {
+      setIsSaved(false);
+      setLoading(false);
+      return;
+    }
     setLoading(true);
     // Even if not logged in, we check local storage
     const saved = isMovieInAnyXXPlaylist(movieCode);
