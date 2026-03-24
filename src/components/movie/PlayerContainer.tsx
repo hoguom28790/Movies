@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
 import { useDevice } from "@/contexts/DeviceContext";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { SkipForward, X } from "lucide-react";
+import { SkipForward, X, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { getCombinedSkipTimes, SkipTime } from "@/services/skipService";
 import { getUserSettings, saveUserSettings } from "@/services/db";
@@ -38,6 +38,7 @@ export function PlayerContainer({ url, isHls, rawEmbedUrl, nextEpisodeUrl, movie
   const [isAnime, setIsAnime] = useState(false);
   const [malId, setMalId] = useState<number | null>(null);
   const [toast, setToast] = useState<React.ReactNode | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
   const lastProcessedSkip = useRef<number | null>(null);
 
   useEffect(() => {
@@ -107,6 +108,7 @@ export function PlayerContainer({ url, isHls, rawEmbedUrl, nextEpisodeUrl, movie
   useEffect(() => {
     const attemptSeek = async () => {
       if (!user || !movieSlug || !episodeSlug) return;
+      
       const { getMovieHistory, saveHistory } = await import("@/services/db");
       const history = await getMovieHistory(user.uid, movieSlug);
       
@@ -130,9 +132,16 @@ export function PlayerContainer({ url, isHls, rawEmbedUrl, nextEpisodeUrl, movie
       saveHistory(user.uid, payload).catch(console.error);
     };
     
-    const timer = setTimeout(attemptSeek, 1000);
+    // Trigger on mount and whenever URL changes to maintain state
+    const timer = setTimeout(attemptSeek, 1500); 
     return () => clearTimeout(timer);
-  }, [user, movieSlug, episodeSlug]);
+  }, [user, movieSlug, episodeSlug, url]);
+
+  useEffect(() => {
+    setIsLoading(true);
+    const timer = setTimeout(() => setIsLoading(false), 2000); 
+    return () => clearTimeout(timer);
+  }, [url]);
 
   useEffect(() => {
     let lastSaveTime = 0;
@@ -345,7 +354,29 @@ export function PlayerContainer({ url, isHls, rawEmbedUrl, nextEpisodeUrl, movie
         src={iframeSrc}
         className="w-full h-full border-0 absolute inset-0 rounded-[28px]"
         allowFullScreen
+        onLoad={() => setIsLoading(false)}
       />
+
+      {/* FIXED: Source Switch Loading Spinner */}
+      <AnimatePresence>
+        {isLoading && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="absolute inset-0 z-[150] bg-black/80 backdrop-blur-3xl flex flex-col items-center justify-center gap-6"
+          >
+            <div className="relative">
+              <Loader2 className="w-16 h-16 text-primary animate-spin" />
+              <div className="absolute inset-0 bg-primary/20 blur-[30px] rounded-full animate-pulse" />
+            </div>
+            <div className="space-y-2 text-center">
+              <p className="text-white text-base font-black uppercase italic tracking-[0.2em] animate-pulse">Switching Cinema Protocol</p>
+              <p className="text-white/30 text-[10px] font-black uppercase italic tracking-[0.1em]">Optimizing HLS buffers for {movieTitle}...</p>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Skip Intro Overlay - Premium Cinematic */}
       <AnimatePresence>

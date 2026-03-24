@@ -193,13 +193,32 @@
     
     /* Control Bar Refinement - 100% Glass Cinema */
     .plyr--full-ui input[type=range] { color: var(--plyr-color-main); }
+    .plyr__control {
+       border-radius: 16px !important;
+       transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), background 0.4s, color 0.4s !important;
+    }
+    .plyr__control:hover { 
+        background: rgba(255, 255, 255, 0.1) !important; 
+        color: var(--plyr-color-main) !important;
+    }
+
+    /* FIXED Play button position on hover - Centered and stable */
     .plyr__control--overlaid { 
+        position: absolute !important;
+        top: 50% !important;
+        left: 50% !important;
+        transform: translate(-50%, -50%) !important;
         background: rgba(255, 255, 255, 0.1) !important; 
         padding: 28px !important; 
         backdrop-filter: blur(30px); 
         box-shadow: 0 30px 60px rgba(0,0,0,0.5);
         border: 1px solid rgba(255,255,255,0.1);
+        z-index: 2;
     }
+    .plyr__control--overlaid:hover {
+        transform: translate(-50%, -50%) scale(1.1) !important;
+    }
+
     .plyr__controls {
        background: linear-gradient(transparent, rgba(0, 0, 0, 0.95)) !important;
        padding: 40px 60px 40px !important;
@@ -207,16 +226,6 @@
        transition: opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1) !important;
     }
     .plyr--hover .plyr__controls, .plyr--focus .plyr__controls { opacity: 1; }
-    
-    .plyr__control {
-       border-radius: 16px !important;
-       transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1) !important;
-    }
-    .plyr__control:hover { 
-        background: rgba(255, 255, 255, 0.1) !important; 
-        transform: scale(1.1); 
-        color: var(--plyr-color-main) !important;
-    }
     
     .plyr__progress__container {
         margin: 0 0 16px 0 !important;
