@@ -33,7 +33,7 @@ async function fetchMovieData(source: string, slug: string) {
       // AVDB Normalize
       if (source === "avdb" && json.list?.[0]) {
         const m = json.list[0];
-        let eps = [];
+        let eps: any[] = [];
         if (m.vod_play_url) {
            const lines = m.vod_play_url.split("$$$")[0]?.split("#") || [];
            const serverData: any = {};
@@ -127,7 +127,7 @@ export default async function WatchPage({
               </div>
            </div>
 
-           {allServers.map((server, sIdx) => (
+           {allServers.map((server: any, sIdx: number) => (
              <div key={sIdx} className="space-y-6">
                <h3 className="text-xs font-black text-white/20 uppercase tracking-[0.5em] italic">{server.name}</h3>
                <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-10 lg:grid-cols-12 gap-3">
