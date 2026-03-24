@@ -94,20 +94,20 @@ export function MovieCard({
 
         {/* Home/History Progress Bar */}
         {progress !== undefined && (
-          <div className="absolute bottom-0 inset-x-0 h-1 bg-black/60 backdrop-blur-xl overflow-hidden z-20">
+          <div className="absolute bottom-0 inset-x-0 h-1 bg-black/60 backdrop-blur-xl z-20">
              <motion.div 
                initial={{ width: 0 }}
-               animate={{ width: `${progress}%` }}
+               animate={{ width: `${Math.max(2, progress)}%` }}
                transition={{ duration: 1.5, ease: [0.16, 1, 0.3, 1], delay: 0.2 }}
-               className="h-full bg-primary shadow-[0_0_15px_rgba(var(--primary-rgb),1)] relative" 
+               className="h-full bg-primary shadow-[0_0_20px_oklch(65%_0.25_250)] relative" 
              >
                 <div className="absolute right-0 top-0 h-full w-8 bg-white/40 blur-[4px] animate-pulse" />
-                {progressText && (
-                   <div className="absolute -top-[16px] left-3 px-1.5 py-0.5 glass-pro bg-primary/20 rounded-sm text-[8px] font-black text-white uppercase tracking-widest whitespace-nowrap drop-shadow-[0_2px_4px_rgba(0,0,0,1)] scale-100 origin-left border border-primary/20">
-                      {progressText}
-                   </div>
-                )}
              </motion.div>
+             {progressText && (
+                <div className="absolute bottom-1.5 left-3 px-1.5 py-0.5 glass-pro bg-primary/40 rounded-sm text-[8px] font-black text-white uppercase tracking-widest whitespace-nowrap drop-shadow-[0_2px_10px_rgba(0,0,0,1)] border border-primary/20 z-30">
+                   {progressText}
+                </div>
+             )}
           </div>
         )}
 
