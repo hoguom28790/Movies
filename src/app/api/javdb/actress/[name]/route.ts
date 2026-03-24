@@ -12,10 +12,13 @@ async function fetchWithMirrors(path: string, headers: any) {
   for (const mirror of JAVDB_MIRRORS) {
     try {
       const url = mirror + path;
-      const res = await fetch(url, { headers, next: { revalidate: 3600 } });
+      const res = await fetch(url, { headers, cache: "no-store" });
       if (res.ok) {
         const text = await res.text();
         return { html: text, url: res.url, ok: true, status: res.status };
+      }
+      if (res.status === 403) {
+        console.warn(`Mirror ${mirror} returned 403 Forbidden`);
       }
     } catch (e) {
       console.warn(`Mirror ${mirror} failed, trying next...`);
@@ -101,6 +104,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ name
     
     const data: any = {
        source: "javdb",
+       syncTime: new Date().toISOString(),
        id: slug,
        stageName: $("h1.title, .title.is-4, .title").first().text().trim() || name,
        realName: "N/A",
@@ -183,7 +187,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ name
       gallery: [],
       filmography: [],
       error: error.message,
-      toast: "Dữ liệu đang được cập nhật từ JAVDB"
+      toast: "JAVDB đang chặn truy vấn (Cloudflare). Đang thử lại..."
     });
   }
 }
