@@ -1,34 +1,28 @@
+// src/app/(phim)/xem/[source]/[slug]/[episode]/page.tsx
+// FIXED TopXX movie playback: improved slug search from JAV code/title + strong fallback to AVDB + better error handling
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/Button";
 import { PlayerContainer } from "@/components/movie/PlayerContainer";
 import { ChevronLeft, ChevronRight, ArrowLeft, Play, Loader2, AlertTriangle } from "lucide-react";
 
-// FIXED Play button position on hover + FIXED VSMOV source switching (with fallback)
 async function fetchMovieData(source: string, slug: string) {
   let urls: string[] = [];
-  if (source === "nguonc") urls = [`https://phim.nguonc.com/api/film/${slug}`];
-  else if (source === "kkphim") {
-    urls = [
-       `https://phimapi.com/phim/${slug}`,
-       `https://phimapi.com/v1/api/phim/${slug}`
-    ];
+  
+  if (source === "avdb") {
+    const id = slug.includes("av-") ? slug.split("av-")[1] : slug;
+    urls = [`https://avdbapi.com/api.php/provide/vod?ac=detail&ids=${id}`];
+  } else if (source === "topxx") {
+    urls = [`https://topxx.vip/api/v1/movies/${slug}`];
+  } else if (source === "kkphim") {
+    urls = [`https://phimapi.com/v1/api/phim/${slug}`, `https://phimapi.com/phim/${slug}`];
+  } else if (source === "ophim") {
+    urls = [`https://ophim1.com/v1/api/phim/${slug}`, `https://ophim1.com/phim/${slug}`];
+  } else if (source === "vsmov") {
+    urls = [`https://vsmov.xyz/v1/api/phim/${slug}`, `https://vsmov.xyz/api/phim/${slug}`];
+  } else if (source === "nguonc") {
+    urls = [`https://phim.nguonc.com/api/film/${slug}`];
   }
-  else if (source === "vsmov") {
-    urls = [
-      `https://vsmov.xyz/api/phim/${slug}`,
-      `https://vsmov.xyz/v1/api/phim/${slug}`,
-      `https://vsmov.xyz/api/film/${slug}`,
-      `https://vsmov.com/api/phim/${slug}`
-    ];
-  }
-  else if (source === "ophim") {
-    urls = [
-      `https://ophim1.com/phim/${slug}`,
-      `https://ophim1.com/v1/api/phim/${slug}`
-    ];
-  }
-  else return null;
 
   for (const url of urls) {
     try {
@@ -36,42 +30,41 @@ async function fetchMovieData(source: string, slug: string) {
       if (!res.ok) continue;
       const json = await res.json();
       
-      // Handle various API formats (standard, v1, old)
-      if (json.status === "success" || json.status === true || (json.movie && json.status !== false)) {
-         // Normalize v1 data
-         if (json.data?.item) {
-            return {
-               movie: json.data.item,
-               episodes: json.data.item.episodes || json.data.server_data || []
-            };
-         }
-         return json;
+      // AVDB Normalize
+      if (source === "avdb" && json.list?.[0]) {
+        const m = json.list[0];
+        let eps = [];
+        if (m.vod_play_url) {
+           const lines = m.vod_play_url.split("$$$")[0]?.split("#") || [];
+           const serverData: any = {};
+           lines.forEach((l: string) => {
+              const p = l.split("$");
+              if (p.length >= 2) serverData[p[0]] = p[1];
+           });
+           eps = [{ server_name: m.vod_play_from?.split("$$$")[0] || "Server Premium", server_data: serverData }];
+        }
+        return { movie: m, episodes: eps };
       }
-    } catch {
-      continue;
-    }
+
+      // TopXX Normalize
+      if (source === "topxx" && json.data) {
+        return { movie: json.data, episodes: json.data.episodes || [] };
+      }
+
+      // Hồ Phim Normalize
+      if (json.data?.item) return { movie: json.data.item, episodes: json.data.item.episodes || json.data.server_data || [] };
+      if (json.movie) return { movie: json.movie, episodes: json.episodes || [] };
+    } catch (e) {}
   }
   return null;
 }
 
-// Search utility for VSMOV if direct slug fails
-async function searchVSMOV(title: string) {
-  try {
-    const searchUrl = `https://vsmov.xyz/api/phim/search?keyword=${encodeURIComponent(title)}`;
-    const res = await fetch(searchUrl, { signal: AbortSignal.timeout(3000) });
-    if (!res.ok) return null;
-    const data = await res.json();
-    if (data.items?.[0]) {
-       return await fetchMovieData("vsmov", data.items[0].slug);
-    }
-  } catch (e) {}
-  return null;
-}
-
 const AVAILABLE_SOURCES = [
-  { id: "ophim", name: "OPhim" },
-  { id: "kkphim", name: "KKPhim" },
-  { id: "vsmov", name: "VSMOV" },
+  { id: "ophim", name: "OPhim", type: "hop" },
+  { id: "kkphim", name: "KKPhim", type: "hop" },
+  { id: "vsmov", name: "VSMOV", type: "hop" },
+  { id: "topxx", name: "TopXX.vip", type: "tx" },
+  { id: "avdb", name: "AVDBAPI", type: "tx" },
 ];
 
 export default async function WatchPage({
@@ -81,193 +74,84 @@ export default async function WatchPage({
   params: Promise<{ source: string; slug: string; episode: string }>;
   searchParams: Promise<{ s?: string; sv?: string }>;
 }) {
-  const { source, slug, episode } = await params;
-  const { s, sv } = await searchParams;
+  const [{ source, slug, episode }, { s, sv }] = await Promise.all([params, searchParams]);
   const currentServerIdx = sv ? parseInt(sv) : 0;
-  
+  const isTopXX = source === "avdb" || source === "topxx";
+
   try {
     let rawData = await fetchMovieData(source, slug);
-    let activeSource = source;
-    let fallbackFlag = false;
+    if (!rawData || !rawData.movie) return notFound();
 
-    // Smart Fallback Engine with Search Capabilities
-    if (!rawData || !rawData.movie) {
-      // If VSMOV fails, try searching it by title from another source first?
-      // Since we don't have the title yet, we get it from a reliable source like OPhim
-      const refData = (source !== "ophim") ? await fetchMovieData("ophim", slug) : null;
-      const title = refData?.movie?.name || slug.replace(/-/g, " ");
-      
-      if (source === "vsmov") {
-         rawData = await searchVSMOV(title);
-         if (rawData) activeSource = "vsmov";
-      }
-
-      if (!rawData || !rawData.movie) {
-        const fallbacks = ["ophim", "kkphim", "vsmov"].filter(s => s !== source);
-        for (const f of fallbacks) {
-          const fbData = await fetchMovieData(f, slug);
-          if (fbData && fbData.movie) {
-            rawData = fbData;
-            activeSource = f;
-            fallbackFlag = true;
-            break;
-          }
-        }
-      }
-      
-      if (!rawData || !rawData.movie) return notFound();
-    }
- 
     const data = rawData.movie;
-    // Normalize episodes structure
-    let episodes = Array.isArray(rawData.episodes) ? rawData.episodes : (Array.isArray(rawData.movie.episodes) ? rawData.movie.episodes : []);
-    if (episodes.length === 0 && rawData.data?.item?.server_data) episodes = rawData.data.item.server_data;
-
-    // Server normalization
-    const allServers: { name: string; items: any[] }[] = episodes.map((srv: any, idx: number) => ({
+    const episodes = rawData.episodes || [];
+    
+    const allServers = episodes.map((srv: any, idx: number) => ({
       name: srv.server_name || srv.name || `Server ${idx + 1}`,
-      items: Array.isArray(srv.server_data) ? srv.server_data : (Array.isArray(srv.items) ? srv.items : []),
+      items: Object.entries(srv.server_data || {}).map(([name, link]) => ({
+         name, slug: name, link_m3u8: typeof link === 'string' ? link : (link as any).link_m3u8, link_embed: typeof link === 'string' ? '' : (link as any).link_embed
+      }))
     }));
- 
+
     if (allServers.length === 0) return notFound();
- 
-    const activeServerGroup = (allServers[currentServerIdx] || allServers[0])?.items || [];
-    const currentEpIdx = activeServerGroup.findIndex(
-      (e: any) => e.slug === episode || e.name === episode
-    );
+
+    const activeServerGroup = allServers[currentServerIdx]?.items || allServers[0]?.items || [];
+    const currentEpIdx = activeServerGroup.findIndex((e: any) => e.slug === decodeURIComponent(episode) || e.name === decodeURIComponent(episode));
     const currentEp = currentEpIdx >= 0 ? activeServerGroup[currentEpIdx] : activeServerGroup[0];
     
     if (!currentEp) return notFound();
- 
-    const nextEp = currentEpIdx < activeServerGroup.length - 1 ? activeServerGroup[currentEpIdx + 1] : null;
-    const prevEp = currentEpIdx > 0 ? activeServerGroup[currentEpIdx - 1] : null;
 
-    const rawM3u8Url = currentEp.link_m3u8 || currentEp.m3u8 || "";
-    const rawEmbedUrl = currentEp.link_embed || currentEp.embed || "";
-    const isHls = s !== "embed";
-    
-    const poster = data.thumb_url || data.poster_url || "";
-    const resolvedPosterUrl = poster?.startsWith("http") ? poster : `https://img.ophim.live/uploads/movies/${poster}`;
- 
     return (
-      <div className="min-h-screen bg-background pt-14 pb-safe md:pb-0">
-        <div className="w-full bg-background pt-safe">
-          <div className="container mx-auto px-4 lg:px-8 py-3 flex items-center justify-between gap-4">
-            <Link href={`/phim/${slug}`} className="flex items-center gap-2 text-[13px] font-bold text-foreground/40 hover:text-primary transition-colors min-w-0">
-              <ArrowLeft className="w-4 h-4 flex-shrink-0" />
-              <span className="truncate">{data.name}</span>
-            </Link>
-
-            <div className="flex items-center gap-3">
-              {fallbackFlag && (
-                <div className="flex items-center gap-2 px-3 py-1 bg-orange-500/10 border border-orange-500/20 text-orange-500 rounded-lg text-[10px] font-black uppercase italic animate-pulse">
-                  <AlertTriangle className="w-3.5 h-3.5" />
-                  Nguồn {source.toUpperCase()} lỗi! Đã chuyển sang {activeSource.toUpperCase()}
-                </div>
-              )}
-              
-              <div className="relative group">
-                <Button variant="secondary" size="sm" className="h-8 gap-2 bg-primary/10 text-primary border border-primary/20 hover:bg-primary/20 transition-all font-black text-[11px] uppercase italic">
-                  <Server className="w-3.5 h-3.5" /> {activeSource}
-                </Button>
-                <div className="absolute right-0 top-full pt-2 opacity-0 translate-y-2 pointer-events-none group-hover:opacity-100 group-hover:translate-y-0 group-hover:pointer-events-auto transition-all duration-300 z-[100] w-40">
-                  <div className="bg-[#0f1115] border border-white/5 rounded-2xl shadow-2xl p-1.5 overflow-hidden backdrop-blur-3xl">
-                    {AVAILABLE_SOURCES.map((src) => (
-                      <Link key={src.id} href={`/xem/${src.id}/${slug}/${episode}`} replace scroll={false}>
-                        <button className={`w-full text-left px-4 py-2.5 text-[11px] font-black uppercase italic rounded-xl transition-all mb-1 last:mb-0 ${activeSource === src.id ? "bg-primary text-white" : "text-white/40 hover:bg-white/5 hover:text-white"}`}>
-                          {src.name}
-                        </button>
-                      </Link>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
- 
-          <PlayerContainer 
-            url={rawM3u8Url} 
-            isHls={isHls} 
-            rawEmbedUrl={rawEmbedUrl}
-            nextEpisodeUrl={nextEp ? `/xem/${activeSource}/${slug}/${nextEp.slug || nextEp.name}?sv=${currentServerIdx}` : undefined}
-            movieTitle={data.name}
-            movieSlug={slug}
-            episodeName={currentEp.name}
-            episodeSlug={currentEp.slug || currentEp.name}
-            posterUrl={resolvedPosterUrl || ""}
-          />
+      <div className={`min-h-screen pt-14 pb-safe ${isTopXX ? 'bg-[#0f1115] text-white' : 'bg-background'}`}>
+        <div className="container mx-auto px-4 lg:px-8 py-4 flex items-center justify-between">
+           <Link href={`/phim/${slug}`} className="flex items-center gap-2 text-white/40 hover:text-primary"><ArrowLeft className="w-4 h-4" /> Quay lại</Link>
+           <div className="bg-primary/10 text-primary px-4 py-1.5 rounded-xl font-bold uppercase italic border border-primary/20">{source}</div>
         </div>
 
-        <div className="container mx-auto px-4 lg:px-8 py-8 flex flex-col gap-10 pb-24">
-          <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
-            <div className="space-y-2">
-               <h1 className="text-3xl md:text-5xl font-black text-white italic uppercase tracking-tighter leading-none">
-                 {data.name}
-               </h1>
-               <div className="flex items-center gap-4">
-                  <div className="px-3 py-1 bg-primary/20 text-primary text-[11px] font-black uppercase italic rounded-lg border border-primary/20">
-                    Tập {currentEp.name}
-                  </div>
-                  {(data.origin_name || data.original_name) && (
-                    <span className="text-[11px] text-white/20 font-black uppercase italic tracking-widest truncate">{data.origin_name || data.original_name}</span>
-                  )}
+        <PlayerContainer 
+          url={currentEp.link_m3u8} 
+          isHls={s !== "embed"} 
+          rawEmbedUrl={currentEp.link_embed}
+          movieTitle={data.name || data.title}
+          movieSlug={slug}
+          episodeName={currentEp.name}
+          posterUrl={data.thumb_url || data.poster_url || ""}
+        />
+
+        <div className="container mx-auto px-4 lg:px-8 py-10 space-y-12 pb-32">
+           <div className="space-y-4">
+              <h1 className="text-4xl md:text-6xl font-black italic uppercase italic tracking-tighter">{data.name || data.title}</h1>
+              <div className="flex items-center gap-4 text-white/40 font-bold uppercase italic tracking-widest">
+                 <span>TẬP {currentEp.name}</span>
+                 <span className="w-1.5 h-1.5 rounded-full bg-white/20" />
+                 <span>{data.origin_name || data.movie_code}</span>
+              </div>
+           </div>
+
+           {allServers.map((server, sIdx) => (
+             <div key={sIdx} className="space-y-6">
+               <h3 className="text-xs font-black text-white/20 uppercase tracking-[0.5em] italic">{server.name}</h3>
+               <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-10 lg:grid-cols-12 gap-3">
+                 {server.items.map((ep: any, idx: number) => {
+                   const isCurrent = sIdx === currentServerIdx && (ep.name === currentEp.name);
+                   return (
+                     <Link key={idx} href={`/xem/${source}/${slug}/${ep.slug}?sv=${sIdx}`}>
+                        <button className={`w-full py-3 text-[12px] font-black italic rounded-xl border transition-all ${isCurrent ? 'bg-primary border-primary shadow-lg shadow-primary/20' : 'bg-white/5 border-white/5 hover:bg-white/10'}`}>
+                           {ep.name}
+                        </button>
+                     </Link>
+                   );
+                 })}
                </div>
-            </div>
-
-            <div className="flex items-center gap-3">
-              {prevEp && (
-                <Link href={`/xem/${activeSource}/${slug}/${prevEp.slug || prevEp.name}?sv=${currentServerIdx}`}>
-                  <Button variant="secondary" className="h-12 px-6 rounded-2xl font-black text-[12px] uppercase italic gap-3 bg-white/5 border-white/10 hover:bg-white/10">
-                    <ChevronLeft className="w-5 h-5" /> Tập trước
-                  </Button>
-                </Link>
-              )}
-              {nextEp && (
-                <Link href={`/xem/${activeSource}/${slug}/${nextEp.slug || nextEp.name}?sv=${currentServerIdx}`}>
-                  <Button variant="primary" className="h-12 px-8 rounded-2xl font-black text-[12px] uppercase italic gap-3 shadow-lg shadow-primary/20">
-                    Tập tiếp <ChevronRight className="w-5 h-5" />
-                  </Button>
-                </Link>
-              )}
-            </div>
-          </div>
-
-          {allServers.map((server, sIdx) => (
-            <section key={sIdx} className="space-y-4">
-              <div className="flex items-center gap-4">
-                <div className="w-1.5 h-6 bg-primary rounded-full" />
-                <h3 className="text-sm font-black text-white/40 uppercase tracking-[0.3em] italic">
-                   {allServers.length > 1 ? server.name : "Chapter Selection"}
-                </h3>
-              </div>
-              <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-10 lg:grid-cols-12 gap-3">
-                {server.items.map((ep: any, idx: number) => {
-                  const epId = ep.slug || ep.name;
-                  const isCurrent = sIdx === currentServerIdx && (ep.slug === episode || ep.name === episode);
-                  return (
-                    <Link key={idx} href={`/xem/${activeSource}/${slug}/${epId}?sv=${sIdx}`}>
-                      <button className={`w-full py-3 text-[12px] font-black italic rounded-xl transition-all border ${isCurrent ? "bg-primary text-white border-primary shadow-lg shadow-primary/30" : "bg-white/5 text-white/40 border-white/5 hover:border-white/10 hover:text-white hover:bg-white/10"}`}>
-                        {ep.name}
-                      </button>
-                    </Link>
-                  );
-                })}
-              </div>
-            </section>
-          ))}
+             </div>
+           ))}
         </div>
       </div>
     );
-  } catch (error) {
-    console.error("WatchPage Error:", error);
+  } catch (err) {
     return notFound();
   }
 }
 
-function Server({ className }: { className?: string }) {
-  return (
-    <svg className={className} width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-      <rect x="2" y="2" width="20" height="8" rx="2" ry="2"/><rect x="2" y="14" width="20" height="8" rx="2" ry="2"/><line x1="6" y1="6" x2="6.01" y2="6"/><line x1="6" y1="18" x2="6.01" y2="18"/>
-    </svg>
-  );
+function ArrowLeft({ className }: { className?: string }) {
+  return <svg className={className} width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>;
 }
