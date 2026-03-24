@@ -21,7 +21,12 @@ export default async function XXSearchPage({
   };
 
   if (query) {
-    results = await searchTopXXMovies(query, currentPage);
+    try {
+      results = await searchTopXXMovies(query, currentPage);
+    } catch (err) {
+      console.error("Search Page Execution Error:", err);
+      // Fallback stays as default let results
+    }
   }
 
   return (

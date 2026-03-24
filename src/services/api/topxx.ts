@@ -1,4 +1,5 @@
 import { Movie, MovieListResponse } from "@/types/movie";
+import { getAVDBMovies } from "./avdb";
 
 const BASE_URL = "https://topxx.vip/api/v1";
 
@@ -22,7 +23,6 @@ export async function getTopXXMovies(
     const actorName = slug.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
     const results = await searchTopXXMovies(actorName, page);
     if (results.items.length === 0) {
-      const { getAVDBMovies } = await import("./avdb");
       return getAVDBMovies(page, undefined, undefined, actorName);
     }
     return results;
@@ -82,8 +82,8 @@ export async function searchTopXXMovies(keyword: string, page: number = 1): Prom
   try {
     const [topxxRes, avdbTitleRes, avdbActorRes] = await Promise.allSettled([
       fetch(url, { headers: DEFAULT_HEADERS, signal: AbortSignal.timeout(10000) }).then(r => r.json()),
-      import("./avdb").then(m => m.getAVDBMovies(page, undefined, keyword)),
-      import("./avdb").then(m => m.getAVDBMovies(page, undefined, undefined, keyword)) // Search by actor too
+      getAVDBMovies(page, undefined, keyword),
+      getAVDBMovies(page, undefined, undefined, keyword) // Search by actor too
     ]);
 
     let items: Movie[] = [];
@@ -91,7 +91,7 @@ export async function searchTopXXMovies(keyword: string, page: number = 1): Prom
     let totalPages = 0;
 
     // 1. Process TopXX results
-    if (topxxRes.status === "fulfilled" && topxxRes.value?.status === "success") {
+    if (topxxRes.status === "fulfilled" && topxxRes.value?.status === "success" && Array.isArray(topxxRes.value.data)) {
       const txItems = topxxRes.value.data.map((item: any) => {
         const viTrans = item.trans?.find((t: any) => t.locale === "vi") || item.trans?.[0];
         const enTrans = item.trans?.find((t: any) => t.locale === "en") || {};
