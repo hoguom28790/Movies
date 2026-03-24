@@ -5,22 +5,30 @@ import { PlayerContainer } from "@/components/movie/PlayerContainer";
 import { ChevronLeft, ChevronRight, ArrowLeft, Play, Loader2 } from "lucide-react";
 
 async function fetchMovieData(source: string, slug: string) {
-  let url = "";
-  if (source === "nguonc") url = `https://phim.nguonc.com/api/film/${slug}`;
-  else if (source === "kkphim") url = `https://phimapi.com/phim/${slug}`;
-  else if (source === "vsmov") url = `https://vsmov.com/api/phim/${slug}`;
-  else if (source === "ophim") url = `https://ophim1.com/phim/${slug}`;
+  let urls: string[] = [];
+  if (source === "nguonc") urls = [`https://phim.nguonc.com/api/film/${slug}`];
+  else if (source === "kkphim") urls = [`https://phimapi.com/phim/${slug}`];
+  else if (source === "vsmov") {
+    urls = [
+      `https://vsmov.xyz/api/phim/${slug}`,
+      `https://vsmov.xyz/api/film/${slug}`,
+      `https://vsmov.com/api/phim/${slug}`
+    ];
+  }
+  else if (source === "ophim") urls = [`https://ophim1.com/phim/${slug}`];
   else return null;
 
-  try {
-    const res = await fetch(url, { cache: "no-store" });
-    if (!res.ok) return null;
-    const json = await res.json();
-    if (json.status === false || json.status === "error") return null;
-    return json;
-  } catch {
-    return null;
+  for (const url of urls) {
+    try {
+      const res = await fetch(url, { cache: "no-store", signal: AbortSignal.timeout(5000) });
+      if (!res.ok) continue;
+      const json = await res.json();
+      if (json.status === true || json.status === "success" || (json.movie && json.status !== false)) return json;
+    } catch {
+      continue;
+    }
   }
+  return null;
 }
 
 // Available streaming proxies globally supported
