@@ -46,74 +46,32 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
   const { id: actressName } = await params;
   const name = decodeURIComponent(actressName);
 
+  let data: any = {
+    id: name.toLowerCase().replace(/\s+/g, '-'),
+    source: 'fallback',
+    realName: name,
+    stageName: name,
+    birthDate: '',
+    measurements: '',
+    height: '',
+    profileImage: '',
+    gallery: [],
+    filmography: []
+  };
+
   try {
-    // 1. PRIMARY: JAVLibrary Search for the Actress
-    // Search pattern: /vl_star.php?&mode=&s=[name]
-    const searchPath = `/vl_star.php?&mode=&s=${encodeURIComponent(name)}`;
-    const { html: searchHtml, mirror: libMirror } = await fetchWithRetry(JAVLIB_MIRRORS, searchPath);
-    const $search = cheerio.load(searchHtml);
-    
-    // Find the star link (it might be a direct result or a list)
-    let actressUrl = '';
-    const starLink = $search('.star a').first().attr('href');
-    if (starLink) actressUrl = starLink.startsWith('http') ? starLink : `${libMirror}/${starLink}`;
-    else if (searchHtml.includes('star_name')) {
-        // We might be on the star page already (single result)
-        // But JAVLib usually shows search results. 
-        // If we can't find a direct link, we'll try to find any link containing 'star='
-        const anyStarLink = $search('a[href*="star="]').first().attr('href');
-        if (anyStarLink) actressUrl = anyStarLink.startsWith('http') ? anyStarLink : `${libMirror}/${anyStarLink}`;
-    }
-
-    let data: any = {
-      id: name.toLowerCase().replace(/\s+/g, '-'),
-      source: 'javlibrary',
-      realName: name,
-      stageName: name,
-      birthDate: '',
-      measurements: '',
-      height: '',
-      profileImage: '',
-      gallery: [],
-      filmography: []
-    };
-
-    if (actressUrl) {
-        const { html: actressHtml } = await fetchWithRetry([], actressUrl, {});
-        const $ = cheerio.load(actressHtml);
-        
-        data.profileImage = $('.videothumblist .it .it2 img').first().attr('src') || ''; // Fallback image from first video
-        
-        // JAVLibrary Biography extraction
-        // JAVLib doesn't have a dedicated bio section like JAVDB, it mostly has video lists.
-        // So we'll enrich with JAVDB in a moment.
-        
-        // JAVLibrary Filmography
-        $('.videothumblist .videos .video').each((i, el) => {
-            const $el = $(el);
-            data.filmography.push({
-                code: $el.find('.id').text().trim(),
-                title: $el.find('.title').text().trim(),
-                poster: $el.find('img').attr('src') || '',
-                year: 'N/A', // Need deeper crawl for dates
-                rating: 'N/A',
-                previewImage: $el.find('img').attr('src') || ''
-            });
-        });
-    }
-
-    // 2. ENRICHMENT: JAVDB for Biography and High-res Gallery
+    // 1. FAST PRIMARY: JAVDB (More reliable and faster for Bio)
     try {
         const javdbSearchPath = `/video_codes/search?q=${encodeURIComponent(name)}&f=all`;
-        const { html: dbSearchHtml, mirror: dbMirror } = await fetchWithRetry(JAVDB_MIRRORS, javdbSearchPath);
+        const { html: dbSearchHtml, mirror: dbMirror } = await fetchWithRetry(JAVDB_MIRRORS, javdbSearchPath, {}, 1); // Only 1 retry
         const $dbSearch = cheerio.load(dbSearchHtml);
         
         const dbStarLink = $dbSearch('a[href^="/actors/"]').first().attr('href');
         if (dbStarLink) {
-            const { html: dbStarHtml } = await fetchWithRetry([dbMirror], dbStarLink);
+            const { html: dbStarHtml } = await fetchWithRetry([dbMirror], dbStarLink, {}, 0); // No retry for details
             const $db = cheerio.load(dbStarHtml);
             
-            // Bio stats
+            data.source = 'javdb';
             $db('.panel-block').each((i, el) => {
                 const label = $db(el).find('strong').text();
                 const value = $db(el).text().replace(label, '').trim();
@@ -126,34 +84,76 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
 
             data.profileImage = $db('.avatar').attr('src') || data.profileImage;
             
-            // Gallery
             $db('.actor-section-gallery img').each((i, el) => {
                 const src = $db(el).attr('src');
                 if (src) data.gallery.push(src);
             });
-            
-            // Merged Filmography enhancement
-            if (!actressUrl) {
-               $db('.video-tile').each((i, el) => {
-                  const $v = $db(el);
-                  data.filmography.push({
-                      code: $v.find('.video-title').text().split(' ')[0],
-                      title: $v.find('.video-title').text(),
-                      poster: $v.find('img').attr('src') || '',
-                      year: $v.find('.meta').text().trim(),
-                      rating: 'N/A',
-                      previewImage: $v.find('img').attr('src') || ''
-                  });
+
+            $db('.video-tile').each((i, el) => {
+               const $v = $db(el);
+               data.filmography.push({
+                   code: $v.find('.video-title').text().split(' ')[0],
+                   title: $v.find('.video-title').text(),
+                   poster: $v.find('img').attr('src') || '',
+                   year: $v.find('.meta').text().trim(),
+                   rating: 'N/A',
+                   previewImage: $v.find('img').attr('src') || ''
                });
-            }
+            });
         }
     } catch (e) {
-        console.error("JAVDB Enrichment failed", e);
+        console.error("JAVDB Quick search failed", e);
     }
 
+    // 2. ENRICHMENT/FALLBACK: JAVLibrary (if filmography is empty or explicitly needed)
+    if (data.filmography.length === 0) {
+        try {
+            const searchPath = `/vl_star.php?&mode=&s=${encodeURIComponent(name)}`;
+            const { html: searchHtml, mirror: libMirror } = await fetchWithRetry(JAVLIB_MIRRORS, searchPath, {}, 0); // Faster timeout
+            const $search = cheerio.load(searchHtml);
+            
+            let actressUrl = '';
+            const starLink = $search('.star a').first().attr('href');
+            if (starLink) actressUrl = starLink.startsWith('http') ? starLink : `${libMirror}/${starLink}`;
+            else if (searchHtml.includes('star_name')) {
+                const anyStarLink = $search('a[href*="star="]').first().attr('href');
+                if (anyStarLink) actressUrl = anyStarLink.startsWith('http') ? anyStarLink : `${libMirror}/${anyStarLink}`;
+            }
+
+            if (actressUrl) {
+                const { html: actressHtml } = await fetchWithRetry([], actressUrl, {}, 0);
+                const $ = cheerio.load(actressHtml);
+                data.source = 'javlibrary';
+                
+                if (!data.profileImage) {
+                   data.profileImage = $('.videothumblist .it .it2 img').first().attr('src') || '';
+                }
+                
+                $('.videothumblist .videos .video').each((i, el) => {
+                    const $el = $(el);
+                    const code = $el.find('.id').text().trim();
+                    if (!data.filmography.some((f: any) => f.code === code)) {
+                        data.filmography.push({
+                            code,
+                            title: $el.find('.title').text().trim(),
+                            poster: $el.find('img').attr('src') || '',
+                            year: 'N/A',
+                            rating: 'N/A',
+                            previewImage: $el.find('img').attr('src') || ''
+                        });
+                    }
+                });
+            }
+        } catch (e) {
+            console.error("JAVLIB Fallback failed", e);
+        }
+    }
+
+    // Final safety: if no data at all but we have a name, still return a success relative to the name
     return NextResponse.json(data);
   } catch (err) {
-    console.error("JAVLIB API ERROR:", err);
-    return NextResponse.json({ error: 'Source unavailable' }, { status: 504 });
+    console.error("SCRAPER API ERROR:", err);
+    // Return partial data instead of error to prevent 504/crash
+    return NextResponse.json(data);
   }
 }
