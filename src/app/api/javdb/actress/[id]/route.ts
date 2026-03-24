@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 
-// Mirror domains used by top scrapers like jpn_r18_api to bypass restrictions
+// Mirror domains to bypass restrictions
 const JAVDB_MIRRORS = [
   "https://javdb.com",
-  "https://javdb00.com",
   "https://javdb34.com",
+  "https://javdb00.com",
   "https://javdb.one"
 ];
 
@@ -20,100 +20,130 @@ async function fetchFromMirrors(path: string) {
   for (const mirror of JAVDB_MIRRORS) {
     try {
       const url = `${mirror}${path}`;
-      const res = await fetch(url, { headers: commonHeaders, next: { revalidate: 3600 } });
-      if (res.ok) return { html: await res.text(), base: mirror };
+      const res = await fetch(url, { headers: commonHeaders, next: { revalidate: 1800 } });
+      if (res.ok) {
+        const text = await res.text();
+        if (text.includes("actors")) return { html: text, base: mirror };
+      }
     } catch (e) {
       console.warn(`Mirror ${mirror} failed, trying next...`);
     }
   }
-  throw new Error("All mirrors failed to respond");
+  throw new Error("All JAVDB mirrors failed to respond");
 }
 
 export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
 
-  if (!id) {
-    return NextResponse.json({ error: "ID is required" }, { status: 400 });
-  }
+  if (!id) return NextResponse.json({ error: "ID is required" }, { status: 400 });
 
   try {
-    const { html, base } = await fetchFromMirrors(`/actors/${id}`);
+    // JAVDB full actress implementation - real name, measurements, height, gallery, complete filmography, codes, rating, preview images, direct links
+    const { html, base } = await fetchFromMirrors(`/actors/${id}?f=all`);
 
-    // 1. Scrape Biographical Information (Using jpn_r18_api selectors)
-    const info: any = {};
-    
-    // Name
+    const info: any = {
+      realName: "",
+      stageName: "",
+      birthDate: "",
+      measurements: "",
+      height: "",
+      profileImage: "",
+      birthPlace: "",
+      studio: "",
+      debutYear: "",
+      status: "Active",
+      gallery: [],
+      filmography: []
+    };
+
+    // 1. Scraping Biographical Data (phoenixthrush/javdb-python logic translation)
     const nameMatch = html.match(/<h2 class="title is-4">([\s\S]*?)<\/h2>/);
-    info.name = nameMatch ? nameMatch[1].replace(/<[^>]+>/g, '').trim() : "Unknown";
+    const rawNames = nameMatch ? nameMatch[1].replace(/<[^>]+>/g, '').trim() : "Unknown";
+    // JAVDB often shows "Stage Name (Real Name)"
+    if (rawNames.includes("(") && rawNames.includes(")")) {
+       const parts = rawNames.match(/(.*?)\((.*?)\)/);
+       if (parts) {
+         info.stageName = parts[1].trim();
+         info.realName = parts[2].trim();
+       } else {
+         info.stageName = rawNames;
+       }
+    } else {
+       info.stageName = rawNames;
+       info.realName = rawNames;
+    }
 
     // Profile Image
     const avatarMatch = html.match(/<div class="avatar" style="background-image: url\((.*?)\)/);
-    info.profilePic = avatarMatch ? avatarMatch[1] : "";
+    info.profileImage = avatarMatch ? avatarMatch[1] : "";
 
-    // Detailed Stats (Parsing panel-block style)
-    const statsMatches = html.matchAll(/<p class="is-size-7">([\s\S]*?): ([\s\S]*?)<\/p>/g);
-    for (const match of statsMatches) {
-      const key = match[1].trim();
-      const value = match[2].replace(/<[^>]+>/g, '').trim();
+    // Stats Grid Parsing
+    const panels = html.matchAll(/<p class="is-size-7">([\s\S]*?): ([\s\S]*?)<\/p>/g);
+    for (const match of panels) {
+      const key = match[1].trim().toLowerCase();
+      const val = match[2].replace(/<[^>]+>/g, '').trim();
       
-      if (key === "生日" || key.toLowerCase().includes("birthday")) info.birthday = value;
-      if (key === "身高" || key.toLowerCase().includes("height")) info.height = value;
-      if (key === "三圍" || key.toLowerCase().includes("measurements")) info.measurements = value;
-      if (key === "出生地" || key.toLowerCase().includes("birthplace")) info.birthPlace = value;
+      if (key.includes("birthday") || key.includes("生日")) info.birthDate = val;
+      if (key.includes("height") || key.includes("身高")) info.height = val;
+      if (key.includes("measurements") || key.includes("三圍")) info.measurements = val;
+      if (key.includes("birthplace") || key.includes("出生地")) info.birthPlace = val;
     }
 
-    // 2. Filmography (Robust block-based parsing)
-    const filmography: any[] = [];
-    // jpn_r18_api often looks for movie-list or item grid
-    const movieBlocks = html.split(/<div class="item">|<div class="grid-item">/);
-    movieBlocks.shift();
+    // 2. Filmography (Full array parsing)
+    const movieItems = html.split(/<div class="item">|<div class="grid-item">/);
+    movieItems.shift(); // Remove first empty split
 
-    for (const block of movieBlocks) {
-      const idMatch = block.match(/href="\/v\/([a-zA-Z0-9]+)"/);
+    movieItems.forEach(block => {
+      const vidMatch = block.match(/href="\/v\/([a-zA-Z0-9]+)"/);
       const posterMatch = block.match(/<img (?:lazy-)?src="(.*?)"/);
       const uidMatch = block.match(/class="uid">([\s\S]*?)<\/div>|<strong>([\s\S]*?)<\/strong>/);
-      const titleMatch = block.match(/class="video-title">([\s\S]*?)<\/div>/);
-      const ratingMatch = block.match(/class="value">([\d\.-]+)<\/span>/);
-      const dateMatch = block.match(/class="meta">([\d-]+)<\/div>/);
+      const titleMatch = block.match(/class="video-title">([\s\S]*?)<\/div>|class="title">([\s\S]*?)<\/div>/);
+      const ratingMatch = block.match(/class="value font-weight-bold">([\d\.-]+)<\/span>|class="value">([\d\.-]+)<\/span>/);
+      const metaMatch = block.match(/class="meta">([\s\S]*?)<\/div>/);
 
-      if (idMatch && (posterMatch || uidMatch)) {
-         const code = uidMatch ? (uidMatch[1] || uidMatch[2]).replace(/<[^>]+>/g, '').trim() : "N/A";
-         const movieTitle = titleMatch ? titleMatch[1].replace(/<[^>]+>/g, '').replace(code, '').trim() : "Untitled";
-         
-         filmography.push({
-           id: idMatch[1],
-           poster: posterMatch ? posterMatch[1] : "",
-           code: code,
-           title: movieTitle,
-           rating: ratingMatch ? ratingMatch[1] : "N/A",
-           date: dateMatch ? dateMatch[1] : "N/A",
-           link: `${base}/v/${idMatch[1]}`
-         });
+      if (vidMatch && (posterMatch || uidMatch)) {
+        const code = uidMatch ? (uidMatch[1] || uidMatch[2] || "").replace(/<[^>]+>/g, '').trim() : "N/A";
+        const titleRaw = titleMatch ? (titleMatch[1] || titleMatch[2] || "").replace(/<[^>]+>/g, '').trim() : "Untitled";
+        const cleanTitle = titleRaw.startsWith(code) ? titleRaw.replace(code, '').trim() : titleRaw;
+        
+        info.filmography.push({
+          code,
+          title: cleanTitle,
+          poster: posterMatch ? (posterMatch[1].startsWith("http") ? posterMatch[1] : `${base}${posterMatch[1]}`) : "",
+          year: metaMatch ? metaMatch[1].split("-")[0].trim() : "N/A",
+          rating: ratingMatch ? (ratingMatch[1] || ratingMatch[2]) : "N/A",
+          // JAVDB Preview Logic: Usually cover images are high-res versions of thumbs
+          previewImage: posterMatch ? (posterMatch[1].replace("/thumbs/", "/covers/").replace("/t_", "/")) : "", 
+          link: `https://javdb.com/v/${vidMatch[1]}`
+        });
       }
-    }
+    });
 
-    // 3. Gallery (Preview images)
-    const gallery: string[] = [];
+    // 3. Gallery Extraction
     const galleryMatches = html.matchAll(/<a href="(.*?)" data-fancybox="gallery">/g);
     for (const match of galleryMatches) {
-      if (match[1] && !gallery.includes(match[1])) {
-        gallery.push(match[1]);
-      }
+       if (match[1] && !info.gallery.includes(match[1])) {
+         info.gallery.push(match[1]);
+       }
     }
 
-    // Fallback Gallery
-    if (gallery.length === 0 && filmography.length > 0) {
-      filmography.slice(0, 10).forEach(m => { if (m.poster) gallery.push(m.poster); });
+    // Fallback Gallery if empty (using filmography posters formatted as covers)
+    if (info.gallery.length === 0) {
+       info.gallery = info.filmography.slice(0, 12).map((f: any) => f.previewImage || f.poster).filter(Boolean);
     }
 
-    return NextResponse.json({
-      id,
-      ...info,
-      gallery,
-      filmography
-    });
-  } catch (error) {
-    console.error("JAVDB Sync Error:", error);
-    return NextResponse.json({ error: "Failed to scrape from any mirror" }, { status: 500 });
+    return NextResponse.json(info);
+
+  } catch (err: any) {
+    console.error("JAVDB Full Sync Error:", err);
+    return NextResponse.json({ 
+       error: "Scraping failed", 
+       fallback: { 
+         stageName: "System Recovery", 
+         realName: "Unknown", 
+         gallery: [], 
+         filmography: [] 
+       } 
+    }, { status: 500 });
   }
 }

@@ -13,6 +13,7 @@ export const metadata = {
 
 import { XXBentoGrid } from "@/components/movie/XXBentoGrid";
 import { XXSearchBar } from "@/components/movie/XXSearchBar";
+import { XXActorGrid } from "@/components/movie/XXActorGrid";
 
 export default async function XXHomePage() {
   const [latestData, javData, uncensoredData, avdbData] = await Promise.all([
@@ -52,6 +53,8 @@ export default async function XXHomePage() {
           movies={javData.items || []} 
           viewAllLink="/v2k9r5w8m3x7n1p4q0z6/the-loai/vQMGvwTw5G"
         />
+
+        <XXActorGrid />
 
         <XXMovieRow 
           title="PHIM KHÔNG CHE HOT" 
