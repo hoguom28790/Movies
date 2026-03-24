@@ -11,6 +11,7 @@ import { getTrendingMovies, getTMDBImageUrl } from "@/services/tmdb";
 import { BentoMovieRow } from "@/components/movie/BentoMovieRow";
 import { RouteErrorToast } from "@/components/movie/RouteErrorToast";
 import { Suspense } from "react";
+import { normalizeMovieTitle } from "@/utils/movieUtils";
 
 export default async function Home() {
   const [latestData, phimBoData, phimLeData, hoatHinhData, trendingData] = await Promise.allSettled([
@@ -56,7 +57,7 @@ export default async function Home() {
             id: m.id.toString(),
             title: m.title || m.name,
             originalTitle: m.original_title || m.original_name || "",
-            slug: m.title || m.name,
+            slug: normalizeMovieTitle(m.title || m.name),
             posterUrl: getTMDBImageUrl(m.poster_path) || "",
             thumbUrl: getTMDBImageUrl(m.backdrop_path) || "",
             year: m.release_date?.split("-")[0] || "2025",
