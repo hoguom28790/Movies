@@ -88,7 +88,7 @@ function parseJavDB(html: string, slug: string, fallbackName: string) {
 
   const realName = getVal(["Real Name", "Name", "本名"]) || stageName;
   const birthDate = getVal(["Birth Date", "Birthday", "生年月日"]);
-  const measurements = getVal("Measurements") || getVal(["スリーサイズ"]);
+  const measurements = getVal(["Measurements"]) || getVal(["スリーサイズ"]);
   const height = getVal(["Height", "身長"]);
   const birthPlace = getVal(["Birthplace", "出身地"]);
 
