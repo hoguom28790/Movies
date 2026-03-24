@@ -98,8 +98,8 @@ export function ActorModal({ isOpen, onClose, actor }: ActorModalProps) {
     } catch (err) {}
   };
 
-  const credits = details?.movie_credits?.cast || [];
-  const movieCredits = credits.filter((m: any) => m.media_type === 'movie' || !m.media_type).sort((a: any, b: any) => (b.popularity || 0) - (a.popularity || 0));
+  const credits = details?.combined_credits?.cast || [];
+  const movieCredits = credits.filter((m: any) => m.media_type === 'movie').sort((a: any, b: any) => (b.popularity || 0) - (a.popularity || 0));
   const tvCredits = credits.filter((m: any) => m.media_type === 'tv').sort((a: any, b: any) => (b.popularity || 0) - (a.popularity || 0));
 
   return (
