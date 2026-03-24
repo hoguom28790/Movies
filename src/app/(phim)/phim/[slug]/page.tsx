@@ -90,7 +90,7 @@ export default async function MovieDetailsPage({ params }: { params: Promise<{ s
     // Try to get TMDB/IMDB IDs from source data first
     let tmdbSearchId = safeData.tmdb?.id || data.tmdb_id;
     let imdbSearchId = safeData.imdb?.id || data.imdb_id || data.imdbId;
-    let mediaType: "movie" | "tv" = safeData.type === "series" ? "tv" : "movie";
+    let mediaType: "movie" | "tv" = (safeData.tmdb?.type === "tv" || ["series", "hoathinh", "tvshows"].includes(safeData.type)) ? "tv" : "movie";
  
     let tmdbData: any = null;
     if (tmdbSearchId) {
@@ -107,15 +107,15 @@ export default async function MovieDetailsPage({ params }: { params: Promise<{ s
       const searchOrigin = cleanName(safeData.origin_name);
  
       try {
-        let tmdbSearch = await searchTMDBMovie(searchName, safeData.year);
+        let tmdbSearch = await searchTMDBMovie(searchName, safeData.year, mediaType);
         if (!tmdbSearch && searchOrigin) {
-          tmdbSearch = await searchTMDBMovie(searchOrigin, safeData.year);
+          tmdbSearch = await searchTMDBMovie(searchOrigin, safeData.year, mediaType);
         }
         if (!tmdbSearch) {
-          tmdbSearch = await searchTMDBMovie(searchName);
+          tmdbSearch = await searchTMDBMovie(searchName, undefined, mediaType);
         }
         if (!tmdbSearch && searchOrigin) {
-          tmdbSearch = await searchTMDBMovie(searchOrigin);
+          tmdbSearch = await searchTMDBMovie(searchOrigin, undefined, mediaType);
         }
         
         if (tmdbSearch) {

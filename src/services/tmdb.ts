@@ -18,17 +18,22 @@ export interface TMDBActor {
   character?: string;
 }
 
-export async function searchTMDBMovie(query: string, year?: number): Promise<{ id: number; media_type: "movie" | "tv"; poster_path?: string; backdrop_path?: string; vote_average?: number } | null> {
+export async function searchTMDBMovie(query: string, year?: number, typeHint?: "movie" | "tv"): Promise<{ id: number; media_type: "movie" | "tv"; poster_path?: string; backdrop_path?: string; vote_average?: number } | null> {
   try {
     const cleanQuery = (q: string) => q.replace(/\(Phần\s+\d+\)/gi, "").replace(/\(Season\s+\d+\)/gi, "").replace(/Part\s+\d+/gi, "").trim();
     const q = cleanQuery(query);
     
     // Multi-strategy search
     const strategies = [
-      // 1. Specific Search (Movie) with Year
+      // Priority 1: If typeHint is TV, try TV search with year first
+      (typeHint === "tv" && year) ? `${BASE_URL}/search/tv?api_key=${TMDB_API_KEY}&query=${encodeURIComponent(q)}&first_air_date_year=${year}&language=vi-VN` : null,
+      
+      // Original 1. Specific Search (Movie) with Year
       year ? `${BASE_URL}/search/movie?api_key=${TMDB_API_KEY}&query=${encodeURIComponent(q)}&year=${year}&language=vi-VN` : null,
-      // 2. Specific Search (TV) with Year
-      year ? `${BASE_URL}/search/tv?api_key=${TMDB_API_KEY}&query=${encodeURIComponent(q)}&first_air_date_year=${year}&language=vi-VN` : null,
+      
+      // Original 2. Specific Search (TV) with Year (if not prioritized above)
+      (typeHint !== "tv" && year) ? `${BASE_URL}/search/tv?api_key=${TMDB_API_KEY}&query=${encodeURIComponent(q)}&first_air_date_year=${year}&language=vi-VN` : null,
+      
       // 3. Multi Search (Catch-all)
       `${BASE_URL}/search/multi?api_key=${TMDB_API_KEY}&query=${encodeURIComponent(q)}&language=vi-VN`,
       // 4. Multi Search without year as fallback
