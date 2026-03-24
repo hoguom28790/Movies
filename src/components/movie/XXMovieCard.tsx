@@ -10,11 +10,12 @@ interface XXMovieCardProps {
   year?: string;
   quality?: string;
   progress?: number;
+  progressText?: string;
   onDelete?: (e: React.MouseEvent) => void;
 }
 
 export function XXMovieCard({ 
-  title, slug, posterUrl, year, quality, progress, onDelete 
+  title, slug, posterUrl, year, quality, progress, progressText, onDelete 
 }: XXMovieCardProps) {
   return (
     <div className="group relative flex flex-col gap-3 transition-all duration-500 hover:z-10">
@@ -51,9 +52,15 @@ export function XXMovieCard({
           <div className="absolute bottom-2 inset-x-3 h-1 z-30 pointer-events-none">
             <div className="w-full h-full bg-black/40 backdrop-blur-md rounded-full overflow-hidden">
                <div 
-                 className="h-full bg-yellow-500 transition-all duration-1000 shadow-[0_0_12px_#fbbf24]" 
+                 className="h-full bg-yellow-500 transition-all duration-1000 shadow-[0_0_12px_#fbbf24] relative" 
                  style={{ width: `${progress}%` }} 
-               />
+               >
+                   {progressText && (
+                      <div className="absolute top-1/2 left-2 -translate-y-1/2 text-[6px] font-black text-black/80 uppercase tracking-widest whitespace-nowrap overflow-hidden">
+                         {progressText}
+                      </div>
+                   )}
+               </div>
             </div>
           </div>
         )}

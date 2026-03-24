@@ -102,9 +102,34 @@ export default async function WatchPage({
 
     return (
       <div className={`min-h-screen pt-14 pb-safe ${isTopXX ? 'bg-[#0f1115] text-white' : 'bg-background'}`}>
-        <div className="container mx-auto px-4 lg:px-8 py-4 flex items-center justify-between">
-           <Link href={`/phim/${slug}`} className="flex items-center gap-2 text-white/40 hover:text-primary"><ArrowLeft className="w-4 h-4" /> Quay lại</Link>
-           <div className="bg-primary/10 text-primary px-4 py-1.5 rounded-xl font-bold uppercase italic border border-primary/20">{source}</div>
+        <div className="container mx-auto px-4 lg:px-8 py-4 flex flex-wrap items-center justify-between gap-4">
+           <Link href={`/phim/${slug}`} className="flex items-center gap-2 text-white/40 hover:text-primary transition-all font-bold uppercase italic text-xs tracking-widest leading-none">
+              <ArrowLeft className="w-4 h-4" /> Quay lại thông tin
+           </Link>
+           
+           <div className="flex items-center gap-4">
+              <div className="relative group">
+                <Button variant="secondary" size="sm" className="h-9 px-4 gap-2 bg-primary/10 text-primary border border-primary/20 hover:bg-primary/20 transition-all font-black text-[11px] uppercase italic rounded-xl">
+                   <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
+                   Nguồn: {source.toUpperCase()}
+                </Button>
+                
+                <div className="absolute right-0 top-full pt-2 opacity-0 translate-y-2 pointer-events-none group-hover:opacity-100 group-hover:translate-y-0 group-hover:pointer-events-auto transition-all duration-300 z-[100] w-48">
+                  <div className="bg-[#0f1115] border border-white/5 rounded-2xl shadow-2xl p-2 overflow-hidden backdrop-blur-3xl">
+                    <p className="px-3 py-2 text-[9px] font-black text-white/20 uppercase tracking-widest italic border-b border-white/5 mb-1 text-center">Chọn nguồn phát</p>
+                    {AVAILABLE_SOURCES
+                      .filter(src => isTopXX ? src.type === "tx" : src.type === "hop")
+                      .map((src) => (
+                        <Link key={src.id} href={`/xem/${src.id}/${slug}/${episode}`} replace scroll={false}>
+                          <button className={`w-full text-left px-4 py-2.5 text-[11px] font-black uppercase italic rounded-xl transition-all mb-1 last:mb-0 ${source === src.id ? "bg-primary text-white shadow-lg shadow-primary/20" : "text-white/40 hover:bg-white/5 hover:text-white"}`}>
+                            {src.name}
+                          </button>
+                        </Link>
+                    ))}
+                  </div>
+                </div>
+              </div>
+           </div>
         </div>
 
         <PlayerContainer 

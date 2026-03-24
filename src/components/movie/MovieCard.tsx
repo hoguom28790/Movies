@@ -16,14 +16,17 @@ interface MovieCardProps {
   subText?: string;
   originalTitle?: string;
   progress?: number;
+  progressText?: string;
+  customHref?: string;
   score?: string | number;
   onDelete?: (e: React.MouseEvent) => void;
   index?: number;
 }
 
 export function MovieCard({ 
-  title, slug, posterUrl, year, quality, episodeText, subText, originalTitle, progress, score, onDelete, index = 0
+  title, slug, posterUrl, year, quality, episodeText, subText, originalTitle, progress, progressText, customHref, score, onDelete, index = 0
 }: MovieCardProps) {
+  const linkHref = customHref || `/phim/${slug}`;
   return (
     <motion.div 
       initial={{ opacity: 0, y: 30, filter: "blur(10px)" }}
@@ -33,7 +36,7 @@ export function MovieCard({
       className="group relative flex flex-col gap-4"
     >
       <Link 
-        href={`/phim/${slug}`} 
+        href={linkHref} 
         className="relative aspect-[2/3] w-full overflow-hidden rounded-[32px] bg-[#141416] transition-all duration-700 hover:shadow-primary/20 hover:shadow-2xl active-depth border border-white/5"
       >
         <Image 
@@ -99,6 +102,11 @@ export function MovieCard({
                className="h-full bg-primary shadow-[0_0_20px_var(--primary)] relative" 
              >
                 <div className="absolute right-0 top-0 h-full w-2 bg-white/40 blur-[2px] animate-pulse" />
+                {progressText && (
+                   <div className="absolute top-1/2 left-4 -translate-y-1/2 text-[7px] font-black text-white/80 uppercase tracking-widest whitespace-nowrap drop-shadow-lg">
+                      {progressText}
+                   </div>
+                )}
              </motion.div>
           </div>
         )}
@@ -117,7 +125,7 @@ export function MovieCard({
       {/* Title & Metadata (Premium Layout) */}
       <div className="flex flex-col gap-1.5 px-2 mt-2">
         <Link 
-          href={`/phim/${slug}`} 
+          href={linkHref}
           className="text-[17px] font-black text-white/90 group-hover:text-primary line-clamp-2 transition-all duration-500 leading-tight uppercase italic tracking-tight font-headline group-hover:translate-x-1" 
           title={title}
         >

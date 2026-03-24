@@ -85,21 +85,31 @@ export function MovieContinueWatching() {
             return (
               <SwiperSlide key={item.movieSlug} className="!w-[200px] sm:!w-[280px]">
                 <div className="group/item relative">
-                   <MovieCard 
-                    title={item.movieTitle}
-                    slug={item.movieSlug}
-                    posterUrl={item.posterUrl}
-                    episodeText={`Episode ${item.episodeName}`}
-                    progress={progressPercent}
-                    onDelete={(e) => handleDelete(item.movieSlug, e)}
-                    index={idx}
-                  />
-                  {/* Subtle Label Enhancement */}
-                  <div className="absolute top-4 left-4 z-50 opacity-0 group-hover/item:opacity-100 transition-opacity duration-500 pointer-events-none">
-                     <div className="px-3 py-1 bg-black/60 backdrop-blur-xl border border-white/10 rounded-lg text-[8px] font-black text-white uppercase tracking-widest italic">
-                        Paused at {progressPercent}%
-                     </div>
-                  </div>
+                   {(() => {
+                      const formatTime = (s: number) => {
+                        const h = Math.floor(s / 3600);
+                        const m = Math.floor((s % 3600) / 60);
+                        return h > 0 ? `${h}h${m}m` : `${m}m`;
+                      };
+                      const pText = item.progressSeconds > 0 ? `Xem đến ${formatTime(item.progressSeconds)}` : "Mới xem";
+                      // Find best fallback source
+                      const watchSource = (item as any).source || 'ophim';
+                      const watchHref = `/xem/${watchSource}/${item.movieSlug}/${encodeURIComponent(item.episodeName || '1')}`;
+
+                      return (
+                        <MovieCard 
+                          title={item.movieTitle}
+                          slug={item.movieSlug}
+                          posterUrl={item.posterUrl}
+                          episodeText={`Tập ${item.episodeName}`}
+                          progress={progressPercent}
+                          progressText={pText}
+                          customHref={watchHref}
+                          onDelete={(e) => handleDelete(item.movieSlug, e)}
+                          index={idx}
+                        />
+                      );
+                   })()}
                 </div>
               </SwiperSlide>
             );

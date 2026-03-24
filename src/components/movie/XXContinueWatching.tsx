@@ -84,13 +84,24 @@ export function XXContinueWatching() {
 
            return (
             <SwiperSlide key={item.movieCode} className="!w-[160px] sm:!w-[200px]">
-              <XXMovieCard 
-                title={item.movieTitle}
-                slug={item.movieCode}
-                posterUrl={item.posterUrl}
-                progress={progressPercent}
-                onDelete={(e) => handleDelete(item.movieCode, e)}
-              />
+              {(() => {
+                const formatTime = (s: number) => {
+                  const h = Math.floor(s / 3600);
+                  const m = Math.floor((s % 3600) / 60);
+                  return h > 0 ? `${h}h${m}m` : `${m}m`;
+                };
+                const pText = item.progressSeconds > 0 ? `${formatTime(item.progressSeconds)}` : "";
+                return (
+                  <XXMovieCard 
+                    title={item.movieTitle}
+                    slug={item.movieCode}
+                    posterUrl={item.posterUrl}
+                    progress={progressPercent}
+                    progressText={pText}
+                    onDelete={(e) => handleDelete(item.movieCode, e)}
+                  />
+                );
+              })()}
             </SwiperSlide>
           );
         })}
