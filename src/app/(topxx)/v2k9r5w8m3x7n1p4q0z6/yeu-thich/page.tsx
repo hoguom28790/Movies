@@ -299,7 +299,7 @@ export default function XXLibraryPage() {
                               e.preventDefault();
                               if (!window.confirm(`Gỡ ${actor.name} khỏi yêu thích?`)) return;
                               const { toggleFavoriteActor } = await import("@/services/db");
-                              await toggleFavoriteActor(user!.uid, actor);
+                              await toggleFavoriteActor(user!.uid, { ...actor, type: 'topxx' });
                               fetchData();
                             }}
                             className="absolute top-3 right-3 w-10 h-10 rounded-2xl bg-black/60 backdrop-blur-xl border border-white/10 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all scale-75 group-hover:scale-100 hover:bg-red-500 hover:border-red-400 shadow-2xl z-20"
@@ -311,7 +311,7 @@ export default function XXLibraryPage() {
                           <h4 className="text-[14px] font-black uppercase tracking-tight text-foreground group-hover:text-primary transition-colors line-clamp-1 italic">
                              {actor.name}
                           </h4>
-                          <p className="text-[10px] font-bold text-foreground/30 uppercase tracking-[0.2em] mt-1 text-yellow-500/50">DIỄN VIÊN</p>
+                          <p className="text-[10px] font-bold text-foreground/30 uppercase tracking-[0.2em] mt-1 text-yellow-500/50">DIỄN VIÊN ELITE</p>
                         </div>
                       </div>
                     ))}

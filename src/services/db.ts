@@ -193,28 +193,33 @@ export interface FavoriteActor {
 }
 
 export async function toggleFavoriteActor(userId: string, actor: FavoriteActor) {
-  // Determine correct collection
-  const collectionName = actor.type === 'topxx' || (typeof actor.id === 'string' && isNaN(Number(actor.id))) 
-    ? "XXfavorite_actors" 
-    : "favorite_actors";
-    
+  // 1. Determine the correct collection based on explicit type or ID structure
+  const isTopXX = actor.type === 'topxx' || (typeof actor.id === 'string' && isNaN(Number(actor.id)));
+  const collectionName = isTopXX ? "XXfavorite_actors" : "favorite_actors";
   const docId = `${userId}_${actor.id}`;
+  
   const docRef = doc(db, collectionName, docId);
   const snap = await getDoc(docRef);
   
   if (snap.exists()) {
+    // REMOVE logic
     await deleteDoc(docRef);
+    // Mandatory cleanup of ghost entries in the opposite collection
+    const otherCollection = isTopXX ? "favorite_actors" : "XXfavorite_actors";
+    await deleteDoc(doc(db, otherCollection, docId));
     return false;
   } else {
-    // Also delete from opposite collection if it exists (Cleanup)
-    const oppositeCollection = collectionName === "XXfavorite_actors" ? "favorite_actors" : "XXfavorite_actors";
-    await deleteDoc(doc(db, oppositeCollection, docId));
+    // ADD logic
+    // If it's a TopXX actor, ensure we remove it from the old 'movie' collection if it exists there (Migration)
+    if (isTopXX) {
+      await deleteDoc(doc(db, "favorite_actors", docId));
+    }
 
     await setDoc(docRef, {
       ...actor,
       userId,
       addedAt: Date.now(),
-      type: actor.type || (collectionName === "XXfavorite_actors" ? 'topxx' : 'movie')
+      type: actor.type || (isTopXX ? 'topxx' : 'movie')
     });
     return true; 
   }
@@ -222,26 +227,33 @@ export async function toggleFavoriteActor(userId: string, actor: FavoriteActor) 
 
 export async function getUserFavoriteActors(userId: string, type: 'movie' | 'topxx' = 'movie') {
   if (type === 'topxx') {
-    // 1. Fetch from specific collection
-    const snap = await getDocs(query(collection(db, "XXfavorite_actors"), where("userId", "==", userId)));
-    const items = snap.docs.map(d => ({ ...d.data(), id: d.id.split('_').pop() || d.id }) as FavoriteActor & { addedAt: number });
+    // TopXX Strategy: Fetch from new collection + filter legacy from old collection
+    const [newSnap, oldSnap] = await Promise.all([
+      getDocs(query(collection(db, "XXfavorite_actors"), where("userId", "==", userId))),
+      getDocs(query(collection(db, "favorite_actors"), where("userId", "==", userId)))
+    ]);
 
-    // 2. Fallback to main collection for legacy entries (ID is string)
-    const oldSnap = await getDocs(query(collection(db, "favorite_actors"), where("userId", "==", userId)));
-    const oldTopXX = oldSnap.docs.map(d => ({ ...d.data(), id: d.id.split('_').pop() || d.id }) as FavoriteActor & { addedAt: number })
-                      .filter(a => a.type === 'topxx' || (typeof a.id === 'string' && isNaN(Number(a.id))));
+    const newItems = newSnap.docs.map(d => ({ ...d.data(), id: d.id.split('_').pop() || d.id }) as FavoriteActor & { addedAt: number });
+    const legacyItems = oldSnap.docs.map(d => ({ ...d.data(), id: d.id.split('_').pop() || d.id }) as FavoriteActor & { addedAt: number })
+                        .filter(a => a.type === 'topxx' || (typeof a.id === 'string' && isNaN(Number(a.id))));
 
-    const merged = [...items];
-    oldTopXX.forEach(oa => { if (!merged.some(ma => ma.id === oa.id)) merged.push(oa); });
+    const merged = [...newItems];
+    legacyItems.forEach(item => {
+      if (!merged.some(m => m.id === item.id)) merged.push(item);
+    });
     return merged.sort((a, b) => b.addedAt - a.addedAt);
   }
 
-  // Movie logic
+  // Hồ Phim Strategy: Fetch only from 'favorite_actors' and EXCLUDE TopXX legacy stars
   const snap = await getDocs(query(collection(db, "favorite_actors"), where("userId", "==", userId)));
   return snap.docs.map(d => ({ ...d.data(), id: d.id.split('_').pop() || d.id }) as FavoriteActor & { addedAt: number })
             .filter(a => {
-              const isLegacyTopXX = typeof a.id === 'string' && isNaN(Number(a.id));
-              return (a.type === 'movie') || (!a.type && !isLegacyTopXX);
+              // Exclude if explicitly marked topxx
+              if (a.type === 'topxx') return false;
+              // Include if explicitly marked movie
+              if (a.type === 'movie') return true;
+              // Auto-detect legacy: only include if ID is numeric (TMDB)
+              return !isNaN(Number(a.id));
             })
             .sort((a, b) => b.addedAt - a.addedAt);
 }
@@ -250,16 +262,15 @@ export async function isFavoriteActor(userId: string, actorId: string | number, 
   const collectionName = type === 'topxx' ? "XXfavorite_actors" : "favorite_actors";
   const docId = `${userId}_${actorId}`;
   
+  // 1. Direct check in primary collection
   const snap = await getDoc(doc(db, collectionName, docId));
   if (snap.exists()) return true;
 
-  // Search in opposite as fallback for legacy
+  // 2. Cross-check for TopXX legacy data
   if (type === 'topxx') {
-     const isStringId = typeof actorId === 'string' && isNaN(Number(actorId));
-     if (isStringId) {
-       const oldSnap = await getDoc(doc(db, "favorite_actors", docId));
-       return oldSnap.exists();
-     }
+     const oldSnap = await getDoc(doc(db, "favorite_actors", docId));
+     return oldSnap.exists();
   }
+  
   return false;
 }

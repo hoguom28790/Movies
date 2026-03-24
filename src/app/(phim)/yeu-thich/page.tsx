@@ -14,9 +14,10 @@ import dynamic from "next/dynamic";
 const XXActorModal = dynamic(() => import("@/components/movie/XXActorModal").then(mod => mod.XXActorModal), { ssr: false });
 
 interface FavoriteActor {
-  id: number;
+  id: number | string;
   name: string;
   profilePath: string | null;
+  type?: 'movie' | 'topxx';
 }
 
 // Separate movie library page in Hồ Phim
@@ -351,7 +352,7 @@ export default function MovieLibraryPage() {
                              e.stopPropagation();
                              if (!window.confirm(`Gỡ ${actor.name} khỏi yêu thích?`)) return;
                              const { toggleFavoriteActor } = await import("@/services/db");
-                             await toggleFavoriteActor(user!.uid, actor);
+                             await toggleFavoriteActor(user!.uid, { ...actor, type: 'movie' });
                              loadData();
                            }}
                            className="absolute top-4 right-4 w-11 h-11 rounded-2xl bg-black/40 backdrop-blur-2xl border border-white/10 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all scale-75 group-hover:scale-100 hover:bg-red-500 hover:border-red-400 shadow-2xl z-30"
@@ -363,7 +364,7 @@ export default function MovieLibraryPage() {
                          <h4 className="text-[15px] font-black uppercase tracking-tight text-foreground group-hover:text-primary transition-colors line-clamp-1 italic cursor-pointer">
                             {actor.name}
                          </h4>
-                         <p className="text-[9px] font-bold text-foreground/20 uppercase tracking-[0.25em] mt-1 italic">DIỄN VIÊN ELITE</p>
+                         <p className="text-[9px] font-bold text-foreground/20 uppercase tracking-[0.25em] mt-1 italic">DIỄN VIÊN</p>
                       </div>
                    </div>
                  ))}
