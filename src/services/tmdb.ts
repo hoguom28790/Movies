@@ -18,7 +18,7 @@ export interface TMDBActor {
   character?: string;
 }
 
-export async function searchTMDBMovie(query: string, year?: number, typeHint?: "movie" | "tv"): Promise<{ id: number; media_type: "movie" | "tv"; poster_path?: string; backdrop_path?: string; vote_average?: number } | null> {
+export async function searchTMDBMovie(query: string, year?: number, typeHint?: "movie" | "tv"): Promise<{ id: number; media_type: "movie" | "tv"; poster_path?: string; backdrop_path?: string; vote_average?: number; overview?: string } | null> {
   try {
     const cleanQuery = (q: string) => q.replace(/\(Phần\s+\d+\)/gi, "").replace(/\(Season\s+\d+\)/gi, "").replace(/Part\s+\d+/gi, "").trim();
     const q = cleanQuery(query);
@@ -59,7 +59,8 @@ export async function searchTMDBMovie(query: string, year?: number, typeHint?: "
           media_type: bestMatch.media_type || (url!.includes("/movie") ? "movie" : "tv"),
           poster_path: bestMatch.poster_path,
           backdrop_path: bestMatch.backdrop_path,
-          vote_average: bestMatch.vote_average
+          vote_average: bestMatch.vote_average,
+          overview: bestMatch.overview
         };
       }
     }

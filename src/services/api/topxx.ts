@@ -53,7 +53,8 @@ export async function getTopXXMovies(
         year: item.publish_at ? new Date(item.publish_at).getFullYear().toString() : "",
         status: item.quality || "",
         quality: item.quality || "HD",
-        source: 'topxx'
+        source: 'topxx',
+        overview: viTrans?.description || item.description || enTrans?.description || ""
       };
     });
 
@@ -104,7 +105,8 @@ export async function searchTopXXMovies(keyword: string, page: number = 1): Prom
           year: item.publish_at ? new Date(item.publish_at).getFullYear().toString() : "",
           status: item.quality || "",
           quality: item.quality || "HD",
-          source: 'topxx' as const
+          source: 'topxx' as const,
+          overview: viTrans?.description || item.description || enTrans?.description || ""
         };
       });
       items = [...items, ...txItems];

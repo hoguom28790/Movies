@@ -39,6 +39,7 @@ export async function enrichMovies(movies: Movie[]): Promise<Movie[]> {
             imdbRating: tmdbSearch?.vote_average || currentMovie.imdbRating || 0,
             posterUrl: tmdbPoster || currentMovie.posterUrl || "",
             thumbUrl: tmdbBackdrop || tmdbPoster || currentMovie.thumbUrl || "",
+            overview: tmdbSearch?.overview || currentMovie.overview || "",
           };
         }
 

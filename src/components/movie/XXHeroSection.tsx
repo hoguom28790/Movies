@@ -16,7 +16,7 @@ interface Movie {
   posterUrl: string;
   year?: string;
   quality?: string;
-  content?: string;
+  overview?: string;
 }
 
 interface XXHeroSectionProps {
@@ -97,7 +97,7 @@ export function XXHeroSection({ movie }: XXHeroSectionProps) {
               isIPhone ? "text-[14px]" : "text-lg md:text-2xl"
             } text-foreground/50 font-medium italic line-clamp-2 md:line-clamp-3 leading-relaxed max-w-3xl border-l-4 border-primary/20 pl-6`}>
               {movie.originalTitle && <span className="text-primary block mb-3 not-italic font-black text-[12px] uppercase tracking-[0.4em]">{movie.originalTitle}</span>}
-              Khám phá đỉnh cao của nghệ thuật thứ bảy tại TopXX. Một trải nghiệm điện ảnh chân thực, sống động và đầy chiều sâu đang chờ đợi bạn.
+              {movie.overview || "Khám phá đỉnh cao của nghệ thuật thứ bảy tại TopXX. Một trải nghiệm điện ảnh chân thực, sống động và đầy chiều sâu đang chờ đợi bạn."}
             </p>
           </div>
 

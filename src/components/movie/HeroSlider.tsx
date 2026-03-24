@@ -101,8 +101,8 @@ export function HeroSlider({ movies }: HeroSliderProps) {
                </div>
             </div>
 
-            <p className="hidden md:block text-lg text-white/50 max-w-2xl font-medium leading-relaxed italic line-clamp-2">
-              Trải nghiệm độ phân giải 4K HDR cùng hệ thống âm thanh vòm Dolby Atmos 2026. Một tác phẩm điện ảnh đỉnh cao được tinh chỉnh riêng cho cộng đồng Hồ Phim.
+            <p className="hidden md:block text-lg text-white/50 max-w-2xl font-medium leading-relaxed italic line-clamp-3">
+              {currentMovie.overview || "Trải nghiệm độ phân giải 4K HDR cùng hệ thống âm thanh vòm Dolby Atmos 2026. Một tác phẩm điện ảnh đỉnh cao được tinh chỉnh riêng cho cộng đồng Hồ Phim."}
             </p>
 
             <div className="flex items-center gap-6 mt-6">
