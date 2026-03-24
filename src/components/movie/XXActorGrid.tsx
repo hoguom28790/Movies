@@ -6,7 +6,7 @@ import { motion } from "framer-motion";
 import { Star, Play, Search, TrendingUp, Sparkles, User, ChevronRight } from "lucide-react";
 import dynamic from "next/dynamic";
 
-const ActorModal = dynamic(() => import("./ActorModal").then(mod => mod.ActorModal), {
+const XXActorModal = dynamic(() => import("./XXActorModal").then(mod => mod.XXActorModal), {
   ssr: false
 });
 
@@ -119,11 +119,10 @@ export function XXActorGrid() {
         ))}
       </div>
 
-      <ActorModal 
+      <XXActorModal 
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         actor={selectedActor}
-        isTopXX={true}
       />
     </section>
   );
