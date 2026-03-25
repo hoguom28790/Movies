@@ -46,9 +46,14 @@ export async function isInWatchlist(userId: string, movieSlug: string): Promise<
 export async function saveHistory(userId: string, entry: Omit<HistoryEntry, 'userId' | 'updatedAt'>) {
   const docId = `${userId}_${entry.movieSlug}`;
   const docRef = doc(db, "history", docId);
+  const progress = entry.durationSeconds && entry.durationSeconds > 0 
+    ? Math.round((entry.progressSeconds / entry.durationSeconds) * 100) 
+    : 0;
+
   await setDoc(docRef, {
     ...entry,
     userId,
+    progress,
     updatedAt: Date.now()
   }, { merge: true });
 }

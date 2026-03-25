@@ -123,7 +123,8 @@ export function PlayerContainer({ url, isHls, rawEmbedUrl, nextEpisodeUrl, movie
         episodeName: episodeName || "",
         episodeSlug: episodeSlug || "",
         posterUrl: absolutePoster,
-        progressSeconds: 0 
+        progressSeconds: 0,
+        progress: 0
       }).catch(() => {});
     })();
   }, [user, movieSlug, episodeSlug, episodeName, posterUrl]);
@@ -238,7 +239,8 @@ export function PlayerContainer({ url, isHls, rawEmbedUrl, nextEpisodeUrl, movie
             episodeSlug: episodeSlug || "",
             posterUrl: absolutePoster,
             progressSeconds: time,
-            durationSeconds: duration
+            durationSeconds: duration,
+            progress: Math.round(percent)
           }).catch(console.error);
         }
 

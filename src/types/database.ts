@@ -25,6 +25,7 @@ export interface HistoryEntry {
   posterUrl: string;
   progressSeconds: number;
   durationSeconds?: number;
+  progress: number;
   updatedAt: number;
 }
 
