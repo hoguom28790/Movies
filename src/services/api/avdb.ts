@@ -1,4 +1,4 @@
-const BASE_URL = "https://avdbapi.com/api.php/provide/vod/at/json?ac=detail";
+const BASE_URL = "https://avdbapi.com/api.php/provide/vod?ac=detail&at=json";
 
 export interface AVDBMovie {
   id: number;
@@ -45,14 +45,32 @@ async function fetchWithTimeout(url: string, options: RequestInit = {}, timeout 
   }
 }
 
+// Helper for retry logic
+async function fetchWithRetry(url: string, options: RequestInit = {}, timeout = 10000, retries = 2, delay = 800) {
+  let lastError: Error | null = null;
+  for (let i = 0; i < retries + 1; i++) {
+    try {
+      if (i > 0) {
+        console.log(`[AVDB Search] Retrying (${i}/${retries}) for: ${url}`);
+        await new Promise(resolve => setTimeout(resolve, delay));
+      }
+      return await fetchWithTimeout(url, options, timeout);
+    } catch (err: any) {
+      lastError = err;
+      console.error(`[AVDB Search] Attempt ${i + 1} failed:`, err.message);
+    }
+  }
+  throw lastError || new Error("All fetch attempts failed");
+}
+
 export async function getAVDBMovies(page = 1, typeId?: number, keyword?: string, actor?: string) {
   let url = `${BASE_URL}&pg=${page}`;
   if (typeId) url += `&t=${typeId}`;
   if (keyword) url += `&wd=${encodeURIComponent(keyword)}`;
-  if (actor) url += `&actor=${encodeURIComponent(actor)}`;
+  if (actor) url += `&vod_actor=${encodeURIComponent(actor)}`; // Help says vod_actor
 
   try {
-    const res = await fetchWithTimeout(url, { next: { revalidate: 3600 } }, 10000);
+    const res = await fetchWithRetry(url, { next: { revalidate: 3600 } }, 10000, 2, 800);
     if (!res.ok) return { items: [], pagination: { totalItems: 0, totalPages: 1, currentPage: 1 } };
     
     let data: any;
