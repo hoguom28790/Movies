@@ -104,7 +104,7 @@ export function MovieTabs({
                 <Link key={part.id} href={`/search?q=${encodeURIComponent(part.title)}`} className="group flex flex-col gap-2">
                   <div className="relative aspect-[2/3] rounded-xl overflow-hidden bg-foreground/5 group-hover:-translate-y-1 transition-transform">
                     <img
-                      src={part.poster_path ? `https://image.tmdb.org/t/p/w342${part.poster_path}` : "/placeholder-poster.png"}
+                      src={part.poster_path ? `https://image.tmdb.org/t/p/w342${part.poster_path}` : "https://placehold.co/600x900/111111/4ade80?text=No+Poster"}
                       alt={part.title}
                       className="w-full h-full object-cover"
                     />
@@ -127,7 +127,7 @@ export function MovieTabs({
                 <Link key={m.id} href={`/search?q=${encodeURIComponent(m.title || m.name)}`} className="group flex flex-col gap-2">
                   <div className="relative aspect-[2/3] rounded-xl overflow-hidden bg-foreground/5 group-hover:-translate-y-1 transition-transform">
                     <img
-                      src={m.poster_path ? `https://image.tmdb.org/t/p/w342${m.poster_path}` : "/placeholder-poster.png"}
+                      src={m.poster_path ? `https://image.tmdb.org/t/p/w342${m.poster_path}` : "https://placehold.co/600x900/111111/4ade80?text=No+Poster"}
                       alt={m.title || m.name}
                       className="w-full h-full object-cover"
                     />

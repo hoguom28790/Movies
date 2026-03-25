@@ -27,7 +27,7 @@ export function XXMovieCard({
       >
         <div className="relative w-full h-full">
           <Image 
-            src={imgError || !posterUrl ? "/placeholder-poster.png" : posterUrl} 
+            src={posterUrl ? posterUrl : "https://placehold.co/600x900/111111/4ade80?text=No+Poster"}
             alt={title} 
             fill
             sizes="(max-width: 640px) 50vw, (max-width: 1024px) 25vw, 15vw"

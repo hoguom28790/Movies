@@ -27,7 +27,7 @@ export function MovieCard({
   title, slug, posterUrl, year, quality, episodeText, subText, originalTitle, progress, progressText, customHref, score, onDelete, index = 0
 }: MovieCardProps) {
   const [imgError, setImgError] = React.useState(false);
-  const linkHref = customHref || `/phim/${slug}`;
+  const linkHref = customHref || (slug.startsWith('/') ? slug : `/phim/${slug}`);
   return (
     <motion.div 
       initial={{ opacity: 0, y: 30, filter: "blur(10px)" }}
@@ -42,7 +42,7 @@ export function MovieCard({
       >
         <div className="relative w-full h-full">
           <Image 
-            src={imgError || !posterUrl ? "/placeholder-poster.png" : posterUrl} 
+            src={imgError || !posterUrl ? "https://placehold.co/600x900/111111/4ade80?text=No+Poster" : posterUrl} 
             alt={title} 
             fill
             sizes="(max-width: 640px) 50vw, (max-width: 1024px) 25vw, 15vw"

@@ -57,7 +57,7 @@ export function BentoMovieRow({ title, movies, viewAllHref }: BentoMovieRowProps
           className="flex-shrink-0 w-80 md:w-[420px] snap-start"
         >
           <Link 
-            href={`/phim/${featured.slug}`}
+            href={featured.slug.startsWith('/') ? featured.slug : `/phim/${featured.slug}`}
             className="relative group rounded-[48px] overflow-hidden aspect-[3/4] bg-[#0a0a0b] shadow-cinematic-2xl block border border-white/10 transition-all duration-1000 hover:shadow-primary/30 active-depth"
           >
             <Image 
@@ -109,7 +109,7 @@ export function BentoMovieRow({ title, movies, viewAllHref }: BentoMovieRowProps
             className="flex-shrink-0 w-52 md:w-64 snap-start"
           >
             <Link 
-              href={`/phim/${movie.slug}`}
+              href={movie.slug.startsWith('/') ? movie.slug : `/phim/${movie.slug}`}
               className="relative group rounded-[40px] overflow-hidden aspect-[2/3] bg-[#0a0a0b] block border border-white/5 shadow-cinematic-xl hover:border-primary/40 transition-all duration-700 hover:shadow-primary/30 active-depth"
             >
               <Image 

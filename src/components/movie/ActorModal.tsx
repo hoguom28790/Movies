@@ -33,7 +33,7 @@ export function ActorModal({ isOpen, onClose, actor }: ActorModalProps) {
   const isExternalImage = effectiveProfilePath?.startsWith('http');
   const profileImageUrl = isExternalImage 
     ? effectiveProfilePath 
-    : (getTMDBImageUrl(effectiveProfilePath, 'w500') || "/placeholder-actor.png");
+    : (getTMDBImageUrl(effectiveProfilePath, 'w500') || "https://placehold.co/600x600/111111/4ade80?text=No+Actor");
 
   const { data: details, isLoading } = useQuery({
     queryKey: ["actor-details", actor?.id],
@@ -151,7 +151,7 @@ export function ActorModal({ isOpen, onClose, actor }: ActorModalProps) {
                                     {movieCredits.slice(0, 50).map((m: any, idx: number) => (
                                        <motion.button key={idx} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} onClick={() => handleMovieClick(m.title, (m.release_date || "")?.split("-")[0])} className="group flex flex-col gap-4 text-left active-depth">
                                           <div className="relative aspect-[2/3] rounded-[24px] overflow-hidden bg-white/5 border border-white/5 shadow-xl transition-all group-hover:shadow-primary/10">
-                                             <img src={getTMDBImageUrl(m.poster_path, 'w342') || "/placeholder-poster.png"} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
+                                             <img src={getTMDBImageUrl(m.poster_path, 'w342') || "https://placehold.co/600x900/111111/4ade80?text=No+Poster"} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
                                              <div className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity"><Play className="w-12 h-12 text-primary fill-current" /></div>
                                           </div>
                                           <div className="px-1 text-center sm:text-left">
@@ -167,7 +167,7 @@ export function ActorModal({ isOpen, onClose, actor }: ActorModalProps) {
                                     {tvCredits.slice(0, 50).map((m: any, idx: number) => (
                                        <motion.button key={idx} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} onClick={() => handleMovieClick(m.name, (m.first_air_date || "")?.split("-")[0])} className="group flex flex-col gap-4 text-left active-depth">
                                           <div className="relative aspect-[2/3] rounded-[24px] overflow-hidden bg-white/5 border border-white/5 shadow-xl transition-all group-hover:shadow-primary/10">
-                                             <img src={getTMDBImageUrl(m.poster_path, 'w342') || "/placeholder-poster.png"} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
+                                             <img src={getTMDBImageUrl(m.poster_path, 'w342') || "https://placehold.co/600x900/111111/4ade80?text=No+Poster"} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
                                              <div className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity"><Play className="w-12 h-12 text-primary fill-current" /></div>
                                           </div>
                                           <div className="px-1 text-center sm:text-left">
