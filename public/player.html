@@ -289,12 +289,25 @@
 
     let player, hls, osdTimer, rippleTimer, previewHls, isPreviewReady = false, previewThrottle, pendingSeek = null;
 
+    let seekRetryCount = 0;
     function applyPendingSeek() {
        if (pendingSeek !== null && video.readyState >= 1) {
-          console.log("Applying pending seek:", pendingSeek, "RS:", video.readyState);
-          video.currentTime = pendingSeek;
+          const targetTime = pendingSeek;
+          console.log("Attempting seek to:", targetTime, "RS:", video.readyState);
+          video.currentTime = targetTime;
           showOSD("Đang quay lại đoạn cũ...", "🎬");
-          pendingSeek = null;
+          
+          // Verify seek after a short delay
+          setTimeout(() => {
+            if (Math.abs(video.currentTime - targetTime) > 2 && seekRetryCount < 3) {
+              console.log("Seek failed/reset, retrying...", video.currentTime, "->", targetTime);
+              video.currentTime = targetTime;
+              seekRetryCount++;
+            } else {
+              pendingSeek = null;
+              seekRetryCount = 0;
+            }
+          }, 500);
        }
     }
 
