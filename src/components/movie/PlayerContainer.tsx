@@ -315,6 +315,14 @@ export function PlayerContainer({ url, isHls, rawEmbedUrl, nextEpisodeUrl, movie
 
   // --- Skip Logic & Auto-skip ---
   useEffect(() => {
+    if (!playerReady || !skipTimes || skipTimes.length === 0) return;
+    const iframeRef = document.getElementById('main-player') as HTMLIFrameElement;
+    if (iframeRef && iframeRef.contentWindow) {
+      iframeRef.contentWindow.postMessage({ type: 'SKIP_TIMES', times: skipTimes }, '*');
+    }
+  }, [playerReady, skipTimes]);
+
+  useEffect(() => {
     if (!skipTimes || skipTimes.length === 0) return;
     
     const currentSkip = skipTimes.find(s => currentTime >= s.startTime && currentTime <= s.endTime);
@@ -386,8 +394,8 @@ export function PlayerContainer({ url, isHls, rawEmbedUrl, nextEpisodeUrl, movie
   const isDirectVideo = url.includes('.m3u8') || url.includes('.mp4') || url.includes('.mkv') || url.includes('.ts') || url.includes('m3u8') || url.includes('mp4');
 
   const iframeSrc = isDirectVideo 
-    ? `/player.html?url=${encodeURIComponent(url)}&theme=${stylePreset}&v=1.6`
-    : rawEmbedUrl || `/player.html?url=${encodeURIComponent(url)}&theme=${stylePreset}&v=1.6`;
+    ? `/player.html?url=${encodeURIComponent(url)}&theme=${stylePreset}&v=1.7`
+    : rawEmbedUrl || `/player.html?url=${encodeURIComponent(url)}&theme=${stylePreset}&v=1.7`;
 
   return (
     <div className={isPseudoFS 
