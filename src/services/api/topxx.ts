@@ -81,23 +81,28 @@ export async function searchTopXXMovies(keyword: string, page: number = 1): Prom
   
   try {
     const [topxxRes, avdbTitleRes, avdbActorRes] = await Promise.allSettled([
-      fetch(url, { headers: DEFAULT_HEADERS, signal: AbortSignal.timeout(10000) }).then(r => r.json()),
+      fetch(url, { headers: DEFAULT_HEADERS, signal: AbortSignal.timeout(10000) })
+        .then(async r => {
+          if (!r.ok) return null;
+          try { return await r.json(); } catch(e) { return null; }
+        }),
       getAVDBMovies(page, undefined, keyword),
-      getAVDBMovies(page, undefined, undefined, keyword) // Search by actor too
+      getAVDBMovies(page, undefined, undefined, keyword)
     ]);
 
     let items: Movie[] = [];
     let totalItems = 0;
-    let totalPages = 0;
+    let totalPages = 1;
 
     // 1. Process TopXX results
     if (topxxRes.status === "fulfilled" && topxxRes.value?.status === "success" && Array.isArray(topxxRes.value.data)) {
       const txItems = topxxRes.value.data.map((item: any) => {
-        const viTrans = item.trans?.find((t: any) => t.locale === "vi") || item.trans?.[0];
-        const enTrans = item.trans?.find((t: any) => t.locale === "en") || {};
+        if (!item || !item.code) return null;
+        const viTrans = Array.isArray(item.trans) ? (item.trans.find((t: any) => t.locale === "vi") || item.trans[0]) : null;
+        const enTrans = Array.isArray(item.trans) ? (item.trans.find((t: any) => t.locale === "en") || {}) : {};
         return {
           id: item.code,
-          title: viTrans?.title || "No Title",
+          title: viTrans?.title || item.title || "No Title",
           originalTitle: enTrans?.title || "",
           slug: item.code,
           posterUrl: item.thumbnail || "",
@@ -108,24 +113,25 @@ export async function searchTopXXMovies(keyword: string, page: number = 1): Prom
           source: 'topxx' as const,
           overview: viTrans?.description || item.description || enTrans?.description || ""
         };
-      });
+      }).filter(Boolean) as Movie[];
+      
       items = [...items, ...txItems];
       totalItems += topxxRes.value.meta?.total || txItems.length;
       totalPages = Math.max(totalPages, topxxRes.value.meta?.last_page || 1);
     }
 
     // 2. Process AVDB title results
-    if (avdbTitleRes.status === "fulfilled") {
+    if (avdbTitleRes.status === "fulfilled" && avdbTitleRes.value?.items) {
         items = [...items, ...avdbTitleRes.value.items];
-        totalItems += avdbTitleRes.value.pagination.totalItems;
-        totalPages = Math.max(totalPages, avdbTitleRes.value.pagination.totalPages);
+        totalItems += avdbTitleRes.value.pagination.totalItems || 0;
+        totalPages = Math.max(totalPages, avdbTitleRes.value.pagination.totalPages || 1);
     }
 
     // 3. Process AVDB actor results
-    if (avdbActorRes.status === "fulfilled") {
+    if (avdbActorRes.status === "fulfilled" && avdbActorRes.value?.items) {
         items = [...items, ...avdbActorRes.value.items];
-        totalItems += avdbActorRes.value.pagination.totalItems;
-        totalPages = Math.max(totalPages, avdbActorRes.value.pagination.totalPages);
+        totalItems += avdbActorRes.value.pagination.totalItems || 0;
+        totalPages = Math.max(totalPages, avdbActorRes.value.pagination.totalPages || 1);
     }
 
     // Dedup results by ID
@@ -139,14 +145,14 @@ export async function searchTopXXMovies(keyword: string, page: number = 1): Prom
     return {
       items,
       pagination: {
-        totalItems: items.length, // approximation as we merged sources
-        totalPages,
+        totalItems: Math.max(items.length, totalItems),
+        totalPages: Math.max(1, totalPages),
         currentPage: page
       }
     };
   } catch (error) {
-    console.error("Search API Error:", error);
-    return { items: [], pagination: { totalItems: 0, totalPages: 0, currentPage: 1 } };
+    console.error("Search API Logic Error:", error);
+    return { items: [], pagination: { totalItems: 0, totalPages: 1, currentPage: 1 } };
   }
 }
 

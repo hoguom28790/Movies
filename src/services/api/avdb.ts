@@ -35,33 +35,45 @@ export async function getAVDBMovies(page = 1, typeId?: number, keyword?: string,
   if (actor) url += `&actor=${encodeURIComponent(actor)}`;
 
   try {
-    const res = await fetch(url, { next: { revalidate: 3600 } });
-    const data: AVDBResponse = await res.json();
+    const res = await fetch(url, { next: { revalidate: 3600 }, signal: AbortSignal.timeout(10000) });
+    if (!res.ok) return { items: [], pagination: { totalItems: 0, totalPages: 1, currentPage: 1 } };
     
-    if (!data.list || !Array.isArray(data.list)) return { items: [], pagination: { totalItems: 0, totalPages: 1, currentPage: 1 } };
+    let data: any;
+    try {
+      data = await res.json();
+    } catch(e) {
+      return { items: [], pagination: { totalItems: 0, totalPages: 1, currentPage: 1 } };
+    }
+    
+    if (!data || !data.list || !Array.isArray(data.list)) {
+      return { items: [], pagination: { totalItems: 0, totalPages: 1, currentPage: 1 } };
+    }
 
     return {
-      items: data.list.map(m => ({
-        id: m.id.toString(),
-        title: m.name,
-        originalTitle: m.movie_code || m.slug,
-        slug: `av-${m.id}`,
-        posterUrl: m.poster_url,
-        thumbUrl: m.thumb_url,
-        year: m.year,
-        quality: m.quality || "HD",
-        actor: Array.isArray(m.actor) ? m.actor.join(", ") : m.actor,
-        source: 'avdb' as const
-      })),
+      items: data.list.map((m: any) => {
+        if (!m) return null;
+        return {
+          id: m.id?.toString() || Math.random().toString(),
+          title: m.name || "No Title",
+          originalTitle: m.movie_code || m.slug || "",
+          slug: `av-${m.id}`,
+          posterUrl: m.poster_url || "",
+          thumbUrl: m.thumb_url || "",
+          year: m.year || "",
+          quality: m.quality || "HD",
+          actor: Array.isArray(m.actor) ? m.actor.join(", ") : (m.actor || ""),
+          source: 'avdb' as const
+        };
+      }).filter(Boolean),
       pagination: {
-        totalItems: data.total,
-        totalPages: data.pagecount,
-        currentPage: data.page,
+        totalItems: data.total || 0,
+        totalPages: data.pagecount || 1,
+        currentPage: data.page || 1,
       }
     };
   } catch (error) {
     console.error("AVDB API Error:", error);
-    return { items: [], pagination: { totalItems: 0, totalPages: 0, currentPage: 1 } };
+    return { items: [], pagination: { totalItems: 0, totalPages: 1, currentPage: 1 } };
   }
 }
 
