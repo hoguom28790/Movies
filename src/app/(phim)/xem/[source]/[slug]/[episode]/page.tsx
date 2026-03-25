@@ -50,13 +50,22 @@ async function fetchMovieData(source: string, slug: string) {
       // TopXX Normalize
       if (source === "topxx" && json.data) {
         const movie = json.data;
+        const resolveLink = (link: string) => {
+          if (link.includes('embed.streamxx.net/player/')) {
+            return link.replace('/player/', '/stream/') + '/main.m3u8';
+          }
+          return link;
+        };
+        
         // Transform TopXX 'sources' into our Server-Episode format
         const episodes = [{
           server_name: "TopXX Premium",
           server_data: movie.sources?.reduce((acc: any, s: any, idx: number) => {
+             const resolved = resolveLink(s.link);
+             const isHls = resolved.includes('.m3u8') || resolved.includes('streamxx');
              acc[idx === 0 ? "Full" : `Server ${idx + 1}`] = {
-               link_m3u8: s.type === 'hls' ? s.link : '',
-               link_embed: s.type === 'embed' ? s.link : ''
+               link_m3u8: isHls ? resolved : '',
+               link_embed: !isHls ? resolved : ''
              };
              return acc;
           }, {}) || {}

@@ -5,6 +5,13 @@ import { Button } from "@/components/ui/Button";
 import { PlayerContainer } from "@/components/movie/PlayerContainer";
 import { getTopXXDetails } from "@/services/api/topxx";
 
+function resolveTopXXLink(link: string) {
+  if (link.includes('embed.streamxx.net/player/')) {
+    return link.replace('/player/', '/stream/') + '/main.m3u8';
+  }
+  return link;
+}
+
 export const dynamic = "force-dynamic";
 
 export default async function XXWatchPage({
@@ -68,9 +75,9 @@ export default async function XXWatchPage({
 
           <div className="px-0 sm:px-4 lg:px-8">
              <PlayerContainer 
-                url={currentSource.link}
-                isHls={currentSource.link.includes('.m3u8')}
-                rawEmbedUrl={!currentSource.link.includes('.m3u8') ? currentSource.link : ""}
+                url={resolveTopXXLink(currentSource.link)}
+                isHls={currentSource.link.includes('.m3u8') || currentSource.link.includes('streamxx')}
+                rawEmbedUrl={!currentSource.link.includes('.m3u8') && !currentSource.link.includes('streamxx') ? currentSource.link : ""}
                 movieTitle={viTrans?.title}
                 movieSlug={slug}
                 posterUrl={item.thumbnail}
