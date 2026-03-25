@@ -5,7 +5,19 @@ import { getOPhimMovies, searchMovies as searchOP } from "./ophim";
 import { normalizeTitle } from "@/lib/normalize";
 export * from "./category";
 
-const OPHIM_MIRRORS = ["https://ophim1.com", "https://ophim18.cc", "https://ophim17.com"];
+const OPHIM_MIRRORS = [
+  "https://ophim1.com", 
+  "https://ophim18.cc", 
+  "https://ophim17.com", 
+  "https://ophim17.cc", // Sometimes alive
+  "https://ophim10.com"
+];
+
+const DEFAULT_HEADERS = {
+  "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+  "Accept": "application/json",
+  "Referer": "https://ophim18.cc/"
+};
 
 export async function searchMovies(keyword: string, page: number = 1, section: "hop" | "tx" = "hop"): Promise<MovieListResponse> {
   console.log(`[API] Searching slug for title: ${keyword} in section: ${section}`);
@@ -18,11 +30,23 @@ export async function searchMovies(keyword: string, page: number = 1, section: "
   // 1. Try search on OPhim Mirrors
   for (const mirror of OPHIM_MIRRORS) {
     try {
-      const res = await searchOP(keyword, page, mirror);
-      if (res.items.length > 0) return res;
-    } catch (e) {
-      console.error(`[API] OPhim Search Mirror Failed (${mirror}):`, e);
-    }
+      const res = await fetch(`${mirror}/v1/api/tim-kiem?keyword=${encodeURIComponent(keyword)}&page=${page}`, {
+        headers: DEFAULT_HEADERS,
+        signal: AbortSignal.timeout(5000),
+        cache: "no-store"
+      });
+      if (!res.ok) continue;
+      const json = await res.json();
+      if (json.status !== "success") continue;
+      
+      const { searchMovies: normalizeSearch } = await import("./ophim");
+      // Use the logic from ophim.ts to normalize the mirror result
+      // But for simplicity, we just check if items exist
+      if (json.data?.items?.length > 0) {
+        // We need to re-map them to our format
+        return normalizeSearch(keyword, page, mirror);
+      }
+    } catch (e) {}
   }
 
   // 2. Try search on KKPhim
@@ -108,30 +132,39 @@ export async function getMovieDetails(slug: string) {
      return null;
   }
 
-  // Try OPhim Mirrors in sequence for detail (not parallel to avoid overloading)
+  // Try OPhim Mirrors in sequence for detail
   for (const mirror of OPHIM_MIRRORS) {
      try {
         const res = await fetch(`${mirror}/v1/api/phim/${slug}`, { 
-          signal: AbortSignal.timeout(5000),
+          headers: DEFAULT_HEADERS,
+          signal: AbortSignal.timeout(10000), // High timeout for details
           cache: "no-store" 
         });
         if (!res.ok) continue;
         const json = await res.json();
-        if (json.data?.item) return { source: "ophim", data: { ...json.data.item, episodes: json.data.episodes } };
-        if (json.movie) return { source: "ophim", data: { ...json.movie, episodes: json.episodes } };
+        const data = json.data?.item || json.movie;
+        if (data) {
+           return { 
+             source: "ophim", 
+             data: { 
+               ...data, 
+               episodes: json.data?.episodes || json.episodes 
+             } 
+           };
+        }
      } catch(e) {
         console.error(`[API] OPhim Detail Mirror Failed (${mirror}):`, e);
      }
   }
 
   const [ng, kk] = await Promise.allSettled([
-    fetch(`https://phim.nguonc.com/api/film/${slug}`).then((r) => r.json()).catch(() => null),
-    fetch(`https://phimapi.com/v1/api/phim/${slug}`).then((r) => r.json()).catch(() => null),
+    fetch(`https://phim.nguonc.com/api/film/${slug}`, { headers: DEFAULT_HEADERS }).then((r) => r.json()).catch(() => null),
+    fetch(`https://phimapi.com/v1/api/phim/${slug}`, { headers: DEFAULT_HEADERS }).then((r) => r.json()).catch(() => null),
   ]);
  
   if (kk.status === "fulfilled" && kk.value) {
-     if (kk.value.data?.item) return { source: "kkphim", data: { ...kk.value.data.item, episodes: kk.value.data.episodes } };
-     if (kk.value.movie) return { source: "kkphim", data: { ...kk.value.movie, episodes: kk.value.episodes } };
+     const data = kk.value.data?.item || kk.value.movie;
+     if (data) return { source: "kkphim", data: { ...data, episodes: kk.value.data?.episodes || kk.value.episodes } };
   }
   
   if (ng.status === "fulfilled" && ng.value?.movie) return { source: "nguonc", data: ng.value.movie };

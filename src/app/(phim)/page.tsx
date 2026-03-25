@@ -25,23 +25,33 @@ async function resolveTrendingMovies(trending: any[]) {
         res = await searchLocal(m.original_title);
       }
       
+      const normalize = (s: string) => s.toLowerCase()
+        .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+        .replace(/[đĐ]/g, "d")
+        .replace(/[^a-z0-9\s]/g, "") // Remove all non-alphanumeric
+        .replace(/\s+/g, " ").trim();
+
+      const normalizedTarget = normalize(title);
+      const normalizedOriginal = normalize(m.original_title || "");
+
       // Try to find a precise match
       let match = res.items.find((item: any) => {
-        const cleanTitle = title.toLowerCase().trim();
-        const cleanOriginal = (m.original_title || "").toLowerCase().trim();
-        const itemTitle = item.title.toLowerCase().trim();
-        const itemOrigin = (item.originalTitle || "").toLowerCase().trim();
+        const itemTitle = normalize(item.title);
+        const itemOrigin = normalize(item.originalTitle || "");
         const itemSlug = item.slug.toLowerCase();
         const yearStr = year || "";
         
-        // Exact title match (Strategy 1)
-        const isExactMatch = itemTitle === cleanTitle || itemOrigin === cleanTitle || itemTitle === cleanOriginal || itemOrigin === cleanOriginal;
+        // Match Strategy 1: Exact matches (normalized)
+        const isExactMatch = itemTitle === normalizedTarget || itemOrigin === normalizedTarget || 
+                           itemTitle === normalizedOriginal || itemOrigin === normalizedOriginal;
         
-        // Partial title match (Strategy 2)
-        const isPartialMatch = itemTitle.startsWith(cleanTitle) || itemTitle.includes(cleanTitle);
+        // Match Strategy 2: Partial matches (important for subtitles)
+        const isPartialMatch = itemTitle.startsWith(normalizedTarget) || normalizedTarget.startsWith(itemTitle);
         
-        // Slug match (Strategy 3)
-        const isSlugMatch = itemSlug === cleanTitle || itemSlug === `${cleanTitle}-${yearStr}`.replace(/\s+/g, '-') || itemSlug.startsWith(`${cleanTitle.replace(/\s+/g, '-')}-`);
+        // Match Strategy 3: Slug matches
+        const cleanSlug = itemSlug.replace(/-/g, " ");
+        const isSlugMatch = itemSlug === title.toLowerCase().replace(/\s+/g, '-') || 
+                           cleanSlug.includes(normalizedTarget);
         
         // Year check with +/- 1 year tolerance
         const itemYear = parseInt(item.year);
@@ -51,19 +61,26 @@ async function resolveTrendingMovies(trending: any[]) {
         return (isExactMatch && isYearMatch) || (isSlugMatch && isYearMatch) || (isPartialMatch && isYearMatch);
       });
 
-      // Special Heuristic: Try to fetch known slugs for short titles like "Cứu"
-      if (!match && title.length < 10) {
-        const candidateSlug = `${title.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[đĐ]/g, "d").replace(/\s+/g, '-')}-${year || '2025'}`;
-        try {
-          // Direct check on mirror
-          const check = await fetch(`https://ophim18.cc/v1/api/phim/${candidateSlug}`, { signal: AbortSignal.timeout(2000) });
-          if (check.ok) {
-            const checkJson = await check.json();
-            if (checkJson.status === "success" || checkJson.data?.item) {
-              match = { slug: candidateSlug, source: 'ophim' } as any;
-            }
+      // Special Heuristic: Try to fetch known slugs if no match found
+      if (!match) {
+        const candidateSlug = `${title.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[đĐ]/g, "d").replace(/[^a-z0-9\s]/g, "").replace(/\s+/g, '-')}-${year || '2025'}`;
+        const candidateSlugNoYear = `${title.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[đĐ]/g, "d").replace(/[^a-z0-9\s]/g, "").replace(/\s+/g, '-')}`;
+        
+        for (const mirror of ["https://ophim1.com", "https://ophim18.cc"]) {
+          for (const s of [candidateSlug, candidateSlugNoYear]) {
+            try {
+              const check = await fetch(`${mirror}/v1/api/phim/${s}`, { signal: AbortSignal.timeout(2000) });
+              if (check.ok) {
+                const json = await check.json();
+                if (json.status === "success" || json.data?.item) {
+                   match = { slug: s, source: 'ophim' } as any;
+                   break;
+                }
+              }
+            } catch (e) {}
           }
-        } catch (e) {}
+          if (match) break;
+        }
       }
 
       return {
