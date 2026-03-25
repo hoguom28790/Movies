@@ -9,6 +9,64 @@ import { MovieContinueWatching } from "@/components/movie/MovieContinueWatching"
 import { CategoryShortcuts } from "@/components/movie/CategoryShortcuts";
 import { getTrendingMovies, getTMDBImageUrl } from "@/services/tmdb";
 import { BentoMovieRow } from "@/components/movie/BentoMovieRow";
+import { searchMovies as searchLocal } from "@/services/api";
+
+async function resolveTrendingMovies(trending: any[]) {
+  return await Promise.all(trending.map(async (m) => {
+    const title = m.title || m.name;
+    const year = m.release_date?.split("-")[0];
+    
+    try {
+      // Parallel search on local providers
+      let res = await searchLocal(title);
+      
+      // Fallback to original title if no results for translated title
+      if (res.items.length === 0 && m.original_title && m.original_title !== title) {
+        res = await searchLocal(m.original_title);
+      }
+      
+      // Try to find a precise match
+      const match = res.items.find((item: any) => {
+        const cleanTitle = title.toLowerCase().trim();
+        const cleanOriginal = (m.original_title || "").toLowerCase().trim();
+        const itemTitle = item.title.toLowerCase().trim();
+        const itemOrigin = (item.originalTitle || "").toLowerCase().trim();
+        
+        const isTitleMatch = itemTitle === cleanTitle || itemOrigin === cleanTitle || itemTitle === cleanOriginal || itemOrigin === cleanOriginal;
+        const isYearMatch = year ? item.year.toString().includes(year) : true;
+        
+        return isTitleMatch && isYearMatch;
+      }) || res.items[0]; // Fallback to first search result if any
+
+      return {
+        id: m.id.toString(),
+        title: title,
+        originalTitle: m.original_title || m.original_name || "",
+        slug: match ? match.slug : `/search?q=${encodeURIComponent(title)}`,
+        posterUrl: getTMDBImageUrl(m.poster_path) || "",
+        thumbUrl: getTMDBImageUrl(m.backdrop_path) || "",
+        year: year || "2025",
+        quality: "HD",
+        source: match?.source || 'ophim',
+        tmdbRating: m.vote_average
+      };
+    } catch (e) {
+      return {
+        id: m.id.toString(),
+        title: title,
+        originalTitle: m.original_title || m.original_name || "",
+        slug: `/search?q=${encodeURIComponent(title)}`,
+        posterUrl: getTMDBImageUrl(m.poster_path) || "",
+        thumbUrl: getTMDBImageUrl(m.backdrop_path) || "",
+        year: year || "2025",
+        quality: "HD",
+        source: 'ophim' as any,
+        tmdbRating: m.vote_average
+      };
+    }
+  }));
+}
+
 export default async function Home() {
   const [latestData, phimBoData, phimLeData, hoatHinhData, trendingData] = await Promise.allSettled([
     getLatestMovies(1),
@@ -49,18 +107,7 @@ export default async function Home() {
       {trending.length > 0 && (
         <BentoMovieRow 
           title="Phim Hot Nhất" 
-          movies={trending.slice(0, 10).map((m: any) => ({
-            id: m.id.toString(),
-            title: m.title || m.name,
-            originalTitle: m.original_title || m.original_name || "",
-            slug: `/search?q=${encodeURIComponent(m.title || m.name)}`,
-            posterUrl: getTMDBImageUrl(m.poster_path) || "",
-            thumbUrl: getTMDBImageUrl(m.backdrop_path) || "",
-            year: m.release_date?.split("-")[0] || "2025",
-            quality: "HD",
-            source: 'ophim',
-            tmdbRating: m.vote_average
-          })) as any} 
+          movies={await resolveTrendingMovies(trending.slice(0, 10))} 
           viewAllHref="/phim-moi"
         />
       )}
