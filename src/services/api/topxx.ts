@@ -161,16 +161,16 @@ export async function searchTopXXMovies(keyword: string, page: number = 1): Prom
     }
 
     if (avdbTitleRes.status === "fulfilled" && avdbTitleRes.value?.items) {
-      avdbTitleRes.value.items.forEach(m => {
-        if (!movieMap.has(m.id)) movieMap.set(m.id, m);
+      avdbTitleRes.value.items.forEach((m: Movie) => {
+        if (m && !movieMap.has(m.id)) movieMap.set(m.id, m);
       });
       totalItems = Math.max(totalItems, avdbTitleRes.value.pagination.totalItems);
       totalPages = Math.max(totalPages, avdbTitleRes.value.pagination.totalPages);
     }
 
     if (avdbActorRes.status === "fulfilled" && avdbActorRes.value?.items) {
-      avdbActorRes.value.items.forEach(m => {
-        if (!movieMap.has(m.id)) movieMap.set(m.id, m);
+      avdbActorRes.value.items.forEach((m: Movie) => {
+        if (m && !movieMap.has(m.id)) movieMap.set(m.id, m);
       });
       totalItems = Math.max(totalItems, avdbActorRes.value.pagination.totalItems);
       totalPages = Math.max(totalPages, avdbActorRes.value.pagination.totalPages);
