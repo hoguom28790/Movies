@@ -1,15 +1,10 @@
-import { XXMovieCard } from "@/components/movie/XXMovieCard";
+import { XXSearchResultsClient } from "@/components/movie/XXSearchResultsClient";
 import { XXSearchBar } from "@/components/movie/XXSearchBar";
-import Link from "next/link";
-import { Search } from "lucide-react";
-import { Movie } from "@/types/movie";
+import { Suspense } from "react";
+import { Loader2 } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
-// TargetLintErrorIds: [TS2304]
-import { searchTopXXMovies } from "@/services/api/topxx";
-
-// TargetLintErrorIds: [TS2304]
 interface XXSearchPageProps {
   searchParams: Promise<{
     q?: string;
@@ -17,131 +12,57 @@ interface XXSearchPageProps {
   }>;
 }
 
-// TargetLintErrorIds: [TS2304]
-interface MovieListResponse {
-  items: Movie[];
-  pagination: {
-    totalItems: number;
-    totalPages: number;
-    currentPage: number;
-  };
-}
+export default async function XXSearchPage({ searchParams }: XXSearchPageProps) {
+  // FIXED TopXX full search by reusing instant search logic + safe Server Component
+  try {
+    const params = await searchParams;
+    const q = params.q || "";
+    const pageStr = params.page || "1";
+    const currentPage = Math.max(1, parseInt(pageStr, 10));
 
-export default async function XXSearchPage({
-  searchParams,
-}: XXSearchPageProps) {
-  // FINAL FIX: [TopXX Search] Next.js 15 searchParams resolution
-  const params = await searchParams;
-  const q = params.q || "";
-  const pageStr = params.page || "1";
-  const currentPage = Math.max(1, parseInt(pageStr, 10));
+    // Server-side logging for initial hit
+    console.log("[TopXX Full Search] Received request for query:", q);
 
-  let results: MovieListResponse = {
-    items: [],
-    pagination: { totalItems: 0, totalPages: 1, currentPage: 1 }
-  };
+    return (
+      <div className="flex flex-col gap-12 max-w-7xl mx-auto px-4 lg:px-12 py-16 mt-16 lg:mt-24 min-h-screen">
+        {/* Search Header */}
+        <div className="flex flex-col gap-10 animate-in fade-in slide-in-from-top-4 duration-1000">
+          <div className="flex flex-col gap-3">
+             <div className="h-1.5 w-20 bg-yellow-500 rounded-full shadow-[0_0_20px_#fbbf24] animate-pulse" />
+             <h1 className="text-5xl md:text-8xl font-black italic uppercase tracking-tighter text-white font-headline drop-shadow-2xl leading-none">
+               KHO Tàng <span className="text-yellow-500 underline decoration-yellow-500/20 underline-offset-8">VIP</span>
+             </h1>
+             <p className="text-white/20 font-black uppercase tracking-[0.8em] text-[10px] italic pr-12">
+               Phòng Lưu Trữ Phim Cao Cấp & Độc Quyền
+             </p>
+          </div>
 
-  if (q) {
-    console.log(`[TopXX Search] Query received: "${q}" (Page: ${currentPage})`);
-    try {
-      const fetchedResults = await searchTopXXMovies(q, currentPage);
-      if (fetchedResults && Array.isArray(fetchedResults.items)) {
-        results = fetchedResults;
-        console.log(`[TopXX Search] Response from API:`, results.items.length, "items");
-      }
-    } catch (err: any) {
-      console.error("[TopXX Search] Error:", err.message);
-      // Fallback UI handled by results state
-    }
-  }
-
-  // Double check items integrity
-  const safeItems = results.items || [];
-  const safeTotalItems = results.pagination?.totalItems || 0;
-  const safeTotalPages = results.pagination?.totalPages || 1;
-
-  return (
-    <div className="flex flex-col gap-12 max-w-7xl mx-auto">
-      {/* Search Header */}
-      <div className="flex flex-col gap-8">
-        <div className="flex flex-col gap-2">
-          <h1 className="text-5xl font-black italic uppercase tracking-tighter text-white font-headline drop-shadow-2xl">
-            TÌM KIẾM <span className="text-yellow-500">TÁC PHẨM</span>
-          </h1>
-          <p className="text-white/40 font-black uppercase tracking-[0.6em] text-[10px] italic">
-            Elite Archive Multi-Source Search
-          </p>
+          <XXSearchBar />
         </div>
 
-        <XXSearchBar />
+        {/* Results Body - Delegated to Client for stability and parity with Instant Search */}
+        <Suspense fallback={
+          <div className="flex flex-col items-center justify-center py-40 gap-6">
+            <Loader2 className="w-16 h-16 text-yellow-500/20 animate-spin" />
+            <p className="text-white/5 text-[10px] font-black uppercase tracking-[0.8em] italic">Initializing Elite Search...</p>
+          </div>
+        }>
+          <XXSearchResultsClient initialQuery={q} initialPage={currentPage} />
+        </Suspense>
       </div>
-
-      {/* Results Section */}
-      <div className="flex flex-col gap-12">
-        {q && (
-          <div className="flex flex-col gap-2 border-l-4 border-yellow-500 pl-6 py-2">
-            <h2 className="text-2xl md:text-3xl font-black text-white uppercase italic tracking-tight">
-              KẾT QUẢ CHO: <span className="text-yellow-500 underline decoration-yellow-500/30 underline-offset-8">"{q}"</span>
-            </h2>
-            <span className="text-[10px] font-black text-white/40 uppercase tracking-[0.5em] italic">
-              TÌM THẤY {results?.pagination?.totalItems || 0} TÁC PHẨM
-            </span>
-          </div>
-        )}
-
-        {safeItems.length > 0 ? (
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-8 md:gap-12">
-            {safeItems.map((item: any, idx: number) => (
-              item && <XXMovieCard key={`${item.id}-${idx}`} {...item} />
-            ))}
-          </div>
-        ) : q ? (
-          <div className="flex flex-col items-center justify-center py-32 bg-white/[0.02] border border-white/5 rounded-[40px] border-dashed space-y-8">
-            <div className="w-24 h-24 rounded-full bg-yellow-500/10 flex items-center justify-center">
-              <Search className="w-10 h-10 text-yellow-500/20" />
-            </div>
-            <div className="text-center space-y-4">
-              <p className="text-white/40 text-sm font-black uppercase tracking-[0.4em] italic text-center px-12">
-                Không tìm thấy tác phẩm nào phù hợp với từ khóa <br />
-                <span className="text-yellow-500/50">"{q}"</span>
-              </p>
-              <Link href="/v2k9r5w8m3x7n1p4q0z6" className="inline-block text-yellow-500 hover:text-white font-black uppercase italic tracking-widest text-[12px] underline underline-offset-8">
-                Quay lại trang chủ
-              </Link>
-            </div>
-          </div>
-        ) : (
-          <div className="flex flex-col items-center justify-center py-32 opacity-20">
-            <Search className="w-20 h-20 mb-6" />
-            <p className="font-black uppercase tracking-[0.5em] text-xs">Nhập từ khóa để bắt đầu tìm kiếm</p>
-          </div>
-        )}
-
-        {/* Pagination */}
-        {safeTotalPages > 1 && (
-          <div className="flex items-center justify-center gap-4 mt-12">
-            {currentPage > 1 && (
-              <Link
-                href={`/v2k9r5w8m3x7n1p4q0z6/search?q=${encodeURIComponent(q)}&page=${currentPage - 1}`}
-                className="h-12 px-6 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-[10px] font-black text-white/40 uppercase tracking-[0.2em] hover:bg-yellow-500 hover:text-black hover:border-yellow-500 transition-all duration-300"
-              >
-                ← TRANG TRƯỚC
-              </Link>
-            )}
-            <div className="h-12 px-8 rounded-full bg-yellow-500 flex items-center justify-center text-[12px] font-black text-black uppercase italic">
-              TRANG {currentPage} / {safeTotalPages}
-            </div>
-            {currentPage < safeTotalPages && (
-              <Link
-                href={`/v2k9r5w8m3x7n1p4q0z6/search?q=${encodeURIComponent(q)}&page=${currentPage + 1}`}
-                className="h-12 px-6 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-[10px] font-black text-white/40 uppercase tracking-[0.2em] hover:bg-yellow-500 hover:text-black hover:border-yellow-500 transition-all duration-300"
-              >
-                TRANG TIẾP →
-              </Link>
-            )}
-          </div>
-        )}
+    );
+  } catch (error: any) {
+    console.error("[TopXX Full Search] Server Component Fatal Error:", error);
+    // Even if server logic above fails, we return a fallback that won't crash the whole route
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center p-12 text-center bg-[#0a0a0a]">
+        <div className="w-24 h-24 rounded-full bg-red-500/10 flex items-center justify-center mb-8 ring-8 ring-red-500/5">
+           <Loader2 className="w-10 h-10 text-red-500" />
+        </div>
+        <h2 className="text-3xl font-black text-white uppercase italic tracking-tighter mb-4">Lỗi Đọc Dữ Liệu</h2>
+        <p className="text-white/30 text-sm font-black uppercase tracking-widest leading-loose">Hệ thống đang được đồng bộ hóa. Vui lòng quay lại trong giây lát.</p>
+        <button onClick={() => window.location.reload()} className="mt-12 px-12 py-5 bg-white text-black font-black uppercase italic tracking-widest rounded-full hover:bg-yellow-500 transition-all shadow-2xl">Làm Mới</button>
       </div>
-    </div>
-  );
+    );
+  }
 }
