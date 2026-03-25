@@ -42,7 +42,7 @@ export function PlayerContainer({ url, isHls, rawEmbedUrl, nextEpisodeUrl, movie
   const [toast, setToast] = useState<React.ReactNode | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const lastProcessedSkip = useRef<number | null>(null);
-  const lastSaveTimeRef = useRef<number>(0);
+  const lastSaveTimeRef = useRef<number>(Date.now());
 
   useEffect(() => {
     if (toast) {
@@ -107,27 +107,12 @@ export function PlayerContainer({ url, isHls, rawEmbedUrl, nextEpisodeUrl, movie
     resolveTrakt();
   }, [user, movieTitle]);
 
-  // Record Initial History Entry on Mount
+  // MOUNT: We no longer save history on mount to avoid overwriting existing progress before resume
+  /*
   useEffect(() => {
-    if (!user || !movieSlug || !episodeSlug) return;
-    
-    (async () => {
-      const { saveHistory } = await import("@/services/db");
-      const absolutePoster = posterUrl?.startsWith('http') 
-        ? posterUrl 
-        : `https://img.ophim1.com/uploads/movies/${posterUrl}`;
-
-      saveHistory(user.uid, {
-        movieSlug,
-        movieTitle: movieTitle || "",
-        episodeName: episodeName || "",
-        episodeSlug: episodeSlug || "",
-        posterUrl: absolutePoster,
-        progressSeconds: 0,
-        progress: 0
-      }).catch(() => {});
-    })();
+    ...
   }, [user, movieSlug, episodeSlug, episodeName, posterUrl]);
+  */
 
   useEffect(() => {
     setIsLoading(true);
@@ -227,8 +212,8 @@ export function PlayerContainer({ url, isHls, rawEmbedUrl, nextEpisodeUrl, movie
           handleTraktScrobble('start', percent);
         }
 
-        // Periodic Local Save (Firestore)
-        if (now - lastSaveTimeRef.current > 15000 && duration > 0) {
+        // Periodic Local Save (Firestore) - Only if not at 0:00
+        if (now - lastSaveTimeRef.current > 15000 && duration > 0 && time > 0) {
           lastSaveTimeRef.current = now;
           const { saveHistory } = await import("@/services/db");
           const absolutePoster = posterUrl?.startsWith('http') 
@@ -394,8 +379,8 @@ export function PlayerContainer({ url, isHls, rawEmbedUrl, nextEpisodeUrl, movie
   const isDirectVideo = url.includes('.m3u8') || url.includes('.mp4') || url.includes('.mkv') || url.includes('.ts') || url.includes('m3u8') || url.includes('mp4');
 
   const iframeSrc = isDirectVideo 
-    ? `/player.html?url=${encodeURIComponent(url)}&theme=${stylePreset}&v=1.7`
-    : rawEmbedUrl || `/player.html?url=${encodeURIComponent(url)}&theme=${stylePreset}&v=1.7`;
+    ? `/player.html?url=${encodeURIComponent(url)}&theme=${stylePreset}&v=1.8`
+    : rawEmbedUrl || `/player.html?url=${encodeURIComponent(url)}&theme=${stylePreset}&v=1.8`;
 
   return (
     <div className={isPseudoFS 
