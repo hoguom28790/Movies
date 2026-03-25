@@ -133,7 +133,7 @@ export function PlayerContainer({ url, isHls, rawEmbedUrl, nextEpisodeUrl, movie
         console.log("HANDSHAKE PONG received. Sending SEEK...");
         clearInterval(pingInterval);
         const { getMovieHistory } = await import("@/services/db");
-        const history = await getMovieHistory(user.uid, movieSlug);
+        const history = await getMovieHistory(user.uid, movieSlug, source);
         
         if (history && history.episodeSlug === episodeSlug && history.progressSeconds) {
           const lastPosition = history.progressSeconds;
@@ -234,6 +234,19 @@ export function PlayerContainer({ url, isHls, rawEmbedUrl, nextEpisodeUrl, movie
           }).then(() => {
             console.log(`[PROGRESS SAVE] slug: ${movieSlug} position: ${Math.round(time)} progress%: ${Math.round(percent)}`);
           }).catch(console.error);
+
+          // Local Backup for TopXX sources
+          if (source === 'topxx' || source === 'avdb') {
+            import("@/services/topxxDb").then(({ saveXXHistory }) => {
+               saveXXHistory({
+                 movieCode: movieSlug,
+                 movieTitle: movieTitle || "",
+                 posterUrl: absolutePoster,
+                 progressSeconds: time,
+                 durationSeconds: duration
+               });
+            }).catch(() => {});
+          }
         }
 
         // Trakt Stop: Triggers at 90% (marked as watched)

@@ -44,14 +44,18 @@ export async function isInWatchlist(userId: string, movieSlug: string): Promise<
 }
 
 export async function saveHistory(userId: string, entry: Omit<HistoryEntry, 'userId' | 'updatedAt'>) {
-  const docId = `${userId}_${entry.movieSlug}`;
-  const docRef = doc(db, "reading_history_phim", docId);
+  const isTopXX = entry.source === 'topxx' || entry.source === 'avdb';
+  const collectionName = isTopXX ? "xx_history" : "reading_history_phim";
+  const docId = isTopXX ? `xx_hist_${userId}_${entry.movieSlug}` : `${userId}_${entry.movieSlug}`;
+  const docRef = doc(db, collectionName, docId);
+  
   const progress = entry.durationSeconds && entry.durationSeconds > 0 
     ? Math.round((entry.progressSeconds / entry.durationSeconds) * 100) 
     : 0;
 
   await setDoc(docRef, {
     ...entry,
+    movieCode: entry.movieSlug, // Compatibility for legacy TopXX components
     userId,
     progress,
     updatedAt: Date.now()
@@ -65,10 +69,24 @@ export async function getUserHistory(userId: string): Promise<HistoryEntry[]> {
   return list.sort((a,b) => b.updatedAt - a.updatedAt);
 }
 
-export async function getMovieHistory(userId: string, movieSlug: string): Promise<HistoryEntry | null> {
-  const docId = `${userId}_${movieSlug}`;
-  const snap = await getDoc(doc(db, "reading_history_phim", docId));
-  return snap.exists() ? (snap.data() as HistoryEntry) : null;
+export async function getMovieHistory(userId: string, movieSlug: string, source?: string): Promise<HistoryEntry | null> {
+  const isTopXX = source === 'topxx' || source === 'avdb';
+  const collectionName = isTopXX ? "xx_history" : "reading_history_phim";
+  const docId = isTopXX ? `xx_hist_${userId}_${movieSlug}` : `${userId}_${movieSlug}`;
+  
+  const snap = await getDoc(doc(db, collectionName, docId));
+  if (snap.exists()) {
+    const data = snap.data();
+    return { ...data, movieSlug: data.movieSlug || data.movieCode } as HistoryEntry;
+  }
+  
+  // If source unknown, fallback to checking reading_history_phim for compatibility
+  if (!source) {
+    const legacySnap = await getDoc(doc(db, "reading_history_phim", `${userId}_${movieSlug}`));
+    if (legacySnap.exists()) return legacySnap.data() as HistoryEntry;
+  }
+
+  return null;
 }
 
 export async function createPlaylist(userId: string, name: string) {
