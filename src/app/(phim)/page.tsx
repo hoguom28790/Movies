@@ -31,12 +31,20 @@ async function resolveTrendingMovies(trending: any[]) {
         const cleanOriginal = (m.original_title || "").toLowerCase().trim();
         const itemTitle = item.title.toLowerCase().trim();
         const itemOrigin = (item.originalTitle || "").toLowerCase().trim();
+        const itemSlug = item.slug.toLowerCase();
+        const yearStr = year || "";
         
+        // 1. Strict exact title match
         const isTitleMatch = itemTitle === cleanTitle || itemOrigin === cleanTitle || itemTitle === cleanOriginal || itemOrigin === cleanOriginal;
-        const isYearMatch = year ? item.year.toString().includes(year) : true;
         
-        return isTitleMatch && isYearMatch;
-      }) || res.items[0]; // Fallback to first search result if any
+        // 2. Strict Year match (if available)
+        const isYearMatch = yearStr ? item.year.toString().includes(yearStr) : true;
+        
+        // 3. Slug similarity (bonus for specialized short titles like "Cứu")
+        const isSlugMatch = itemSlug === cleanTitle || itemSlug.includes(`${cleanTitle}-${yearStr}`);
+        
+        return (isTitleMatch && isYearMatch) || (isSlugMatch && isYearMatch);
+      });
 
       return {
         id: m.id.toString(),
@@ -47,7 +55,7 @@ async function resolveTrendingMovies(trending: any[]) {
         thumbUrl: getTMDBImageUrl(m.backdrop_path) || "",
         year: year || "2025",
         quality: "HD",
-        source: match?.source || 'ophim',
+        source: match?.source || 'ophim' as any,
         tmdbRating: m.vote_average
       };
     } catch (e) {
