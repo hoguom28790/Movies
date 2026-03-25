@@ -16,7 +16,8 @@ import { searchMovies as searchLocal } from "@/services/api";
 const MANUAL_MAPPING: Record<string, string> = {
   "Cách giết để giàu": "gia-tai-cua-ngoai",
   "Trò Chơi Của Quỷ 2": "tro-choi-giet-nguoi-2",
-  "Cứu": "cuu-2026"
+  "Cứu": "cuu",
+  "Sàn Đấu Sinh Tử": "san-dau-sinh-tu"
 };
 
 // Simple server-side cache to speed up re-renders

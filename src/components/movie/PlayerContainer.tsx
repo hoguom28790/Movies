@@ -136,30 +136,42 @@ export function PlayerContainer({ url, isHls, rawEmbedUrl, nextEpisodeUrl, movie
     return () => clearTimeout(timer);
   }, [url]);
 
-  // Sync with Firebase History for Seeking
+  // Sync with Firebase History for Seeking via Handshake
   useEffect(() => {
-    const attemptSeekValue = async () => {
-      if (!user || !movieSlug || !episodeSlug || !playerReady || seekAttempted) return;
-      
-      try {
+    if (!user || !movieSlug || !episodeSlug || !playerReady || seekAttempted) return;
+
+    let pingInterval: NodeJS.Timeout;
+    const handleHandshake = async (event: MessageEvent) => {
+      if (typeof event.data === 'object' && event.data.type === 'HANDSHAKE_PONG') {
+        console.log("HANDSHAKE PONG received. Sending SEEK...");
+        clearInterval(pingInterval);
         const { getMovieHistory } = await import("@/services/db");
         const history = await getMovieHistory(user.uid, movieSlug);
         
         if (history && history.episodeSlug === episodeSlug && history.progressSeconds) {
           const iframeRef = document.getElementById('main-player') as HTMLIFrameElement;
           if (iframeRef && iframeRef.contentWindow) {
-            iframeRef.contentWindow.postMessage({ type: 'SEEK', time: history.progressSeconds }, '*');
-            setSeekAttempted(true);
+             iframeRef.contentWindow.postMessage({ type: 'SEEK', time: history.progressSeconds }, '*');
           }
-        } else {
-          setSeekAttempted(true);
         }
-      } catch (e) {
         setSeekAttempted(true);
       }
     };
 
-    attemptSeekValue();
+    window.addEventListener('message', handleHandshake);
+    
+    pingInterval = setInterval(() => {
+      const iframeRef = document.getElementById('main-player') as HTMLIFrameElement;
+      if (iframeRef && iframeRef.contentWindow) {
+        console.log("Sending HANDSHAKE PING...");
+        iframeRef.contentWindow.postMessage({ type: 'HANDSHAKE_PING' }, '*');
+      }
+    }, 1000);
+
+    return () => {
+      clearInterval(pingInterval);
+      window.removeEventListener('message', handleHandshake);
+    };
   }, [user, movieSlug, episodeSlug, playerReady, seekAttempted]);
 
   useEffect(() => {
@@ -367,8 +379,8 @@ export function PlayerContainer({ url, isHls, rawEmbedUrl, nextEpisodeUrl, movie
   const isDirectVideo = url.includes('.m3u8') || url.includes('.mp4') || url.includes('.mkv') || url.includes('.ts') || url.includes('m3u8') || url.includes('mp4');
 
   const iframeSrc = isDirectVideo 
-    ? `/player.html?url=${encodeURIComponent(url)}&theme=${stylePreset}&v=1.2`
-    : rawEmbedUrl || `/player.html?url=${encodeURIComponent(url)}&theme=${stylePreset}&v=1.2`;
+    ? `/player.html?url=${encodeURIComponent(url)}&theme=${stylePreset}&v=1.3`
+    : rawEmbedUrl || `/player.html?url=${encodeURIComponent(url)}&theme=${stylePreset}&v=1.3`;
 
   return (
     <div className={isPseudoFS 

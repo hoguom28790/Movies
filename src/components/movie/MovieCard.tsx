@@ -86,7 +86,7 @@ export function MovieCard({
                  )}
               </div>
             )}
-            {episodeText && (
+            {episodeText && !episodeText.includes('Tập 0') && !episodeText.includes('Episode 0') && (
                <div className="px-4 py-1.5 bg-primary/90 backdrop-blur-3xl rounded-xl text-[10px] font-black text-white shadow-cinematic-lg uppercase italic tracking-widest border border-primary/20">
                  {episodeText}
                </div>

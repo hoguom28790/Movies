@@ -481,6 +481,10 @@
     }
 
     window.addEventListener('message', (e) => { 
+      if (e.data?.type === 'HANDSHAKE_PING') {
+        window.parent.postMessage({ type: 'HANDSHAKE_PONG' }, '*');
+        return;
+      }
       if (e.data?.type === 'SEEK') { 
         console.log("SEEK Reqd:", e.data.time);
         pendingSeek = e.data.time;
