@@ -1,4 +1,4 @@
-const BASE_URL = "https://avdbapi.com/api.php/provide/vod?ac=detail&at=json";
+const BASE_URL = "https://avdbapi.com/api.php?ac=detail&at=json";
 
 export interface AVDBMovie {
   id: number;

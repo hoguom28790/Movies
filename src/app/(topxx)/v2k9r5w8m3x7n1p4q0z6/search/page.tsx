@@ -45,15 +45,20 @@ export default async function XXSearchPage({
     console.log(`[TopXX Search] Query received: "${q}" (Page: ${currentPage})`);
     try {
       const fetchedResults = await searchTopXXMovies(q, currentPage);
-      if (fetchedResults) {
+      if (fetchedResults && Array.isArray(fetchedResults.items)) {
         results = fetchedResults;
-        console.log(`[TopXX Search] Response from API:`, results.items?.length || 0, "items");
+        console.log(`[TopXX Search] Response from API:`, results.items.length, "items");
       }
     } catch (err: any) {
       console.error("[TopXX Search] Error:", err.message);
       // Fallback UI handled by results state
     }
   }
+
+  // Double check items integrity
+  const safeItems = results.items || [];
+  const safeTotalItems = results.pagination?.totalItems || 0;
+  const safeTotalPages = results.pagination?.totalPages || 1;
 
   return (
     <div className="flex flex-col gap-12 max-w-7xl mx-auto">
@@ -84,9 +89,9 @@ export default async function XXSearchPage({
           </div>
         )}
 
-        {results.items.length > 0 ? (
+        {safeItems.length > 0 ? (
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-8 md:gap-12">
-            {results.items.map((item: any, idx: number) => (
+            {safeItems.map((item: any, idx: number) => (
               item && <XXMovieCard key={`${item.id}-${idx}`} {...item} />
             ))}
           </div>
@@ -113,7 +118,7 @@ export default async function XXSearchPage({
         )}
 
         {/* Pagination */}
-        {results.pagination.totalPages > 1 && (
+        {safeTotalPages > 1 && (
           <div className="flex items-center justify-center gap-4 mt-12">
             {currentPage > 1 && (
               <Link
@@ -124,9 +129,9 @@ export default async function XXSearchPage({
               </Link>
             )}
             <div className="h-12 px-8 rounded-full bg-yellow-500 flex items-center justify-center text-[12px] font-black text-black uppercase italic">
-              TRANG {currentPage} / {results.pagination.totalPages}
+              TRANG {currentPage} / {safeTotalPages}
             </div>
-            {currentPage < (results.pagination.totalPages || 0) && (
+            {currentPage < safeTotalPages && (
               <Link
                 href={`/v2k9r5w8m3x7n1p4q0z6/search?q=${encodeURIComponent(q)}&page=${currentPage + 1}`}
                 className="h-12 px-6 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-[10px] font-black text-white/40 uppercase tracking-[0.2em] hover:bg-yellow-500 hover:text-black hover:border-yellow-500 transition-all duration-300"

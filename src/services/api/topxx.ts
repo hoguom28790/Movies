@@ -25,6 +25,40 @@ async function fetchWithTimeout(url: string, options: RequestInit = {}, timeout 
   }
 }
 
+// Retry wrapper
+async function fetchWithRetry(url: string, options: RequestInit = {}, timeout = 10000, retries = 2, delay = 800) {
+  for (let i = 0; i < retries; i++) {
+    try {
+      const res = await fetchWithTimeout(url, options, timeout);
+      if (res.ok) return res;
+      if (res.status === 404) return res; // Don't retry 404
+      console.warn(`[TopXX] Fetch retry ${i+1}/${retries} for ${url} (Status: ${res.status})`);
+    } catch (err: any) {
+      if (i === retries - 1) throw err;
+      console.warn(`[TopXX] Fetch retry ${i+1}/${retries} for ${url} (Error: ${err.message})`);
+    }
+    await new Promise(resolve => setTimeout(resolve, delay * Math.pow(2, i)));
+  }
+  return fetchWithTimeout(url, options, timeout);
+}
+
+function mapTopXXToMovie(item: any): Movie {
+  const viTrans = Array.isArray(item.trans) ? (item.trans.find((t: any) => t.locale === "vi") || item.trans[0]) : null;
+  const enTrans = Array.isArray(item.trans) ? (item.trans.find((t: any) => t.locale === "en") || {}) : {};
+  
+  return {
+    id: item.code || `tx-${Math.random().toString(36).substr(2, 9)}`,
+    title: viTrans?.title || item.title || "No Title",
+    originalTitle: enTrans?.title || "",
+    slug: item.code || "",
+    posterUrl: item.thumbnail || "",
+    thumbUrl: item.thumbnail || "",
+    year: item.publish_at ? new Date(item.publish_at).getFullYear().toString() : "",
+    quality: item.quality || "HD",
+    source: "topxx"
+  };
+}
+
 export async function getTopXXMovies(
   page: number = 1, 
   type: "danh-sach" | "the-loai" | "quoc-gia" | "dien-vien" = "danh-sach", 
@@ -38,76 +72,30 @@ export async function getTopXXMovies(
     url = `${BASE_URL}/countries/${slug}/movies?page=${page}`;
   } else if (type === "dien-vien") {
     const actorName = slug.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
-    const results = await searchTopXXMovies(actorName, page);
-    if (results.items.length === 0) {
-      return getAVDBMovies(page, undefined, undefined, actorName);
-    }
-    return results;
+    return searchTopXXMovies(actorName, page);
   }
 
   try {
-    const res = await fetchWithTimeout(url, { 
-      next: { revalidate: 3600 },
-      headers: DEFAULT_HEADERS
-    }, 10000);
-    
+    const res = await fetchWithRetry(url, { headers: DEFAULT_HEADERS }, 10000, 2, 800);
     if (!res.ok) return { items: [], pagination: { currentPage: 1, totalPages: 1, totalItems: 0 } };
     const data = await res.json();
-    
     if (data.status !== "success" || !data.data) return { items: [], pagination: { currentPage: 1, totalPages: 1, totalItems: 0 } };
 
-    const items: Movie[] = data.data.map((item: any) => {
-      const viTrans = item.trans?.find((t: any) => t.locale === "vi") || item.trans?.[0];
-      const enTrans = item.trans?.find((t: any) => t.locale === "en") || {};
-      return {
-        id: item.code,
-        title: viTrans?.title || "No Title",
-        originalTitle: enTrans?.title || "",
-        slug: item.code, 
-        posterUrl: item.thumbnail || "",
-        thumbUrl: item.thumbnail || "",
-        year: item.publish_at ? new Date(item.publish_at).getFullYear().toString() : "",
-        status: item.quality || "",
-        quality: item.quality || "HD",
-        source: 'topxx',
-        overview: viTrans?.description || item.description || enTrans?.description || ""
-      };
-    });
-
     return {
-      items,
+      items: data.data.map(mapTopXXToMovie),
       pagination: {
-        currentPage: data.meta?.current_page || 1,
+        currentPage: data.meta?.current_page || page,
         totalPages: data.meta?.last_page || 1,
-        totalItems: data.meta?.total || items.length
+        totalItems: data.meta?.total || 0
       }
     };
-  } catch (error) {
-    console.error("TopXX Fetch Error:", error);
+  } catch (err) {
+    console.error("[TopXX] Fetch Error:", err);
     return { items: [], pagination: { currentPage: 1, totalPages: 1, totalItems: 0 } };
   }
 }
 
-// Helper for retry logic
-async function fetchWithRetry(url: string, options: RequestInit = {}, timeout = 10000, retries = 2, delay = 800) {
-  let lastError: Error | null = null;
-  for (let i = 0; i < retries + 1; i++) {
-    try {
-      if (i > 0) {
-        console.log(`[TopXX Search] Retrying (${i}/${retries}) for: ${url}`);
-        await new Promise(resolve => setTimeout(resolve, delay));
-      }
-      return await fetchWithTimeout(url, options, timeout);
-    } catch (err: any) {
-      lastError = err;
-      console.error(`[TopXX Search] Attempt ${i + 1} failed:`, err.message);
-    }
-  }
-  throw lastError || new Error("All fetch attempts failed");
-}
-
 export async function searchTopXXMovies(keyword: string, page: number = 1): Promise<MovieListResponse> {
-  // FINAL FIX: [TopXX Search] Query normalization
   const normalizedQuery = (keyword || "").trim().toLowerCase();
   
   if (!normalizedQuery) {
@@ -117,117 +105,82 @@ export async function searchTopXXMovies(keyword: string, page: number = 1): Prom
 
   console.log(`[TopXX Search] Query received: "${normalizedQuery}" (Page: ${page})`);
   
-  // FINAL FIX: Strict encoded query for topxx.vip
   const topxxUrl = `${BASE_URL}/movies/search?keyword=${encodeURIComponent(normalizedQuery)}&page=${page}`;
+  const topxxActorUrl = `${BASE_URL}/actors?search=${encodeURIComponent(normalizedQuery)}&page=${page}`;
   
   try {
-    const [topxxRes, avdbTitleRes, avdbActorRes] = await Promise.allSettled([
+    const [topxxRes, topxxActorRes, avdbTitleRes, avdbActorRes] = await Promise.allSettled([
       fetchWithRetry(topxxUrl, { headers: DEFAULT_HEADERS }, 10000, 2, 800)
         .then(async r => {
-          if (!r.ok) {
-            console.error(`[TopXX Search] Error: ${r.status} ${r.statusText}`);
-            return null;
-          }
-          try { 
-            const json = await r.json(); 
-            // FINAL FIX: [TopXX Search] Response logging
-            console.log(`[TopXX Search] Response from API:`, json?.data?.length || 0, "items");
-            return json;
-          } catch(e: any) { 
-            console.error("[TopXX Search] Error:", e.message);
-            return null; 
-          }
+          if (!r.ok) return null;
+          try { return await r.json(); } catch { return null; }
         }),
-      getAVDBMovies(page, undefined, normalizedQuery).catch(err => {
-        console.error("[TopXX Search] Error:", err.message);
-        return { items: [], pagination: { totalItems: 0, totalPages: 1, currentPage: 1 } };
-      }),
-      getAVDBMovies(page, undefined, undefined, normalizedQuery).catch(err => {
-        console.error("[TopXX Search] Error:", err.message);
-        return { items: [], pagination: { totalItems: 0, totalPages: 1, currentPage: 1 } };
-      })
+      fetchWithRetry(topxxActorUrl, { headers: DEFAULT_HEADERS }, 10000, 2, 800)
+        .then(async r => {
+          if (!r.ok) return null;
+          try { return await r.json(); } catch { return null; }
+        }),
+      getAVDBMovies(page, undefined, normalizedQuery).catch(() => ({ items: [], pagination: { totalItems: 0, totalPages: 1, currentPage: 1 } })),
+      getAVDBMovies(page, undefined, undefined, normalizedQuery).catch(() => ({ items: [], pagination: { totalItems: 0, totalPages: 1, currentPage: 1 } }))
     ]);
 
-    let items: Movie[] = [];
-    let totalItemsValue = 0;
-    let totalPagesValue = 1;
+    const movieMap = new Map<string, Movie>();
+    let totalItems = 0;
+    let totalPages = 1;
 
-    // 1. Process TopXX results
-    if (topxxRes.status === "fulfilled" && topxxRes.value && topxxRes.value.status === "success" && Array.isArray(topxxRes.value.data)) {
-      const txItems = topxxRes.value.data.map((item: any) => {
-        if (!item || !item.code) return null;
-        const viTrans = Array.isArray(item.trans) ? (item.trans.find((t: any) => t.locale === "vi") || item.trans[0]) : null;
-        const enTrans = Array.isArray(item.trans) ? (item.trans.find((t: any) => t.locale === "en") || {}) : {};
-        return {
-          id: item.code,
-          title: viTrans?.title || item.title || "No Title",
-          originalTitle: enTrans?.title || "",
-          slug: item.code,
-          posterUrl: item.thumbnail || "",
-          thumbUrl: item.thumbnail || "",
-          year: item.publish_at ? new Date(item.publish_at).getFullYear().toString() : "",
-          status: item.quality || "",
-          quality: item.quality || "HD",
-          source: 'topxx' as const,
-          overview: viTrans?.description || item.description || enTrans?.description || ""
-        };
-      }).filter(Boolean) as Movie[];
-      
-      items = [...items, ...txItems];
-      totalItemsValue += topxxRes.value.meta?.total || txItems.length;
-      totalPagesValue = Math.max(totalPagesValue, topxxRes.value.meta?.last_page || 1);
+    // 1. Process Movie Search Results
+    if (topxxRes.status === "fulfilled" && topxxRes.value?.status === "success" && Array.isArray(topxxRes.value.data)) {
+      topxxRes.value.data.forEach((item: any) => {
+        const m = mapTopXXToMovie(item);
+        movieMap.set(m.id, m);
+      });
+      totalItems = Math.max(totalItems, topxxRes.value.meta?.total || 0);
+      totalPages = Math.max(totalPages, topxxRes.value.meta?.last_page || 1);
     }
 
-    // 2. Process AVDB title results
-    if (avdbTitleRes.status === "fulfilled" && avdbTitleRes.value && Array.isArray(avdbTitleRes.value.items)) {
-        console.log(`[TopXX Search] Response from avdb (title): ${avdbTitleRes.value.items.length} items`);
-        items = [...items, ...avdbTitleRes.value.items];
-        totalItemsValue += avdbTitleRes.value.pagination?.totalItems || 0;
-        totalPagesValue = Math.max(totalPagesValue, avdbTitleRes.value.pagination?.totalPages || 1);
+    // 2. Process Actor Search Results
+    if (topxxActorRes.status === "fulfilled" && topxxActorRes.value?.status === "success" && Array.isArray(topxxActorRes.value.data)) {
+      topxxActorRes.value.data.forEach((actor: any) => {
+        if (Array.isArray(actor.movies)) {
+          actor.movies.forEach((m: any) => {
+            const movie = mapTopXXToMovie(m);
+            movieMap.set(movie.id, movie);
+          });
+        }
+      });
     }
 
-    // 3. Process AVDB actor results
-    if (avdbActorRes.status === "fulfilled" && avdbActorRes.value && Array.isArray(avdbActorRes.value.items)) {
-        console.log(`[TopXX Search] Response from avdb (actor): ${avdbActorRes.value.items.length} items`);
-        items = [...items, ...avdbActorRes.value.items];
-        totalItemsValue += avdbActorRes.value.pagination?.totalItems || 0;
-        totalPagesValue = Math.max(totalPagesValue, avdbActorRes.value.pagination?.totalPages || 1);
+    // 3. Process AVDB results (Title search)
+    if (avdbTitleRes.status === "fulfilled" && avdbTitleRes.value?.items) {
+      avdbTitleRes.value.items.forEach(m => {
+        if (!movieMap.has(m.id)) movieMap.set(m.id, m);
+      });
+      totalItems = Math.max(totalItems, avdbTitleRes.value.pagination.totalItems);
+      totalPages = Math.max(totalPages, avdbTitleRes.value.pagination.totalPages);
     }
 
-    // FINAL FIX: Dedup results by ID with strict null check
-    const seen = new Set();
-    const finalItems = items.filter(item => {
-      if (!item || !item.id) return false;
-      const duplicate = seen.has(item.id);
-      seen.add(item.id);
-      return !duplicate;
-    });
+    // 4. Process AVDB results (Actor search)
+    if (avdbActorRes.status === "fulfilled" && avdbActorRes.value?.items) {
+      avdbActorRes.value.items.forEach(m => {
+        if (!movieMap.has(m.id)) movieMap.set(m.id, m);
+      });
+      totalItems = Math.max(totalItems, avdbActorRes.value.pagination.totalItems);
+      totalPages = Math.max(totalPages, avdbActorRes.value.pagination.totalPages);
+    }
+
+    const finalItems = Array.from(movieMap.values());
+    console.log(`[TopXX Search] Final Aggregated results:`, finalItems.length, "items");
 
     return {
       items: finalItems,
       pagination: {
-        totalItems: Math.max(finalItems.length, totalItemsValue),
-        totalPages: Math.max(1, totalPagesValue),
-        currentPage: page
+        currentPage: page,
+        totalPages: totalPages,
+        totalItems: totalItems || finalItems.length
       }
     };
-  } catch (error) {
-    console.error("[TopXX Search] Fatal Logic Error:", error);
-    return { items: [], pagination: { totalItems: 0, totalPages: 1, currentPage: 1 } };
-  }
-}
-
-export async function getTopXXDetails(code: string) {
-  try {
-    const res = await fetchWithTimeout(`${BASE_URL}/movies/${code}`, { 
-      cache: "no-store",
-      headers: DEFAULT_HEADERS
-    }, 10000);
-    if (!res.ok) return null;
-    const data = await res.json();
-    return data?.data || null;
-  } catch (error) {
-    console.error("[TopXX] Detail Error:", error);
-    return null;
+  } catch (err) {
+    console.error("[TopXX Search] Fatal Error:", err);
+    return { items: [], pagination: { currentPage: 1, totalPages: 1, totalItems: 0 } };
   }
 }
