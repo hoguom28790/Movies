@@ -159,17 +159,29 @@ export async function getMovieDetails(slug: string) {
     // console.log("All OPhim mirrors failed for slug:", slug);
   }
 
-  // 2. Fallback to KKPhim & NguonC
-  const [ng, kk] = await Promise.allSettled([
+  // 2. Fallback to KKPhim, NguonC, Vsmov
+  const [ng, kk, vs] = await Promise.allSettled([
     fetch(`https://phim.nguonc.com/api/film/${slug}`, { headers: DEFAULT_HEADERS, signal: AbortSignal.timeout(4000) }).then((r) => r.json()).catch(() => null),
     fetch(`https://phimapi.com/v1/api/phim/${slug}`, { headers: DEFAULT_HEADERS, signal: AbortSignal.timeout(4000) }).then((r) => r.json()).catch(() => null),
+    fetch(`https://vsmov.com/api/phim/${slug}`, { headers: DEFAULT_HEADERS, signal: AbortSignal.timeout(4000) }).then((r) => r.json()).catch(() => null),
   ]);
  
   if (kk.status === "fulfilled" && kk.value) {
      const movie = kk.value.data?.item || kk.value.movie;
-     if (movie) return { source: "kkphim", data: { ...movie, episodes: kk.value.data?.episodes || kk.value.episodes } };
+     if (movie) {
+       const episodes = kk.value.data?.episodes || kk.value.episodes || movie.episodes || [];
+       return { source: "kkphim", data: { ...movie, episodes } };
+     }
   }
   
+  if (vs.status === "fulfilled" && vs.value) {
+     const movie = vs.value.movie || vs.value.data?.item || vs.value.data;
+     if (movie) {
+       const episodes = vs.value.episodes || vs.value.data?.episodes || movie.episodes || [];
+       return { source: "vsmov", data: { ...movie, episodes } };
+     }
+  }
+
   if (ng.status === "fulfilled" && ng.value?.movie) return { source: "nguonc", data: ng.value.movie };
  
   return null;
