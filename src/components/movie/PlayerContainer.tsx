@@ -134,13 +134,16 @@ export function PlayerContainer({ url, isHls, rawEmbedUrl, nextEpisodeUrl, movie
         clearInterval(pingInterval);
         const { getMovieHistory } = await import("@/services/db");
         const history = await getMovieHistory(user.uid, movieSlug, source);
+        console.log(`[RESUME DEBUG] source: ${source} history_found: ${!!history} history_ep: ${history?.episodeSlug} current_ep: ${episodeSlug}`);
         
-        if (history && history.episodeSlug === episodeSlug && history.progressSeconds) {
+        const isTopXX = source === 'topxx' || source === 'avdb';
+        const isSameEpisode = isTopXX || !episodeSlug || history?.episodeSlug === episodeSlug;
+
+        if (history && isSameEpisode && history.progressSeconds) {
           const lastPosition = history.progressSeconds;
-          console.log("[RESUME] Fetched lastPosition:", lastPosition);
+          console.log("[RESUME] Applying seek to:", lastPosition);
           const iframeRef = document.getElementById('main-player') as HTMLIFrameElement;
           if (iframeRef && iframeRef.contentWindow) {
-             console.log("[RESUME] Seeking to:", lastPosition);
              iframeRef.contentWindow.postMessage({ type: 'SEEK', time: lastPosition }, '*');
           }
         }
@@ -214,7 +217,8 @@ export function PlayerContainer({ url, isHls, rawEmbedUrl, nextEpisodeUrl, movie
         }
 
         // Periodic Local Save (Firestore) - Only if not at 0:00
-        if (now - lastSaveTimeRef.current > 15000 && duration > 0 && time > 0) {
+        const canSave = (now - lastSaveTimeRef.current > 15000) && (time > 0);
+        if (canSave) {
           lastSaveTimeRef.current = now;
           const { saveHistory } = await import("@/services/db");
           const absolutePoster = posterUrl?.startsWith('http') 
