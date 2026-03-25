@@ -75,16 +75,17 @@ export async function saveHistory(userId: string, entry: Omit<HistoryEntry, 'use
 }
 
 export async function getUserHistory(userId: string): Promise<HistoryEntry[]> {
-  const q1 = query(collection(db, "reading_history_phim"), where("userId", "==", userId));
-  const q2 = query(collection(db, "xx_history"), where("userId", "==", userId));
-  
-  const [s1, s2] = await Promise.all([getDocs(q1), getDocs(q2)]);
-  
-  const list1 = s1.docs.map(d => ({ id: d.id, ...d.data() } as HistoryEntry));
-  const list2 = s2.docs.map(d => ({ id: d.id, ...d.data() } as HistoryEntry));
-  
-  const combined = [...list1, ...list2];
-  return combined.sort((a,b) => b.updatedAt - a.updatedAt);
+  const q = query(collection(db, "reading_history_phim"), where("userId", "==", userId));
+  const snap = await getDocs(q);
+  const list = snap.docs.map(d => ({ id: d.id, ...d.data() } as HistoryEntry));
+  return list.sort((a,b) => (b.updatedAt || 0) - (a.updatedAt || 0));
+}
+
+export async function getUserXXHistory(userId: string): Promise<HistoryEntry[]> {
+  const q = query(collection(db, "xx_history"), where("userId", "==", userId));
+  const snap = await getDocs(q);
+  const list = snap.docs.map(d => ({ id: d.id, ...d.data() } as HistoryEntry));
+  return list.sort((a,b) => (b.updatedAt || 0) - (a.updatedAt || 0));
 }
 
 export async function getMovieHistory(userId: string, movieSlug: string, source?: string): Promise<HistoryEntry | null> {
