@@ -111,11 +111,11 @@ export async function searchTopXXMovies(keyword: string, page: number = 1): Prom
   const normalizedQuery = (keyword || "").trim().toLowerCase();
   
   if (!normalizedQuery) {
-    console.log("[TopXX Search] Query: (Empty)");
+    console.log("[TopXX Search] Query received: (Empty)");
     return { items: [], pagination: { currentPage: 1, totalPages: 1, totalItems: 0 } };
   }
 
-  console.log(`[TopXX Search] Query: "${normalizedQuery}" (Page: ${page})`);
+  console.log(`[TopXX Search] Query received: "${normalizedQuery}" (Page: ${page})`);
   
   // FINAL FIX: Strict encoded query for topxx.vip
   const topxxUrl = `${BASE_URL}/movies/search?keyword=${encodeURIComponent(normalizedQuery)}&page=${page}`;
@@ -125,25 +125,25 @@ export async function searchTopXXMovies(keyword: string, page: number = 1): Prom
       fetchWithRetry(topxxUrl, { headers: DEFAULT_HEADERS }, 10000, 2, 800)
         .then(async r => {
           if (!r.ok) {
-            console.error(`[TopXX Search] Error (topxx.vip): ${r.status} ${r.statusText}`);
+            console.error(`[TopXX Search] Error: ${r.status} ${r.statusText}`);
             return null;
           }
           try { 
             const json = await r.json(); 
             // FINAL FIX: [TopXX Search] Response logging
-            console.log(`[TopXX Search] Response from topxx.vip:`, json?.data?.length || 0, "items");
+            console.log(`[TopXX Search] Response from API:`, json?.data?.length || 0, "items");
             return json;
-          } catch(e) { 
-            console.error("[TopXX Search] JSON parse error (topxx.vip):", e);
+          } catch(e: any) { 
+            console.error("[TopXX Search] Error:", e.message);
             return null; 
           }
         }),
       getAVDBMovies(page, undefined, normalizedQuery).catch(err => {
-        console.error("[TopXX Search] Error (avdb-title):", err);
+        console.error("[TopXX Search] Error:", err.message);
         return { items: [], pagination: { totalItems: 0, totalPages: 1, currentPage: 1 } };
       }),
       getAVDBMovies(page, undefined, undefined, normalizedQuery).catch(err => {
-        console.error("[TopXX Search] Error (avdb-actor):", err);
+        console.error("[TopXX Search] Error:", err.message);
         return { items: [], pagination: { totalItems: 0, totalPages: 1, currentPage: 1 } };
       })
     ]);
