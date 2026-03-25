@@ -49,7 +49,19 @@ async function fetchMovieData(source: string, slug: string) {
 
       // TopXX Normalize
       if (source === "topxx" && json.data) {
-        return { movie: json.data, episodes: json.data.episodes || [] };
+        const movie = json.data;
+        // Transform TopXX 'sources' into our Server-Episode format
+        const episodes = [{
+          server_name: "TopXX Premium",
+          server_data: movie.sources?.reduce((acc: any, s: any, idx: number) => {
+             acc[idx === 0 ? "Full" : `Server ${idx + 1}`] = {
+               link_m3u8: s.type === 'hls' ? s.link : '',
+               link_embed: s.type === 'embed' ? s.link : ''
+             };
+             return acc;
+          }, {}) || {}
+        }];
+        return { movie, episodes };
       }
 
       // Hồ Phim Normalize
