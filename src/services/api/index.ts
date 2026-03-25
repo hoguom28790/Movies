@@ -13,15 +13,15 @@ export async function searchMovies(keyword: string, page: number = 1, section: "
      return searchTopXXMovies(keyword, page);
   }
 
-  // 1. Try search on KKPhim
+  // 1. Try search on OPhim
   try {
-    const res = await searchKK(keyword, page);
+    const res = await searchOP(keyword, page);
     if (res.items.length > 0) return res;
   } catch (e) {}
 
-  // 2. Try search on OPhim
+  // 2. Try search on KKPhim
   try {
-    const res = await searchOP(keyword, page);
+    const res = await searchKK(keyword, page);
     if (res.items.length > 0) return res;
   } catch (e) {}
 

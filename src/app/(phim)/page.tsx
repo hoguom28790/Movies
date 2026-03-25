@@ -26,7 +26,7 @@ async function resolveTrendingMovies(trending: any[]) {
       }
       
       // Try to find a precise match
-      const match = res.items.find((item: any) => {
+      let match = res.items.find((item: any) => {
         const cleanTitle = title.toLowerCase().trim();
         const cleanOriginal = (m.original_title || "").toLowerCase().trim();
         const itemTitle = item.title.toLowerCase().trim();
@@ -34,17 +34,26 @@ async function resolveTrendingMovies(trending: any[]) {
         const itemSlug = item.slug.toLowerCase();
         const yearStr = year || "";
         
-        // 1. Strict exact title match
         const isTitleMatch = itemTitle === cleanTitle || itemOrigin === cleanTitle || itemTitle === cleanOriginal || itemOrigin === cleanOriginal;
-        
-        // 2. Strict Year match (if available)
         const isYearMatch = yearStr ? item.year.toString().includes(yearStr) : true;
-        
-        // 3. Slug similarity (bonus for specialized short titles like "Cứu")
-        const isSlugMatch = itemSlug === cleanTitle || itemSlug.includes(`${cleanTitle}-${yearStr}`);
+        const isSlugMatch = itemSlug === cleanTitle || itemSlug === `${cleanTitle}-${yearStr}`.replace(/\s+/g, '-') || itemSlug.startsWith(`${cleanTitle.replace(/\s+/g, '-')}-`);
         
         return (isTitleMatch && isYearMatch) || (isSlugMatch && isYearMatch);
       });
+
+      // Special Heuristic: Try to fetch known slugs for short titles like "Cứu"
+      if (!match && title.length < 10) {
+        const candidateSlug = `${title.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[đĐ]/g, "d").replace(/\s+/g, '-')}-${year || '2025'}`;
+        try {
+          const check = await fetch(`https://ophim1.com/v1/api/phim/${candidateSlug}`, { signal: AbortSignal.timeout(2000) });
+          if (check.ok) {
+            const checkJson = await check.json();
+            if (checkJson.status === "success" || checkJson.movie) {
+              match = { slug: candidateSlug, source: 'ophim' } as any;
+            }
+          }
+        } catch (e) {}
+      }
 
       return {
         id: m.id.toString(),
