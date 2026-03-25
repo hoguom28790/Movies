@@ -5,8 +5,7 @@ const nextConfig: NextConfig = {
     remotePatterns: [
       { protocol: "https", hostname: "**" },
     ],
-    formats: ['image/avif', 'image/webp'],
-    unoptimized: false, // Turned back on to allow next/image to optimize OMDb & Fanart high-res pictures
+    unoptimized: true,
   },
   cleanDistDir: true,
   output: "standalone",

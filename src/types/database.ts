@@ -26,6 +26,7 @@ export interface HistoryEntry {
   progressSeconds: number;
   durationSeconds?: number;
   progress: number;
+  source?: string;
   updatedAt: number;
 }
 

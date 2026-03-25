@@ -22,9 +22,10 @@ interface PlayerContainerProps {
   episodeName?: string;
   episodeSlug?: string;
   posterUrl?: string;
+  source?: string;
 }
 
-export function PlayerContainer({ url, isHls, rawEmbedUrl, nextEpisodeUrl, movieTitle, movieSlug, episodeName, episodeSlug, posterUrl }: PlayerContainerProps) {
+export function PlayerContainer({ url, isHls, rawEmbedUrl, nextEpisodeUrl, movieTitle, movieSlug, episodeName, episodeSlug, posterUrl, source }: PlayerContainerProps) {
   const { preset: stylePreset } = useStylePreset();
   const router = useRouter();
   const { user } = useAuth();
@@ -228,7 +229,8 @@ export function PlayerContainer({ url, isHls, rawEmbedUrl, nextEpisodeUrl, movie
             posterUrl: absolutePoster,
             progressSeconds: time,
             durationSeconds: duration,
-            progress: Math.round(percent)
+            progress: Math.round(percent),
+            source: source || 'ophim'
           }).then(() => {
             console.log(`[PROGRESS SAVE] slug: ${movieSlug} position: ${Math.round(time)} progress%: ${Math.round(percent)}`);
           }).catch(console.error);
