@@ -94,7 +94,8 @@ export function MovieContinueWatching() {
                       const progressText = item.progressSeconds > 0 ? `Xem đến ${formatTime(item.progressSeconds)} (${progressPercent}%)` : "Mới xem";
                       // Find best fallback source
                       const watchSource = (item as any).source || 'ophim';
-                      const watchHref = `/xem/${watchSource}/${item.movieSlug}/${encodeURIComponent(item.episodeName || '1')}`;
+                      const epParam = item.episodeSlug || item.episodeName || '1';
+                      const watchHref = `/xem/${watchSource}/${item.movieSlug}/${encodeURIComponent(epParam)}`;
 
                       return (
                         <MovieCard 

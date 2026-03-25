@@ -287,7 +287,15 @@
     const previewContext = previewCanvas.getContext('2d');
     const previewTimeLabel = document.getElementById('preview-time');
 
-    let player, hls, osdTimer, rippleTimer, previewHls, isPreviewReady = false, previewThrottle;
+    let player, hls, osdTimer, rippleTimer, previewHls, isPreviewReady = false, previewThrottle, pendingSeek = null;
+
+    function applyPendingSeek() {
+       if (pendingSeek !== null && video.readyState >= 1) {
+          video.currentTime = pendingSeek;
+          showOSD("Đang quay lại đoạn cũ...", "🎬");
+          pendingSeek = null;
+       }
+    }
 
     function showOSD(text, icon = '') {
       osd.innerHTML = `<span>${icon}</span> ${text}`;
@@ -369,12 +377,12 @@
       p.addEventListener('mouseleave', end); p.addEventListener('touchend', end);
     }
 
-    let tX, tY, tT, mode, sVol, sBright, sSeek, speedUp = false, lastTap = 0;
+    let tX, tY, tT, mode, sVol, sBright, sSeek, speedUp = false, lastTap = 0, speedUpTimer;
     container.addEventListener('touchstart', (e) => {
       if (e.target.closest('.plyr__controls')) return;
       const t = e.touches[0], r = container.getBoundingClientRect();
       tX = t.clientX - r.left; tY = t.clientY - r.top; tT = Date.now();
-      mode = null; sVol = player.volume; sBright = parseFloat(container.style.filter?.replace('brightness(','') || 1); sSeek = player.currentTime;
+      mode = null; sVol = player?.volume || 1; sBright = parseFloat(container.style.filter?.replace('brightness(','') || 1); sSeek = player?.currentTime || 0;
       speedUpTimer = setTimeout(() => {
          if (!mode && player && !player.paused) {
             speedUp = true; player.speed = 2; showOSD("2X SPEED", "⚡");
@@ -393,7 +401,7 @@
       }
       if (mode) {
         e.preventDefault();
-        if (mode === 'volume') {
+        if (mode === 'volume' && player) {
           const v = Math.max(0, Math.min(1, sVol - (dY/r.height)*1.5));
           player.volume = v; showGestureBar('volume', v*100);
         } else if (mode === 'brightness') {
@@ -408,13 +416,13 @@
     container.addEventListener('touchend', (e) => {
       clearTimeout(speedUpTimer);
       if (speedUp) { speedUp = false; player.speed = 1; showOSD("NORMAL SPEED", "▶️"); return; }
-      if (mode === 'seek') {
+      if (mode === 'seek' && player) {
         const dX = (e.changedTouches[0].clientX - container.getBoundingClientRect().left) - tX;
         player.currentTime = Math.max(0, Math.min(player.duration, sSeek + dX * 0.5));
       } else if (!mode && Date.now() - tT < 250) {
         if (Date.now() - lastTap < 300) {
            const r = container.getBoundingClientRect();
-           if (tX < r.width * 0.4) skip(-15); else if (tX > r.width * 0.6) skip(15); else player.togglePlay();
+           if (tX < r.width * 0.4) skip(-15); else if (tX > r.width * 0.6) skip(15); else player?.togglePlay();
            lastTap = 0;
         } else lastTap = Date.now();
       }
@@ -437,10 +445,27 @@
       player = new Plyr(video, opts);
       player.on('enterfullscreen', () => window.parent.postMessage({ type: 'ENTER_PSEUDO_FULLSCREEN' }, '*'));
       player.on('exitfullscreen', () => window.parent.postMessage({ type: 'EXIT_PSEUDO_FULLSCREEN' }, '*'));
+      player.on('ready', () => {
+         window.parent.postMessage({ type: 'PLAYER_READY' }, '*');
+         applyPendingSeek();
+      });
+
+      video.addEventListener('loadedmetadata', applyPendingSeek);
+
       setInterval(() => { if (!video.paused) window.parent.postMessage({ type: 'UPDATE_PROGRESS', time: video.currentTime, duration: video.duration }, '*'); }, 1000);
       setupInteract();
-      window.addEventListener('message', (e) => { if (e.data?.type === 'SEEK') { video.currentTime = e.data.time; showOSD("Tiếp tục xem...", "🎬"); } });
     }
+
+    window.addEventListener('message', (e) => { 
+      if (e.data?.type === 'SEEK') { 
+        if (video.readyState >= 1) {
+          video.currentTime = e.data.time; 
+          showOSD("Tiếp tục xem...", "🎬");
+        } else {
+          pendingSeek = e.data.time;
+        }
+      } 
+    });
 
     if (source) {
       const isM3U8 = source.includes('m3u8');
@@ -454,4 +479,3 @@
   </script>
 </body>
 </html>
-

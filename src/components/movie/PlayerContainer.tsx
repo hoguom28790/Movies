@@ -104,42 +104,26 @@ export function PlayerContainer({ url, isHls, rawEmbedUrl, nextEpisodeUrl, movie
     resolveTrakt();
   }, [user, movieTitle]);
 
-  // Load Playhead History & Sync
+  // Record Initial History Entry on Mount
   useEffect(() => {
-    const attemptSeek = async () => {
-      if (!user || !movieSlug || !episodeSlug) return;
-      
-      const { getMovieHistory, saveHistory } = await import("@/services/db");
-      const history = await getMovieHistory(user.uid, movieSlug);
-      
+    if (!user || !movieSlug || !episodeSlug) return;
+    
+    (async () => {
+      const { saveHistory } = await import("@/services/db");
       const absolutePoster = posterUrl?.startsWith('http') 
         ? posterUrl 
-        : `https://img.ophim.live/uploads/movies/${posterUrl}`;
+        : `https://img.ophim1.com/uploads/movies/${posterUrl}`;
 
-      const payload: any = {
+      saveHistory(user.uid, {
         movieSlug,
         movieTitle: movieTitle || "",
         episodeName: episodeName || "",
         episodeSlug: episodeSlug || "",
         posterUrl: absolutePoster,
         progressSeconds: 0 
-      };
-
-      if (history && history.episodeSlug === episodeSlug && history.progressSeconds) {
-        const iframeRef = document.getElementById('main-player') as HTMLIFrameElement;
-        if (iframeRef && iframeRef.contentWindow) {
-          iframeRef.contentWindow.postMessage({ type: 'SEEK', time: history.progressSeconds }, '*');
-        }
-        payload.progressSeconds = history.progressSeconds;
-      }
-      
-      saveHistory(user.uid, payload).catch(console.error);
-    };
-    
-    // Trigger on mount and whenever URL changes to maintain state
-    const timer = setTimeout(attemptSeek, 1500); 
-    return () => clearTimeout(timer);
-  }, [user, movieSlug, episodeSlug, url]);
+      }).catch(() => {});
+    })();
+  }, [user, movieSlug, episodeSlug, episodeName, posterUrl]);
 
   useEffect(() => {
     setIsLoading(true);
@@ -150,8 +134,26 @@ export function PlayerContainer({ url, isHls, rawEmbedUrl, nextEpisodeUrl, movie
   useEffect(() => {
     let lastSaveTime = 0;
 
+    const attemptSeek = async () => {
+      if (!user || !movieSlug || !episodeSlug) return;
+      
+      const { getMovieHistory } = await import("@/services/db");
+      const history = await getMovieHistory(user.uid, movieSlug);
+      
+      if (history && history.episodeSlug === episodeSlug && history.progressSeconds) {
+        const iframeRef = document.getElementById('main-player') as HTMLIFrameElement;
+        if (iframeRef && iframeRef.contentWindow) {
+          iframeRef.contentWindow.postMessage({ type: 'SEEK', time: history.progressSeconds }, '*');
+        }
+      }
+    };
+
     const handleMessage = async (event: MessageEvent) => {
       if (typeof event.data !== 'object') return;
+
+      if (event.data.type === 'PLAYER_READY') {
+        attemptSeek();
+      }
 
       if (event.data.type === 'ENTER_PSEUDO_FULLSCREEN') setIsPseudoFS(true);
       if (event.data.type === 'EXIT_PSEUDO_FULLSCREEN') setIsPseudoFS(false);
@@ -198,7 +200,7 @@ export function PlayerContainer({ url, isHls, rawEmbedUrl, nextEpisodeUrl, movie
           const { saveHistory } = await import("@/services/db");
           const absolutePoster = posterUrl?.startsWith('http') 
             ? posterUrl 
-            : `https://img.ophim.live/uploads/movies/${posterUrl}`;
+            : `https://img.ophim1.com/uploads/movies/${posterUrl}`;
 
           saveHistory(user.uid, {
             movieSlug,
