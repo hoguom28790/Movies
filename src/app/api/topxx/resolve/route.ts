@@ -14,7 +14,8 @@ export async function GET(req: NextRequest) {
     const base = url.split('/player/')[0] || "https://embed.streamxx.net";
     // Pattern: https://embed.streamxx.net/stream/{code}/main.m3u8
     const directM3U8 = `${base.replace('embed.', '')}/stream/${code}/main.m3u8`;
-    return NextResponse.json({ url: directM3U8, type: 'hls' });
+    const proxiedUrl = `/api/topxx/proxy?url=${encodeURIComponent(directM3U8)}`;
+    return NextResponse.json({ url: proxiedUrl, type: 'hls' });
   }
 
   if (url.includes('upload18.org/play/index/')) {

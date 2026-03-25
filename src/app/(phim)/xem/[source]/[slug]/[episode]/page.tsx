@@ -54,7 +54,8 @@ async function fetchMovieData(source: string, slug: string) {
           if (link.includes('streamxx.net')) {
             const code = link.split('/').pop();
             const base = link.split('/player/')[0] || "https://embed.streamxx.net";
-            return `${base}/stream/${code}/main.m3u8`;
+            const direct = `${base}/stream/${code}/main.m3u8`;
+            return `/api/topxx/proxy?url=${encodeURIComponent(direct)}`;
           }
           return link;
         };
@@ -81,7 +82,8 @@ async function fetchMovieData(source: string, slug: string) {
         const resolveLink = (link: string) => {
           if (link.includes('upload18.org/play/index/')) {
             const id = link.split('index/')[1];
-            return `https://upload18.org/hls/${id}/index.m3u8`;
+            const direct = `https://upload18.org/hls/${id}/index.m3u8`;
+            return `/api/topxx/proxy?url=${encodeURIComponent(direct)}`;
           }
           return link;
         };
