@@ -3,6 +3,7 @@ import { getAVDBMovies } from "@/services/api/avdb";
 import { notFound } from "next/navigation";
 import { XXMovieRow } from "@/components/movie/XXMovieRow";
 import { XXHeroSection } from "@/components/movie/XXHeroSection";
+import { Movie } from "@/types/movie";
 
 export const dynamic = "force-dynamic";
 
@@ -49,7 +50,7 @@ export default async function XXSourcePage({
 
                 {/* Movie Grid for this source */}
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6 md:gap-10">
-                    {data.items.map((movie) => (
+                    {data.items.map((movie: Movie) => (
                         <div key={movie.id} className="group flex flex-col gap-4">
                              <div className="relative aspect-[2/3] rounded-[30px] overflow-hidden border border-white/5 shadow-2xl transition-all duration-700 group-hover:border-yellow-500/30 group-hover:-translate-y-3">
                                 <img 
