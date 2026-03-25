@@ -36,15 +36,6 @@ const columns = [
       { href: "/quoc-gia/thai-lan", label: "Thái Lan" },
     ],
   },
-  {
-    title: "ĐIỀU KHOẢN",
-    links: [
-      { href: "/dmca", label: "DMCA" },
-      { href: "/lien-he", label: "Liên Hệ" },
-      { href: "/gioi-thieu", label: "Giới Thiệu" },
-      { href: "/chinh-sach", label: "Chính Sách Riêng Tư" },
-    ],
-  },
 ];
 
 export function Footer() {

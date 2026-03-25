@@ -32,8 +32,6 @@ export function StitchFooter() {
             <div className="max-w-[1440px] mx-auto mt-24 pt-8 border-t border-outline-variant/10 flex flex-col md:flex-row justify-between items-center gap-6">
                 <p className="text-[10px] uppercase tracking-widest text-on-surface-variant/50 font-label">© 2024 HỒ TRUYỆN DIGITAL ARCHIVE. ALL RIGHTS RESERVED.</p>
                 <div className="flex gap-8 font-label">
-                    <Link className="text-[10px] uppercase tracking-widest text-on-surface-variant/50 hover:text-primary transition-colors" href="#">Privacy</Link>
-                    <Link className="text-[10px] uppercase tracking-widest text-on-surface-variant/50 hover:text-primary transition-colors" href="#">Terms</Link>
                 </div>
             </div>
         </footer>
