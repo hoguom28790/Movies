@@ -7,12 +7,16 @@ export async function GET(req: NextRequest) {
   if (!url) return new NextResponse("No URL", { status: 400 });
 
   try {
-    const origin = new URL(url).origin;
+    const urlObj = new URL(url);
+    const origin = urlObj.origin;
+    const isTikTok = url.includes("tiktokcdn.com");
+    const referer = isTikTok ? "https://www.tiktok.com/" : (origin + "/");
+
     const res = await fetch(url, {
       headers: {
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-        "Referer": origin + "/",
-        "Origin": origin,
+        "Referer": referer,
+        "Origin": isTikTok ? "https://www.tiktok.com" : origin,
         "Accept": "*/*"
       },
       signal: AbortSignal.timeout(15000)
@@ -25,7 +29,10 @@ export async function GET(req: NextRequest) {
 
     // Capture the final URL after redirects for base path calculation
     const finalUrl = res.url;
-    const contentType = res.headers.get("content-type") || "";
+    let contentType = res.headers.get("content-type") || "";
+    if (url.includes("tiktokcdn.com") && (!contentType || contentType.includes("octet-stream"))) {
+      contentType = "video/mp2t";
+    }
     
     // If it's a manifest, rewrite URLs inside
     if (contentType.includes("mpegurl") || contentType.includes("application/x-mpegURL") || finalUrl.includes(".m3u8")) {
