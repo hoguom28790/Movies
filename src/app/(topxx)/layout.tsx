@@ -38,7 +38,9 @@ export default function TopXXLayout({
   }, [setTheme, theme]);
 
   React.useEffect(() => {
-    // Persistent authorization (shared across tabs)
+    // TEMPORARY: Disable password requirement as per user request
+    setIsAuthorized(true);
+    /*
     const authStatus = localStorage.getItem("topxx_authorized");
     if (authStatus === "true") {
       setIsAuthorized(true);
@@ -46,7 +48,6 @@ export default function TopXXLayout({
     }
 
     const correctPass = getLunarAuthPass();
-
     const pass = window.prompt("⚠️ TopXX Restricted Area\nNhập mật mã để tiếp tục:");
     
     if (pass === correctPass) {
@@ -56,6 +57,7 @@ export default function TopXXLayout({
       alert("❌ Mật mã không chính xác!");
       router.push("/");
     }
+    */
   }, [router]);
 
   if (!isAuthorized) {
