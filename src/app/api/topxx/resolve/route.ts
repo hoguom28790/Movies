@@ -9,8 +9,11 @@ export async function GET(req: NextRequest) {
   console.log(`[Stream Resolver] Attempting to resolve: ${url}`);
 
   // Patterns for known providers
-  if (url.includes('streamxx.net/player/')) {
-    const directM3U8 = url.replace('/player/', '/stream/') + '/main.m3u8';
+  if (url.includes('streamxx.net')) {
+    const code = url.split('/').pop();
+    const base = url.split('/player/')[0] || "https://embed.streamxx.net";
+    // Pattern: https://embed.streamxx.net/stream/{code}/main.m3u8
+    const directM3U8 = `${base.replace('embed.', '')}/stream/${code}/main.m3u8`;
     return NextResponse.json({ url: directM3U8, type: 'hls' });
   }
 

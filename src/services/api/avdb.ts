@@ -38,7 +38,7 @@ export async function getAVDBMovies(page = 1, typeId?: number, keyword?: string,
     const res = await fetch(url, { next: { revalidate: 3600 } });
     const data: AVDBResponse = await res.json();
     
-    if (!data.list) return { items: [], pagination: { totalItems: 0, totalPages: 1, currentPage: 1 } };
+    if (!data.list || !Array.isArray(data.list)) return { items: [], pagination: { totalItems: 0, totalPages: 1, currentPage: 1 } };
 
     return {
       items: data.list.map(m => ({
@@ -70,8 +70,8 @@ export async function getAVDBDetails(id: string) {
   try {
     const res = await fetch(url);
     const data: AVDBResponse = await res.json();
+    if (!data.list || !data.list.length) return null;
     const movie = data.list[0];
-    if (!movie) return null;
 
     // Handle episode format
     const episodesData = movie.episodes?.server_data || {};

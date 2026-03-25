@@ -27,33 +27,35 @@ export function MovieContinueWatching() {
       return;
     }
 
-    // REAL-TIME SYNC: onSnapshot with precise business logic filters
-    // Added Continue Watching section on home page with    // Basic query to avoid complex index requirements; filter progress further locally
-    const q = query(
-      collection(db, "reading_history_phim"),
-      where("userId", "==", user.uid)
-    );
-    // The following filters are applied locally to avoid complex index requirements
-    // where("progress", ">", 5),
-    // where("progress", "<", 95),
-    // limit(40)
+    // REAL-TIME SYNC: onSnapshot across both regular and adult history collections
+    const q1 = query(collection(db, "reading_history_phim"), where("userId", "==", user.uid));
+    const q2 = query(collection(db, "xx_history"), where("userId", "==", user.uid));
 
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      let historyItems = snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      })) as HistoryEntry[];
-      
-      // Sort manually because composite index might not be ready yet
-      const sorted = historyItems.sort((a,b) => b.updatedAt - a.updatedAt);
-      setItems(sorted);
-      setLoading(false);
-    }, (error) => {
-      console.error("Continue Watching Sync Error:", error);
-      setLoading(false);
-    });
+    let items1: HistoryEntry[] = [];
+    let items2: HistoryEntry[] = [];
 
-    return () => unsubscribe();
+    const updateItems = () => {
+      const combined = [...items1, ...items2];
+      const sorted = combined.sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0));
+      // Only show top 40 most recent
+      setItems(sorted.slice(0, 40));
+      setLoading(false);
+    };
+
+    const unsub1 = onSnapshot(q1, (snapshot) => {
+      items1 = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as HistoryEntry[];
+      updateItems();
+    }, (error) => console.error("History Sync 1 Error:", error));
+
+    const unsub2 = onSnapshot(q2, (snapshot) => {
+      items2 = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as HistoryEntry[];
+      updateItems();
+    }, (error) => console.error("History Sync 2 Error:", error));
+
+    return () => {
+      unsub1();
+      unsub2();
+    };
   }, [user, authLoading]);
 
   const handleDelete = async (movieSlug: string, e: React.MouseEvent) => {

@@ -51,8 +51,10 @@ async function fetchMovieData(source: string, slug: string) {
       if (source === "topxx" && json.data) {
         const movie = json.data;
         const resolveLink = (link: string) => {
-          if (link.includes('embed.streamxx.net/player/')) {
-            return link.replace('/player/', '/stream/') + '/main.m3u8';
+          if (link.includes('streamxx.net')) {
+            const code = link.split('/').pop();
+            const base = link.split('/player/')[0] || "https://embed.streamxx.net";
+            return `${base}/stream/${code}/main.m3u8`;
           }
           return link;
         };
@@ -65,7 +67,7 @@ async function fetchMovieData(source: string, slug: string) {
              const isHls = resolved.includes('.m3u8') || resolved.includes('streamxx');
              acc[idx === 0 ? "Full" : `Server ${idx + 1}`] = {
                link_m3u8: isHls ? resolved : '',
-               link_embed: !isHls ? resolved : ''
+               link_embed: !isHls ? resolved : s.link
              };
              return acc;
           }, {}) || {}
@@ -74,7 +76,7 @@ async function fetchMovieData(source: string, slug: string) {
       }
 
       // AVDB Normalize
-      if (source === "avdb" && json.servers) {
+      if (source === "avdb") {
         const movie = json;
         const resolveLink = (link: string) => {
           if (link.includes('upload18.org/play/index/')) {
@@ -84,18 +86,19 @@ async function fetchMovieData(source: string, slug: string) {
           return link;
         };
 
-        const episodes = json.servers.map((s: any) => ({
-          server_name: s.server,
-          server_data: s.episodes?.reduce((acc: any, ep: any) => {
-             const resolved = resolveLink(ep.link);
+        const serverData = movie.episodes?.server_data || {};
+        const episodes = [{
+          server_name: "AVDB Premium",
+          server_data: Object.entries(serverData).reduce((acc: any, [name, link]: any) => {
+             const resolved = resolveLink(link);
              const isHls = resolved.includes('.m3u8') || resolved.includes('hls');
-             acc[ep.name || "Full"] = {
+             acc[name || "Full"] = {
                link_m3u8: isHls ? resolved : '',
-               link_embed: !isHls ? resolved : ''
+               link_embed: !isHls ? resolved : link
              };
              return acc;
-          }, {}) || {}
-        }));
+          }, {})
+        }];
         return { movie, episodes };
       }
 

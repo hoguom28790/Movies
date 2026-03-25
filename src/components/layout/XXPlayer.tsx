@@ -2,10 +2,8 @@
 
 import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { saveXXHistory, getMovieXXHistory } from "@/services/topxxDb";
 import { useAuth } from "@/contexts/AuthContext";
-import { saveXXFirestoreHistory, getXXFirestoreHistory } from "@/services/topxxFirestore";
-import { useDevice } from "@/contexts/DeviceContext";
+import { saveHistory, getMovieHistory } from "@/services/db";
 
 interface XXPlayerProps {
   url: string;
@@ -13,141 +11,136 @@ interface XXPlayerProps {
   rawEmbedUrl: string;
   nextEpisodeUrl?: string;
   movieTitle: string;
-  movieCode: string;
+  movieCode: string; // The Slug/ID used for history
   posterUrl: string;
-  episodeName?: string;
 }
 
 export function XXPlayer({ 
   url, 
-  isHls, 
-  rawEmbedUrl, 
-  nextEpisodeUrl, 
   movieTitle, 
   movieCode, 
   posterUrl,
-  episodeName 
+  nextEpisodeUrl
 }: XXPlayerProps) {
   const router = useRouter();
   const { user } = useAuth();
-  const { isIOS } = useDevice();
-  const [isPseudoFS, setIsPseudoFS] = useState(false);
-  const [isPortrait, setIsPortrait] = useState(false);
-  const lastSaveTime = useRef(0);
-  const lastCloudSaveTime = useRef(0);
+  const [resolvedUrl, setResolvedUrl] = useState<string>("");
+  const [isEmbed, setIsEmbed] = useState(true);
+  const [isLoading, setIsLoading] = useState(true);
+  const lastSaveTimeRef = useRef(0);
+  const hasSeekedRef = useRef(false);
 
+  // 1. Resolve Stream URL
   useEffect(() => {
-    const handleResize = () => setIsPortrait(window.innerHeight > window.innerWidth);
-    window.addEventListener('resize', handleResize);
-    handleResize();
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
-
-  useEffect(() => {
-    const attemptSeek = async () => {
-      let progress = 0;
-      
-      const history = getMovieXXHistory(movieCode);
-      if (history) progress = history.progressSeconds;
-      
-      if (user) {
-        try {
-          const cloudHistory = await getXXFirestoreHistory(user.uid);
-          const match = cloudHistory.find(h => h.movieCode === movieCode);
-          if (match && match.updatedAt > (history?.updatedAt || 0)) {
-            progress = match.progressSeconds;
+    let active = true;
+    const resolve = async () => {
+      setIsLoading(true);
+      try {
+        console.log(`[XXPlayer/Resolve] Resolving: ${url}`);
+        const res = await fetch(`/api/topxx/resolve?url=${encodeURIComponent(url)}`);
+        const data = await res.json();
+        
+        if (active) {
+          if (data.type === 'hls' && data.url) {
+            console.log(`[XXPlayer/Resolve] SUCCESS: Direct HLS found.`);
+            setResolvedUrl(data.url);
+            setIsEmbed(false);
+          } else {
+            console.warn(`[XXPlayer/Resolve] FALLBACK: Using original URL for iframe.`);
+            setResolvedUrl(url);
+            setIsEmbed(true);
           }
-        } catch (e) {}
+        }
+      } catch (e) {
+        if (active) {
+          setResolvedUrl(url);
+          setIsEmbed(true);
+        }
+      } finally {
+        if (active) setIsLoading(false);
       }
+    };
+    
+    resolve();
+    return () => { active = false; };
+  }, [url]);
 
-      if (progress > 0) {
-        const iframe = document.getElementById('xx-player') as HTMLIFrameElement;
+  // 2. Resume History on Mount
+  useEffect(() => {
+    if (!user || !resolvedUrl || hasSeekedRef.current) return;
+
+    const resume = async () => {
+      const history = await getMovieHistory(user.uid, movieCode, 'topxx');
+      if (history && history.progressSeconds > 10) {
+        console.log(`[XXPlayer] Resume History Found: ${history.progressSeconds}s`);
+        const iframe = document.getElementById('xx-player-dashboard') as HTMLIFrameElement;
         if (iframe?.contentWindow) {
-          iframe.contentWindow.postMessage({ type: 'SEEK', time: progress }, '*');
+           iframe.contentWindow.postMessage({ type: 'SEEK', time: history.progressSeconds }, '*');
+           hasSeekedRef.current = true;
         }
       }
-      
-      const entryData = {
-        movieCode,
-        movieTitle,
-        posterUrl,
-        progressSeconds: progress,
-        durationSeconds: history?.durationSeconds || 0
-      };
-      saveXXHistory(entryData);
-      if (user) saveXXFirestoreHistory(user.uid, entryData);
     };
 
-    const timer1 = setTimeout(attemptSeek, 1000);
-    const timer2 = setTimeout(attemptSeek, 3000);
-    return () => {
-      clearTimeout(timer1);
-      clearTimeout(timer2);
-    };
-  }, [movieCode, movieTitle, posterUrl, user]);
+    const timer = setTimeout(resume, 2000); // Wait for player.html to be ready
+    return () => clearTimeout(timer);
+  }, [user, resolvedUrl, movieCode]);
 
+  // 3. Listen for Progress from player.html
   useEffect(() => {
     const handleMessage = (event: MessageEvent) => {
-      if (typeof event.data !== 'object') return;
-
-      if (event.data.type === 'UPDATE_PROGRESS') {
+      if (event.data?.type === 'UPDATE_PROGRESS') {
+        const { time, duration } = event.data;
         const now = Date.now();
-        const entryData = {
-          movieCode,
-          movieTitle,
-          posterUrl,
-          progressSeconds: event.data.time,
-          durationSeconds: event.data.duration || 0
-        };
-
-        const localHist = getMovieXXHistory(movieCode);
-        const isInitialDuration = entryData.durationSeconds > 0 && (!localHist || !localHist.durationSeconds);
         
-        if (now - lastSaveTime.current > 5000 || isInitialDuration) {
-          lastSaveTime.current = now;
-          saveXXHistory(entryData);
-        }
-        
-        if (user && (now - lastCloudSaveTime.current > 10000 || isInitialDuration)) {
-          lastCloudSaveTime.current = now;
-          saveXXFirestoreHistory(user.uid, entryData);
+        // Save every 15 seconds to Firebase
+        if (user && now - lastSaveTimeRef.current > 15000 && time > 10) {
+          lastSaveTimeRef.current = now;
+          saveHistory(user.uid, {
+            movieSlug: movieCode,
+            movieTitle,
+            episodeName: "Full",
+            episodeSlug: "full",
+            posterUrl: posterUrl?.startsWith('http') ? posterUrl : `https://img.ophim1.com/uploads/movies/${posterUrl}`,
+            progressSeconds: Math.floor(time),
+            durationSeconds: Math.floor(duration || 0),
+            progress: duration > 0 ? Math.round((time / duration) * 100) : 0,
+            source: 'topxx'
+          }).then(() => {
+            console.log(`[XXPlayer] Progress saved: ${Math.floor(time)}s`);
+          }).catch(console.error);
         }
       }
 
-      if (event.data.type === 'VIDEO_ENDED') {
-        if (nextEpisodeUrl) {
-          router.push(nextEpisodeUrl);
-        }
+      if (event.data?.type === 'VIDEO_ENDED' && nextEpisodeUrl) {
+        router.push(nextEpisodeUrl);
       }
-
-      if (event.data.type === 'ENTER_PSEUDO_FULLSCREEN') setIsPseudoFS(true);
-      if (event.data.type === 'EXIT_PSEUDO_FULLSCREEN') setIsPseudoFS(false);
     };
 
     window.addEventListener('message', handleMessage);
     return () => window.removeEventListener('message', handleMessage);
-  }, [movieCode, movieTitle, posterUrl, nextEpisodeUrl, router, user]);
+  }, [user, movieCode, movieTitle, posterUrl, nextEpisodeUrl, router]);
 
-  const isDirectVideo = url.includes('.m3u8') || url.includes('.mp4') || url.includes('.mkv') || url.includes('.ts') || url.includes('m3u8') || url.includes('mp4');
-
-  const iframeSrc = isDirectVideo 
-    ? `/player.html?url=${encodeURIComponent(url)}&theme=topxx`
-    : rawEmbedUrl || `/player.html?url=${encodeURIComponent(url)}&theme=topxx`;
+  const iframeSrc = resolvedUrl 
+    ? `/player.html?url=${encodeURIComponent(resolvedUrl)}&isEmbed=${isEmbed}&theme=topxx`
+    : "";
 
   return (
-    <div className={isPseudoFS 
-      ? (isPortrait 
-          ? `fixed top-0 left-full w-[100vh] h-[100vw] rotate-90 origin-top-left z-[9999] bg-black ${isIOS ? 'p-safe' : ''}` 
-          : `fixed inset-0 w-screen h-screen z-[9999] bg-black ${isIOS ? 'p-safe' : ''}`)
-      : "w-full aspect-video relative shadow-2xl bg-black overflow-hidden rounded-3xl border border-white/5"
-    }>
-      <iframe
-        id="xx-player"
-        key={iframeSrc}
-        src={iframeSrc}
-        className="w-full h-full border-0 absolute inset-0"
-        allowFullScreen
-      />
+    <div className="w-full aspect-video relative shadow-2xl bg-black overflow-hidden rounded-3xl border border-white/5 group">
+      {isLoading && (
+        <div className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-black gap-4">
+           <div className="w-12 h-12 border-4 border-yellow-500/20 border-t-yellow-500 rounded-full animate-spin" />
+           <p className="text-[10px] font-black text-yellow-500/40 uppercase tracking-[0.3em] italic">Giải mã nguồn phát...</p>
+        </div>
+      )}
+      {iframeSrc && (
+        <iframe
+          id="xx-player-dashboard"
+          src={iframeSrc}
+          className="w-full h-full border-0 absolute inset-0"
+          allowFullScreen
+          allow="autoplay; fullscreen"
+        />
+      )}
     </div>
   );
 }

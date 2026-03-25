@@ -10,8 +10,8 @@ export async function GET(
   const pathStr = path.join("/");
   const searchParams = req.nextUrl.searchParams.toString();
   
-  // AVDB uses api.php for detail
-  const targetUrl = `https://avdbapi.com/api.php?ac=detail&ids=${searchParams.replace('id=', '')}`;
+  // AVDB uses api.php/provide/vod/at/json for detail
+  const targetUrl = `https://avdbapi.com/api.php/provide/vod/at/json?${searchParams}`;
   
   console.log(`[AVDB Proxy] Fetching: ${targetUrl}`);
   
@@ -32,6 +32,6 @@ export async function GET(
     return NextResponse.json(data);
   } catch (error) {
     console.error("[AVDB Proxy] Failed:", error);
-    return NextResponse.json({ error: "Internal error" }, { status: 500 });
+    return NextResponse.json({ error: "Internal error", details: (error as Error).message }, { status: 500 });
   }
 }
