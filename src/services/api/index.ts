@@ -135,7 +135,8 @@ export async function getMovieDetails(slug: string) {
   // 1. Parallel Mirror Check for OPhim (Speed & Resilience)
   try {
     const ophimData = await Promise.any(OPHIM_MIRRORS.map(async (mirror) => {
-      const res = await fetch(`${mirror}/v1/api/phim/${slug}`, { 
+      const cleanMirror = mirror.endsWith('/') ? mirror.slice(0, -1) : mirror;
+      const res = await fetch(`${cleanMirror}/v1/api/phim/${slug}`, { 
         headers: DEFAULT_HEADERS,
         signal: AbortSignal.timeout(4000),
         cache: "no-store" 
@@ -144,7 +145,8 @@ export async function getMovieDetails(slug: string) {
       const json = await res.json();
       const movie = json.data?.item || json.movie;
       if (!movie) throw new Error("No data");
-      return { source: "ophim", data: { ...movie, episodes: json.data?.episodes || json.episodes } };
+      const episodes = json.data?.episodes || json.episodes || movie.episodes || [];
+      return { source: "ophim", data: { ...movie, episodes } };
     }));
     if (ophimData) return ophimData;
   } catch (e) {

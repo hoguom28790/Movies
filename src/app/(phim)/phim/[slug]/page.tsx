@@ -44,10 +44,14 @@ export default async function MovieDetailsPage({ params }: { params: Promise<{ s
     const searchRes = await searchTMDBMovie(safeData.name, isNaN(sYear) ? undefined : sYear).catch(() => null);
     if (searchRes) tmdbData = await getTMDBMovieDetails(searchRes.id, searchRes.media_type).catch(() => null);
 
-    const poster = tmdbData?.poster_path ? getTMDBImageUrl(tmdbData.poster_path, 'w780') : (safeData.poster_url.startsWith("http") ? safeData.poster_url : `https://img.ophim.live/uploads/movies/${safeData.poster_url}`);
+    const poster = tmdbData?.poster_path 
+      ? getTMDBImageUrl(tmdbData.poster_path, 'w780') 
+      : (safeData.poster_url.startsWith("http") 
+          ? safeData.poster_url 
+          : `https://img.ophim.live/uploads/movies/${safeData.poster_url.replace(/^\/+/, '')}`);
     
     // Server normalization 
-    const episodes = data.episodes || [];
+    const episodes = data.episodes || data.items || [];
     const allServers = episodes.map((srv: any, idx: number) => ({
        name: srv.server_name || srv.name || `Server ${idx + 1}`,
        items: srv.server_data || srv.items || []
