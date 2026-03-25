@@ -137,7 +137,7 @@ export async function getMovieDetails(slug: string) {
     const ophimData = await Promise.any(OPHIM_MIRRORS.map(async (mirror) => {
       const res = await fetch(`${mirror}/v1/api/phim/${slug}`, { 
         headers: DEFAULT_HEADERS,
-        signal: AbortSignal.timeout(10000),
+        signal: AbortSignal.timeout(4000),
         cache: "no-store" 
       });
       if (!res.ok) throw new Error("404");
@@ -153,8 +153,8 @@ export async function getMovieDetails(slug: string) {
 
   // 2. Fallback to KKPhim & NguonC
   const [ng, kk] = await Promise.allSettled([
-    fetch(`https://phim.nguonc.com/api/film/${slug}`, { headers: DEFAULT_HEADERS, signal: AbortSignal.timeout(10000) }).then((r) => r.json()).catch(() => null),
-    fetch(`https://phimapi.com/v1/api/phim/${slug}`, { headers: DEFAULT_HEADERS, signal: AbortSignal.timeout(10000) }).then((r) => r.json()).catch(() => null),
+    fetch(`https://phim.nguonc.com/api/film/${slug}`, { headers: DEFAULT_HEADERS, signal: AbortSignal.timeout(4000) }).then((r) => r.json()).catch(() => null),
+    fetch(`https://phimapi.com/v1/api/phim/${slug}`, { headers: DEFAULT_HEADERS, signal: AbortSignal.timeout(4000) }).then((r) => r.json()).catch(() => null),
   ]);
  
   if (kk.status === "fulfilled" && kk.value) {

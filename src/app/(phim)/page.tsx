@@ -1,3 +1,5 @@
+export const revalidate = 1800; // Revalidate home page every 30 minutes
+
 import { getLatestMovies } from "@/services/api";
 import { getCategoryMovies } from "@/services/api/category";
 import { MovieRow } from "@/components/movie/MovieRow";
@@ -17,18 +19,39 @@ const MANUAL_MAPPING: Record<string, string> = {
   "Cứu": "cuu-2026"
 };
 
+// Simple server-side cache to speed up re-renders
+const SLUG_CACHE = new Map<string, string>();
+
 async function resolveTrendingMovies(trending: any[]) {
   return await Promise.all(trending.map(async (m) => {
     const title = m.title || m.name;
     const year = m.release_date?.split("-")[0];
+    const cacheKey = `${m.id}-${title}`;
+
+    if (SLUG_CACHE.has(cacheKey)) {
+       return {
+         id: m.id.toString(),
+         title: title,
+         originalTitle: m.original_title || m.original_name || "",
+         slug: SLUG_CACHE.get(cacheKey) || `/search?q=${encodeURIComponent(title)}`,
+         posterUrl: getTMDBImageUrl(m.poster_path) || "",
+         thumbUrl: getTMDBImageUrl(m.backdrop_path) || "",
+         year: year || "2025",
+         quality: "HD",
+         source: 'ophim' as any,
+         tmdbRating: m.vote_average
+       };
+    }
     
     // Check manual mapping first
     if (MANUAL_MAPPING[title]) {
+      const slug = MANUAL_MAPPING[title];
+      SLUG_CACHE.set(cacheKey, slug);
       return {
         id: m.id.toString(),
         title: title,
         originalTitle: m.original_title || m.original_name || "",
-        slug: MANUAL_MAPPING[title],
+        slug: slug,
         posterUrl: getTMDBImageUrl(m.poster_path) || "",
         thumbUrl: getTMDBImageUrl(m.backdrop_path) || "",
         year: year || "2025",
@@ -39,82 +62,88 @@ async function resolveTrendingMovies(trending: any[]) {
     }
 
     try {
-      // Parallel search on local providers
-      let res = await searchLocal(title);
-      
-      // Fallback to original title if no results for translated title
-      if (res.items.length === 0 && m.original_title && m.original_title !== title) {
-        res = await searchLocal(m.original_title);
-      }
-      
-      const normalize = (s: string) => s.toLowerCase()
-        .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
-        .replace(/[đĐ]/g, "d")
-        .replace(/[^a-z0-9\s]/g, "") // Remove all non-alphanumeric
-        .replace(/\s+/g, " ").trim();
-
-      const normalizedTarget = normalize(title);
-      const normalizedOriginal = normalize(m.original_title || "");
-
-      // Try to find a precise match
-      let match = res.items.find((item: any) => {
-        const itemTitle = normalize(item.title);
-        const itemOrigin = normalize(item.originalTitle || "");
-        const itemSlug = item.slug.toLowerCase();
-        const yearStr = year || "";
+      const resolutionPromise = (async () => {
+        // Parallel search on local providers
+        let res = await searchLocal(title);
         
-        // Match Strategy 1: Exact matches (normalized)
-        const isExactMatch = itemTitle === normalizedTarget || itemOrigin === normalizedTarget || 
-                           itemTitle === normalizedOriginal || itemOrigin === normalizedOriginal;
-        
-        // Match Strategy 2: Partial matches (important for subtitles)
-        const isPartialMatch = itemTitle.startsWith(normalizedTarget) || normalizedTarget.startsWith(itemTitle);
-        
-        // Match Strategy 3: Slug matches
-        const cleanSlug = itemSlug.replace(/-/g, " ");
-        const isSlugMatch = itemSlug === title.toLowerCase().replace(/\s+/g, '-') || 
-                           cleanSlug.includes(normalizedTarget);
-        
-        // Year check with +/- 1 year tolerance
-        const itemYear = parseInt(item.year);
-        const targetYear = parseInt(yearStr);
-        const isYearMatch = yearStr ? (itemYear === targetYear || itemYear === targetYear + 1 || itemYear === targetYear - 1) : true;
-        
-        return (isExactMatch && isYearMatch) || (isSlugMatch && isYearMatch) || (isPartialMatch && isYearMatch);
-      });
-
-      // Special Heuristic: Try to fetch known slugs if no match found
-      if (!match) {
-        const candidateSlug = `${title.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[đĐ]/g, "d").replace(/[^a-z0-9\s]/g, "").replace(/\s+/g, '-')}-${year || '2025'}`;
-        const candidateSlugNoYear = `${title.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[đĐ]/g, "d").replace(/[^a-z0-9\s]/g, "").replace(/\s+/g, '-')}`;
-        
-        for (const mirror of ["https://ophim1.com", "https://ophim18.cc"]) {
-          for (const s of [candidateSlug, candidateSlugNoYear]) {
-            try {
-              const check = await fetch(`${mirror}/v1/api/phim/${s}`, { signal: AbortSignal.timeout(2000) });
-              if (check.ok) {
-                const json = await check.json();
-                if (json.status === "success" || json.data?.item) {
-                   match = { slug: s, source: 'ophim' } as any;
-                   break;
-                }
-              }
-            } catch (e) {}
-          }
-          if (match) break;
+        // Fallback to original title if no results for translated title
+        if (res.items.length === 0 && m.original_title && m.original_title !== title) {
+          res = await searchLocal(m.original_title);
         }
-      }
+        
+        const normalize = (s: string) => s.toLowerCase()
+          .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+          .replace(/[đĐ]/g, "d")
+          .replace(/[^a-z0-9\s]/g, "") // Remove all non-alphanumeric
+          .replace(/\s+/g, " ").trim();
+
+        const normalizedTarget = normalize(title);
+        const normalizedOriginal = normalize(m.original_title || "");
+
+        // Try to find a precise match
+        let match = res.items.find((item: any) => {
+          const itemTitle = normalize(item.title);
+          const itemOrigin = normalize(item.originalTitle || "");
+          const itemSlug = item.slug.toLowerCase();
+          const yearStr = year || "";
+          
+          const isExactMatch = itemTitle === normalizedTarget || itemOrigin === normalizedTarget || 
+                             itemTitle === normalizedOriginal || itemOrigin === normalizedOriginal;
+          
+          const isPartialMatch = itemTitle.startsWith(normalizedTarget) || normalizedTarget.startsWith(itemTitle);
+          
+          const cleanSlug = itemSlug.replace(/-/g, " ");
+          const isSlugMatch = itemSlug === title.toLowerCase().replace(/\s+/g, '-') || 
+                             cleanSlug.includes(normalizedTarget);
+          
+          const itemYear = parseInt(item.year);
+          const targetYear = parseInt(yearStr);
+          const isYearMatch = yearStr ? (itemYear === targetYear || itemYear === targetYear + 1 || itemYear === targetYear - 1) : true;
+          
+          return (isExactMatch && isYearMatch) || (isSlugMatch && isYearMatch) || (isPartialMatch && isYearMatch);
+        });
+
+        if (!match) {
+          const candidateSlug = `${title.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[đĐ]/g, "d").replace(/[^a-z0-9\s]/g, "").replace(/\s+/g, '-')}-${year || '2025'}`;
+          const candidateSlugNoYear = `${title.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[đĐ]/g, "d").replace(/[^a-z0-9\s]/g, "").replace(/\s+/g, '-')}`;
+          
+          for (const mirror of ["https://ophim1.com", "https://ophim18.cc"]) {
+            for (const s of [candidateSlug, candidateSlugNoYear]) {
+              try {
+                const check = await fetch(`${mirror}/v1/api/phim/${s}`, { signal: AbortSignal.timeout(1500) });
+                if (check.ok) {
+                  const json = await check.json();
+                  if (json.status === "success" || json.data?.item) {
+                     match = { slug: s } as any;
+                     break;
+                  }
+                }
+              } catch (e) {}
+            }
+            if (match) break;
+          }
+        }
+
+        return match ? match.slug : `/search?q=${encodeURIComponent(title)}`;
+      })();
+
+      const finalSlug = await Promise.race([
+         resolutionPromise,
+         new Promise<string>((resolve) => setTimeout(() => resolve(`/search?q=${encodeURIComponent(title)}`), 2500))
+      ]);
+
+      SLUG_CACHE.set(cacheKey, finalSlug);
 
       return {
         id: m.id.toString(),
         title: title,
         originalTitle: m.original_title || m.original_name || "",
-        slug: match ? match.slug : `/search?q=${encodeURIComponent(title)}`,
+        slug: finalSlug,
         posterUrl: getTMDBImageUrl(m.poster_path) || "",
         thumbUrl: getTMDBImageUrl(m.backdrop_path) || "",
         year: year || "2025",
         quality: "HD",
-        source: match?.source || 'ophim' as any,
+        source: 'ophim' as any,
         tmdbRating: m.vote_average
       };
     } catch (e) {

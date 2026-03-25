@@ -7,43 +7,44 @@ import { PlayerContainer } from "@/components/movie/PlayerContainer";
 import { ChevronLeft, ChevronRight, ArrowLeft, Play, Loader2, AlertTriangle } from "lucide-react";
 
 async function fetchMovieData(source: string, slug: string) {
-  let urls: string[] = [];
-  
-  if (source === "avdb") {
-    const id = slug.includes("av-") ? slug.split("av-")[1] : slug;
-    urls = [`https://avdbapi.com/api.php/provide/vod?ac=detail&ids=${id}`];
-  } else if (source === "topxx") {
-    urls = [`https://topxx.vip/api/v1/movies/${slug}`];
-  } else if (source === "kkphim") {
-    urls = [`https://phimapi.com/v1/api/phim/${slug}`, `https://phimapi.com/phim/${slug}`];
-  } else if (source === "ophim") {
-    urls = [`https://ophim1.com/v1/api/phim/${slug}`, `https://ophim1.com/phim/${slug}`];
-  } else if (source === "vsmov") {
-    urls = [`https://vsmov.xyz/v1/api/phim/${slug}`, `https://vsmov.xyz/api/phim/${slug}`];
-  } else if (source === "nguonc") {
-    urls = [`https://phim.nguonc.com/api/film/${slug}`];
-  }
+  const mirrors: Record<string, string[]> = {
+    ophim: ["https://ophim1.com", "https://ophim18.cc", "https://ophim17.com", "https://ophim17.cc", "https://ophim10.com"],
+    kkphim: ["https://phimapi.com", "https://kkphim.vip"],
+    vsmov: ["https://vsmov.xyz", "https://vsmov.live", "https://vsmov.cc"],
+    avdb: ["https://avdbapi.com"],
+    topxx: ["https://topxx.vip"],
+    nguonc: ["https://phim.nguonc.com"]
+  };
 
-  for (const url of urls) {
+  const baseUrls = mirrors[source] || [];
+  if (baseUrls.length === 0) return null;
+
+  const fetchWithMirror = async (baseUrl: string) => {
+    let url = "";
+    if (source === "avdb") url = `${baseUrl}/api.php/provide/vod?ac=detail&ids=${slug.includes("av-") ? slug.split("av-")[1] : slug}`;
+    else if (source === "topxx") url = `${baseUrl}/api/v1/movies/${slug}`;
+    else if (source === "nguonc") url = `${baseUrl}/api/film/${slug}`;
+    else url = `${baseUrl}${baseUrl.includes('v1/api') ? '' : '/v1/api'}/phim/${slug}`;
+
     try {
-      const res = await fetch(url, { cache: "no-store", signal: AbortSignal.timeout(5000) });
-      if (!res.ok) continue;
+      const res = await fetch(url, { 
+        cache: "no-store", 
+        signal: AbortSignal.timeout(4000),
+        headers: { "User-Agent": "Mozilla/5.0", "Referer": baseUrl }
+      });
+      if (!res.ok) throw new Error("404");
       const json = await res.json();
       
       // AVDB Normalize
       if (source === "avdb" && json.list?.[0]) {
         const m = json.list[0];
-        let eps: any[] = [];
-        if (m.vod_play_url) {
-           const lines = m.vod_play_url.split("$$$")[0]?.split("#") || [];
-           const serverData: any = {};
-           lines.forEach((l: string) => {
-              const p = l.split("$");
-              if (p.length >= 2) serverData[p[0]] = p[1];
-           });
-           eps = [{ server_name: m.vod_play_from?.split("$$$")[0] || "Server Premium", server_data: serverData }];
-        }
-        return { movie: m, episodes: eps };
+        const lines = m.vod_play_url?.split("$$$")[0]?.split("#") || [];
+        const serverData: any = {};
+        lines.forEach((l: string) => {
+          const p = l.split("$");
+          if (p.length >= 2) serverData[p[0]] = p[1];
+        });
+        return { movie: m, episodes: [{ server_name: m.vod_play_from?.split("$$$")[0] || "Server Premium", server_data: serverData }] };
       }
 
       // TopXX Normalize
@@ -54,9 +55,27 @@ async function fetchMovieData(source: string, slug: string) {
       // Hồ Phim Normalize
       if (json.data?.item) return { movie: json.data.item, episodes: json.data.item.episodes || json.data.server_data || [] };
       if (json.movie) return { movie: json.movie, episodes: json.episodes || [] };
-    } catch (e) {}
+      
+      // Secondary fallback (without v1/api prefix if the mirror is legacy)
+      if (!json.data?.item && !json.movie && !baseUrl.includes('v1/api')) {
+         const altUrl = `${baseUrl}/phim/${slug}`;
+         const altRes = await fetch(altUrl, { signal: AbortSignal.timeout(3000) });
+         const altJson = await altRes.json();
+         if (altJson.movie) return { movie: altJson.movie, episodes: altJson.episodes || [] };
+      }
+      
+      throw new Error("Invalid response");
+    } catch (e) {
+      throw e;
+    }
+  };
+
+  try {
+    // Try all mirrors in parallel, returning the first successful one
+    return await Promise.any(baseUrls.map(mirror => fetchWithMirror(mirror)));
+  } catch (e) {
+    return null;
   }
-  return null;
 }
 
 const AVAILABLE_SOURCES = [
@@ -139,6 +158,7 @@ export default async function WatchPage({
           movieTitle={data.name || data.title}
           movieSlug={slug}
           episodeName={currentEp.name === "0" || currentEp.name?.toLowerCase() === "full" ? "1" : currentEp.name}
+          episodeSlug={currentEp.slug}
           posterUrl={data.thumb_url || data.poster_url || ""}
         />
 
