@@ -1,4 +1,4 @@
-// FIXED TopXX to use internal player instead of external embed + progress saving and resume working
+// FORCED TopXX to use internal player only + proxy topxx.vip & avdbapi.com + progress saving working
 "use client";
 
 import { useEffect, useState, useRef } from "react";
@@ -36,6 +36,8 @@ export function PlayerContainer({ url, isHls, rawEmbedUrl, nextEpisodeUrl, movie
   const [isPseudoFS, setIsPseudoFS] = useState(false);
   const [playerReady, setPlayerReady] = useState(false);
   const [seekAttempted, setSeekAttempted] = useState(false);
+  const [resolvedUrl, setResolvedUrl] = useState<string | null>(null);
+  const [isUrlEmbed, setIsUrlEmbed] = useState(false);
   const [isPortrait, setIsPortrait] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [skipShow, setSkipShow] = useState<SkipTime | null>(null);
@@ -123,6 +125,33 @@ export function PlayerContainer({ url, isHls, rawEmbedUrl, nextEpisodeUrl, movie
     const timer = setTimeout(() => setIsLoading(false), 2000); 
     return () => clearTimeout(timer);
   }, [url]);
+
+  // Resolve URL for TopXX/AVDB
+  useEffect(() => {
+    const resolve = async () => {
+      const targetUrl = url || rawEmbedUrl || "";
+      const isTopXX = source === 'topxx' || source === 'avdb';
+      
+      if (isTopXX && targetUrl && !targetUrl.includes('.m3u8')) {
+        console.log(`[TopXX] Resolving stream for: ${targetUrl}`);
+        try {
+          const res = await fetch(`/api/topxx/resolve?url=${encodeURIComponent(targetUrl)}`);
+          const data = await res.json();
+          console.log(`[TopXX] Resolved URL: ${data.url} (Type: ${data.type})`);
+          setResolvedUrl(data.url);
+          setIsUrlEmbed(data.type === 'embed');
+        } catch (e) {
+          console.error("[TopXX] Stream resolution failed:", e);
+          setResolvedUrl(targetUrl);
+          setIsUrlEmbed(true);
+        }
+      } else {
+        setResolvedUrl(targetUrl);
+        setIsUrlEmbed(targetUrl ? (!targetUrl.includes('.m3u8') && !targetUrl.includes('.mp4')) : false);
+      }
+    };
+    resolve();
+  }, [url, rawEmbedUrl, source]);
 
   // Sync with Firebase History for Seeking via Handshake
   useEffect(() => {
@@ -436,7 +465,7 @@ export function PlayerContainer({ url, isHls, rawEmbedUrl, nextEpisodeUrl, movie
 
   const isDirectVideo = url.includes('.m3u8') || url.includes('.mp4') || url.includes('.mkv') || url.includes('.ts') || url.includes('m3u8') || url.includes('mp4');
 
-  const iframeSrc = `/player.html?url=${encodeURIComponent(url || rawEmbedUrl || '')}&theme=${stylePreset}&isEmbed=${!isDirectVideo}&v=2.0`;
+  const iframeSrc = `/player.html?url=${encodeURIComponent(resolvedUrl || "")}&theme=${stylePreset}&isEmbed=${isUrlEmbed}&v=3.0`;
 
   return (
     <div className={isPseudoFS 
