@@ -28,6 +28,23 @@ export interface AVDBResponse {
   list: AVDBMovie[];
 }
 
+// Helper for timeout-safe fetch
+async function fetchWithTimeout(url: string, options: RequestInit = {}, timeout = 10000) {
+  const controller = new AbortController();
+  const id = setTimeout(() => controller.abort(), timeout);
+  try {
+    const response = await fetch(url, {
+      ...options,
+      signal: controller.signal
+    });
+    clearTimeout(id);
+    return response;
+  } catch (err) {
+    clearTimeout(id);
+    throw err;
+  }
+}
+
 export async function getAVDBMovies(page = 1, typeId?: number, keyword?: string, actor?: string) {
   let url = `${BASE_URL}&pg=${page}`;
   if (typeId) url += `&t=${typeId}`;
@@ -35,7 +52,7 @@ export async function getAVDBMovies(page = 1, typeId?: number, keyword?: string,
   if (actor) url += `&actor=${encodeURIComponent(actor)}`;
 
   try {
-    const res = await fetch(url, { next: { revalidate: 3600 }, signal: AbortSignal.timeout(10000) });
+    const res = await fetchWithTimeout(url, { next: { revalidate: 3600 } }, 10000);
     if (!res.ok) return { items: [], pagination: { totalItems: 0, totalPages: 1, currentPage: 1 } };
     
     let data: any;
@@ -80,7 +97,7 @@ export async function getAVDBMovies(page = 1, typeId?: number, keyword?: string,
 export async function getAVDBDetails(id: string) {
   const url = `${BASE_URL}&ids=${id}`;
   try {
-    const res = await fetch(url);
+    const res = await fetchWithTimeout(url, { cache: "no-store" }, 10000);
     const data: AVDBResponse = await res.json();
     if (!data.list || !data.list.length) return null;
     const movie = data.list[0];
