@@ -367,8 +367,8 @@ export function PlayerContainer({ url, isHls, rawEmbedUrl, nextEpisodeUrl, movie
   const isDirectVideo = url.includes('.m3u8') || url.includes('.mp4') || url.includes('.mkv') || url.includes('.ts') || url.includes('m3u8') || url.includes('mp4');
 
   const iframeSrc = isDirectVideo 
-    ? `/player.html?url=${encodeURIComponent(url)}&theme=${stylePreset}`
-    : rawEmbedUrl || `/player.html?url=${encodeURIComponent(url)}&theme=${stylePreset}`;
+    ? `/player.html?url=${encodeURIComponent(url)}&theme=${stylePreset}&v=1.1`
+    : rawEmbedUrl || `/player.html?url=${encodeURIComponent(url)}&theme=${stylePreset}&v=1.1`;
 
   return (
     <div className={isPseudoFS 
