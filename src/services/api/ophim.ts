@@ -10,7 +10,10 @@ export async function getOPhimMovies(page: number = 1, baseUrl: string = "https:
   if (!res.ok) throw new Error("Failed to fetch OPhim");
   const data = await res.json();
   
-  let imagePrefix = data.pathImage || "https://img.ophim1.com/uploads/movies/";
+  let imagePrefix = data.pathImage || data.data?.APP_DOMAIN_CDN_IMAGE || "https://img.ophim1.com/uploads/movies/";
+  if (!imagePrefix.includes('/uploads/movies')) {
+    imagePrefix = imagePrefix.replace(/\/$/, '') + '/uploads/movies/';
+  }
   if (imagePrefix && !imagePrefix.endsWith('/')) imagePrefix += '/';
 
   const items: Movie[] = data.items.map((item: any) => ({
@@ -50,7 +53,10 @@ export async function searchMovies(keyword: string, page: number = 1, baseUrl: s
   
   if (data.status !== "success") return { items: [], pagination: { currentPage: 1, totalPages: 1, totalItems: 0 } };
 
-  let imagePrefix = data.data.APP_DOMAIN_CDN_IMAGE || "https://img.ophim1.com/uploads/movies/";
+  let imagePrefix = data.data?.APP_DOMAIN_CDN_IMAGE || data.pathImage || "https://img.ophim1.com";
+  if (!imagePrefix.includes('/uploads/movies') && !data.data?.items?.[0]?.poster_url?.includes('/')) {
+    imagePrefix = imagePrefix.replace(/\/$/, '') + '/uploads/movies/';
+  }
   if (imagePrefix && !imagePrefix.endsWith('/')) imagePrefix += '/';
   const items: Movie[] = data.data.items.map((item: any) => ({
     id: item.slug,

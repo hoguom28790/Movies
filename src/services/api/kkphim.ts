@@ -9,14 +9,14 @@ export async function getKKPhimMovies(page: number = 1): Promise<MovieListRespon
   });
   if (!res.ok) throw new Error("Failed to fetch KKPhim");
   const data = await res.json();
-  
+  const imagePrefix = data.pathImage || "https://phimimg.com/";
   const items: Movie[] = data.items.map((item: any) => ({
     id: item.slug,
     title: item.name,
     originalTitle: item.origin_name,
     slug: item.slug,
-    posterUrl: item.poster_url?.startsWith('http') ? item.poster_url : `https://phimimg.com/${item.poster_url}`,
-    thumbUrl: item.thumb_url?.startsWith('http') ? item.thumb_url : `https://phimimg.com/${item.thumb_url}`,
+    posterUrl: item.poster_url?.startsWith('http') ? item.poster_url : `${imagePrefix}${item.poster_url.replace(/^\//,'')}`,
+    thumbUrl: item.thumb_url?.startsWith('http') ? item.thumb_url : `${imagePrefix}${item.thumb_url.replace(/^\//,'')}`,
     year: item.year?.toString() || "",
     status: item.status || item.episode_current || "",
     tmdbId: item.tmdb?.id || item.tmdb_id || "",
@@ -47,13 +47,14 @@ export async function searchMovies(keyword: string, page: number = 1): Promise<M
   
   if (data.status !== "success") return { items: [], pagination: { currentPage: 1, totalPages: 1, totalItems: 0 } };
 
+  const imagePrefix = data.data?.APP_DOMAIN_CDN_IMAGE || "https://phimimg.com";
   const items: Movie[] = data.data.items.map((item: any) => ({
     id: item.slug,
     title: item.name,
     originalTitle: item.origin_name,
     slug: item.slug,
-    posterUrl: item.poster_url?.startsWith('http') ? item.poster_url : `https://phimimg.com/${item.poster_url}`,
-    thumbUrl: item.thumb_url?.startsWith('http') ? item.thumb_url : `https://phimimg.com/${item.thumb_url}`,
+    posterUrl: item.poster_url?.startsWith('http') ? item.poster_url : `${imagePrefix}/${item.poster_url.replace(/^\//,'')}`,
+    thumbUrl: item.thumb_url?.startsWith('http') ? item.thumb_url : `${imagePrefix}/${item.thumb_url.replace(/^\//,'')}`,
     year: item.year?.toString() || "",
     quality: item.quality || "",
     status: item.status || item.episode_current || "",
