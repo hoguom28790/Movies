@@ -86,16 +86,30 @@ export async function getMovieDetails(slug: string) {
      return null;
   }
 
-  const [ng, kk, op] = await Promise.allSettled([
+  const [ng, kk, op, opMirror] = await Promise.allSettled([
     fetch(`https://phim.nguonc.com/api/film/${slug}`).then((r) => r.json()).catch(() => null),
     fetch(`https://phimapi.com/v1/api/phim/${slug}`).then((r) => r.json()).catch(() => null),
     fetch(`https://ophim1.com/v1/api/phim/${slug}`).then((r) => r.json()).catch(() => null),
+    fetch(`https://ophim17.com/v1/api/phim/${slug}`).then((r) => r.json()).catch(() => null), // Fallback Mirror
   ]);
  
-  if (kk.status === "fulfilled" && kk.value?.data?.item) return { source: "kkphim", data: kk.value.data.item };
-  if (op.status === "fulfilled" && op.value?.data?.item) return { source: "ophim", data: op.value.data.item };
-  if (kk.status === "fulfilled" && kk.value?.movie) return { source: "kkphim", data: kk.value.movie };
-  if (op.status === "fulfilled" && op.value?.movie) return { source: "ophim", data: op.value.movie };
+  // Prioritize OPhim
+  if (op.status === "fulfilled" && op.value) {
+     if (op.value.data?.item) return { source: "ophim", data: { ...op.value.data.item, episodes: op.value.data.episodes } };
+     if (op.value.movie) return { source: "ophim", data: { ...op.value.movie, episodes: op.value.episodes } };
+  }
+  if (opMirror.status === "fulfilled" && opMirror.value) {
+     if (opMirror.value.data?.item) return { source: "ophim", data: { ...opMirror.value.data.item, episodes: opMirror.value.data.episodes } };
+     if (opMirror.value.movie) return { source: "ophim", data: { ...opMirror.value.movie, episodes: opMirror.value.episodes } };
+  }
+
+  // Fallback to KKPhim
+  if (kk.status === "fulfilled" && kk.value) {
+     if (kk.value.data?.item) return { source: "kkphim", data: { ...kk.value.data.item, episodes: kk.value.data.episodes } };
+     if (kk.value.movie) return { source: "kkphim", data: { ...kk.value.movie, episodes: kk.value.episodes } };
+  }
+  
+  // Fallback to NguonC
   if (ng.status === "fulfilled" && ng.value?.movie) return { source: "nguonc", data: ng.value.movie };
  
   return null;

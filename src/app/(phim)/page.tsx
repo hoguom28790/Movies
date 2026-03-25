@@ -34,11 +34,18 @@ async function resolveTrendingMovies(trending: any[]) {
         const itemSlug = item.slug.toLowerCase();
         const yearStr = year || "";
         
-        const isTitleMatch = itemTitle === cleanTitle || itemOrigin === cleanTitle || itemTitle === cleanOriginal || itemOrigin === cleanOriginal;
-        const isYearMatch = yearStr ? item.year.toString().includes(yearStr) : true;
+        // Match Strategy 1: Exact matches
+        const isExactMatch = itemTitle === cleanTitle || itemOrigin === cleanTitle || itemTitle === cleanOriginal || itemOrigin === cleanOriginal;
+        
+        // Match Strategy 2: Partial matches (important for "Tuyển thủ dê: Mùi vị chiến thắng")
+        const isPartialMatch = itemTitle.startsWith(cleanTitle) || itemTitle.includes(cleanTitle);
+        
+        // Match Strategy 3: Slug matches
         const isSlugMatch = itemSlug === cleanTitle || itemSlug === `${cleanTitle}-${yearStr}`.replace(/\s+/g, '-') || itemSlug.startsWith(`${cleanTitle.replace(/\s+/g, '-')}-`);
         
-        return (isTitleMatch && isYearMatch) || (isSlugMatch && isYearMatch);
+        const isYearMatch = yearStr ? item.year.toString().includes(yearStr) : true;
+        
+        return (isExactMatch && isYearMatch) || (isPartialMatch && isYearMatch) || (isSlugMatch && isYearMatch);
       });
 
       // Special Heuristic: Try to fetch known slugs for short titles like "Cứu"
