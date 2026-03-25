@@ -8,6 +8,23 @@ const DEFAULT_HEADERS = {
   'Referer': 'https://topxx.vip/'
 };
 
+// Helper for timeout-safe fetch
+async function fetchWithTimeout(url: string, options: RequestInit = {}, timeout = 10000) {
+  const controller = new AbortController();
+  const id = setTimeout(() => controller.abort(), timeout);
+  try {
+    const response = await fetch(url, {
+      ...options,
+      signal: controller.signal
+    });
+    clearTimeout(id);
+    return response;
+  } catch (err) {
+    clearTimeout(id);
+    throw err;
+  }
+}
+
 export async function getTopXXMovies(
   page: number = 1, 
   type: "danh-sach" | "the-loai" | "quoc-gia" | "dien-vien" = "danh-sach", 
@@ -29,11 +46,10 @@ export async function getTopXXMovies(
   }
 
   try {
-    const res = await fetch(url, { 
+    const res = await fetchWithTimeout(url, { 
       next: { revalidate: 3600 },
-      headers: DEFAULT_HEADERS,
-      signal: AbortSignal.timeout(10000)
-    });
+      headers: DEFAULT_HEADERS
+    }, 10000);
     
     if (!res.ok) return { items: [], pagination: { currentPage: 1, totalPages: 1, totalItems: 0 } };
     const data = await res.json();
@@ -81,7 +97,7 @@ export async function searchTopXXMovies(keyword: string, page: number = 1): Prom
   
   try {
     const [topxxRes, avdbTitleRes, avdbActorRes] = await Promise.allSettled([
-      fetch(url, { headers: DEFAULT_HEADERS, signal: AbortSignal.timeout(10000) })
+      fetchWithTimeout(url, { headers: DEFAULT_HEADERS }, 10000)
         .then(async r => {
           if (!r.ok) return null;
           try { return await r.json(); } catch(e) { return null; }
@@ -159,11 +175,10 @@ export async function searchTopXXMovies(keyword: string, page: number = 1): Prom
 
 export async function getTopXXDetails(code: string) {
   try {
-    const res = await fetch(`${BASE_URL}/movies/${code}`, { 
+    const res = await fetchWithTimeout(`${BASE_URL}/movies/${code}`, { 
       cache: "no-store",
-      headers: DEFAULT_HEADERS,
-      signal: AbortSignal.timeout(10000)
-    });
+      headers: DEFAULT_HEADERS
+    }, 10000);
     if (!res.ok) return null;
     const data = await res.json();
     return data.data || null;

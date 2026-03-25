@@ -1,32 +1,35 @@
-import { searchTopXXMovies } from "@/services/api/topxx";
 import { XXMovieCard } from "@/components/movie/XXMovieCard";
 import { XXSearchBar } from "@/components/movie/XXSearchBar";
 import Link from "next/link";
 import { Search } from "lucide-react";
+import { Movie } from "@/types/movie";
 
 export const dynamic = "force-dynamic";
 
 export default async function XXSearchPage({
   searchParams,
 }: {
-  searchParams: Promise<{ q?: string; page?: string }>;
+  searchParams: Promise<any>;
 }) {
   const { q, page } = await searchParams;
   const query = q || "";
   const parsedPage = parseInt(page || "1", 10);
   const currentPage = isNaN(parsedPage) ? 1 : Math.max(1, parsedPage);
 
-  let results: Awaited<ReturnType<typeof searchTopXXMovies>> = { 
+  let results: any = { 
     items: [], 
     pagination: { currentPage: 1, totalPages: 1, totalItems: 0 } 
   };
 
   if (query) {
     try {
-      results = await searchTopXXMovies(query, currentPage);
+      const { searchTopXXMovies } = await import("@/services/api/topxx");
+      const fetchedResults = await searchTopXXMovies(query, currentPage);
+      if (fetchedResults) {
+        results = fetchedResults;
+      }
     } catch (err) {
       console.error("Search Page Execution Error:", err);
-      // Fallback stays as default let results
     }
   }
 
@@ -61,7 +64,7 @@ export default async function XXSearchPage({
 
           {(results?.items?.length || 0) > 0 ? (
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-x-6 gap-y-12 animate-in fade-in slide-in-from-bottom-4 duration-700">
-              {results.items.map((movie, idx) => (
+              {results.items.map((movie: Movie, idx: number) => (
                 movie && (
                   <XXMovieCard
                     key={`${movie.id}-${idx}`}
