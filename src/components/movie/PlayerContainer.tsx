@@ -150,9 +150,12 @@ export function PlayerContainer({ url, isHls, rawEmbedUrl, nextEpisodeUrl, movie
         const history = await getMovieHistory(user.uid, movieSlug);
         
         if (history && history.episodeSlug === episodeSlug && history.progressSeconds) {
+          const lastPosition = history.progressSeconds;
+          console.log("[RESUME] Fetched lastPosition:", lastPosition);
           const iframeRef = document.getElementById('main-player') as HTMLIFrameElement;
           if (iframeRef && iframeRef.contentWindow) {
-             iframeRef.contentWindow.postMessage({ type: 'SEEK', time: history.progressSeconds }, '*');
+             console.log("[RESUME] Seeking to:", lastPosition);
+             iframeRef.contentWindow.postMessage({ type: 'SEEK', time: lastPosition }, '*');
           }
         }
         setSeekAttempted(true);
@@ -242,7 +245,7 @@ export function PlayerContainer({ url, isHls, rawEmbedUrl, nextEpisodeUrl, movie
             durationSeconds: duration,
             progress: Math.round(percent)
           }).then(() => {
-            console.log(`Saved progress at ${Math.round(time)} seconds`);
+            console.log(`[PROGRESS SAVE] slug: ${movieSlug} position: ${Math.round(time)} progress%: ${Math.round(percent)}`);
           }).catch(console.error);
         }
 
@@ -383,8 +386,8 @@ export function PlayerContainer({ url, isHls, rawEmbedUrl, nextEpisodeUrl, movie
   const isDirectVideo = url.includes('.m3u8') || url.includes('.mp4') || url.includes('.mkv') || url.includes('.ts') || url.includes('m3u8') || url.includes('mp4');
 
   const iframeSrc = isDirectVideo 
-    ? `/player.html?url=${encodeURIComponent(url)}&theme=${stylePreset}&v=1.5`
-    : rawEmbedUrl || `/player.html?url=${encodeURIComponent(url)}&theme=${stylePreset}&v=1.5`;
+    ? `/player.html?url=${encodeURIComponent(url)}&theme=${stylePreset}&v=1.6`
+    : rawEmbedUrl || `/player.html?url=${encodeURIComponent(url)}&theme=${stylePreset}&v=1.6`;
 
   return (
     <div className={isPseudoFS 

@@ -2,261 +2,34 @@
 <html lang="vi">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>PREMIUM PLAYER</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0">
+  <title>Ho Phim Cinema Player</title>
   <link rel="stylesheet" href="https://cdn.plyr.io/3.7.8/plyr.css" />
-  <style>
-    body { 
-      margin: 0; 
-      background: #000; 
-      overflow: hidden; 
-      display: flex; 
-      align-items: center; 
-      justify-content: center; 
-      height: 100vh; 
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      touch-action: none;
-    }
-    .plyr {
-      width: 100%;
-      height: 100%;
-      --plyr-color-main: #3b82f6; /* Default Blue */
-      --plyr-menu-background: rgba(10, 10, 12, 0.95);
-      --plyr-menu-color: #f1f1f1;
-      --plyr-control-spacing: 16px;
-      --plyr-font-family: inherit;
-      --plyr-range-thumb-height: 14px;
-      --plyr-range-track-height: 4px;
-      --plyr-control-radius: 12px;
-    }
-
-    #player-container {
-      width: 100%; 
-      height: 100%; 
-      position: relative;
-      touch-action: none;
-      -webkit-user-select: none;
-      user-select: none;
-      background: #000;
-    }
-
-    /* OSD Feedback - Glass Premium */
-    #osd {
-      position: absolute;
-      top: 10%;
-      left: 50%;
-      transform: translateX(-50%);
-      background: rgba(255, 255, 255, 0.03);
-      backdrop-filter: blur(40px) saturate(200%);
-      -webkit-backdrop-filter: blur(40px) saturate(200%);
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      color: white;
-      padding: 14px 40px;
-      border-radius: 48px;
-      font-size: 14px;
-      font-weight: 900;
-      text-transform: uppercase;
-      letter-spacing: 0.3em;
-      font-style: italic;
-      display: none;
-      z-index: 200;
-      pointer-events: none;
-      align-items: center;
-      gap: 16px;
-      box-shadow: 0 40px 100px rgba(0,0,0,0.8), inset 0 0 30px rgba(255,255,255,0.02);
-      white-space: nowrap;
-      animation: osdIn 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-    }
-    
-    @keyframes osdIn {
-      from { top: 5%; opacity: 0; filter: blur(10px); }
-      to { top: 10%; opacity: 1; filter: blur(0px); }
-    }
-    
-    /* Center Seek Ripple - Premium Neural */
-    #center-ripple {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%) scale(0.8);
-      background: rgba(255, 255, 255, 0.04);
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      color: white;
-      border-radius: 50%;
-      width: 100px;
-      height: 100px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      opacity: 0;
-      z-index: 50;
-      pointer-events: none;
-      transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
-      box-shadow: 0 0 60px rgba(0,0,0,0.5);
-    }
-    #center-ripple.active {
-      transform: translate(-50%, -50%) scale(1.6);
-      opacity: 1;
-    }
-
-    /* Gesture Bar - Vertical Neural Scroll */
-    #gesture-bar {
-      position: absolute;
-      top: 50%;
-      transform: translateY(-50%);
-      width: 60px;
-      height: 240px;
-      background: rgba(10, 10, 12, 0.3);
-      backdrop-filter: blur(30px) saturate(180%);
-      -webkit-backdrop-filter: blur(30px) saturate(180%);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      border-radius: 30px;
-      display: none;
-      flex-direction: column;
-      align-items: center;
-      justify-content: flex-end;
-      padding: 10px;
-      z-index: 100;
-      pointer-events: none;
-      box-shadow: 0 50px 100px rgba(0,0,0,0.6);
-    }
-    #gesture-bar-bg {
-       width: 100%;
-       flex: 1;
-       background: rgba(255, 255, 255, 0.05);
-       border-radius: 20px;
-       position: relative;
-       overflow: hidden;
-       margin-bottom: 16px;
-    }
-    #gesture-bar-fill {
-      width: 100%;
-      background: linear-gradient(to top, var(--plyr-color-main), rgba(255, 255, 255, 0.4));
-      border-radius: 20px;
-      transition: height 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-      box-shadow: 0 0 30px var(--plyr-color-main);
-    }
-    #gesture-bar-icon {
-       padding: 10px;
-       color: white;
-       filter: drop-shadow(0 0 10px var(--plyr-color-main));
-    }
-
-    /* Preview - State of Art Cinema */
-    #seek-preview {
-      position: absolute;
-      bottom: 120px;
-      left: 0;
-      width: 240px;
-      height: 135px;
-      background: #000;
-      border: 2px solid rgba(255, 255, 255, 0.15);
-      border-radius: 24px;
-      overflow: hidden;
-      display: none;
-      pointer-events: none;
-      z-index: 300;
-      box-shadow: 0 60px 120px rgba(0,0,0,0.9), 0 0 0 1px rgba(255, 255, 255, 0.05);
-      transform: translateX(-50%);
-      transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-    }
-    #preview-canvas {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      filter: saturate(1.2) contrast(1.1);
-    }
-    #preview-time {
-      position: absolute;
-      bottom: 12px;
-      right: 12px;
-      background: rgba(0, 0, 0, 0.6);
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
-      color: white;
-      padding: 6px 14px;
-      border-radius: 12px;
-      font-size: 13px;
-      font-weight: 900;
-      font-style: italic;
-      letter-spacing: 0.15em;
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      box-shadow: 0 10px 20px rgba(0,0,0,0.5);
-    }
-
-    /* Themes Blue(phim), Red(truyen), Yellow(topxx) */
-    .theme-phim { --plyr-color-main: #3b82f6; }
-    .theme-truyen { --plyr-color-main: #ef4444; }
-    .theme-topxx { --plyr-color-main: #fbbf24; }
-    
-    /* Control Bar Refinement - 100% Glass Cinema */
-    .plyr--full-ui input[type=range] { color: var(--plyr-color-main); }
-    .plyr__control {
-       border-radius: 16px !important;
-       transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), background 0.4s, color 0.4s !important;
-    }
-    .plyr__control:hover { 
-        background: rgba(255, 255, 255, 0.1) !important; 
-        color: var(--plyr-color-main) !important;
-    }
-
-    /* FIXED Play button position on hover - Centered and stable */
-    .plyr__control--overlaid { 
-        position: absolute !important;
-        top: 50% !important;
-        left: 50% !important;
-        transform: translate(-50%, -50%) !important;
-        background: rgba(255, 255, 255, 0.1) !important; 
-        padding: 28px !important; 
-        backdrop-filter: blur(30px); 
-        box-shadow: 0 30px 60px rgba(0,0,0,0.5);
-        border: 1px solid rgba(255,255,255,0.1);
-        z-index: 2;
-    }
-    .plyr__control--overlaid:hover {
-        transform: translate(-50%, -50%) scale(1.1) !important;
-    }
-
-    .plyr__controls {
-       background: linear-gradient(transparent, rgba(0, 0, 0, 0.95)) !important;
-       padding: 40px 60px 40px !important;
-       opacity: 0.4;
-       transition: opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1) !important;
-    }
-    .plyr--hover .plyr__controls, .plyr--focus .plyr__controls { opacity: 1; }
-    
-    .plyr__progress__container {
-        margin: 0 0 16px 0 !important;
-    }
-    .plyr__progress__buffer { color: rgba(255,255,255,0.1) !important; }
-
-    @media (max-width: 768px) {
-       .plyr__controls { padding: 24px 20px !important; }
-       .plyr__progress__container { margin: 0 0 12px 0 !important; }
-       #seek-preview { width: 180px; height: 101px; bottom: 100px; border-radius: 16px; }
-       #osd { font-size: 11px; padding: 10px 24px; }
-    }
-  </style>
-  <script src="https://cdn.jsdelivr.net/npm/hls.js@1.3.5"></script>
   <script src="https://cdn.plyr.io/3.7.8/plyr.polyfilled.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/hls.js@1.4.12/dist/hls.min.js"></script>
+  <style>
+    :root { --plyr-color-main: #3b82f6; --plyr-video-background: #000; }
+    body, html { margin: 0; padding: 0; width: 100%; height: 100%; background: #000; overflow: hidden; font-family: system-ui, -apple-system, sans-serif; }
+    #player-container { width: 100%; height: 100%; position: relative; }
+    video { width: 100%; height: 100%; }
+    #osd { position: absolute; top: 40px; right: 40px; background: rgba(0,0,0,0.8); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.1); padding: 12px 24px; border-radius: 20px; color: white; z-index: 1000; display: none; align-items: center; gap: 12px; font-weight: 800; text-transform: uppercase; font-size: 11px; letter-spacing: 0.1em; pointer-events: none; box-shadow: 0 20px 40px rgba(0,0,0,0.4); }
+    #resume-loader { display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); z-index: 500; flex-direction: column; align-items: center; gap: 20px; }
+    .spinner { width: 60px; height: 60px; border: 4px solid rgba(255,255,255,0.1); border-top: 4px solid var(--plyr-color-main); border-radius: 50%; animation: spin 0.8s linear infinite; }
+    #resume-loader span { color: white; font-weight: 900; font-style: italic; text-transform: uppercase; letter-spacing: 0.3em; font-size: 12px; text-shadow: 0 0 20px rgba(0,0,0,0.5); }
+    #resume-toast { display: none; position: absolute; bottom: 120px; left: 50%; transform: translateX(-50%); background: rgba(10,10,12,0.85); backdrop-filter: blur(40px); border: 1px solid rgba(255,255,255,0.1); padding: 16px 24px; border-radius: 32px; z-index: 400; align-items: center; gap: 20px; box-shadow: 0 40px 100px rgba(0,0,0,0.8); animation: toastIn 0.5s cubic-bezier(0.16,1,0.3,1); }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    @keyframes toastIn { from { bottom: 80px; opacity: 0; } to { bottom: 120px; opacity: 1; } }
+  </style>
 </head>
 <body>
   <div id="player-container">
-    <video id="video" playsinline crossorigin="anonymous"></video>
-    <video id="preview-video" muted playsinline style="display:none;" crossorigin="anonymous"></video>
+    <video id="video" playsinline crossorigin="anonymous" preload="metadata"></video>
     <div id="osd"></div>
-    
-    <!-- Resume Loader - Cinematic Spinner -->
-    <div id="resume-loader" style="display:none; position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); z-index:500; flex-direction:column; align-items:center; gap:20px;">
-       <div style="width:60px; height:60px; border:4px solid rgba(255,255,255,0.1); border-top:4px solid var(--plyr-color-main); border-radius:50%; animation: spin 0.8s linear infinite;"></div>
-       <span style="color:white; font-weight:900; font-style:italic; text-transform:uppercase; letter-spacing:0.3em; font-size:12px; text-shadow:0 0 20px rgba(0,0,0,0.5);">Đang tiếp tục...</span>
+    <div id="resume-loader">
+       <div class="spinner"></div>
+       <span>Đang tiếp tục...</span>
     </div>
-    <style> @keyframes spin { to { transform: rotate(360deg); } } </style>
-    
-    <!-- Resume Toast - Premium Cinema -->
-    <div id="resume-toast" style="display:none; position:absolute; bottom:120px; left:50%; transform:translateX(-50%); background:rgba(10,10,12,0.85); backdrop-filter:blur(40px); border:1px solid rgba(255,255,255,0.1); padding:16px 24px; border-radius:32px; z-index:400; align-items:center; gap:20px; box-shadow:0 40px 100px rgba(0,0,0,0.8); animation: toastIn 0.5s cubic-bezier(0.16,1,0.3,1);">
+    <div id="resume-toast">
         <div style="display:flex; flex-direction:column; gap:2px;">
            <span style="font-weight:900; font-style:italic; text-transform:uppercase; letter-spacing:0.2em; font-size:10px; color:rgba(255,255,255,0.4);">Gần đây</span>
            <span id="resume-time-text" style="color:white; font-weight:900; font-style:italic; font-size:14px;">00:00</span>
@@ -266,51 +39,42 @@
            <button onclick="dismissResume()" style="background:rgba(255,255,255,0.05); color:rgba(255,255,255,0.6); border:none; width:40px; height:40px; border-radius:16px; font-weight:900; cursor:pointer;">✕</button>
         </div>
     </div>
-    <style> @keyframes toastIn { from { bottom: 80px; opacity:0; } to { bottom: 120px; opacity:1; } } </style>
-    
-    <div id="seek-preview">
-       <canvas id="preview-canvas"></canvas>
-       <div id="preview-time">00:00</div>
-    </div>
-
-    <div id="center-ripple">
-      <svg id="ripple-icon" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M21 12a9 9 0 1 1-9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/>
-      </svg>
-    </div>
-
-    <div id="gesture-bar">
-      <div id="gesture-bar-bg">
-        <div id="gesture-bar-fill"></div>
-      </div>
-      <div id="gesture-bar-icon"></div>
-    </div>
   </div>
 
   <script>
     const urlParams = new URLSearchParams(window.location.search);
     const source = urlParams.get('url');
-    const theme = urlParams.get('theme') || 'phim';
-    document.body.classList.add('theme-' + theme);
-
     const video = document.getElementById('video');
-    const container = document.getElementById('player-container');
-    const osd = document.getElementById('osd');
-    const centerRipple = document.getElementById('center-ripple');
-    const rippleIcon = document.getElementById('ripple-icon');
-    const gestureBar = document.getElementById('gesture-bar');
-    const gestureBarFill = document.getElementById('gesture-bar-fill');
-    const gestureBarIcon = document.getElementById('gesture-bar-icon');
-    const previewVideo = document.getElementById('preview-video');
-    const seekPreview = document.getElementById('seek-preview');
-    const previewCanvas = document.getElementById('preview-canvas');
-    const previewContext = previewCanvas.getContext('2d');
-    const previewTimeLabel = document.getElementById('preview-time');
-
-    let player, hls, osdTimer, rippleTimer, previewHls, isPreviewReady = false, previewThrottle, pendingSeek = null;
-
+    let player = null;
+    let hls = null;
+    let pendingSeek = null;
     let seekRetryCount = 0;
     let isApplyingSeek = false;
+
+    function formatTime(s) {
+      const h = Math.floor(s / 3600);
+      const m = Math.floor((s % 3600) / 60);
+      const sec = Math.floor(s % 60);
+      return h > 0 ? `${h}:${m.toString().padStart(2,'0')}:${sec.toString().padStart(2,'0')}` : `${m}:${sec.toString().padStart(2,'0')}`;
+    }
+
+    function showOSD(text, icon = "") {
+      const osd = document.getElementById('osd');
+      osd.innerHTML = `<span>${icon}</span> ${text}`;
+      osd.style.display = 'flex';
+      setTimeout(() => osd.style.display = 'none', 3000);
+    }
+
+    function confirmResume() {
+       document.getElementById('resume-toast').style.display = 'none';
+       if (pendingSeek !== null) applyPendingSeek();
+    }
+    
+    function dismissResume() {
+       document.getElementById('resume-toast').style.display = 'none';
+       pendingSeek = null;
+    }
+
     function applyPendingSeek() {
        if (pendingSeek !== null && video.readyState >= 1 && !isApplyingSeek) {
           isApplyingSeek = true;
@@ -318,7 +82,7 @@
           document.getElementById('resume-loader').style.display = 'flex';
           
           if (seekRetryCount === 0) {
-            console.log(`Resuming from saved position: ${targetTime} seconds`);
+            console.log("[RESUME] Seeking to:", targetTime);
             showOSD("Đang nhảy đến đoạn đã xem...", "🕒");
           }
           
@@ -327,15 +91,11 @@
           setTimeout(() => {
             const diff = Math.abs(video.currentTime - targetTime);
             if (diff > 3 && seekRetryCount < 15) {
-              console.log(`Seek Verification Attempt ${seekRetryCount} failed. Pos: ${video.currentTime}, Target: ${targetTime}`);
               seekRetryCount++;
               isApplyingSeek = false;
-              // Retry faster
               setTimeout(applyPendingSeek, 500);
             } else {
-              if (diff <= 3) console.log("Seek Verified and Applied at:", video.currentTime);
-              else console.warn("Seek Aborted after 15 retries. Final Pos:", video.currentTime);
-              
+              if (diff <= 3) console.log("[RESUME] Seek Verified at:", video.currentTime);
               document.getElementById('resume-loader').style.display = 'none';
               pendingSeek = null;
               seekRetryCount = 0;
@@ -345,207 +105,81 @@
        }
     }
 
-    function showOSD(text, icon = '') {
-      osd.innerHTML = `<span>${icon}</span> ${text}`;
-      osd.style.display = 'flex';
-      clearTimeout(osdTimer);
-      osdTimer = setTimeout(() => { osd.style.display = 'none'; }, 2000);
-    }
-
-    function showRipple(fwd, text) {
-      rippleIcon.innerHTML = fwd 
-        ? `<path d="M21 12a9 9 0 1 1-9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><text x="12" y="15.5" font-family="system-ui" font-size="7" font-weight="900" text-anchor="middle" fill="white" stroke="none">${text}</text>`
-        : `<path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><text x="12" y="15.5" font-family="system-ui" font-size="7" font-weight="900" text-anchor="middle" fill="white" stroke="none">${text}</text>`;
-      centerRipple.classList.add('active');
-      clearTimeout(rippleTimer);
-      rippleTimer = setTimeout(() => centerRipple.classList.remove('active'), 400);
-    }
-
-    function skip(s) {
-      if (!player) return;
-      player.currentTime = Math.max(0, Math.min(player.duration, player.currentTime + s));
-      showRipple(s > 0, Math.abs(s));
-      showOSD(`${Math.abs(s)}S`, s > 0 ? '⏩' : '⏪');
-    }
-
-    function showGestureBar(mode, p) {
-      gestureBar.style.display = 'flex';
-      gestureBar.style.left = mode === 'brightness' ? '30px' : 'auto';
-      gestureBar.style.right = mode === 'volume' ? '30px' : 'auto';
-      gestureBarFill.style.height = `${p}%`;
-      gestureBarIcon.innerHTML = mode === 'brightness' 
-        ? '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M4.93 4.93l1.41 1.41m11.32 11.32l1.41 1.41M2 12h2m16 0h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>'
-        : '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>';
-      clearTimeout(gestureBar.timer);
-      gestureBar.timer = setTimeout(() => gestureBar.style.display = 'none', 1000);
-    }
-
-    function formatTime(s) {
-      const m = Math.floor(s / 60);
-      return `${m.toString().padStart(2,'0')}:${Math.floor(s % 60).toString().padStart(2,'0')}`;
-    }
-
-    function initPreview() {
-      if (isPreviewReady || !source) return;
-      const isM3U8 = source.includes('m3u8');
-      if (isM3U8 && Hls.isSupported()) {
-        previewHls = new Hls({ maxBufferLength: 1, maxMaxBufferLength: 2, autoStartLoad: true, startLevel: 0 });
-        previewHls.loadSource(source);
-        previewHls.attachMedia(previewVideo);
-      } else {
-        previewVideo.src = source;
-      }
-      previewVideo.addEventListener('seeked', () => {
-        previewCanvas.width = 200; previewCanvas.height = 112;
-        previewContext.drawImage(previewVideo, 0, 0, 200, 112);
-      });
-      isPreviewReady = true;
-    }
-
-    function setupInteract() {
-      const p = container.querySelector('.plyr__progress');
-      if (!p) return;
-      const move = (e) => {
-        const r = p.getBoundingClientRect();
-        const x = e.touches ? e.touches[0].clientX : e.clientX;
-        const pct = Math.max(0, Math.min(1, (x - r.left) / r.width));
-        if (player && player.duration) {
-          const t = pct * player.duration;
-          seekPreview.style.display = 'block';
-          seekPreview.style.left = `${x - container.getBoundingClientRect().left}px`;
-          previewTimeLabel.innerText = formatTime(t);
-          if (!isPreviewReady) initPreview();
-          clearTimeout(previewThrottle);
-          previewThrottle = setTimeout(() => { if (previewVideo.readyState >= 1) previewVideo.currentTime = t; }, 50);
-        }
-      };
-      p.addEventListener('mousemove', move);
-      p.addEventListener('touchstart', move, {passive:true}); p.addEventListener('touchmove', move, {passive:true});
-      const end = () => seekPreview.style.display = 'none';
-      p.addEventListener('mouseleave', end); p.addEventListener('touchend', end);
-    }
-
-    let tX, tY, tT, mode, sVol, sBright, sSeek, speedUp = false, lastTap = 0, speedUpTimer;
-    container.addEventListener('touchstart', (e) => {
-      if (e.target.closest('.plyr__controls')) return;
-      const t = e.touches[0], r = container.getBoundingClientRect();
-      tX = t.clientX - r.left; tY = t.clientY - r.top; tT = Date.now();
-      mode = null; sVol = player?.volume || 1; sBright = parseFloat(container.style.filter?.replace('brightness(','') || 1); sSeek = player?.currentTime || 0;
-      speedUpTimer = setTimeout(() => {
-         if (!mode && player && !player.paused) {
-            speedUp = true; player.speed = 2; showOSD("2X SPEED", "⚡");
-            container.classList.add('plyr--hide-controls');
-         }
-      }, 500);
-    });
-
-    container.addEventListener('touchmove', (e) => {
-      if (e.target.closest('.plyr__controls') || speedUp) return;
-      const t = e.touches[0], r = container.getBoundingClientRect();
-      const dX = (t.clientX - r.left) - tX, dY = (t.clientY - r.top) - tY;
-      if (!mode) {
-        if (Math.abs(dY) > 20 && Math.abs(dY) > Math.abs(dX)) mode = tX < r.width/2 ? 'brightness' : 'volume';
-        else if (Math.abs(dX) > 20) mode = 'seek';
-      }
-      if (mode) {
-        e.preventDefault();
-        if (mode === 'volume' && player) {
-          const v = Math.max(0, Math.min(1, sVol - (dY/r.height)*1.5));
-          player.volume = v; showGestureBar('volume', v*100);
-        } else if (mode === 'brightness') {
-          const b = Math.max(0.2, Math.min(1.5, sBright - (dY/r.height)*1.5));
-          container.style.filter = `brightness(${b})`; showGestureBar('brightness', ((b-0.2)/1.3)*100);
-        } else if (mode === 'seek') {
-          const s = dX * 0.5; showOSD(`${s > 0 ? '+' : ''}${Math.round(s)}S`, '🕒');
-        }
-      }
-    }, {passive:false});
-
-    container.addEventListener('touchend', (e) => {
-      clearTimeout(speedUpTimer);
-      if (speedUp) { speedUp = false; player.speed = 1; showOSD("NORMAL SPEED", "▶️"); return; }
-      if (mode === 'seek' && player) {
-        const dX = (e.changedTouches[0].clientX - container.getBoundingClientRect().left) - tX;
-        player.currentTime = Math.max(0, Math.min(player.duration, sSeek + dX * 0.5));
-      } else if (!mode && Date.now() - tT < 250) {
-        if (Date.now() - lastTap < 300) {
-           const r = container.getBoundingClientRect();
-           if (tX < r.width * 0.4) skip(-15); else if (tX > r.width * 0.6) skip(15); else player?.togglePlay();
-           lastTap = 0;
-        } else lastTap = Date.now();
-      }
-      mode = null;
-    });
-
-    function initPlayer(q = [], d = 0) {
+    function initPlayer(qualities = [], defaultQuality = 0) {
       const opts = {
         controls: ['play-large', 'play', 'progress', 'current-time', 'duration', 'mute', 'volume', 'settings', 'pip', 'fullscreen'],
         settings: ['quality', 'speed'],
         speed: { selected: 1, options: [0.5, 0.75, 1, 1.25, 1.5, 2] },
-        tooltips: { controls: true, seek: true },
-        keyboard: { global: true },
-        fullscreen: { iosNative: false, fallback: true },
-        hideControls: true,
-        autoplay: true,
         loadSprite: true,
-        iconUrl: 'https://cdn.plyr.io/3.7.8/plyr.svg'
+        iconUrl: 'https://cdn.plyr.io/3.7.8/plyr.svg',
+        autoplay: true
       };
-      if (q.length) opts.quality = { default: d, options: q, forced: true, onChange: (v) => {
-        if (hls) { if (v === 0) hls.currentLevel = -1; else hls.levels.forEach((l, i) => { if (l.height === v) hls.currentLevel = i; }); }
-      }};
+      
+      if (qualities.length > 1) {
+        opts.quality = { default: defaultQuality, options: qualities, forced: true, onChange: (v) => {
+          if (hls) { if (v === 0) hls.currentLevel = -1; else hls.levels.forEach((l, i) => { if (l.height === v) hls.currentLevel = i; }); }
+        }};
+      }
+
       player = new Plyr(video, opts);
+      window.parent.postMessage({ type: 'PLAYER_READY' }, '*');
+
+      player.on('timeupdate', () => {
+        window.parent.postMessage({ type: 'UPDATE_PROGRESS', time: video.currentTime, duration: video.duration }, '*');
+      });
+      player.on('pause', () => window.parent.postMessage({ type: 'VIDEO_PAUSE' }, '*'));
+      player.on('play', () => {
+        window.parent.postMessage({ type: 'VIDEO_PLAY' }, '*');
+        if (pendingSeek !== null) applyPendingSeek();
+      });
+      player.on('ended', () => window.parent.postMessage({ type: 'VIDEO_ENDED' }, '*'));
       player.on('enterfullscreen', () => window.parent.postMessage({ type: 'ENTER_PSEUDO_FULLSCREEN' }, '*'));
       player.on('exitfullscreen', () => window.parent.postMessage({ type: 'EXIT_PSEUDO_FULLSCREEN' }, '*'));
-      player.on('ready', () => {
-         window.parent.postMessage({ type: 'PLAYER_READY' }, '*');
-         applyPendingSeek();
-      });
-
-      player.on('playing', () => {
-         applyPendingSeek();
-      });
-
-      video.addEventListener('loadedmetadata', applyPendingSeek);
-
-      setInterval(() => { if (!video.paused) window.parent.postMessage({ type: 'UPDATE_PROGRESS', time: video.currentTime, duration: video.duration }, '*'); }, 1000);
-      setupInteract();
     }
 
-    function confirmResume() {
-       document.getElementById('resume-toast').style.display = 'none';
-       if (pendingSeek !== null) applyPendingSeek();
-    }
-    function dismissResume() {
-       document.getElementById('resume-toast').style.display = 'none';
-       pendingSeek = null;
+    if (source) {
+      if (Hls.isSupported() && source.includes('m3u8')) {
+        hls = new Hls({ maxBufferLength: 30, maxMaxBufferLength: 60, capLevelToPlayerSize: true });
+        hls.loadSource(source);
+        hls.attachMedia(video);
+        hls.on(Hls.Events.MANIFEST_PARSED, () => {
+          const qs = hls.levels.map(l => l.height).sort((a,b) => b-a);
+          qs.unshift(0);
+          initPlayer(qs, 0);
+        });
+        hls.on(Hls.Events.ERROR, (event, data) => {
+           if (data.fatal) {
+              switch (data.type) {
+                 case Hls.ErrorTypes.NETWORK_ERROR: hls.startLoad(); break;
+                 case Hls.ErrorTypes.MEDIA_ERROR: hls.recoverMediaError(); break;
+                 default: initPlayer(); break;
+              }
+           }
+        });
+      } else {
+        video.src = source;
+        initPlayer();
+      }
     }
 
     window.addEventListener('message', (e) => { 
       if (e.data?.type === 'HANDSHAKE_PING') {
         window.parent.postMessage({ type: 'HANDSHAKE_PONG' }, '*');
-        return;
       }
-      if (e.data?.type === 'SEEK') { 
+      if (e.data?.type === 'SEEK') {
         const time = e.data.time;
         if (!time || time < 10) return;
         pendingSeek = time;
         document.getElementById('resume-time-text').innerText = formatTime(time);
         document.getElementById('resume-toast').style.display = 'flex';
-        console.log("Showing Resume Toast for:", time);
-        // Auto seek if ready metadata
-        // if (video.readyState >= 1) applyPendingSeek();
-      } 
+      }
     });
 
-    if (source) {
-      const isM3U8 = source.includes('m3u8');
-      if (isM3U8 && Hls.isSupported()) {
-        hls = new Hls({ maxBufferLength: 30 }); hls.loadSource(source); hls.attachMedia(video);
-        hls.on(Hls.Events.MANIFEST_PARSED, () => {
-          const qs = hls.levels.map(l => l.height).sort((a,b) => b-a); qs.unshift(0); initPlayer(qs, 0);
-        });
-      } else { video.src = source; initPlayer(); }
-    }
+    window.addEventListener('keydown', (e) => {
+       if (e.code === 'Space') { e.preventDefault(); if (player) player.togglePlay(); }
+       if (e.code === 'ArrowRight') { if (player) player.forward(10); }
+       if (e.code === 'ArrowLeft') { if (player) player.rewind(10); }
+    });
   </script>
 </body>
 </html>

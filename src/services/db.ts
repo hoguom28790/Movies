@@ -9,7 +9,7 @@ export async function deleteFromWatchlist(userId: string, movieSlug: string) {
 
 export async function deleteFromHistory(userId: string, movieSlug: string) {
   const docId = `${userId}_${movieSlug}`;
-  await deleteDoc(doc(db, "history", docId));
+  await deleteDoc(doc(db, "reading_history_phim", docId));
 }
 
 export async function toggleWatchlist(userId: string, entry: Omit<WatchlistEntry, 'userId' | 'addedAt'>) {
@@ -45,7 +45,7 @@ export async function isInWatchlist(userId: string, movieSlug: string): Promise<
 
 export async function saveHistory(userId: string, entry: Omit<HistoryEntry, 'userId' | 'updatedAt'>) {
   const docId = `${userId}_${entry.movieSlug}`;
-  const docRef = doc(db, "history", docId);
+  const docRef = doc(db, "reading_history_phim", docId);
   const progress = entry.durationSeconds && entry.durationSeconds > 0 
     ? Math.round((entry.progressSeconds / entry.durationSeconds) * 100) 
     : 0;
@@ -59,7 +59,7 @@ export async function saveHistory(userId: string, entry: Omit<HistoryEntry, 'use
 }
 
 export async function getUserHistory(userId: string): Promise<HistoryEntry[]> {
-  const q = query(collection(db, "history"), where("userId", "==", userId));
+  const q = query(collection(db, "reading_history_phim"), where("userId", "==", userId));
   const snap = await getDocs(q);
   const list = snap.docs.map(d => ({ id: d.id, ...d.data() } as HistoryEntry));
   return list.sort((a,b) => b.updatedAt - a.updatedAt);
@@ -67,7 +67,7 @@ export async function getUserHistory(userId: string): Promise<HistoryEntry[]> {
 
 export async function getMovieHistory(userId: string, movieSlug: string): Promise<HistoryEntry | null> {
   const docId = `${userId}_${movieSlug}`;
-  const snap = await getDoc(doc(db, "history", docId));
+  const snap = await getDoc(doc(db, "reading_history_phim", docId));
   return snap.exists() ? (snap.data() as HistoryEntry) : null;
 }
 

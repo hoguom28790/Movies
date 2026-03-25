@@ -364,7 +364,7 @@ html.is-lg-tv {
   left: -150%;
   width: 300%;
   height: 300%;
-  background: url("https://grainy-gradients.vercel.app/noise.svg");
+  background: url("/noise.svg");
   opacity: 0.04;
   pointer-events: none;
   z-index: 9999;

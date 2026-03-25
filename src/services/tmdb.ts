@@ -93,7 +93,8 @@ export async function searchTMDBPerson(name: string): Promise<{ profile_path: st
 export async function getTMDBMovieDetails(tmdbId: number, type: "movie" | "tv" = "movie") {
   try {
     const response = await fetch(
-      `${BASE_URL}/${type}/${tmdbId}?api_key=${TMDB_API_KEY}&language=vi-VN&append_to_response=credits,images,external_ids,recommendations&include_image_language=vi,en,null`
+      `${BASE_URL}/${type}/${tmdbId}?api_key=${TMDB_API_KEY}&language=vi-VN&append_to_response=credits,images,external_ids,recommendations&include_image_language=vi,en,null`,
+      { next: { revalidate: 3600 } }
     );
     return await response.json();
   } catch (error) {
@@ -105,7 +106,8 @@ export async function getTMDBMovieDetails(tmdbId: number, type: "movie" | "tv" =
 export async function getTMDBActorDetails(actorId: number) {
   try {
     const response = await fetch(
-      `${BASE_URL}/person/${actorId}?api_key=${TMDB_API_KEY}&language=vi-VN&append_to_response=combined_credits`
+      `${BASE_URL}/person/${actorId}?api_key=${TMDB_API_KEY}&language=vi-VN&append_to_response=combined_credits`,
+      { next: { revalidate: 3600 } }
     );
     return await response.json();
   } catch (error) {
@@ -117,7 +119,8 @@ export async function getTMDBActorDetails(actorId: number) {
 export async function getTMDBCollection(collectionId: number) {
   try {
     const response = await fetch(
-      `${BASE_URL}/collection/${collectionId}?api_key=${TMDB_API_KEY}&language=vi-VN`
+      `${BASE_URL}/collection/${collectionId}?api_key=${TMDB_API_KEY}&language=vi-VN`,
+      { next: { revalidate: 3600 } }
     );
     return await response.json();
   } catch (error) {
@@ -129,7 +132,8 @@ export async function getTMDBCollection(collectionId: number) {
 export async function getTrendingMovies(page: number = 1) {
   try {
     const response = await fetch(
-      `${BASE_URL}/trending/movie/day?api_key=${TMDB_API_KEY}&language=vi-VN&page=${page}`
+      `${BASE_URL}/trending/movie/day?api_key=${TMDB_API_KEY}&language=vi-VN&page=${page}`,
+      { next: { revalidate: 3600 } }
     );
     return await response.json();
   } catch (error) {

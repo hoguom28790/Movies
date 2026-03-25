@@ -28,17 +28,18 @@ export function MovieContinueWatching() {
     }
 
     // REAL-TIME SYNC: onSnapshot with precise business logic filters
-    // Added Continue Watching section on home page with Firebase progress sync + auto seekTo last position
+    // Added Continue Watching section on home page with    // Basic query to avoid complex index requirements; filter progress further locally
     const q = query(
-      collection(db, "history"),
-      where("userId", "==", user.uid),
-      where("progress", ">", 5),
-      where("progress", "<", 95),
-      limit(40)
+      collection(db, "reading_history_phim"),
+      where("userId", "==", user.uid)
     );
+    // The following filters are applied locally to avoid complex index requirements
+    // where("progress", ">", 5),
+    // where("progress", "<", 95),
+    // limit(40)
 
     const unsubscribe = onSnapshot(q, (snapshot) => {
-      const historyItems = snapshot.docs.map(doc => ({
+      let historyItems = snapshot.docs.map(doc => ({
         id: doc.id,
         ...doc.data()
       })) as HistoryEntry[];
