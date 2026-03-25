@@ -124,16 +124,32 @@ export async function searchTopXXMovies(keyword: string, page: number = 1): Prom
     const [topxxRes, topxxActorRes, avdbTitleRes, avdbActorRes] = await Promise.allSettled([
       fetchWithRetry(topxxUrl, { headers: DEFAULT_HEADERS }, 10000, 2, 800)
         .then(async r => {
+          console.log(`[TopXX Search] Proxy Movie URL: ${topxxUrl} (Status: ${r.status})`);
           if (!r.ok) return null;
-          try { return await r.json(); } catch { return null; }
+          try { 
+            const json = await r.json(); 
+            console.log(`[TopXX Search] Movie Data items:`, json?.data?.length || 0);
+            return json; 
+          } catch { return null; }
         }),
       fetchWithRetry(topxxActorUrl, { headers: DEFAULT_HEADERS }, 10000, 2, 800)
         .then(async r => {
+          console.log(`[TopXX Search] Proxy Actor URL: ${topxxActorUrl} (Status: ${r.status})`);
           if (!r.ok) return null;
-          try { return await r.json(); } catch { return null; }
+          try { 
+            const json = await r.json(); 
+            console.log(`[TopXX Search] Actor Data items:`, json?.data?.length || 0);
+            return json; 
+          } catch { return null; }
         }),
-      getAVDBMovies(page, undefined, normalizedQuery).catch(() => ({ items: [], pagination: { totalItems: 0, totalPages: 1, currentPage: 1 } })),
-      getAVDBMovies(page, undefined, undefined, normalizedQuery).catch(() => ({ items: [], pagination: { totalItems: 0, totalPages: 1, currentPage: 1 } }))
+      getAVDBMovies(page, undefined, normalizedQuery).then(d => {
+        console.log(`[TopXX Search] AVDB Title Results:`, d.items?.length || 0);
+        return d;
+      }).catch(() => ({ items: [], pagination: { totalItems: 0, totalPages: 1, currentPage: 1 } })),
+      getAVDBMovies(page, undefined, undefined, normalizedQuery).then(d => {
+        console.log(`[TopXX Search] AVDB Actor Results:`, d.items?.length || 0);
+        return d;
+      }).catch(() => ({ items: [], pagination: { totalItems: 0, totalPages: 1, currentPage: 1 } }))
     ]);
 
     const movieMap = new Map<string, Movie>();
@@ -150,9 +166,22 @@ export async function searchTopXXMovies(keyword: string, page: number = 1): Prom
     }
 
     if (topxxActorRes.status === "fulfilled" && topxxActorRes.value?.status === "success" && Array.isArray(topxxActorRes.value.data)) {
-      topxxActorRes.value.data.forEach((actor: any) => {
-        if (Array.isArray(actor.movies)) {
-          actor.movies.forEach((m: any) => {
+      // For each found actor, we try to fetch their movies directly
+      // Limit to top 3 actors to prevent too many parallel requests
+      const topActors = topxxActorRes.value.data.slice(0, 3);
+      
+      const actorMoviesResults = await Promise.allSettled(
+        topActors.map((actor: any) => {
+          const actorSlug = actor.trans?.find((t: any) => t.locale === "vi")?.slug || actor.trans?.[0]?.slug;
+          if (!actorSlug) return Promise.resolve(null);
+          const url = `${BASE_URL}/actors/${actorSlug}/movies?page=1`;
+          return fetchWithRetry(url, { headers: DEFAULT_HEADERS }, 10000, 1, 300).then(res => res.ok ? res.json() : null);
+        })
+      );
+
+      actorMoviesResults.forEach((res) => {
+        if (res.status === "fulfilled" && res.value?.status === "success" && Array.isArray(res.value.data)) {
+          res.value.data.forEach((m: any) => {
             const movie = mapTopXXToMovie(m);
             movieMap.set(movie.id, movie);
           });
