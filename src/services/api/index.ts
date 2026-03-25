@@ -2,6 +2,7 @@ import { MovieListResponse } from "@/types/movie";
 import { getNguonCMovies } from "./nguonc";
 import { getKKPhimMovies, searchMovies as searchKK } from "./kkphim";
 import { getOPhimMovies, searchMovies as searchOP } from "./ophim";
+import { getVsmovMovies, searchMovies as searchVS } from "./vsmov";
 import { normalizeTitle } from "@/lib/normalize";
 export * from "./category";
 
@@ -9,8 +10,9 @@ const OPHIM_MIRRORS = [
   "https://ophim1.com", 
   "https://ophim18.cc", 
   "https://ophim17.com", 
-  "https://ophim17.cc", // Sometimes alive
-  "https://ophim10.com"
+  "https://ophim17.cc", 
+  "https://ophim10.com",
+  "https://vsmov.com"
 ];
 
 const DEFAULT_HEADERS = {
@@ -27,49 +29,52 @@ export async function searchMovies(keyword: string, page: number = 1, section: "
      return searchTopXXMovies(keyword, page);
   }
 
-  // 1. Try search on OPhim Mirrors
-  for (const mirror of OPHIM_MIRRORS) {
-    try {
-      const res = await fetch(`${mirror}/v1/api/tim-kiem?keyword=${encodeURIComponent(keyword)}&page=${page}`, {
-        headers: DEFAULT_HEADERS,
-        signal: AbortSignal.timeout(5000),
-        cache: "no-store"
-      });
-      if (!res.ok) continue;
-      const json = await res.json();
-      if (json.status !== "success") continue;
-      
-      const { searchMovies: normalizeSearch } = await import("./ophim");
-      // Use the logic from ophim.ts to normalize the mirror result
-      // But for simplicity, we just check if items exist
-      if (json.data?.items?.length > 0) {
-        // We need to re-map them to our format
-        return normalizeSearch(keyword, page, mirror);
-      }
-    } catch (e) {}
+  // Combine multiple sources in parallel
+  const [opResults, kkResults, vsResults] = await Promise.allSettled([
+    searchOP(keyword, page),
+    searchKK(keyword, page),
+    searchVS(keyword, page)
+  ]);
+
+  const allItems: any[] = [];
+  if (opResults.status === "fulfilled") allItems.push(...opResults.value.items);
+  if (kkResults.status === "fulfilled") allItems.push(...kkResults.value.items);
+  if (vsResults.status === "fulfilled") allItems.push(...vsResults.value.items);
+
+  // Fallback for mirrors if main OPhim fails
+  if (opResults.status === "rejected" || opResults.value.items.length === 0) {
+    for (const mirror of OPHIM_MIRRORS) {
+      if (mirror.includes("ophim1.com")) continue;
+      try {
+        const mirrorRes = await searchOP(keyword, page, mirror);
+        if (mirrorRes.items.length > 0) {
+          allItems.push(...mirrorRes.items);
+          break;
+        }
+      } catch (e) {}
+    }
   }
 
-  // 2. Try search on KKPhim
-  try {
-    const res = await searchKK(keyword, page);
-    if (res.items.length > 0) return res;
-  } catch (e) {}
+  // Deduplicate by slug
+  const seenSlugs = new Set();
+  const mergedItems = allItems.filter(item => {
+    if (seenSlugs.has(item.slug)) return false;
+    seenSlugs.add(item.slug);
+    return true;
+  });
 
-  // 3. Normalized Fallback
-  const cleanKeyword = normalizeTitle(keyword);
-  if (cleanKeyword !== keyword.toLowerCase()) {
-    try {
-      // Try mirrors for normalized keyword too
-      for (const mirror of OPHIM_MIRRORS) {
-        const res = await searchOP(cleanKeyword, page, mirror);
-        if (res.items.length > 0) return res;
-      }
-      const res = await searchKK(cleanKeyword, page);
-      if (res.items.length > 0) return res;
-    } catch (e) {}
-  }
+  const totalItems = (opResults.status === "fulfilled" ? opResults.value.pagination.totalItems : 0) +
+                     (kkResults.status === "fulfilled" ? kkResults.value.pagination.totalItems : 0) +
+                     (vsResults.status === "fulfilled" ? vsResults.value.pagination.totalItems : 0);
 
-  return { items: [], pagination: { currentPage: 1, totalPages: 1, totalItems: 0 } };
+  return { 
+    items: mergedItems, 
+    pagination: { 
+      currentPage: page, 
+      totalPages: 100, 
+      totalItems 
+    } 
+  };
 }
 
 export async function getLatestMovies(page: number = 1): Promise<MovieListResponse> {
@@ -86,28 +91,29 @@ export async function getLatestMovies(page: number = 1): Promise<MovieListRespon
   }
 
   try {
-    const [nguonc, kkphim] = await Promise.allSettled([
+    const [nguonc, kkphim, vsmov] = await Promise.allSettled([
       getNguonCMovies(page),
-      getKKPhimMovies(page)
+      getKKPhimMovies(page),
+      getVsmovMovies(page)
     ]);
 
     const items: any[] = [...ophimData.items];
     if (nguonc.status === "fulfilled") items.push(...nguonc.value.items);
     if (kkphim.status === "fulfilled") items.push(...kkphim.value.items);
+    if (vsmov.status === "fulfilled") items.push(...vsmov.value.items);
 
     const merged = [];
-    const maxLength = Math.max(items.length, items.length); // Dummy
-    // ... merge logic stays similar but we use ophimData if available
-    // Actually simplicity:
     const opItems = ophimData.items;
     const kkItems = kkphim.status === "fulfilled" ? kkphim.value.items : [];
     const ngItems = nguonc.status === "fulfilled" ? nguonc.value.items : [];
+    const vsItems = vsmov.status === "fulfilled" ? vsmov.value.items : [];
 
-    const max = Math.max(opItems.length, kkItems.length, ngItems.length);
+    const max = Math.max(opItems.length, kkItems.length, ngItems.length, vsItems.length);
     for (let i = 0; i < max; i++) {
        if (opItems[i]) merged.push(opItems[i]);
        if (kkItems[i]) merged.push(kkItems[i]);
        if (ngItems[i]) merged.push(ngItems[i]);
+       if (vsItems[i]) merged.push(vsItems[i]);
     }
 
     return {
