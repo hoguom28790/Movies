@@ -73,6 +73,32 @@ async function fetchMovieData(source: string, slug: string) {
         return { movie, episodes };
       }
 
+      // AVDB Normalize
+      if (source === "avdb" && json.servers) {
+        const movie = json;
+        const resolveLink = (link: string) => {
+          if (link.includes('upload18.org/play/index/')) {
+            const id = link.split('index/')[1];
+            return `https://upload18.org/hls/${id}/index.m3u8`;
+          }
+          return link;
+        };
+
+        const episodes = json.servers.map((s: any) => ({
+          server_name: s.server,
+          server_data: s.episodes?.reduce((acc: any, ep: any) => {
+             const resolved = resolveLink(ep.link);
+             const isHls = resolved.includes('.m3u8') || resolved.includes('hls');
+             acc[ep.name || "Full"] = {
+               link_m3u8: isHls ? resolved : '',
+               link_embed: !isHls ? resolved : ''
+             };
+             return acc;
+          }, {}) || {}
+        }));
+        return { movie, episodes };
+      }
+
       // Hồ Phim Normalize
       if (json.data?.item) return { movie: json.data.item, episodes: json.data.item.episodes || json.data.server_data || [] };
       if (json.movie) return { movie: json.movie, episodes: json.episodes || [] };

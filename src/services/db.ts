@@ -53,13 +53,15 @@ export async function saveHistory(userId: string, entry: Omit<HistoryEntry, 'use
     ? Math.round((entry.progressSeconds / entry.durationSeconds) * 100) 
     : 0;
 
+  console.log(`[DB] Saving history to ${collectionName}/${docId} - Progress: ${progress}% (${entry.progressSeconds}s)`);
   await setDoc(docRef, {
     ...entry,
-    movieCode: entry.movieSlug, // Compatibility for legacy TopXX components
+    movieCode: entry.movieSlug, 
     userId,
     progress,
     updatedAt: Date.now()
   }, { merge: true });
+  console.log(`[DB] History saved successfully for ${entry.movieSlug}`);
 }
 
 export async function getUserHistory(userId: string): Promise<HistoryEntry[]> {

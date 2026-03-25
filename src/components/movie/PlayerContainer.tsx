@@ -190,8 +190,16 @@ export function PlayerContainer({ url, isHls, rawEmbedUrl, nextEpisodeUrl, movie
           const canSave = true; // Always save on mount for TopXX/AVDB embeds if conditions met
 
           if (canSave) {
+            // Check if we already have progress before resetting to 0 for embed
+            const { getMovieHistory } = await import("@/services/db");
+            const existing = await getMovieHistory(user.uid, movieSlug, source);
+            if (existing && existing.progressSeconds > 0) {
+              console.log(`[TopXX] Found existing progress (${existing.progressSeconds}s), skipping mount-save reset.`);
+              return;
+            }
+
             lastSaveTimeRef.current = now;
-            console.log(`[TopXX] Progress Update for ${movieSlug}: ${time.toFixed(2)}s / ${duration.toFixed(2)}s`);
+            console.log(`[TopXX] Mount-Sync Progress for ${movieSlug}: ${time.toFixed(2)}s / ${duration.toFixed(2)}s`);
             
             try {
               const { saveHistory } = await import("@/services/db");
@@ -206,7 +214,7 @@ export function PlayerContainer({ url, isHls, rawEmbedUrl, nextEpisodeUrl, movie
                 progress: duration > 0 ? Math.round((time / duration) * 100) : 0,
                 source: source || 'ophim'
               });
-              console.log(`[TopXX] Successfully saved position to Firebase (${source === 'topxx' ? 'xx_history' : 'history'})`);
+              console.log(`[TopXX] Successfully saved mount-sync position to Firebase (${source === 'topxx' ? 'xx_history' : 'history'})`);
             } catch (err) {
               console.error("[TopXX] History save failed:", err);
             }
