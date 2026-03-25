@@ -112,12 +112,16 @@ export function PlayerContainer({ url, isHls, rawEmbedUrl, nextEpisodeUrl, movie
       const { getMovieHistory, saveHistory } = await import("@/services/db");
       const history = await getMovieHistory(user.uid, movieSlug);
       
+      const absolutePoster = posterUrl?.startsWith('http') 
+        ? posterUrl 
+        : `https://img.ophim.live/uploads/movies/${posterUrl}`;
+
       const payload: any = {
         movieSlug,
         movieTitle: movieTitle || "",
         episodeName: episodeName || "",
         episodeSlug: episodeSlug || "",
-        posterUrl: posterUrl || "",
+        posterUrl: absolutePoster,
         progressSeconds: 0 
       };
 
@@ -189,16 +193,20 @@ export function PlayerContainer({ url, isHls, rawEmbedUrl, nextEpisodeUrl, movie
         }
 
         // Periodic Local Save (Firestore)
-        if (now - lastSaveTime > 10000) {
+        if (now - lastSaveTime > 10000 && duration > 0) {
           lastSaveTime = now;
           const { saveHistory } = await import("@/services/db");
+          const absolutePoster = posterUrl?.startsWith('http') 
+            ? posterUrl 
+            : `https://img.ophim.live/uploads/movies/${posterUrl}`;
+
           saveHistory(user.uid, {
             movieSlug,
             movieTitle: movieTitle || "",
             episodeName: episodeName || "",
             episodeSlug: episodeSlug || "",
-            posterUrl: posterUrl || "",
-            progressSeconds: currentTime,
+            posterUrl: absolutePoster,
+            progressSeconds: time,
             durationSeconds: duration
           }).catch(console.error);
         }
@@ -228,9 +236,21 @@ export function PlayerContainer({ url, isHls, rawEmbedUrl, nextEpisodeUrl, movie
         }
       }
     };
+    const handleUnload = () => {
+      if (user && movieSlug && currentTime > 0) {
+        // Use a synchronous-ish way or navigator.sendBeacon if possible, 
+        // but for Firestore we just fire and hope or avoid complicated logic here.
+        // Actually, since this is a SPA, we usually rely on the periodic saves.
+      }
+    };
+
     window.addEventListener('message', handleMessage);
-    return () => window.removeEventListener('message', handleMessage);
-  }, [nextEpisodeUrl, router, user, movieSlug, episodeSlug, movieTitle, episodeName, posterUrl, traktMatch]);
+    window.addEventListener('beforeunload', handleUnload);
+    return () => {
+      window.removeEventListener('message', handleMessage);
+      window.removeEventListener('beforeunload', handleUnload);
+    };
+  }, [nextEpisodeUrl, router, user, movieSlug, episodeSlug, movieTitle, episodeName, posterUrl, traktMatch, currentTime]);
 
   // --- Skip Intro Data Fetching ---
   const seasonNum = 1; // Default

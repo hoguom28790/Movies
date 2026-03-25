@@ -81,17 +81,25 @@ export default function MovieHistoryPage() {
               return h > 0 ? `${h}h${m}m` : `${m}m`;
             };
             
-            const displayEpisode = (String(item.episodeName) === "0") ? "1" : (item.episodeName || "1");
-            const pText = item.progressSeconds > 0 ? `${formatTime(item.progressSeconds)} (${progressPercent}%)` : "Mới xem";
+            // Normalize episode name (Hide "0", "Full", etc.)
+            const rawEp = String(item.episodeName || "").trim().toLowerCase();
+            const displayEpisode = (rawEp === "0" || rawEp === "" || rawEp === "full" || rawEp === "null") ? "1" : (item.episodeName || "1");
+            
+            const pText = item.progressSeconds > 0 ? `${formatTime(item.progressSeconds)}${item.durationSeconds ? ` / ${formatTime(item.durationSeconds)}` : ""} (${progressPercent}%)` : "Mới xem";
             const watchSource = (item as any).source || 'ophim';
             const watchHref = `/xem/${watchSource}/${item.movieSlug}/${encodeURIComponent(displayEpisode)}`;
+            
+            // Ensure poster is absolute (Fixes "Sàn đấu sinh tử" and others)
+            const absolutePoster = item.posterUrl?.startsWith('http') 
+              ? item.posterUrl 
+              : `https://img.ophim.live/uploads/movies/${item.posterUrl}`;
 
             return (
               <MovieCard 
                 key={item.id}
                 title={item.movieTitle}
                 slug={item.movieSlug}
-                posterUrl={item.posterUrl}
+                posterUrl={absolutePoster}
                 episodeText={`Tập ${displayEpisode}`}
                 progress={progressPercent || undefined}
                 progressText={pText}
