@@ -24,11 +24,13 @@ export function XXSearchBar() {
       >
         <Search className="w-5 h-5 text-foreground/30 group-focus-within:text-yellow-500 transition-colors" />
         <input 
+          id="topxx-search-input"
           name="q"
           className="bg-transparent border-none focus:ring-0 text-foreground placeholder:text-foreground/20 w-full font-black text-[15px] uppercase italic tracking-tighter outline-none" 
           placeholder="Tìm kiếm tác phẩm hoặc diễn viên..." 
           type="text"
           autoComplete="off"
+          aria-label="Tìm kiếm phim hoặc diễn viên"
         />
         <button type="button" className="p-2 text-foreground/20 hover:text-yellow-500 transition-colors">
           <Mic className="w-5 h-5" />

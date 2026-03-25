@@ -6,30 +6,52 @@ import { Movie } from "@/types/movie";
 
 export const dynamic = "force-dynamic";
 
+// TargetLintErrorIds: [TS2304]
+import { searchTopXXMovies } from "@/services/api/topxx";
+
+// TargetLintErrorIds: [TS2304]
+interface XXSearchPageProps {
+  searchParams: Promise<{
+    q?: string;
+    page?: string;
+  }>;
+}
+
+// TargetLintErrorIds: [TS2304]
+interface MovieListResponse {
+  items: Movie[];
+  pagination: {
+    totalItems: number;
+    totalPages: number;
+    currentPage: number;
+  };
+}
+
 export default async function XXSearchPage({
   searchParams,
-}: {
-  searchParams: Promise<any>;
-}) {
-  const { q, page } = await searchParams;
-  const query = q || "";
-  const parsedPage = parseInt(page || "1", 10);
-  const currentPage = isNaN(parsedPage) ? 1 : Math.max(1, parsedPage);
+}: XXSearchPageProps) {
+  // FINAL FIX: [TopXX] Consistent searchParams resolution for Next.js 15
+  const params = await searchParams;
+  const q = params.q || "";
+  const pageStr = params.page || "1";
+  const currentPage = Math.max(1, parseInt(pageStr, 10));
 
-  let results: any = { 
-    items: [], 
-    pagination: { currentPage: 1, totalPages: 1, totalItems: 0 } 
+  let results: MovieListResponse = {
+    items: [],
+    pagination: { totalItems: 0, totalPages: 1, currentPage: 1 }
   };
 
-  if (query) {
+  if (q) {
+    console.log(`[TopXX] Search query: "${q}" (Page: ${currentPage})`);
     try {
-      const { searchTopXXMovies } = await import("@/services/api/topxx");
-      const fetchedResults = await searchTopXXMovies(query, currentPage);
+      const fetchedResults = await searchTopXXMovies(q, currentPage);
       if (fetchedResults) {
         results = fetchedResults;
+        console.log(`[TopXX] Parsed data: ${results.items?.length || 0} items found`);
       }
     } catch (err) {
-      console.error("Search Page Execution Error:", err);
+      console.error("[TopXX] Search execution error:", err);
+      // Don't crash, return empty results
     }
   }
 
@@ -51,10 +73,10 @@ export default async function XXSearchPage({
 
         {/* Results Section */}
         <div className="flex flex-col gap-12">
-          {query && (
+          {q && (
             <div className="flex flex-col gap-2 border-l-4 border-yellow-500 pl-6 py-2">
               <h2 className="text-2xl md:text-3xl font-black text-white uppercase italic tracking-tight">
-                KẾT QUẢ CHO: <span className="text-yellow-500 underline decoration-yellow-500/30 underline-offset-8">"{query}"</span>
+                KẾT QUẢ CHO: <span className="text-yellow-500 underline decoration-yellow-500/30 underline-offset-8">"{q}"</span>
               </h2>
               <span className="text-[10px] font-black text-white/40 uppercase tracking-[0.5em] italic">
                 TÌM THẤY {results?.pagination?.totalItems || 0} TÁC PHẨM
@@ -77,14 +99,14 @@ export default async function XXSearchPage({
                 )
               ))}
             </div>
-          ) : query ? (
+          ) : q ? (
             <div className="flex flex-col items-center justify-center py-32 bg-white/[0.02] border border-white/5 rounded-[40px] border-dashed">
                <div className="w-24 h-24 rounded-full bg-yellow-500/10 flex items-center justify-center mb-6">
                  <Search className="w-10 h-10 text-yellow-500/20" />
                </div>
                <p className="text-white/40 text-sm font-black uppercase tracking-[0.4em] italic text-center px-12">
                  Không tìm thấy tác phẩm nào phù hợp với từ khóa <br />
-                 <span className="text-yellow-500/50">"{query}"</span>
+                 <span className="text-yellow-500/50">"{q}"</span>
                </p>
             </div>
           ) : (
@@ -98,7 +120,7 @@ export default async function XXSearchPage({
             <div className="flex items-center justify-center gap-4 mt-12">
               {currentPage > 1 && (
                 <Link
-                  href={`/v2k9r5w8m3x7n1p4q0z6/search?q=${encodeURIComponent(query)}&page=${currentPage - 1}`}
+                  href={`/v2k9r5w8m3x7n1p4q0z6/search?q=${encodeURIComponent(q)}&page=${currentPage - 1}`}
                   className="h-12 px-6 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-[10px] font-black text-white/40 uppercase tracking-[0.2em] hover:bg-yellow-500 hover:text-black hover:border-yellow-500 transition-all duration-300"
                 >
                    ← TRANG TRƯỚC
@@ -109,7 +131,7 @@ export default async function XXSearchPage({
               </div>
               {currentPage < (results?.pagination?.totalPages || 0) && (
                 <Link
-                  href={`/v2k9r5w8m3x7n1p4q0z6/search?q=${encodeURIComponent(query)}&page=${currentPage + 1}`}
+                  href={`/v2k9r5w8m3x7n1p4q0z6/search?q=${encodeURIComponent(q)}&page=${currentPage + 1}`}
                   className="h-12 px-6 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-[10px] font-black text-white/40 uppercase tracking-[0.2em] hover:bg-yellow-500 hover:text-black hover:border-yellow-500 transition-all duration-300"
                 >
                    TRANG TIẾP →

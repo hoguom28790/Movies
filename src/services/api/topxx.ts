@@ -89,21 +89,41 @@ export async function getTopXXMovies(
 }
 
 export async function searchTopXXMovies(keyword: string, page: number = 1): Promise<MovieListResponse> {
+  // FINAL FIX: [TopXX] Search query logging
   if (!keyword || keyword.trim().length === 0) {
+    console.log("[TopXX] Search query: (Empty)");
     return { items: [], pagination: { currentPage: 1, totalPages: 1, totalItems: 0 } };
   }
 
+  console.log(`[TopXX] Search query: "${keyword}" (Page: ${page})`);
   const url = `${BASE_URL}/movies/search?keyword=${encodeURIComponent(keyword)}&page=${page}`;
   
   try {
     const [topxxRes, avdbTitleRes, avdbActorRes] = await Promise.allSettled([
       fetchWithTimeout(url, { headers: DEFAULT_HEADERS }, 10000)
         .then(async r => {
-          if (!r.ok) return null;
-          try { return await r.json(); } catch(e) { return null; }
+          if (!r.ok) {
+            console.error(`[TopXX] Fetch error: ${r.status} ${r.statusText}`);
+            return null;
+          }
+          try { 
+            const json = await r.json(); 
+            // FINAL FIX: [TopXX] Parsed data logging
+            console.log(`[TopXX] Parsed data (TopXX): ${json?.data?.length || 0} items`);
+            return json;
+          } catch(e) { 
+            console.error("[TopXX] JSON parse error:", e);
+            return null; 
+          }
         }),
-      getAVDBMovies(page, undefined, keyword),
-      getAVDBMovies(page, undefined, undefined, keyword)
+      getAVDBMovies(page, undefined, keyword).catch(err => {
+        console.error("[TopXX] AVDB Title fetch error:", err);
+        return { items: [], pagination: { totalItems: 0, totalPages: 1, currentPage: 1 } };
+      }),
+      getAVDBMovies(page, undefined, undefined, keyword).catch(err => {
+        console.error("[TopXX] AVDB Actor fetch error:", err);
+        return { items: [], pagination: { totalItems: 0, totalPages: 1, currentPage: 1 } };
+      })
     ]);
 
     let items: Movie[] = [];
@@ -111,7 +131,7 @@ export async function searchTopXXMovies(keyword: string, page: number = 1): Prom
     let totalPages = 1;
 
     // 1. Process TopXX results
-    if (topxxRes.status === "fulfilled" && topxxRes.value?.status === "success" && Array.isArray(topxxRes.value.data)) {
+    if (topxxRes.status === "fulfilled" && topxxRes.value && topxxRes.value.status === "success" && Array.isArray(topxxRes.value.data)) {
       const txItems = topxxRes.value.data.map((item: any) => {
         if (!item || !item.code) return null;
         const viTrans = Array.isArray(item.trans) ? (item.trans.find((t: any) => t.locale === "vi") || item.trans[0]) : null;
@@ -137,17 +157,17 @@ export async function searchTopXXMovies(keyword: string, page: number = 1): Prom
     }
 
     // 2. Process AVDB title results
-    if (avdbTitleRes.status === "fulfilled" && avdbTitleRes.value?.items) {
+    if (avdbTitleRes.status === "fulfilled" && avdbTitleRes.value && Array.isArray(avdbTitleRes.value.items)) {
         items = [...items, ...avdbTitleRes.value.items];
-        totalItems += avdbTitleRes.value.pagination.totalItems || 0;
-        totalPages = Math.max(totalPages, avdbTitleRes.value.pagination.totalPages || 1);
+        totalItems += avdbTitleRes.value.pagination?.totalItems || 0;
+        totalPages = Math.max(totalPages, avdbTitleRes.value.pagination?.totalPages || 1);
     }
 
     // 3. Process AVDB actor results
-    if (avdbActorRes.status === "fulfilled" && avdbActorRes.value?.items) {
+    if (avdbActorRes.status === "fulfilled" && avdbActorRes.value && Array.isArray(avdbActorRes.value.items)) {
         items = [...items, ...avdbActorRes.value.items];
-        totalItems += avdbActorRes.value.pagination.totalItems || 0;
-        totalPages = Math.max(totalPages, avdbActorRes.value.pagination.totalPages || 1);
+        totalItems += avdbActorRes.value.pagination?.totalItems || 0;
+        totalPages = Math.max(totalPages, avdbActorRes.value.pagination?.totalPages || 1);
     }
 
     // Dedup results by ID
@@ -168,7 +188,7 @@ export async function searchTopXXMovies(keyword: string, page: number = 1): Prom
       }
     };
   } catch (error) {
-    console.error("Search API Logic Error:", error);
+    console.error("[TopXX] Search Logic Fatal Error:", error);
     return { items: [], pagination: { totalItems: 0, totalPages: 1, currentPage: 1 } };
   }
 }
@@ -181,9 +201,9 @@ export async function getTopXXDetails(code: string) {
     }, 10000);
     if (!res.ok) return null;
     const data = await res.json();
-    return data.data || null;
+    return data?.data || null;
   } catch (error) {
-    console.error("TopXX Detail Error:", error);
+    console.error("[TopXX] Detail Error:", error);
     return null;
   }
 }
