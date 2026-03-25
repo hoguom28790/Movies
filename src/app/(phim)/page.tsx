@@ -11,11 +11,33 @@ import { getTrendingMovies, getTMDBImageUrl } from "@/services/tmdb";
 import { BentoMovieRow } from "@/components/movie/BentoMovieRow";
 import { searchMovies as searchLocal } from "@/services/api";
 
+const MANUAL_MAPPING: Record<string, string> = {
+  "Cách giết để giàu": "gia-tai-cua-ngoai",
+  "Trò Chơi Của Quỷ 2": "tro-choi-giet-nguoi-2",
+  "Cứu": "cuu-2026"
+};
+
 async function resolveTrendingMovies(trending: any[]) {
   return await Promise.all(trending.map(async (m) => {
     const title = m.title || m.name;
     const year = m.release_date?.split("-")[0];
     
+    // Check manual mapping first
+    if (MANUAL_MAPPING[title]) {
+      return {
+        id: m.id.toString(),
+        title: title,
+        originalTitle: m.original_title || m.original_name || "",
+        slug: MANUAL_MAPPING[title],
+        posterUrl: getTMDBImageUrl(m.poster_path) || "",
+        thumbUrl: getTMDBImageUrl(m.backdrop_path) || "",
+        year: year || "2025",
+        quality: "HD",
+        source: 'ophim' as any,
+        tmdbRating: m.vote_average
+      };
+    }
+
     try {
       // Parallel search on local providers
       let res = await searchLocal(title);

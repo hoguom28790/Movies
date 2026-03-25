@@ -132,39 +132,34 @@ export async function getMovieDetails(slug: string) {
      return null;
   }
 
-  // Try OPhim Mirrors in sequence for detail
-  for (const mirror of OPHIM_MIRRORS) {
-     try {
-        const res = await fetch(`${mirror}/v1/api/phim/${slug}`, { 
-          headers: DEFAULT_HEADERS,
-          signal: AbortSignal.timeout(10000), // High timeout for details
-          cache: "no-store" 
-        });
-        if (!res.ok) continue;
-        const json = await res.json();
-        const data = json.data?.item || json.movie;
-        if (data) {
-           return { 
-             source: "ophim", 
-             data: { 
-               ...data, 
-               episodes: json.data?.episodes || json.episodes 
-             } 
-           };
-        }
-     } catch(e) {
-        console.error(`[API] OPhim Detail Mirror Failed (${mirror}):`, e);
-     }
+  // 1. Parallel Mirror Check for OPhim (Speed & Resilience)
+  try {
+    const ophimData = await Promise.any(OPHIM_MIRRORS.map(async (mirror) => {
+      const res = await fetch(`${mirror}/v1/api/phim/${slug}`, { 
+        headers: DEFAULT_HEADERS,
+        signal: AbortSignal.timeout(10000),
+        cache: "no-store" 
+      });
+      if (!res.ok) throw new Error("404");
+      const json = await res.json();
+      const movie = json.data?.item || json.movie;
+      if (!movie) throw new Error("No data");
+      return { source: "ophim", data: { ...movie, episodes: json.data?.episodes || json.episodes } };
+    }));
+    if (ophimData) return ophimData;
+  } catch (e) {
+    // console.log("All OPhim mirrors failed for slug:", slug);
   }
 
+  // 2. Fallback to KKPhim & NguonC
   const [ng, kk] = await Promise.allSettled([
-    fetch(`https://phim.nguonc.com/api/film/${slug}`, { headers: DEFAULT_HEADERS }).then((r) => r.json()).catch(() => null),
-    fetch(`https://phimapi.com/v1/api/phim/${slug}`, { headers: DEFAULT_HEADERS }).then((r) => r.json()).catch(() => null),
+    fetch(`https://phim.nguonc.com/api/film/${slug}`, { headers: DEFAULT_HEADERS, signal: AbortSignal.timeout(10000) }).then((r) => r.json()).catch(() => null),
+    fetch(`https://phimapi.com/v1/api/phim/${slug}`, { headers: DEFAULT_HEADERS, signal: AbortSignal.timeout(10000) }).then((r) => r.json()).catch(() => null),
   ]);
  
   if (kk.status === "fulfilled" && kk.value) {
-     const data = kk.value.data?.item || kk.value.movie;
-     if (data) return { source: "kkphim", data: { ...data, episodes: kk.value.data?.episodes || kk.value.episodes } };
+     const movie = kk.value.data?.item || kk.value.movie;
+     if (movie) return { source: "kkphim", data: { ...movie, episodes: kk.value.data?.episodes || kk.value.episodes } };
   }
   
   if (ng.status === "fulfilled" && ng.value?.movie) return { source: "nguonc", data: ng.value.movie };
