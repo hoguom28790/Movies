@@ -9,7 +9,7 @@ export interface SkipTime {
 }
 
 const ANISKIP_API_URL = "https://api.aniskip.com/v1/skip-times";
-const INTRODB_API_URL = "https://api.introdb.app/v1/skip";
+const INTRODB_API_URL = "/api/introdb";
 
 /**
  * Fetch skip times for Anime using AniSkip

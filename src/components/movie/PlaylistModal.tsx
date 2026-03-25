@@ -158,6 +158,8 @@ export function PlaylistModal({ isOpen, onClose, movieSlug, movieTitle, posterUr
         {/* Thêm Playlist mới */}
         <form onSubmit={handleCreate} className="flex gap-2">
           <input 
+            id="new-playlist-input"
+            name="playlist-name"
             type="text" 
             placeholder="Tên thư mục mới..." 
             value={newPlaylistName}

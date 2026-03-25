@@ -91,6 +91,8 @@ export function InstantSearch() {
            <Search className={`h-4 w-4 transition-colors ${loading ? "text-primary animate-pulse" : "text-foreground/20 hover:text-foreground"}`} />
         </button>
         <input
+          id="instant-search-input"
+          name="keyword"
           type="text"
           value={query}
           onChange={(e) => setQuery(e.target.value)}

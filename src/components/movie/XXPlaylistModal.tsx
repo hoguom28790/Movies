@@ -193,11 +193,13 @@ export function XXPlaylistModal({ isOpen, onClose, movieCode, movieTitle, poster
         {/* Create new playlist */}
         <form onSubmit={handleCreate} className="flex gap-2">
           <input 
+            id="xx-new-playlist-input"
+            name="xx-playlist-name"
             type="text" 
-            placeholder="Tên playlist mới..." 
+            placeholder="Tên thư mục mới..." 
             value={newPlaylistName}
             onChange={(e) => setNewPlaylistName(e.target.value)}
-            className="flex-1 bg-white/5 border border-white/10 rounded-2xl px-5 py-4 text-sm text-white focus:outline-none focus:border-yellow-500/50 transition-all placeholder:text-white/20"
+            className="flex-1 bg-black/50 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-primary/50 transition-colors placeholder:text-white/20"
           />
           <Button 
             type="submit" 
