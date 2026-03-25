@@ -34,9 +34,7 @@ export function MovieContinueWatching() {
       where("userId", "==", user.uid),
       where("progress", ">", 5),
       where("progress", "<", 95),
-      orderBy("progress"), // Firestore requires orderBy field matching where range
-      orderBy("updatedAt", "desc"),
-      limit(20)
+      limit(40)
     );
 
     const unsubscribe = onSnapshot(q, (snapshot) => {

@@ -241,6 +241,8 @@ export function PlayerContainer({ url, isHls, rawEmbedUrl, nextEpisodeUrl, movie
             progressSeconds: time,
             durationSeconds: duration,
             progress: Math.round(percent)
+          }).then(() => {
+            console.log(`Saved progress at ${Math.round(time)} seconds`);
           }).catch(console.error);
         }
 
@@ -381,8 +383,8 @@ export function PlayerContainer({ url, isHls, rawEmbedUrl, nextEpisodeUrl, movie
   const isDirectVideo = url.includes('.m3u8') || url.includes('.mp4') || url.includes('.mkv') || url.includes('.ts') || url.includes('m3u8') || url.includes('mp4');
 
   const iframeSrc = isDirectVideo 
-    ? `/player.html?url=${encodeURIComponent(url)}&theme=${stylePreset}&v=1.3`
-    : rawEmbedUrl || `/player.html?url=${encodeURIComponent(url)}&theme=${stylePreset}&v=1.3`;
+    ? `/player.html?url=${encodeURIComponent(url)}&theme=${stylePreset}&v=1.4`
+    : rawEmbedUrl || `/player.html?url=${encodeURIComponent(url)}&theme=${stylePreset}&v=1.4`;
 
   return (
     <div className={isPseudoFS 

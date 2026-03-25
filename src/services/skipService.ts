@@ -53,7 +53,7 @@ export async function fetchIntroDBTimes(tmdbId: number, season: number, episode:
     }
     return [];
   } catch (err) {
-    console.error("IntroDB Error:", err);
+    // console.log("IntroDB skip suppressed");
     return [];
   }
 }

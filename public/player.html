@@ -248,6 +248,19 @@
     <video id="preview-video" muted playsinline style="display:none;" crossorigin="anonymous"></video>
     <div id="osd"></div>
     
+    <!-- Resume Toast - Premium Cinema -->
+    <div id="resume-toast" style="display:none; position:absolute; bottom:120px; left:50%; transform:translateX(-50%); background:rgba(10,10,12,0.85); backdrop-filter:blur(40px); border:1px solid rgba(255,255,255,0.1); padding:16px 24px; border-radius:32px; z-index:400; align-items:center; gap:20px; box-shadow:0 40px 100px rgba(0,0,0,0.8); animation: toastIn 0.5s cubic-bezier(0.16,1,0.3,1);">
+        <div style="display:flex; flex-direction:column; gap:2px;">
+           <span style="font-weight:900; font-style:italic; text-transform:uppercase; letter-spacing:0.2em; font-size:10px; color:rgba(255,255,255,0.4);">Gần đây</span>
+           <span id="resume-time-text" style="color:white; font-weight:900; font-style:italic; font-size:14px;">00:00</span>
+        </div>
+        <div style="display:flex; gap:8px;">
+           <button onclick="confirmResume()" style="background:var(--plyr-color-main); color:white; border:none; padding:10px 24px; border-radius:16px; font-weight:900; font-size:11px; text-transform:uppercase; font-style:italic; cursor:pointer; box-shadow:0 10px 20px rgba(0,0,0,0.2);">Tiếp tục</button>
+           <button onclick="dismissResume()" style="background:rgba(255,255,255,0.05); color:rgba(255,255,255,0.6); border:none; width:40px; height:40px; border-radius:16px; font-weight:900; cursor:pointer;">✕</button>
+        </div>
+    </div>
+    <style> @keyframes toastIn { from { bottom: 80px; opacity:0; } to { bottom: 120px; opacity:1; } } </style>
+    
     <div id="seek-preview">
        <canvas id="preview-canvas"></canvas>
        <div id="preview-time">00:00</div>
@@ -295,19 +308,25 @@
        if (pendingSeek !== null && video.readyState >= 1 && !isApplyingSeek) {
           isApplyingSeek = true;
           const targetTime = pendingSeek;
-          console.log("Final Seek Attempt:", targetTime, "Retry:", seekRetryCount);
+          if (seekRetryCount === 0) {
+            console.log(`Resuming from saved position: ${targetTime} seconds`);
+            showOSD("Đang nhảy đến đoạn đã xem...", "🕒");
+          }
+          
           video.currentTime = targetTime;
           
-          if (seekRetryCount === 0) showOSD("Tiếp tục xem...", "🎬");
-
           setTimeout(() => {
-            if (Math.abs(video.currentTime - targetTime) > 3 && seekRetryCount < 5) {
-              console.log("Verification Failed. Pos:", video.currentTime, "Target:", targetTime);
+            const diff = Math.abs(video.currentTime - targetTime);
+            if (diff > 3 && seekRetryCount < 15) {
+              console.log(`Seek Verification Attempt ${seekRetryCount} failed. Pos: ${video.currentTime}, Target: ${targetTime}`);
               seekRetryCount++;
               isApplyingSeek = false;
-              applyPendingSeek();
+              // Retry faster
+              setTimeout(applyPendingSeek, 500);
             } else {
-              console.log("Seek Verified at:", video.currentTime);
+              if (diff <= 3) console.log("Seek Verified and Applied at:", video.currentTime);
+              else console.warn("Seek Aborted after 15 retries. Final Pos:", video.currentTime);
+              
               pendingSeek = null;
               seekRetryCount = 0;
               isApplyingSeek = false;
@@ -480,15 +499,29 @@
       setupInteract();
     }
 
+    function confirmResume() {
+       document.getElementById('resume-toast').style.display = 'none';
+       if (pendingSeek !== null) applyPendingSeek();
+    }
+    function dismissResume() {
+       document.getElementById('resume-toast').style.display = 'none';
+       pendingSeek = null;
+    }
+
     window.addEventListener('message', (e) => { 
       if (e.data?.type === 'HANDSHAKE_PING') {
         window.parent.postMessage({ type: 'HANDSHAKE_PONG' }, '*');
         return;
       }
       if (e.data?.type === 'SEEK') { 
-        console.log("SEEK Reqd:", e.data.time);
-        pendingSeek = e.data.time;
-        applyPendingSeek();
+        const time = e.data.time;
+        if (!time || time < 10) return;
+        pendingSeek = time;
+        document.getElementById('resume-time-text').innerText = formatTime(time);
+        document.getElementById('resume-toast').style.display = 'flex';
+        console.log("Showing Resume Toast for:", time);
+        // Auto seek if ready metadata
+        // if (video.readyState >= 1) applyPendingSeek();
       } 
     });
 
