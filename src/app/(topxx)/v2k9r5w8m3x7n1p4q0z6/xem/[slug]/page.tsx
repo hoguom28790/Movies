@@ -1,9 +1,9 @@
-import { getTopXXDetails } from "@/services/api/topxx";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, ChevronLeft, ChevronRight, Play } from "lucide-react";
 import { Button } from "@/components/ui/Button";
-import { XXPlayer } from "@/components/layout/XXPlayer";
+import { PlayerContainer } from "@/components/movie/PlayerContainer";
+import { getTopXXDetails } from "@/services/api/topxx";
 
 export const dynamic = "force-dynamic";
 
@@ -67,13 +67,14 @@ export default async function XXWatchPage({
           </div>
 
           <div className="px-0 sm:px-4 lg:px-8">
-             <XXPlayer 
+             <PlayerContainer 
                 url={currentSource.link}
                 isHls={currentSource.link.includes('.m3u8')}
                 rawEmbedUrl={!currentSource.link.includes('.m3u8') ? currentSource.link : ""}
                 movieTitle={viTrans?.title}
-                movieCode={item.code}
+                movieSlug={slug}
                 posterUrl={item.thumbnail}
+                source="topxx"
              />
           </div>
         </div>
