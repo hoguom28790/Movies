@@ -21,7 +21,8 @@ export async function GET(req: NextRequest) {
   if (url.includes('upload18.org/play/index/')) {
      const id = url.split('index/')[1];
      const directM3U8 = `https://upload18.org/hls/${id}/index.m3u8`;
-     return NextResponse.json({ url: directM3U8, type: 'hls' });
+     const proxiedUrl = `/api/topxx/proxy?url=${encodeURIComponent(directM3U8)}`;
+     return NextResponse.json({ url: proxiedUrl, type: 'hls' });
   }
 
   // Fallback: return same URL

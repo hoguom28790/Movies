@@ -23,19 +23,20 @@ export async function GET(req: NextRequest) {
       let text = await res.text();
       const baseUrl = url.substring(0, url.lastIndexOf("/") + 1);
       
-      // Basic rewrite for relative paths
-      const lines = text.split("\n").map(line => {
-        if (line.startsWith("#") || line.trim() === "") return line;
+      // Robust rewrite for manifests (Line URLs and URI="...")
+      const proxiedText = text.replace(/(URI=")?([^"\n#]+\.(m3u8|ts|vtt|m4s)[^"\n]*)(?="|\n|$)/gi, (match, prefix, link) => {
+        let absoluteUrl = link;
+        try {
+          if (!link.startsWith("http")) {
+            absoluteUrl = new URL(link, baseUrl).toString();
+          }
+        } catch(e) { return match; }
         
-        let absoluteUrl = line;
-        if (!line.startsWith("http")) {
-          absoluteUrl = new URL(line, baseUrl).toString();
-        }
-        
-        return `/api/topxx/proxy?url=${encodeURIComponent(absoluteUrl)}`;
+        const wrap = `/api/topxx/proxy?url=${encodeURIComponent(absoluteUrl)}`;
+        return prefix ? `${prefix}${wrap}` : wrap;
       });
       
-      return new NextResponse(lines.join("\n"), {
+      return new NextResponse(proxiedText, {
         headers: {
           "Content-Type": "application/x-mpegURL",
           "Access-Control-Allow-Origin": "*",
