@@ -102,7 +102,7 @@ export default async function XXSearchPage({
                 </Link>
               )}
               <div className="h-12 px-6 rounded-full bg-yellow-500/10 border border-yellow-500/20 flex items-center justify-center text-[11px] font-black text-yellow-500">
-                {currentPage} / {results.pagination.totalPages}
+                {currentPage} / {results?.pagination?.totalPages || 1}
               </div>
               {currentPage < (results?.pagination?.totalPages || 0) && (
                 <Link
