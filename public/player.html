@@ -290,24 +290,29 @@
     let player, hls, osdTimer, rippleTimer, previewHls, isPreviewReady = false, previewThrottle, pendingSeek = null;
 
     let seekRetryCount = 0;
+    let isApplyingSeek = false;
     function applyPendingSeek() {
-       if (pendingSeek !== null && video.readyState >= 1) {
+       if (pendingSeek !== null && video.readyState >= 1 && !isApplyingSeek) {
+          isApplyingSeek = true;
           const targetTime = pendingSeek;
-          console.log("Attempting seek to:", targetTime, "RS:", video.readyState);
+          console.log("Final Seek Attempt:", targetTime, "Retry:", seekRetryCount);
           video.currentTime = targetTime;
-          showOSD("Đang quay lại đoạn cũ...", "🎬");
           
-          // Verify seek after a short delay
+          if (seekRetryCount === 0) showOSD("Tiếp tục xem...", "🎬");
+
           setTimeout(() => {
-            if (Math.abs(video.currentTime - targetTime) > 2 && seekRetryCount < 3) {
-              console.log("Seek failed/reset, retrying...", video.currentTime, "->", targetTime);
-              video.currentTime = targetTime;
+            if (Math.abs(video.currentTime - targetTime) > 3 && seekRetryCount < 5) {
+              console.log("Verification Failed. Pos:", video.currentTime, "Target:", targetTime);
               seekRetryCount++;
+              isApplyingSeek = false;
+              applyPendingSeek();
             } else {
+              console.log("Seek Verified at:", video.currentTime);
               pendingSeek = null;
               seekRetryCount = 0;
+              isApplyingSeek = false;
             }
-          }, 500);
+          }, 1000);
        }
     }
 
@@ -478,12 +483,8 @@
     window.addEventListener('message', (e) => { 
       if (e.data?.type === 'SEEK') { 
         console.log("SEEK Reqd:", e.data.time);
-        if (video.readyState >= 1) {
-          video.currentTime = e.data.time; 
-          showOSD("Tiếp tục xem...", "🎬");
-        } else {
-          pendingSeek = e.data.time;
-        }
+        pendingSeek = e.data.time;
+        applyPendingSeek();
       } 
     });
 
