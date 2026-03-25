@@ -291,6 +291,7 @@
 
     function applyPendingSeek() {
        if (pendingSeek !== null && video.readyState >= 1) {
+          console.log("Applying pending seek:", pendingSeek, "RS:", video.readyState);
           video.currentTime = pendingSeek;
           showOSD("Đang quay lại đoạn cũ...", "🎬");
           pendingSeek = null;
@@ -438,6 +439,7 @@
         keyboard: { global: true },
         fullscreen: { iosNative: false, fallback: true },
         hideControls: true,
+        autoplay: true
       };
       if (q.length) opts.quality = { default: d, options: q, forced: true, onChange: (v) => {
         if (hls) { if (v === 0) hls.currentLevel = -1; else hls.levels.forEach((l, i) => { if (l.height === v) hls.currentLevel = i; }); }
@@ -450,6 +452,10 @@
          applyPendingSeek();
       });
 
+      player.on('playing', () => {
+         applyPendingSeek();
+      });
+
       video.addEventListener('loadedmetadata', applyPendingSeek);
 
       setInterval(() => { if (!video.paused) window.parent.postMessage({ type: 'UPDATE_PROGRESS', time: video.currentTime, duration: video.duration }, '*'); }, 1000);
@@ -458,6 +464,7 @@
 
     window.addEventListener('message', (e) => { 
       if (e.data?.type === 'SEEK') { 
+        console.log("SEEK Reqd:", e.data.time);
         if (video.readyState >= 1) {
           video.currentTime = e.data.time; 
           showOSD("Tiếp tục xem...", "🎬");

@@ -42,6 +42,7 @@ export function PlayerContainer({ url, isHls, rawEmbedUrl, nextEpisodeUrl, movie
   const [toast, setToast] = useState<React.ReactNode | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const lastProcessedSkip = useRef<number | null>(null);
+  const lastSaveTimeRef = useRef<number>(0);
 
   useEffect(() => {
     if (toast) {
@@ -211,8 +212,8 @@ export function PlayerContainer({ url, isHls, rawEmbedUrl, nextEpisodeUrl, movie
         }
 
         // Periodic Local Save (Firestore)
-        if (now - lastSaveTime > 10000 && duration > 0) {
-          lastSaveTime = now;
+        if (now - lastSaveTimeRef.current > 15000 && duration > 0) {
+          lastSaveTimeRef.current = now;
           const { saveHistory } = await import("@/services/db");
           const absolutePoster = posterUrl?.startsWith('http') 
             ? posterUrl 
@@ -254,21 +255,11 @@ export function PlayerContainer({ url, isHls, rawEmbedUrl, nextEpisodeUrl, movie
         }
       }
     };
-    const handleUnload = () => {
-      if (user && movieSlug && currentTime > 0) {
-        // Use a synchronous-ish way or navigator.sendBeacon if possible, 
-        // but for Firestore we just fire and hope or avoid complicated logic here.
-        // Actually, since this is a SPA, we usually rely on the periodic saves.
-      }
-    };
-
     window.addEventListener('message', handleMessage);
-    window.addEventListener('beforeunload', handleUnload);
     return () => {
       window.removeEventListener('message', handleMessage);
-      window.removeEventListener('beforeunload', handleUnload);
     };
-  }, [nextEpisodeUrl, router, user, movieSlug, episodeSlug, movieTitle, episodeName, posterUrl, traktMatch, currentTime]);
+  }, [nextEpisodeUrl, router, user, movieSlug, episodeSlug, movieTitle, episodeName, posterUrl, traktMatch]);
 
   // --- Skip Intro Data Fetching ---
   const seasonNum = 1; // Default
