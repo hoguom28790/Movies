@@ -2,15 +2,15 @@ import { Movie, MovieListResponse } from "@/types/movie";
 
 const BASE_URL = "https://ophim1.com/danh-sach";
 
-export async function getOPhimMovies(page: number = 1): Promise<MovieListResponse> {
-  const res = await fetch(`${BASE_URL}/phim-moi-cap-nhat?page=${page}`, { 
+export async function getOPhimMovies(page: number = 1, baseUrl: string = "https://ophim1.com"): Promise<MovieListResponse> {
+  const res = await fetch(`${baseUrl}/danh-sach/phim-moi-cap-nhat?page=${page}`, { 
     next: { revalidate: 3600 },
     signal: AbortSignal.timeout(5000)
   });
   if (!res.ok) throw new Error("Failed to fetch OPhim");
   const data = await res.json();
   
-  const imagePrefix = data.pathImage || "https://img.ophim.live/uploads/movies/";
+  const imagePrefix = data.pathImage || "https://img.ophim1.com/uploads/movies/";
 
   const items: Movie[] = data.items.map((item: any) => ({
     id: item.slug,
@@ -39,8 +39,8 @@ export async function getOPhimMovies(page: number = 1): Promise<MovieListRespons
   };
 }
 
-export async function searchMovies(keyword: string, page: number = 1): Promise<MovieListResponse> {
-  const res = await fetch(`https://ophim1.com/v1/api/tim-kiem?keyword=${encodeURIComponent(keyword)}&page=${page}`, { 
+export async function searchMovies(keyword: string, page: number = 1, baseUrl: string = "https://ophim1.com"): Promise<MovieListResponse> {
+  const res = await fetch(`${baseUrl}/v1/api/tim-kiem?keyword=${encodeURIComponent(keyword)}&page=${page}`, { 
     cache: "no-store",
     signal: AbortSignal.timeout(5000)
   });
@@ -49,7 +49,7 @@ export async function searchMovies(keyword: string, page: number = 1): Promise<M
   
   if (data.status !== "success") return { items: [], pagination: { currentPage: 1, totalPages: 1, totalItems: 0 } };
 
-  const imagePrefix = data.data.APP_DOMAIN_CDN_IMAGE || "https://img.ophim.live/uploads/movies/";
+  const imagePrefix = data.data.APP_DOMAIN_CDN_IMAGE || "https://img.ophim1.com/uploads/movies/";
   const items: Movie[] = data.data.items.map((item: any) => ({
     id: item.slug,
     title: item.name,

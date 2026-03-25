@@ -5,6 +5,8 @@ import { getOPhimMovies, searchMovies as searchOP } from "./ophim";
 import { normalizeTitle } from "@/lib/normalize";
 export * from "./category";
 
+const OPHIM_MIRRORS = ["https://ophim1.com", "https://ophim18.cc", "https://ophim17.com"];
+
 export async function searchMovies(keyword: string, page: number = 1, section: "hop" | "tx" = "hop"): Promise<MovieListResponse> {
   console.log(`[API] Searching slug for title: ${keyword} in section: ${section}`);
   
@@ -13,11 +15,15 @@ export async function searchMovies(keyword: string, page: number = 1, section: "
      return searchTopXXMovies(keyword, page);
   }
 
-  // 1. Try search on OPhim
-  try {
-    const res = await searchOP(keyword, page);
-    if (res.items.length > 0) return res;
-  } catch (e) {}
+  // 1. Try search on OPhim Mirrors
+  for (const mirror of OPHIM_MIRRORS) {
+    try {
+      const res = await searchOP(keyword, page, mirror);
+      if (res.items.length > 0) return res;
+    } catch (e) {
+      console.error(`[API] OPhim Search Mirror Failed (${mirror}):`, e);
+    }
+  }
 
   // 2. Try search on KKPhim
   try {
@@ -29,9 +35,13 @@ export async function searchMovies(keyword: string, page: number = 1, section: "
   const cleanKeyword = normalizeTitle(keyword);
   if (cleanKeyword !== keyword.toLowerCase()) {
     try {
+      // Try mirrors for normalized keyword too
+      for (const mirror of OPHIM_MIRRORS) {
+        const res = await searchOP(cleanKeyword, page, mirror);
+        if (res.items.length > 0) return res;
+      }
       const res = await searchKK(cleanKeyword, page);
       if (res.items.length > 0) return res;
-      return await searchOP(cleanKeyword, page);
     } catch (e) {}
   }
 
@@ -39,29 +49,41 @@ export async function searchMovies(keyword: string, page: number = 1, section: "
 }
 
 export async function getLatestMovies(page: number = 1): Promise<MovieListResponse> {
+  // Try to find a healthy OPhim mirror for latest
+  let ophimData: MovieListResponse = { items: [], pagination: { currentPage: 1, totalPages: 1, totalItems: 0 } };
+  for (const mirror of OPHIM_MIRRORS) {
+     try {
+        const res = await getOPhimMovies(page, mirror);
+        if (res.items.length > 0) {
+           ophimData = res;
+           break;
+        }
+     } catch(e) {}
+  }
+
   try {
-    const [nguonc, kkphim, ophim] = await Promise.allSettled([
+    const [nguonc, kkphim] = await Promise.allSettled([
       getNguonCMovies(page),
-      getKKPhimMovies(page),
-      getOPhimMovies(page)
+      getKKPhimMovies(page)
     ]);
 
-    const items = [];
+    const items: any[] = [...ophimData.items];
     if (nguonc.status === "fulfilled") items.push(...nguonc.value.items);
     if (kkphim.status === "fulfilled") items.push(...kkphim.value.items);
-    if (ophim.status === "fulfilled") items.push(...ophim.value.items);
-
-    const maxLength = Math.max(
-      nguonc.status === "fulfilled" ? nguonc.value.items.length : 0,
-      kkphim.status === "fulfilled" ? kkphim.value.items.length : 0,
-      ophim.status === "fulfilled" ? ophim.value.items.length : 0
-    );
 
     const merged = [];
-    for (let i = 0; i < maxLength; i++) {
-      if (nguonc.status === "fulfilled" && nguonc.value.items[i]) merged.push(nguonc.value.items[i]);
-      if (kkphim.status === "fulfilled" && kkphim.value.items[i]) merged.push(kkphim.value.items[i]);
-      if (ophim.status === "fulfilled" && ophim.value.items[i]) merged.push(ophim.value.items[i]);
+    const maxLength = Math.max(items.length, items.length); // Dummy
+    // ... merge logic stays similar but we use ophimData if available
+    // Actually simplicity:
+    const opItems = ophimData.items;
+    const kkItems = kkphim.status === "fulfilled" ? kkphim.value.items : [];
+    const ngItems = nguonc.status === "fulfilled" ? nguonc.value.items : [];
+
+    const max = Math.max(opItems.length, kkItems.length, ngItems.length);
+    for (let i = 0; i < max; i++) {
+       if (opItems[i]) merged.push(opItems[i]);
+       if (kkItems[i]) merged.push(kkItems[i]);
+       if (ngItems[i]) merged.push(ngItems[i]);
     }
 
     return {
@@ -86,30 +108,32 @@ export async function getMovieDetails(slug: string) {
      return null;
   }
 
-  const [ng, kk, op, opMirror] = await Promise.allSettled([
-    fetch(`https://phim.nguonc.com/api/film/${slug}`).then((r) => r.json()).catch(() => null),
-    fetch(`https://phimapi.com/v1/api/phim/${slug}`).then((r) => r.json()).catch(() => null),
-    fetch(`https://ophim1.com/v1/api/phim/${slug}`).then((r) => r.json()).catch(() => null),
-    fetch(`https://ophim17.com/v1/api/phim/${slug}`).then((r) => r.json()).catch(() => null), // Fallback Mirror
-  ]);
- 
-  // Prioritize OPhim
-  if (op.status === "fulfilled" && op.value) {
-     if (op.value.data?.item) return { source: "ophim", data: { ...op.value.data.item, episodes: op.value.data.episodes } };
-     if (op.value.movie) return { source: "ophim", data: { ...op.value.movie, episodes: op.value.episodes } };
-  }
-  if (opMirror.status === "fulfilled" && opMirror.value) {
-     if (opMirror.value.data?.item) return { source: "ophim", data: { ...opMirror.value.data.item, episodes: opMirror.value.data.episodes } };
-     if (opMirror.value.movie) return { source: "ophim", data: { ...opMirror.value.movie, episodes: opMirror.value.episodes } };
+  // Try OPhim Mirrors in sequence for detail (not parallel to avoid overloading)
+  for (const mirror of OPHIM_MIRRORS) {
+     try {
+        const res = await fetch(`${mirror}/v1/api/phim/${slug}`, { 
+          signal: AbortSignal.timeout(5000),
+          cache: "no-store" 
+        });
+        if (!res.ok) continue;
+        const json = await res.json();
+        if (json.data?.item) return { source: "ophim", data: { ...json.data.item, episodes: json.data.episodes } };
+        if (json.movie) return { source: "ophim", data: { ...json.movie, episodes: json.episodes } };
+     } catch(e) {
+        console.error(`[API] OPhim Detail Mirror Failed (${mirror}):`, e);
+     }
   }
 
-  // Fallback to KKPhim
+  const [ng, kk] = await Promise.allSettled([
+    fetch(`https://phim.nguonc.com/api/film/${slug}`).then((r) => r.json()).catch(() => null),
+    fetch(`https://phimapi.com/v1/api/phim/${slug}`).then((r) => r.json()).catch(() => null),
+  ]);
+ 
   if (kk.status === "fulfilled" && kk.value) {
      if (kk.value.data?.item) return { source: "kkphim", data: { ...kk.value.data.item, episodes: kk.value.data.episodes } };
      if (kk.value.movie) return { source: "kkphim", data: { ...kk.value.movie, episodes: kk.value.episodes } };
   }
   
-  // Fallback to NguonC
   if (ng.status === "fulfilled" && ng.value?.movie) return { source: "nguonc", data: ng.value.movie };
  
   return null;

@@ -34,28 +34,32 @@ async function resolveTrendingMovies(trending: any[]) {
         const itemSlug = item.slug.toLowerCase();
         const yearStr = year || "";
         
-        // Match Strategy 1: Exact matches
+        // Exact title match (Strategy 1)
         const isExactMatch = itemTitle === cleanTitle || itemOrigin === cleanTitle || itemTitle === cleanOriginal || itemOrigin === cleanOriginal;
         
-        // Match Strategy 2: Partial matches (important for "Tuyển thủ dê: Mùi vị chiến thắng")
+        // Partial title match (Strategy 2)
         const isPartialMatch = itemTitle.startsWith(cleanTitle) || itemTitle.includes(cleanTitle);
         
-        // Match Strategy 3: Slug matches
+        // Slug match (Strategy 3)
         const isSlugMatch = itemSlug === cleanTitle || itemSlug === `${cleanTitle}-${yearStr}`.replace(/\s+/g, '-') || itemSlug.startsWith(`${cleanTitle.replace(/\s+/g, '-')}-`);
         
-        const isYearMatch = yearStr ? item.year.toString().includes(yearStr) : true;
+        // Year check with +/- 1 year tolerance
+        const itemYear = parseInt(item.year);
+        const targetYear = parseInt(yearStr);
+        const isYearMatch = yearStr ? (itemYear === targetYear || itemYear === targetYear + 1 || itemYear === targetYear - 1) : true;
         
-        return (isExactMatch && isYearMatch) || (isPartialMatch && isYearMatch) || (isSlugMatch && isYearMatch);
+        return (isExactMatch && isYearMatch) || (isSlugMatch && isYearMatch) || (isPartialMatch && isYearMatch);
       });
 
       // Special Heuristic: Try to fetch known slugs for short titles like "Cứu"
       if (!match && title.length < 10) {
         const candidateSlug = `${title.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[đĐ]/g, "d").replace(/\s+/g, '-')}-${year || '2025'}`;
         try {
-          const check = await fetch(`https://ophim1.com/v1/api/phim/${candidateSlug}`, { signal: AbortSignal.timeout(2000) });
+          // Direct check on mirror
+          const check = await fetch(`https://ophim18.cc/v1/api/phim/${candidateSlug}`, { signal: AbortSignal.timeout(2000) });
           if (check.ok) {
             const checkJson = await check.json();
-            if (checkJson.status === "success" || checkJson.movie) {
+            if (checkJson.status === "success" || checkJson.data?.item) {
               match = { slug: candidateSlug, source: 'ophim' } as any;
             }
           }
