@@ -32,6 +32,8 @@ export function PlayerContainer({ url, isHls, rawEmbedUrl, nextEpisodeUrl, movie
   const queryClient = useQueryClient();
   
   const [isPseudoFS, setIsPseudoFS] = useState(false);
+  const [playerReady, setPlayerReady] = useState(false);
+  const [seekAttempted, setSeekAttempted] = useState(false);
   const [isPortrait, setIsPortrait] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [skipShow, setSkipShow] = useState<SkipTime | null>(null);
@@ -127,32 +129,46 @@ export function PlayerContainer({ url, isHls, rawEmbedUrl, nextEpisodeUrl, movie
 
   useEffect(() => {
     setIsLoading(true);
+    setPlayerReady(false);
+    setSeekAttempted(false);
     const timer = setTimeout(() => setIsLoading(false), 2000); 
     return () => clearTimeout(timer);
   }, [url]);
 
+  // Sync with Firebase History for Seeking
   useEffect(() => {
-    let lastSaveTime = 0;
-
-    const attemptSeek = async () => {
-      if (!user || !movieSlug || !episodeSlug) return;
+    const attemptSeekValue = async () => {
+      if (!user || !movieSlug || !episodeSlug || !playerReady || seekAttempted) return;
       
-      const { getMovieHistory } = await import("@/services/db");
-      const history = await getMovieHistory(user.uid, movieSlug);
-      
-      if (history && history.episodeSlug === episodeSlug && history.progressSeconds) {
-        const iframeRef = document.getElementById('main-player') as HTMLIFrameElement;
-        if (iframeRef && iframeRef.contentWindow) {
-          iframeRef.contentWindow.postMessage({ type: 'SEEK', time: history.progressSeconds }, '*');
+      try {
+        const { getMovieHistory } = await import("@/services/db");
+        const history = await getMovieHistory(user.uid, movieSlug);
+        
+        if (history && history.episodeSlug === episodeSlug && history.progressSeconds) {
+          const iframeRef = document.getElementById('main-player') as HTMLIFrameElement;
+          if (iframeRef && iframeRef.contentWindow) {
+            iframeRef.contentWindow.postMessage({ type: 'SEEK', time: history.progressSeconds }, '*');
+            setSeekAttempted(true);
+          }
+        } else {
+          setSeekAttempted(true);
         }
+      } catch (e) {
+        setSeekAttempted(true);
       }
     };
+
+    attemptSeekValue();
+  }, [user, movieSlug, episodeSlug, playerReady, seekAttempted]);
+
+  useEffect(() => {
+    let lastSaveTime = 0;
 
     const handleMessage = async (event: MessageEvent) => {
       if (typeof event.data !== 'object') return;
 
       if (event.data.type === 'PLAYER_READY') {
-        attemptSeek();
+        setPlayerReady(true);
       }
 
       if (event.data.type === 'ENTER_PSEUDO_FULLSCREEN') setIsPseudoFS(true);
