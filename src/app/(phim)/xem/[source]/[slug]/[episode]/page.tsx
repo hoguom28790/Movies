@@ -156,6 +156,7 @@ export default async function WatchPage({
           isHls={s !== "embed"} 
           rawEmbedUrl={currentEp.link_embed}
           movieTitle={data.name || data.title}
+          movieSlug={slug}
           episodeName={currentEp.name === "0" || currentEp.name?.toLowerCase() === "full" ? "1" : currentEp.name}
           episodeSlug={currentEp.slug}
           posterUrl={data.thumb_url || data.poster_url || ""}

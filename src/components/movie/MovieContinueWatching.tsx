@@ -114,7 +114,7 @@ export function MovieContinueWatching() {
               : `Đã xem ${item.progress}%`;
 
             const watchSource = (item as any).source || 'ophim';
-            const epParam = item.episodeSlug || item.episodeName || '1';
+            const epParam = item.episodeSlug || (item.episodeName?.toLowerCase() === "full" ? "full" : (item.episodeName || '1'));
             const watchHref = `/xem/${watchSource}/${item.movieSlug}/${encodeURIComponent(epParam)}`;
 
             return (
