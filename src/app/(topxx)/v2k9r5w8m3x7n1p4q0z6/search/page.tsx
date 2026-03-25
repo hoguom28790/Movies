@@ -13,7 +13,8 @@ export default async function XXSearchPage({
 }) {
   const { q, page } = await searchParams;
   const query = q || "";
-  const currentPage = Math.max(1, parseInt(page || "1", 10));
+  const parsedPage = parseInt(page || "1", 10);
+  const currentPage = isNaN(parsedPage) ? 1 : Math.max(1, parsedPage);
 
   let results: Awaited<ReturnType<typeof searchTopXXMovies>> = { 
     items: [], 
@@ -53,22 +54,24 @@ export default async function XXSearchPage({
                 KẾT QUẢ CHO: <span className="text-yellow-500 underline decoration-yellow-500/30 underline-offset-8">"{query}"</span>
               </h2>
               <span className="text-[10px] font-black text-white/40 uppercase tracking-[0.5em] italic">
-                TÌM THẤY {results.pagination.totalItems} TÁC PHẨM
+                TÌM THẤY {results?.pagination?.totalItems || 0} TÁC PHẨM
               </span>
             </div>
           )}
 
-          {results.items.length > 0 ? (
+          {(results?.items?.length || 0) > 0 ? (
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-x-6 gap-y-12 animate-in fade-in slide-in-from-bottom-4 duration-700">
               {results.items.map((movie, idx) => (
-                <XXMovieCard
-                  key={`${movie.id}-${idx}`}
-                  title={movie.title}
-                  slug={movie.slug}
-                  posterUrl={movie.thumbUrl || movie.posterUrl}
-                  year={movie.year}
-                  quality={movie.quality}
-                />
+                movie && (
+                  <XXMovieCard
+                    key={`${movie.id}-${idx}`}
+                    title={movie.title}
+                    slug={movie.slug}
+                    posterUrl={movie.thumbUrl || movie.posterUrl}
+                    year={movie.year}
+                    quality={movie.quality}
+                  />
+                )
               ))}
             </div>
           ) : query ? (
@@ -88,7 +91,7 @@ export default async function XXSearchPage({
           )}
 
           {/* Pagination */}
-          {results.pagination.totalPages > 1 && (
+          {(results?.pagination?.totalPages || 0) > 1 && (
             <div className="flex items-center justify-center gap-4 mt-12">
               {currentPage > 1 && (
                 <Link
@@ -101,12 +104,12 @@ export default async function XXSearchPage({
               <div className="h-12 px-6 rounded-full bg-yellow-500/10 border border-yellow-500/20 flex items-center justify-center text-[11px] font-black text-yellow-500">
                 {currentPage} / {results.pagination.totalPages}
               </div>
-              {currentPage < results.pagination.totalPages && (
+              {currentPage < (results?.pagination?.totalPages || 0) && (
                 <Link
                   href={`/v2k9r5w8m3x7n1p4q0z6/search?q=${query}&page=${currentPage + 1}`}
                   className="h-12 px-6 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-[10px] font-black text-white/40 uppercase tracking-[0.2em] hover:bg-yellow-500 hover:text-black hover:border-yellow-500 transition-all duration-300"
                 >
-                  TRANG TIẾP →
+                   TRANG TIẾP →
                 </Link>
               )}
             </div>

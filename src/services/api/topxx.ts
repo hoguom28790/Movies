@@ -137,6 +137,7 @@ export async function searchTopXXMovies(keyword: string, page: number = 1): Prom
     // Dedup results by ID
     const seen = new Set();
     items = items.filter(item => {
+      if (!item || !item.id) return false;
       const duplicate = seen.has(item.id);
       seen.add(item.id);
       return !duplicate;
