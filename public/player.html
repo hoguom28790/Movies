@@ -95,6 +95,7 @@
 <body>
   <div id="player-container">
     <video id="video" playsinline crossorigin="anonymous" preload="metadata"></video>
+    <iframe id="embed-frame" style="display:none; position:absolute; inset:0; width:100%; height:100%; border:none; z-index:100;" allowfullscreen></iframe>
     <video id="preview-video" muted playsinline style="display:none;" crossorigin="anonymous"></video>
     
     <div id="seek-preview">
@@ -128,7 +129,9 @@
   <script>
     const urlParams = new URLSearchParams(window.location.search);
     const source = urlParams.get('url');
+    const isEmbed = urlParams.get('isEmbed') === 'true';
     const video = document.getElementById('video');
+    const embedFrame = document.getElementById('embed-frame');
     const previewPlayer = document.getElementById('preview-player');
     let player = null;
     let hls = null;
@@ -270,25 +273,32 @@
     }
 
     if (source) {
-      const isM3U8 = source.includes('m3u8');
-      if (isM3U8 && Hls.isSupported()) {
-        hls = new Hls({ maxBufferLength: 30, maxMaxBufferLength: 60, capLevelToPlayerSize: true });
-        hls.loadSource(source);
-        hls.attachMedia(video);
-        hls.on(Hls.Events.MANIFEST_PARSED, () => {
-          const qs = hls.levels.map(l => l.height).sort((a,b) => b-a);
-          qs.unshift(0);
-          initPlayer(qs, 0);
-        });
-
-        // Init Preview Player for HLS
-        previewHls = new Hls();
-        previewHls.loadSource(source);
-        previewHls.attachMedia(previewPlayer);
+      if (isEmbed) {
+        embedFrame.src = source;
+        embedFrame.style.display = 'block';
+        video.style.display = 'none';
+        initPlayer(); // Still call it to trigger PLAYER_READY for parent, though no time tracking
       } else {
-        video.src = source;
-        previewPlayer.src = source;
-        initPlayer();
+        const isM3U8 = source.includes('m3u8') || source.includes('hls') || source.includes('master');
+        if (isM3U8 && Hls.isSupported()) {
+          hls = new Hls({ maxBufferLength: 30, maxMaxBufferLength: 60, capLevelToPlayerSize: true });
+          hls.loadSource(source);
+          hls.attachMedia(video);
+          hls.on(Hls.Events.MANIFEST_PARSED, () => {
+            const qs = hls.levels.map(l => l.height).sort((a,b) => b-a);
+            qs.unshift(0);
+            initPlayer(qs, 0);
+          });
+
+          // Init Preview Player for HLS
+          previewHls = new Hls();
+          previewHls.loadSource(source);
+          previewHls.attachMedia(previewPlayer);
+        } else {
+          video.src = source;
+          previewPlayer.src = source;
+          initPlayer();
+        }
       }
     }
 

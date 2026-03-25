@@ -148,6 +148,23 @@ export function PlayerContainer({ url, isHls, rawEmbedUrl, nextEpisodeUrl, movie
           }
         }
         setSeekAttempted(true);
+
+        // Special case for TopXX/AVDB embeds: save history once on mount since we can't track time
+        const isEmbed = !isDirectVideo;
+        if (isTopXX && isEmbed) {
+          const { saveHistory } = await import("@/services/db");
+          saveHistory(user.uid, {
+            movieSlug,
+            movieTitle: movieTitle || "",
+            episodeName: episodeName || "Full",
+            episodeSlug: episodeSlug || "full",
+            posterUrl: posterUrl?.startsWith('http') ? posterUrl : `https://img.ophim1.com/uploads/movies/${posterUrl}`,
+            progressSeconds: 0,
+            durationSeconds: 0,
+            progress: 0,
+            source: source
+          }).catch(() => {});
+        }
       }
     };
 
@@ -397,9 +414,7 @@ export function PlayerContainer({ url, isHls, rawEmbedUrl, nextEpisodeUrl, movie
 
   const isDirectVideo = url.includes('.m3u8') || url.includes('.mp4') || url.includes('.mkv') || url.includes('.ts') || url.includes('m3u8') || url.includes('mp4');
 
-  const iframeSrc = isDirectVideo 
-    ? `/player.html?url=${encodeURIComponent(url)}&theme=${stylePreset}&v=1.8`
-    : rawEmbedUrl || `/player.html?url=${encodeURIComponent(url)}&theme=${stylePreset}&v=1.8`;
+  const iframeSrc = `/player.html?url=${encodeURIComponent(url || rawEmbedUrl || '')}&theme=${stylePreset}&isEmbed=${!isDirectVideo}&v=2.0`;
 
   return (
     <div className={isPseudoFS 
