@@ -32,10 +32,8 @@ async function fetchWithRetry(url: string, options: RequestInit = {}, timeout = 
       const res = await fetchWithTimeout(url, options, timeout);
       if (res.ok) return res;
       if (res.status === 404) return res; // Don't retry 404
-      console.warn(`[TopXX] Fetch retry ${i+1}/${retries} for ${url} (Status: ${res.status})`);
     } catch (err: any) {
       if (i === retries - 1) throw err;
-      console.warn(`[TopXX] Fetch retry ${i+1}/${retries} for ${url} (Error: ${err.message})`);
     }
     await new Promise(resolve => setTimeout(resolve, delay * Math.pow(2, i)));
   }
@@ -71,8 +69,7 @@ export async function getTopXXMovies(
   } else if (type === "quoc-gia") {
     url = `${BASE_URL}/countries/${slug}/movies?page=${page}`;
   } else if (type === "dien-vien") {
-    const actorName = slug.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
-    return searchTopXXMovies(actorName, page);
+    return searchTopXXMovies(slug, page);
   }
 
   try {
@@ -95,16 +92,31 @@ export async function getTopXXMovies(
   }
 }
 
+export async function getTopXXDetails(slug: string) {
+  const url = `${BASE_URL}/movies/${slug}`;
+  try {
+    const res = await fetchWithRetry(url, { headers: DEFAULT_HEADERS }, 10000);
+    if (!res.ok) return null;
+    const data = await res.json();
+    if (data.status !== "success" || !data.data) return null;
+    return {
+        ...data.data,
+        id: data.data.code,
+        source: 'topxx'
+    };
+  } catch (err) {
+    console.error("[TopXX] Fetch Detail Error:", err);
+    return null;
+  }
+}
+
 export async function searchTopXXMovies(keyword: string, page: number = 1): Promise<MovieListResponse> {
   const normalizedQuery = (keyword || "").trim().toLowerCase();
   
   if (!normalizedQuery) {
-    console.log("[TopXX Search] Query received: (Empty)");
     return { items: [], pagination: { currentPage: 1, totalPages: 1, totalItems: 0 } };
   }
 
-  console.log(`[TopXX Search] Query received: "${normalizedQuery}" (Page: ${page})`);
-  
   const topxxUrl = `${BASE_URL}/movies/search?keyword=${encodeURIComponent(normalizedQuery)}&page=${page}`;
   const topxxActorUrl = `${BASE_URL}/actors?search=${encodeURIComponent(normalizedQuery)}&page=${page}`;
   
@@ -128,7 +140,6 @@ export async function searchTopXXMovies(keyword: string, page: number = 1): Prom
     let totalItems = 0;
     let totalPages = 1;
 
-    // 1. Process Movie Search Results
     if (topxxRes.status === "fulfilled" && topxxRes.value?.status === "success" && Array.isArray(topxxRes.value.data)) {
       topxxRes.value.data.forEach((item: any) => {
         const m = mapTopXXToMovie(item);
@@ -138,7 +149,6 @@ export async function searchTopXXMovies(keyword: string, page: number = 1): Prom
       totalPages = Math.max(totalPages, topxxRes.value.meta?.last_page || 1);
     }
 
-    // 2. Process Actor Search Results
     if (topxxActorRes.status === "fulfilled" && topxxActorRes.value?.status === "success" && Array.isArray(topxxActorRes.value.data)) {
       topxxActorRes.value.data.forEach((actor: any) => {
         if (Array.isArray(actor.movies)) {
@@ -150,7 +160,6 @@ export async function searchTopXXMovies(keyword: string, page: number = 1): Prom
       });
     }
 
-    // 3. Process AVDB results (Title search)
     if (avdbTitleRes.status === "fulfilled" && avdbTitleRes.value?.items) {
       avdbTitleRes.value.items.forEach(m => {
         if (!movieMap.has(m.id)) movieMap.set(m.id, m);
@@ -159,7 +168,6 @@ export async function searchTopXXMovies(keyword: string, page: number = 1): Prom
       totalPages = Math.max(totalPages, avdbTitleRes.value.pagination.totalPages);
     }
 
-    // 4. Process AVDB results (Actor search)
     if (avdbActorRes.status === "fulfilled" && avdbActorRes.value?.items) {
       avdbActorRes.value.items.forEach(m => {
         if (!movieMap.has(m.id)) movieMap.set(m.id, m);
@@ -169,7 +177,6 @@ export async function searchTopXXMovies(keyword: string, page: number = 1): Prom
     }
 
     const finalItems = Array.from(movieMap.values());
-    console.log(`[TopXX Search] Final Aggregated results:`, finalItems.length, "items");
 
     return {
       items: finalItems,
@@ -183,4 +190,32 @@ export async function searchTopXXMovies(keyword: string, page: number = 1): Prom
     console.error("[TopXX Search] Fatal Error:", err);
     return { items: [], pagination: { currentPage: 1, totalPages: 1, totalItems: 0 } };
   }
+}
+
+export async function getTopXXCategories() {
+  const url = `${BASE_URL}/genres`;
+  try {
+    const res = await fetchWithRetry(url, { headers: DEFAULT_HEADERS });
+    if (!res.ok) return [];
+    const data = await res.json();
+    return data.data || [];
+  } catch (err) {
+    return [];
+  }
+}
+
+export async function getTopXXCountries() {
+  const url = `${BASE_URL}/countries`;
+  try {
+    const res = await fetchWithRetry(url, { headers: DEFAULT_HEADERS });
+    if (!res.ok) return [];
+    const data = await res.json();
+    return data.data || [];
+  } catch (err) {
+    return [];
+  }
+}
+
+export async function getTopXXGenres() {
+  return getTopXXCategories();
 }
