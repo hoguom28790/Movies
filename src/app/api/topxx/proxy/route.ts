@@ -19,17 +19,18 @@ export async function GET(req: NextRequest) {
     });
 
     if (!res.ok) {
-      console.error(`[HLS Proxy] Upstream returned ${res.status} for: ${url}`);
-      return new NextResponse(`Upstream Error: ${res.status}`, { status: res.status });
+      console.error(`[HLS Proxy] Upstream ${res.status} for: ${url}`);
+      return new NextResponse(`Proxy Error: ${res.status}`, { status: res.status });
     }
 
+    // Capture the final URL after redirects for base path calculation
+    const finalUrl = res.url;
     const contentType = res.headers.get("content-type") || "";
     
     // If it's a manifest, rewrite URLs inside
-    if (contentType.includes("mpegurl") || contentType.includes("application/x-mpegURL") || url.includes(".m3u8")) {
+    if (contentType.includes("mpegurl") || contentType.includes("application/x-mpegURL") || finalUrl.includes(".m3u8")) {
       let text = await res.text();
-      const baseUrl = url.substring(0, url.lastIndexOf("/") + 1);
-      const origin = new URL(url).origin;
+      const baseUrl = finalUrl.substring(0, finalUrl.lastIndexOf("/") + 1);
       
       // 1. Rewrite URI="url" attributes (Keys, Sub-manifests)
       let proxiedText = text.replace(/URI="([^"]+)"/gi, (match, link) => {
@@ -52,13 +53,13 @@ export async function GET(req: NextRequest) {
         headers: {
           "Content-Type": "application/x-mpegURL",
           "Access-Control-Allow-Origin": "*",
+          "Cache-Control": "no-cache"
         }
       });
     }
 
-    // Binary / TS segments
-    const data = await res.arrayBuffer();
-    return new NextResponse(data, {
+    // For everything else (binary segments), stream the response
+    return new NextResponse(res.body, {
       headers: {
         "Content-Type": contentType,
         "Access-Control-Allow-Origin": "*",

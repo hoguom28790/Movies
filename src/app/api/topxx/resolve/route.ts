@@ -12,8 +12,8 @@ export async function GET(req: NextRequest) {
   if (url.includes('streamxx.net')) {
     const code = url.split('/').pop();
     const base = url.split('/player/')[0] || "https://embed.streamxx.net";
-    // Pattern: https://embed.streamxx.net/stream/{code}/main.m3u8
-    const directM3U8 = `${base.replace('embed.', '')}/stream/${code}/main.m3u8`;
+    // Using the verified 'embed.' subdomain as per browser test
+    const directM3U8 = `${base}/stream/${code}/main.m3u8`;
     const proxiedUrl = `/api/topxx/proxy?url=${encodeURIComponent(directM3U8)}`;
     return NextResponse.json({ url: proxiedUrl, type: 'hls' });
   }
