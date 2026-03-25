@@ -10,19 +10,11 @@ export async function GET(req: NextRequest) {
 
   // Patterns for known providers
   if (url.includes('streamxx.net')) {
-    const code = url.split('/').pop();
-    const base = url.split('/player/')[0] || "https://embed.streamxx.net";
-    // Using the verified 'embed.' subdomain as per browser test
-    const directM3U8 = `${base}/stream/${code}/main.m3u8`;
-    const proxiedUrl = `/api/topxx/proxy?url=${encodeURIComponent(directM3U8)}`;
-    return NextResponse.json({ url: proxiedUrl, type: 'hls' });
+     return NextResponse.json({ url: url, type: 'embed' });
   }
 
   if (url.includes('upload18.org/play/index/')) {
-     const id = url.split('index/')[1];
-     const directM3U8 = `https://upload18.org/hls/${id}/index.m3u8`;
-     const proxiedUrl = `/api/topxx/proxy?url=${encodeURIComponent(directM3U8)}`;
-     return NextResponse.json({ url: proxiedUrl, type: 'hls' });
+     return NextResponse.json({ url: url, type: 'embed' });
   }
 
   // Fallback: return same URL

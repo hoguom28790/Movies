@@ -38,15 +38,15 @@ export function XXPlayer({
       try {
         console.log(`[XXPlayer/Resolve] Resolving: ${url}`);
         const res = await fetch(`/api/topxx/resolve?url=${encodeURIComponent(url)}`);
-        const data = await res.json();
-        
-        if (active) {
-          if (data.type === 'hls' && data.url) {
-            console.log(`[XXPlayer/Resolve] SUCCESS: Direct HLS found.`);
+        if (res.ok) {
+          const data = await res.json();
+          if (active) {
             setResolvedUrl(data.url);
-            setIsEmbed(false);
-          } else {
-            console.warn(`[XXPlayer/Resolve] FALLBACK: Using original URL for iframe.`);
+            setIsEmbed(data.type === 'embed');
+          }
+        } else {
+          // Fallback to original URL
+          if (active) {
             setResolvedUrl(url);
             setIsEmbed(true);
           }
