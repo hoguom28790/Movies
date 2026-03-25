@@ -95,46 +95,55 @@ export function XXActorModal({ isOpen, onClose, actor }: XXActorModalProps) {
 
   const handleMovieClick = async (title: string, year: string, code?: string) => {
     try {
-      console.log(`[TOPXX-ACTOR] Searching for: ${title} (${code})`);
-      setToast({ message: `Đang kết nối kho phim TopXX cho: ${code || title}...`, type: "info" });
-      
-      const { searchMovies: searchTopXX } = await import("@/services/api/index"); // Assume index exports search
-      const { normalizeTitle } = await import("@/lib/normalize");
-      
-      // SEARCH TOPXX FIRST (Since it's a TopXX actress)
       const query = code || title;
-      const res = await fetch(`/api/topxx/search?q=${encodeURIComponent(query)}`);
-      const searchRes = await res.json();
+      console.log(`[TopXX] Searching slug for code ${code}: ${title}`);
+      setToast({ message: `Đang tìm bản đẹp cho ${code || title}...`, type: "info" });
       
-      let match = searchRes.items?.find((item: any) => {
-        const itemCode = (item.movie_code || item.origin_name || "").toLowerCase();
-        const targetCode = (code || "").toLowerCase();
-        return itemCode.includes(targetCode) || normalizeTitle(item.title) === normalizeTitle(title);
-      }) || searchRes.items?.[0];
+      const { searchMovies } = await import("@/services/api/index");
+      
+      // 1. SEARCH MAIN STREAMING FIRST (OPhim/KKPhim/Vsmov)
+      const streamingRes = await searchMovies(query, 1, "hop");
+      const streamMatch = streamingRes.items.find((item: any) => {
+         const itemCode = (item.movie_code || item.origin_name || "").toLowerCase();
+         return itemCode.includes((code || "").toLowerCase()) || 
+                item.slug.includes((code || "").toLowerCase().replace("-", ""));
+      }) || streamingRes.items[0];
 
-      if (match) {
-        setToast({ message: `Đã tìm thấy! Chuyển hướng đến ${match.title}...`, type: "info" });
+      if (streamMatch) {
+        console.log(`[TopXX] Found slug for code ${code || title}: ${streamMatch.slug}`);
+        console.log(`[TopXX] Navigating to /xem/ophim/${streamMatch.slug}/full`);
+        setToast({ message: `Đã tìm thấy! Đang mở trình phát nội bộ...`, type: "info" });
         setTimeout(() => {
            onClose();
-           router.push(`/v2k9r5w8m3x7n1p4q0z6/phim/${match.slug}`); 
-        }, 500);
+           router.push(`/xem/ophim/${streamMatch.slug}/full`);
+        }, 800);
+        return;
+      }
+
+      // 2. SEARCH TOPXX FALLBACK
+      console.log(`[TopXX] Code ${code} not found on main streaming. Trying TopXX search...`);
+      const topxxRes = await searchMovies(query, 1, "tx");
+      const topxxMatch = topxxRes.items[0];
+
+      if (topxxMatch) {
+        console.log(`[TopXX] Found TopXX slug for code ${code || title}: ${topxxMatch.slug}`);
+        console.log(`[TopXX] Navigating to /v2k9r5w8m3x7n1p4q0z6/xem/${topxxMatch.slug}`);
+        setToast({ message: `Sử dụng nguồn TopXX - Đang mở trình phát nội bộ...`, type: "info" });
+        setTimeout(() => {
+           onClose();
+           router.push(`/v2k9r5w8m3x7n1p4q0z6/xem/${topxxMatch.slug}`);
+        }, 800);
       } else {
-        // Falling back to Hồ Phim search just in case
-        setToast({ message: "Phim chưa có bản Full. Thử tìm bản Hồ Phim...", type: "info" });
-        const { searchMovies: searchStreaming } = await import("@/services/api");
-        const hopRes = await searchStreaming(query);
-        const hopMatch = hopRes.items[0];
-        
-        if (hopMatch) {
-            onClose();
-            router.push(`/phim/${hopMatch.slug}`);
-        } else {
-            setToast({ message: `Phim ${code || title} hiện chưa có trên hệ thống.`, type: "error" });
-        }
+        setToast({ 
+          message: `Phim ${code || title} chưa có trên site.`, 
+          submessage: "Vui lòng xem trên JAVDB hoặc quay lại sau.",
+          type: "error" 
+        });
+        window.open(`https://javdb.com/search?q=${code || title}`, "_blank");
       }
     } catch (error) {
-       console.error("[ACTOR] Search failed:", error);
-       setToast({ message: "Máy chủ TopXX đang bận. Thử lại sau.", type: "error" });
+       console.error("[TopXX] Search failed:", error);
+       setToast({ message: "Máy chủ đang bận. Thử lại sau.", type: "error" });
     }
   };
 

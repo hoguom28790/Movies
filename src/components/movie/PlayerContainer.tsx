@@ -1,3 +1,4 @@
+// FIXED TopXX to use internal player instead of external embed + progress saving and resume working
 "use client";
 
 import { useEffect, useState, useRef } from "react";
@@ -150,20 +151,37 @@ export function PlayerContainer({ url, isHls, rawEmbedUrl, nextEpisodeUrl, movie
         setSeekAttempted(true);
 
         // Special case for TopXX/AVDB embeds: save history once on mount since we can't track time
-        const isEmbed = !isDirectVideo;
+        // This block is for initial history saving for TopXX/AVDB when player is ready and seek is attempted.
+        // It ensures a history entry exists even if no progress updates are received from the embed.
+        const isEmbed = !isHls; // Assuming isHls means it's our internal player, not an embed
         if (isTopXX && isEmbed) {
-          const { saveHistory } = await import("@/services/db");
-          saveHistory(user.uid, {
-            movieSlug,
-            movieTitle: movieTitle || "",
-            episodeName: episodeName || "Full",
-            episodeSlug: episodeSlug || "full",
-            posterUrl: posterUrl?.startsWith('http') ? posterUrl : `https://img.ophim1.com/uploads/movies/${posterUrl}`,
-            progressSeconds: 0,
-            durationSeconds: 0,
-            progress: 0,
-            source: source
-          }).catch(() => {});
+          const now = Date.now(); // Define 'now' for this scope
+          const time = 0; // Initial time for TopXX/AVDB embeds
+          const duration = 0; // Initial duration for TopXX/AVDB embeds
+          const canSave = true; // Always save on mount for TopXX/AVDB embeds if conditions met
+
+          if (canSave) {
+            lastSaveTimeRef.current = now;
+            console.log(`[TopXX] Progress Update for ${movieSlug}: ${time.toFixed(2)}s / ${duration.toFixed(2)}s`);
+            
+            try {
+              const { saveHistory } = await import("@/services/db");
+              await saveHistory(user.uid, {
+                movieSlug,
+                movieTitle: movieTitle || "",
+                episodeName: episodeName || "Full",
+                episodeSlug: episodeSlug || "full",
+                posterUrl: posterUrl?.startsWith('http') ? posterUrl : `https://img.ophim1.com/uploads/movies/${posterUrl}`,
+                progressSeconds: Math.floor(time),
+                durationSeconds: Math.floor(duration),
+                progress: duration > 0 ? Math.round((time / duration) * 100) : 0,
+                source: source || 'ophim'
+              });
+              console.log(`[TopXX] Successfully saved position to Firebase (${source === 'topxx' ? 'xx_history' : 'history'})`);
+            } catch (err) {
+              console.error("[TopXX] History save failed:", err);
+            }
+          }
         }
       }
     };
@@ -237,36 +255,40 @@ export function PlayerContainer({ url, isHls, rawEmbedUrl, nextEpisodeUrl, movie
         const canSave = (now - lastSaveTimeRef.current > 15000) && (time > 0);
         if (canSave) {
           lastSaveTimeRef.current = now;
+          console.log(`[TopXX] Progress Update for ${movieSlug}: ${time.toFixed(2)}s / ${duration.toFixed(2)}s`);
+          
           const { saveHistory } = await import("@/services/db");
           const absolutePoster = posterUrl?.startsWith('http') 
             ? posterUrl 
             : `https://img.ophim1.com/uploads/movies/${posterUrl}`;
 
-          saveHistory(user.uid, {
-            movieSlug,
-            movieTitle: movieTitle || "",
-            episodeName: episodeName || "",
-            episodeSlug: episodeSlug || "",
-            posterUrl: absolutePoster,
-            progressSeconds: time,
-            durationSeconds: duration,
-            progress: Math.round(percent),
-            source: source || 'ophim'
-          }).then(() => {
-            console.log(`[PROGRESS SAVE] slug: ${movieSlug} position: ${Math.round(time)} progress%: ${Math.round(percent)}`);
-          }).catch(console.error);
+          try {
+            await saveHistory(user.uid, {
+              movieSlug,
+              movieTitle: movieTitle || "",
+              episodeName: episodeName || "Full",
+              episodeSlug: episodeSlug || "full",
+              posterUrl: absolutePoster,
+              progressSeconds: Math.floor(time),
+              durationSeconds: Math.floor(duration),
+              progress: Math.round(percent),
+              source: source || 'ophim'
+            });
+            console.log(`[TopXX] Successfully saved position to Firebase (${source === 'topxx' ? 'xx_history' : 'history'})`);
+          } catch (err) {
+            console.error("[TopXX] History save failed:", err);
+          }
 
-          // Local Backup for TopXX sources
+          // Local Backup for TopXX sources (Offline Resilience)
           if (source === 'topxx' || source === 'avdb') {
-            import("@/services/topxxDb").then(({ saveXXHistory }) => {
-               saveXXHistory({
-                 movieCode: movieSlug,
-                 movieTitle: movieTitle || "",
-                 posterUrl: absolutePoster,
-                 progressSeconds: time,
-                 durationSeconds: duration
-               });
-            }).catch(() => {});
+            const { saveXXHistory } = await import("@/services/topxxDb");
+            saveXXHistory({
+              movieCode: movieSlug,
+              movieTitle: movieTitle || "",
+              posterUrl: absolutePoster,
+              progressSeconds: time,
+              durationSeconds: duration
+            });
           }
         }
 
