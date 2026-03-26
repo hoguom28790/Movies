@@ -1,33 +1,7 @@
-import { getTopXXDetails } from "@/services/api/topxx";
-import { notFound } from "next/navigation";
-import XXMovieDetailClient from "@/components/movie/XXMovieDetailClient";
+// src/app/(topxx)/v2k9r5w8m3x7n1p4q0z6/phim/[slug]/page.tsx
+import { redirect } from "next/navigation";
 
-export const dynamic = "force-dynamic";
-
-export default async function XXMovieDetailsPage({ 
-  params, 
-  searchParams 
-}: { 
-  params: Promise<{ slug: string }>,
-  searchParams: Promise<{ play?: string }>
-}) {
+export default async function XXMovieDetailsPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const { play } = await searchParams;
-  
-  let item;
-  if (slug.startsWith("av-")) {
-    const { getAVDBDetails } = await import("@/services/api/avdb");
-    item = await getAVDBDetails(slug.replace("av-", ""));
-  } else {
-    item = await getTopXXDetails(slug);
-    // Fallback for AVDB movies without prefix (existing history items)
-    if (!item) {
-      const { getAVDBDetails } = await import("@/services/api/avdb");
-      item = await getAVDBDetails(slug);
-    }
-  }
-
-  if (!item) return notFound();
-
-  return <XXMovieDetailClient item={item} slug={slug} autoPlay={play === "true"} />;
+  return redirect(`/xem/${slug}`);
 }

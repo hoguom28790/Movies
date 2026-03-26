@@ -126,7 +126,9 @@ export async function getLatestMovies(page: number = 1): Promise<MovieListRespon
 }
 
 export async function getMovieDetails(slug: string) {
-  const isTopXX = slug.startsWith("av-") || /^[A-Z]{2,5}-\d{2,6}$/i.test(slug);
+  const isTopXXCode = /^[A-Z]{2,5}-\d{2,6}$/i.test(slug);
+  const isTopXXInternal = /^[a-zA-Z0-9]{10}$/.test(slug);
+  const isTopXX = slug.startsWith("av-") || isTopXXCode || isTopXXInternal;
 
   if (isTopXX) {
      const { getAVDBDetails } = await import("./avdb");

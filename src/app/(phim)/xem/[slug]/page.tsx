@@ -39,11 +39,11 @@ export default async function UnifiedWatchPage({ params, searchParams }: PagePro
 
     // 2. Normalize and Clean Data
     const safeData = {
-      name: data.name || data.title || "Đang cập nhật",
+      name: data.name || (Array.isArray(data.trans) ? (data.trans.find((t: any) => t.locale === "vi")?.title || data.title) : data.title) || "Đang cập nhật",
       origin_name: data.origin_name || data.original_name || data.movie_code || "",
       year: data.year || "",
       description: data.content || data.description || "",
-      poster_url: data.posterUrl || data.poster_url || "",
+      poster_url: data.posterUrl || data.poster_url || data.thumbnail || "",
       quality: data.quality || "HD",
       episode_current: data.episode_current || "",
       category: Array.isArray(data.category) ? data.category : [],
@@ -65,10 +65,10 @@ export default async function UnifiedWatchPage({ params, searchParams }: PagePro
       ? getTMDBImageUrl(tmdbData.backdrop_path, 'original') 
       : poster;
 
-    // 4. Server & Episode Logic
-    const episodes = data.episodes || data.items || [];
+    // 4. Server & Episode Logic (Refined for TopXX/AVDB)
+    const episodes = isTopXX ? [data] : (data.episodes || data.items || []);
     const allServers = episodes.map((srv: any, idx: number) => {
-       const serverItems = srv.server_data || srv.items || (isTopXX ? srv.sources : []);
+       const serverItems = isTopXX ? (srv.sources || srv.items || []) : (srv.server_data || srv.items || []);
        const items = Array.isArray(serverItems) 
          ? serverItems.map((item: any, idxArr: number) => ({
              name: item.name || (isTopXX ? `Source ${idxArr + 1}` : ""),
@@ -142,9 +142,9 @@ export default async function UnifiedWatchPage({ params, searchParams }: PagePro
 
                     <div className="flex flex-wrap items-center gap-3">
                        <span className="px-4 py-1.5 rounded-xl bg-primary text-white font-black text-[10px] uppercase italic tracking-widest">{safeData.quality}</span>
-                       <span className="px-4 py-1.5 rounded-xl bg-white/5 border border-white/10 text-white/60 font-black text-[10px] uppercase italic tracking-widest">
-                          {isTopXX ? 'Source: TopXX' : 'Hồ Phim Premium'}
-                       </span>
+                        <span className="px-4 py-1.5 rounded-xl bg-white/5 border border-white/10 text-white/60 font-black text-[10px] uppercase italic tracking-widest">
+                           {source === 'avdb' ? 'AVDB Search' : isTopXX ? 'TopXX Premium' : 'Hồ Phim Premium'}
+                        </span>
                         {/* Categories & Countries */}
                         {safeData.category.slice(0, 5).map((cat: any, i: number) => {
                            const label = typeof cat === 'string' ? cat : cat.name;
