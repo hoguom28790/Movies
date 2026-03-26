@@ -2,7 +2,7 @@
 
 import React, { useState, Suspense } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import { Search, Heart, History as HistoryIcon, BookOpen, Film, LogIn, ChevronRight } from "lucide-react";
 import { motion, useScroll, useMotionValueEvent } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
@@ -24,6 +24,7 @@ export function Navbar({ mode: initialMode }: NavbarProps) {
   const [isScrolled, setIsScrolled] = useState(false);
   const { user } = useAuth();
   const pathname = usePathname();
+  const searchParams = useSearchParams();
   const { scrollY } = useScroll();
 
   useMotionValueEvent(scrollY, "change", (latest) => {
@@ -36,10 +37,18 @@ export function Navbar({ mode: initialMode }: NavbarProps) {
     }
   });
   
-  const isComicSection = initialMode === "truyen" || pathname.startsWith("/truyen") || pathname.startsWith("/doc");
-  const mode = isComicSection ? "truyen" : "phim";
-
   if (pathname.startsWith("/v2k9r5w8m3x7n1p4q0z6") || pathname.startsWith(`/${TOPXX_PATH}`)) return null;
+  
+  const isComicSection = initialMode === "truyen" || pathname.startsWith("/truyen") || pathname.startsWith("/doc");
+  
+  // Detect if on a TopXX watch page at the unified /xem/[slug] route
+  const slug = pathname.startsWith("/xem/") ? pathname.split("/").pop() : "";
+  const isTopXXSource = searchParams.get("src") === "topxx" || searchParams.get("src") === "avdb";
+  const isTopXXCode = /^[A-Z]{2,5}-\d{2,6}$/i.test(slug || "");
+  const isTopXXInternal = slug ? /^[a-zA-Z0-9]{10}$/.test(slug) : false;
+  const isTopXXSection = pathname.startsWith("/xem/") && (isTopXXSource || isTopXXCode || isTopXXInternal);
+
+  const mode = isComicSection ? "truyen" : "phim";
 
   return (
     <>
@@ -108,9 +117,9 @@ export function Navbar({ mode: initialMode }: NavbarProps) {
                 </Link>
                 
                 <Link
-                  href={isComicSection ? "/truyen/lich-su" : "/lich-su"}
+                  href={isTopXXSection ? `/${TOPXX_PATH}/lich-su` : isComicSection ? "/truyen/lich-su" : "/lich-su"}
                   className={`p-3 rounded-2xl transition-all active-depth ${
-                    (pathname === "/lich-su" || pathname === "/truyen/lich-su") ? "bg-primary text-white shadow-lg shadow-primary/30" : "text-foreground/70 hover:bg-foreground/5 hover:text-foreground"
+                    (pathname === "/lich-su" || pathname === "/truyen/lich-su" || (isTopXXSection && pathname.includes('/lich-su'))) ? "bg-primary text-white shadow-lg shadow-primary/30" : "text-foreground/70 hover:bg-foreground/5 hover:text-foreground"
                   }`}
                   title="Lịch sử"
                 >
@@ -122,13 +131,13 @@ export function Navbar({ mode: initialMode }: NavbarProps) {
                 </div>
 
                 <Link
-                  href={isComicSection ? "/truyen/yeu-thich" : "/yeu-thich"}
+                  href={isTopXXSection ? `/${TOPXX_PATH}/yeu-thich` : isComicSection ? "/truyen/yeu-thich" : "/yeu-thich"}
                   className={`p-3 rounded-2xl transition-all active-depth ${
-                    (pathname === "/yeu-thich" || pathname === "/truyen/yeu-thich") ? "bg-primary text-white shadow-lg shadow-primary/30" : "text-foreground/70 hover:bg-foreground/5 hover:text-foreground"
+                    (pathname === "/yeu-thich" || pathname === "/truyen/yeu-thich" || (isTopXXSection && pathname.includes('/yeu-thich'))) ? "bg-primary text-white shadow-lg shadow-primary/30" : "text-foreground/70 hover:bg-foreground/5 hover:text-foreground"
                   }`}
                   title="Yêu thích"
                 >
-                  <Heart className={`h-5 w-5 stroke-[2.5px] ${ (pathname === "/yeu-thich" || pathname === "/truyen/yeu-thich") ? "fill-current" : ""}`} />
+                  <Heart className={`h-5 w-5 stroke-[2.5px] ${ (pathname === "/yeu-thich" || pathname === "/truyen/yeu-thich" || (isTopXXSection && pathname.includes('/yeu-thich'))) ? "fill-current" : ""}`} />
                 </Link>
 
                 {user ? (
