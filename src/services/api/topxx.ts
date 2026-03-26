@@ -172,13 +172,34 @@ export async function searchTopXXMovies(keyword: string, page: number = 1): Prom
     let totalItems = 0;
     let totalPages = 1;
 
+    // Helper for strict relevance checking
+    const isLikelyRelevant = (m: Movie, q: string) => {
+      const normalizedQ = q.toLowerCase().replace(/[^a-z0-9]/g, '');
+      const searchSpace = `${m.title} ${m.slug} ${m.id}`.toLowerCase().replace(/[^a-z0-9]/g, '');
+      
+      // If code-like search (has both letters and numbers)
+      if (/[a-z]/.test(normalizedQ) && /[0-9]/.test(normalizedQ)) {
+        // Break into alpha and numeric parts for strict check
+        const alphaPart = normalizedQ.replace(/[0-9]/g, '');
+        const numericPart = normalizedQ.replace(/[a-z]/g, '');
+        return searchSpace.includes(alphaPart) && searchSpace.includes(numericPart);
+      }
+      
+      // Default: check if all query parts are in search space
+      const parts = normalizedQ.split(/\s+/).filter(p => p.length > 1);
+      return parts.every(p => searchSpace.includes(p));
+    };
+
     // 1. Process TopXX Movie Search results (Primary Source)
     if (topxxRes.status === "fulfilled" && topxxRes.value) {
       const data = topxxRes.value;
       if (Array.isArray(data.data)) {
         data.data.forEach((item: any) => {
           const m = mapTopXXToMovie(item);
-          movieMap.set(m.id, m);
+          // Only add if it's broadly relevant to avoid "latest movies" noise
+          if (isLikelyRelevant(m, normalizedQuery)) {
+            movieMap.set(m.id, m);
+          }
         });
       }
       totalItems = data.meta?.total || 0;
@@ -190,7 +211,7 @@ export async function searchTopXXMovies(keyword: string, page: number = 1): Prom
       const extraMovies = (topxxActorRes.value as any).extraMovies || [];
       extraMovies.forEach((m: any) => {
         const movie = mapTopXXToMovie(m);
-        if (!movieMap.has(movie.id)) {
+        if (!movieMap.has(movie.id) && isLikelyRelevant(movie, normalizedQuery)) {
           movieMap.set(movie.id, movie);
         }
       });
@@ -199,7 +220,9 @@ export async function searchTopXXMovies(keyword: string, page: number = 1): Prom
     // 3. Process AVDB Title Search
     if (avdbTitleRes.status === "fulfilled" && avdbTitleRes.value?.items) {
       avdbTitleRes.value.items.forEach((m: Movie) => {
-        if (m && !movieMap.has(m.id)) movieMap.set(m.id, m);
+        if (m && !movieMap.has(m.id) && isLikelyRelevant(m, normalizedQuery)) {
+          movieMap.set(m.id, m);
+        }
       });
       if (totalItems === 0) {
         totalItems = avdbTitleRes.value.pagination.totalItems;
@@ -210,7 +233,9 @@ export async function searchTopXXMovies(keyword: string, page: number = 1): Prom
     // 4. Process AVDB Actor Search
     if (avdbActorRes.status === "fulfilled" && avdbActorRes.value?.items) {
       avdbActorRes.value.items.forEach((m: Movie) => {
-        if (m && !movieMap.has(m.id)) movieMap.set(m.id, m);
+        if (m && !movieMap.has(m.id) && isLikelyRelevant(m, normalizedQuery)) {
+          movieMap.set(m.id, m);
+        }
       });
       if (totalItems === 0) {
         totalItems = Math.max(totalItems, avdbActorRes.value.pagination.totalItems);
