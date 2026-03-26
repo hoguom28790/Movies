@@ -188,25 +188,6 @@ export default async function UnifiedWatchPage({ params, searchParams }: PagePro
                        {tmdbData?.overview || safeData.description || "Chưa có nội dung chi tiết cho bộ phim này."}
                     </p>
 
-                     {/* Multi-Source Selector */}
-                     {!isTopXX && sources.length > 1 && (
-                        <div className="flex flex-wrap items-center gap-3 pt-4 border-t border-white/5">
-                           <span className="text-[10px] font-black text-white/20 uppercase tracking-[0.2em] italic mr-2">Đổi Nguồn:</span>
-                           {sources.map((s: any) => (
-                              <Link 
-                                 key={s.id} 
-                                 href={`/xem/${slug}?src=${s.id}`}
-                                 className={`px-6 py-2 rounded-2xl text-[11px] font-black uppercase italic tracking-widest border transition-all ${
-                                    source === s.id 
-                                       ? 'bg-primary border-primary text-white shadow-lg shadow-primary/20 scale-105' 
-                                       : 'bg-white/5 border-white/10 text-white/40 hover:bg-white/10 hover:text-white'
-                                 }`}
-                              >
-                                 {s.name}
-                              </Link>
-                           ))}
-                        </div>
-                     )}
                  </div>
               </div>
            </div>
@@ -244,14 +225,33 @@ export default async function UnifiedWatchPage({ params, searchParams }: PagePro
                         nextEpisodeUrl={nextEpisodeUrl}
                      />
                      
-                     {/* Move Cast below player on mobile if needed, but on desktop it's nicely in the sidebar */}
-                     <div className="lg:hidden mt-12 bg-white/[0.02] p-6 rounded-[32px] border border-white/5">
-                        <CastSection actors={tmdbData?.credits?.cast || []} />
-                     </div>
+                     
                  </div>
 
                  {/* Right: Side Content (Episodes, Server Selector) */}
                  <div className="space-y-12">
+                     {/* Multi-Source Selector (Refined) */}
+                     {!isTopXX && sources.length > 0 && (
+                        <div className="space-y-4">
+                           <h3 className="text-xs font-black text-white uppercase tracking-[0.2em] italic">Chọn Nguồn</h3>
+                           <div className="flex flex-wrap gap-2">
+                              {sources.map((s: any) => (
+                                 <Link 
+                                    key={s.id} 
+                                    href={`/xem/${slug}?src=${s.id}`}
+                                    className={`flex-1 min-w-[100px] text-center py-2.5 rounded-xl text-[11px] font-black uppercase italic tracking-widest border transition-all ${
+                                       source === s.id 
+                                          ? 'bg-primary border-primary text-white shadow-lg shadow-primary/20' 
+                                          : 'bg-white/5 border-white/5 text-white/30 hover:bg-white/10 hover:text-white/60'
+                                    }`}
+                                 >
+                                    {s.name}
+                                 </Link>
+                              ))}
+                           </div>
+                        </div>
+                     )}
+
                     <div className="space-y-8">
                        <div className="flex items-center justify-between border-b border-white/5 pb-4">
                           <h3 className="text-xs font-black text-white uppercase tracking-[0.2em] italic">Danh sách tập</h3>
