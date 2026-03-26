@@ -108,23 +108,39 @@ export async function getTopXXMovies(
   slug: string = "",
   page: number = 1
 ): Promise<MovieListResponse> {
-  let url = `${BASE_URL}/movies/latest?page=${page}`;
+  // 1. Handling Actors (routed to search)
+  if (type === "dien-vien") {
+    return searchTopXXMovies(slug, page);
+  }
 
+  let url = `${BASE_URL}/movies/latest?page=${page}`;
   if (type === "phim-hot") {
     url = `${BASE_URL}/movies/today?page=${page}`;
   } else if (type === "the-loai") {
     url = `${BASE_URL}/genres/${slug}/movies?page=${page}`;
   } else if (type === "quoc-gia") {
     url = `${BASE_URL}/countries/${slug}/movies?page=${page}`;
-  } else if (type === "dien-vien") {
-    return searchTopXXMovies(slug, page);
   }
 
   try {
     const res = await fetchWithRetry(url, { headers: DEFAULT_HEADERS }, 10000, 2, 800);
-    if (!res.ok) return { items: [], pagination: { currentPage: 1, totalPages: 1, totalItems: 0 } };
+    
+    // 2. FALLBACK: If the specific category/genre endpoint fails or returns nothing, 
+    // it's likely because 'slug' is a name (e.g. 'Action') instead of a TopXX internal code.
+    // In this case, we fall back to a search query which is more resilient to human-readable names.
+    if (!res.ok) {
+       console.log(`[TopXX] API failed for ${type}/${slug}, falling back to search.`);
+       return searchTopXXMovies(slug, page);
+    }
+
     const data = await res.json();
-    if (data.status !== "success" || !data.data) return { items: [], pagination: { currentPage: 1, totalPages: 1, totalItems: 0 } };
+    if (data.status !== "success" || !data.data || (Array.isArray(data.data) && data.data.length === 0)) {
+       // Also fallback if successfully called but empty (could be wrong code)
+       if (type === "the-loai" || type === "quoc-gia") {
+         return searchTopXXMovies(slug, page);
+       }
+       return { items: [], pagination: { currentPage: 1, totalPages: 1, totalItems: 0 } };
+    }
 
     return {
       items: data.data.map(mapTopXXToMovie),
@@ -135,7 +151,10 @@ export async function getTopXXMovies(
       }
     };
   } catch (err) {
-    console.error("[TopXX] Fetch Error:", err);
+    console.warn(`[TopXX] Detail fetch error for ${type}/${slug}, trying search fallback.`, err);
+    if (type === "the-loai" || type === "quoc-gia") {
+      return searchTopXXMovies(slug, page);
+    }
     return { items: [], pagination: { currentPage: 1, totalPages: 1, totalItems: 0 } };
   }
 }
