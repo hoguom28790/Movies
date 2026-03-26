@@ -98,15 +98,16 @@ export function XXActorModal({ isOpen, onClose, actor }: XXActorModalProps) {
 
   useEffect(() => {
     const checkFav = async () => {
-      const effectiveId = details?.id || actor?.id;
-      if (user?.uid && effectiveId) {
+      if (user?.uid && actor?.name) {
+        // MATCH stableId logic used in handleToggleFav
+        const stableId = actor.name.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
         const { isFavoriteActor } = await import("@/services/db");
-        const status = await isFavoriteActor(user.uid, effectiveId, 'topxx');
+        const status = await isFavoriteActor(user.uid, stableId, 'topxx');
         setIsFav(status);
       }
     };
     if (isOpen) checkFav();
-  }, [user?.uid, actor?.id, details, isOpen]);
+  }, [user?.uid, actor?.name, isOpen]);
 
   const normalize = (text: string) => {
     return text.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^\w\s]/g, "").replace(/\s+/g, " ").replace(/(phan|part|season|tap)\s*\d+/gi, "").trim();
@@ -174,15 +175,20 @@ export function XXActorModal({ isOpen, onClose, actor }: XXActorModalProps) {
     if (!actor) return;
     try {
       const { toggleFavoriteActor } = await import("@/services/db");
-      const effectiveId = details?.id || actor.id;
+      
+      // STABLE ID: Use name-based slug instead of ephemeral scraper IDs (which differ between JAVLIB and JAVDB)
+      const stableId = actor.name.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+      
       await toggleFavoriteActor(user.uid, {
-        id: effectiveId,
+        id: stableId,
         name: actor.name,
-        profilePath: (details?.profileImage || actor.profile_path || null) as (string | null),
+        profilePath: (details?.profileImage || actor.profile_path || actor.profilePath || null) as (string | null),
         type: 'topxx'
       });
       setIsFav(!isFav);
-    } catch (err) {}
+    } catch (err) {
+       console.error("[TopXX] Favorite toggle error:", err);
+    }
   };
 
   return (
