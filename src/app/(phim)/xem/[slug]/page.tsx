@@ -46,13 +46,13 @@ export default async function UnifiedWatchPage({ params, searchParams }: PagePro
     const tmdbSearch = await searchTMDBMovie(safeData.name, isNaN(sYear) ? undefined : sYear).catch(() => null);
     const tmdbData = tmdbSearch ? await getTMDBMovieDetails(tmdbSearch.id, tmdbSearch.media_type).catch(() => null) : null;
 
-    const poster = tmdbData?.poster_path 
+    const poster = (tmdbData?.poster_path 
       ? getTMDBImageUrl(tmdbData.poster_path, 'w780') 
-      : safeData.posterUrl;
+      : safeData.posterUrl) || "";
 
-    const backdrop = tmdbData?.backdrop_path 
+    const backdrop = (tmdbData?.backdrop_path 
       ? getTMDBImageUrl(tmdbData.backdrop_path, 'original') 
-      : poster;
+      : poster) || "";
 
     // 4. Server & Episode Logic (Unified Standard)
     let rawServers = [];
