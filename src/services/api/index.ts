@@ -17,8 +17,7 @@ const OPHIM_MIRRORS = [
 
 const DEFAULT_HEADERS = {
   "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-  "Accept": "application/json",
-  "Referer": "https://ophim18.cc/"
+  "Accept": "application/json"
 };
 
 export async function searchMovies(keyword: string, page: number = 1, section: "hop" | "tx" = "hop"): Promise<MovieListResponse> {
@@ -174,7 +173,12 @@ export async function getMovieDetails(slug: string) {
     // OPhim with mirrors
     Promise.any(OPHIM_MIRRORS.map(async (mirror) => {
       const cleanMirror = mirror.endsWith('/') ? mirror.slice(0, -1) : mirror;
-      const res = await fetch(`${cleanMirror}/v1/api/phim/${slug}`, { headers: DEFAULT_HEADERS, signal: AbortSignal.timeout(4000), cache: "no-store" });
+      const apiPath = mirror.includes("vsmov.com") ? "/api/phim" : "/v1/api/phim";
+      const res = await fetch(`${cleanMirror}${apiPath}/${slug}`, { 
+        headers: { ...DEFAULT_HEADERS, Referer: cleanMirror + "/" }, 
+        signal: AbortSignal.timeout(8000), 
+        cache: "no-store" 
+      });
       if (!res.ok) throw new Error("404");
       const json = await res.json();
       const movie = json.data?.item || json.movie;
@@ -183,7 +187,10 @@ export async function getMovieDetails(slug: string) {
     })).catch(() => null),
     
     // KKPhim
-    fetch(`https://phimapi.com/v1/api/phim/${slug}`, { headers: DEFAULT_HEADERS, signal: AbortSignal.timeout(4000) })
+    fetch(`https://phimapi.com/v1/api/phim/${slug}`, { 
+      headers: { "Accept": "application/json" }, 
+      signal: AbortSignal.timeout(8000) 
+    })
       .then(r => r.ok ? r.json() : null)
       .then(json => {
          if (!json) return null;
@@ -194,13 +201,19 @@ export async function getMovieDetails(slug: string) {
       .catch(() => null),
       
     // NguonC
-    fetch(`https://phim.nguonc.com/api/film/${slug}`, { headers: DEFAULT_HEADERS, signal: AbortSignal.timeout(4000) })
+    fetch(`https://phim.nguonc.com/api/film/${slug}`, { 
+      headers: { "Accept": "application/json" }, 
+      signal: AbortSignal.timeout(8000) 
+    })
       .then(r => r.ok ? r.json() : null)
       .then(json => json?.movie || null)
       .catch(() => null),
       
-    // VS-MOV
-    fetch(`https://vsmov.com/api/phim/${slug}`, { headers: DEFAULT_HEADERS, signal: AbortSignal.timeout(4000) })
+    // VS-MOV (Primary)
+    fetch(`https://vsmov.com/api/phim/${slug}`, { 
+      headers: { "Accept": "application/json" }, 
+      signal: AbortSignal.timeout(8000) 
+    })
       .then(r => r.ok ? r.json() : null)
       .then(json => {
          if (!json) return null;
