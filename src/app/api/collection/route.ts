@@ -8,7 +8,7 @@ export async function GET(request: NextRequest) {
   const slug = searchParams.get("slug") || "phim-moi-cap-nhat";
 
   try {
-    const data = await getTopXXMovies(page, type, slug);
+    const data = await getTopXXMovies(type as any, slug, page);
     return NextResponse.json(data);
   } catch (error) {
     return NextResponse.json({ error: "Failed to fetch" }, { status: 500 });

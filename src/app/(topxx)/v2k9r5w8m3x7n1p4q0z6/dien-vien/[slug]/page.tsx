@@ -10,7 +10,7 @@ export default async function XXActorPage({ params }: { params: Promise<{ slug: 
   // Format slug 'nguyen-van-a' back to 'Nguyen Van A' for display
   const actorName = slug.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
   
-  const initialData = await getTopXXMovies(1, "dien-vien", slug);
+  const initialData = await getTopXXMovies("dien-vien", slug, 1);
 
   return (
     <div className="container mx-auto px-4 md:px-8 py-12 max-w-7xl animate-in fade-in duration-1000">

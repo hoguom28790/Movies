@@ -8,7 +8,7 @@ export default async function XXCountryPage({ params }: { params: Promise<{ slug
   const { slug } = await params;
   
   try {
-    const initialData = await getTopXXMovies(1, "quoc-gia", slug);
+    const initialData = await getTopXXMovies("quoc-gia", slug, 1);
 
     return (
       <div className="container mx-auto">

@@ -20,7 +20,7 @@ export default async function XXSourcePage({
 
     let data;
     if (source === "topxx") {
-        data = await getTopXXMovies(currentPage);
+        data = await getTopXXMovies("phim-moi", "", currentPage);
     } else if (source === "avdb") {
         data = await getAVDBMovies(currentPage);
     } else {

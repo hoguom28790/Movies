@@ -19,15 +19,15 @@ export default async function XXHomePage() {
   // FINAL FIX TopXX Server Component error: Robut try-catch for all data fetching
   try {
     const [latestData, javData, uncensoredData, avdbData] = await Promise.all([
-      getTopXXMovies(1, "danh-sach", "phim-moi-cap-nhat").catch(err => {
+      getTopXXMovies("phim-moi", "", 1).catch(err => {
         console.error("[TopXX] Fetch latest error:", err);
         return { items: [], pagination: { totalItems: 0, totalPages: 1, currentPage: 1 } };
       }),
-      getTopXXMovies(1, "the-loai", "vQMGvwTw5G").catch(err => {
+      getTopXXMovies("the-loai", "vQMGvwTw5G", 1).catch(err => {
         console.error("[TopXX] Fetch JAV error:", err);
         return { items: [], pagination: { totalItems: 0, totalPages: 1, currentPage: 1 } };
       }),
-      getTopXXMovies(1, "the-loai", "vdDkXwQsHi").catch(err => {
+      getTopXXMovies("the-loai", "vdDkXwQsHi", 1).catch(err => {
         console.error("[TopXX] Fetch uncensored error:", err);
         return { items: [], pagination: { totalItems: 0, totalPages: 1, currentPage: 1 } };
       }),

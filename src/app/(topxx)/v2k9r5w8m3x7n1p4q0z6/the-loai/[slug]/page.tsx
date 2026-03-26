@@ -8,7 +8,7 @@ export default async function XXCategoryPage({ params }: { params: Promise<{ slu
   const { slug } = await params;
   
   try {
-    const initialData = await getTopXXMovies(1, "the-loai", slug);
+    const initialData = await getTopXXMovies("the-loai", slug, 1);
     const title = slug.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
 
     return (

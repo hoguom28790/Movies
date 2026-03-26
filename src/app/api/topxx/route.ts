@@ -8,7 +8,7 @@ export async function GET(req: NextRequest) {
   const page = parseInt(searchParams.get("page") || "1", 10);
 
   try {
-    const data = await getTopXXMovies(page, type, slug);
+    const data = await getTopXXMovies(type, slug, page);
     return NextResponse.json(data);
   } catch (error) {
     console.error("API /api/topxx Failure:", error);
