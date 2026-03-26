@@ -1,6 +1,7 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "../ui/Button";
 
@@ -11,16 +12,38 @@ interface AuthModalProps {
 
 export function AuthModal({ isOpen, onClose }: AuthModalProps) {
   const { loginWithGoogle } = useAuth();
-  
-  if (!isOpen) return null;
+  const [mounted, setMounted] = useState(false);
 
-  return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm">
-      <div className="bg-surface p-8 rounded-xl border border-white/10 shadow-2xl w-full max-w-sm relative flex flex-col gap-6">
-        <button onClick={onClose} className="absolute top-4 right-4 text-neutral-400 hover:text-white pb-2 px-2 text-2xl leading-none font-bold">&times;</button>
-        <div className="text-center">
-          <h2 className="text-2xl font-black text-primary uppercase">Đăng Nhập</h2>
-          <p className="text-sm text-neutral-400 mt-2">Dành cho tính năng Danh sách Phim & Lịch sử Xem.</p>
+  useEffect(() => {
+    setMounted(true);
+    return () => setMounted(false);
+  }, []);
+  
+  if (!isOpen || !mounted) return null;
+
+  return createPortal(
+    <div className="fixed inset-0 z-[11000] flex items-center justify-center bg-black/85 backdrop-blur-md animate-in fade-in duration-300">
+      <div 
+        className="bg-surface p-10 rounded-[40px] border border-white/10 shadow-2xl w-full max-w-sm relative flex flex-col gap-8 animate-in zoom-in duration-500 ease-out"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <button 
+          onClick={onClose} 
+          className="absolute top-6 right-6 text-neutral-400 hover:text-white bg-white/5 hover:bg-white/10 rounded-full w-10 h-10 flex items-center justify-center transition-all shadow-xl"
+        >
+          <span className="text-2xl leading-none">&times;</span>
+        </button>
+        
+        <div className="text-center space-y-3">
+          <div className="w-20 h-20 bg-primary/10 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-2xl shadow-primary/20">
+             <svg className="w-10 h-10 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4" />
+                <polyline points="10 17 15 12 10 7" />
+                <line x1="15" y1="12" x2="3" y2="12" />
+             </svg>
+          </div>
+          <h2 className="text-3xl font-black text-white uppercase italic tracking-tighter leading-none">THAM GIA NGAY</h2>
+          <p className="text-[10px] font-bold text-white/30 uppercase tracking-[0.2em] px-4 leading-relaxed">Đăng nhập để lưu phim yêu thích & đồng bộ lịch sử xem trên mọi thiết bị.</p>
         </div>
         
         <div className="flex flex-col gap-4 mt-2">
@@ -34,13 +57,14 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
                 }); 
             }} 
             size="lg" 
-            className="w-full h-14 bg-white text-black hover:bg-gray-100 text-lg font-black rounded-full gap-3 shadow-[0_0_40px_rgba(255,255,255,0.4)] hover:shadow-[0_0_60px_rgba(255,255,255,0.7)] hover:scale-105 transition-all duration-300 ring-4 ring-white/20"
+            className="w-full h-16 bg-white text-black hover:bg-gray-100 text-sm font-black rounded-3xl gap-4 shadow-2xl hover:scale-[1.03] transition-all duration-500 active:scale-95 group"
           >
-            <svg className="w-6 h-6" viewBox="0 0 24 24"><path fill="currentColor" d="M12.545,10.239v3.821h5.445c-0.712,2.315-2.647,3.972-5.445,3.972c-3.332,0-6.033-2.701-6.033-6.032 s2.701-6.032,6.033-6.032c1.498,0,2.866,0.549,3.921,1.453l2.814-2.814C17.503,2.988,15.139,2,12.545,2 C7.021,2,2.543,6.477,2.543,12s4.478,10,10.002,10c8.396,0,10.249-7.85,9.426-11.748L12.545,10.239z"/></svg>
+            <svg className="w-6 h-6 transform group-hover:rotate-[360deg] transition-transform duration-700" viewBox="0 0 24 24"><path fill="currentColor" d="M12.545,10.239v3.821h5.445c-0.712,2.315-2.647,3.972-5.445,3.972c-3.332,0-6.033-2.701-6.033-6.032 s2.701-6.032,6.033-6.032c1.498,0,2.866,0.549,3.921,1.453l2.814-2.814C17.503,2.988,15.139,2,12.545,2 C7.021,2,2.543,6.477,2.543,12s4.478,10,10.002,10c8.396,0,10.249-7.85,9.426-11.748L12.545,10.239z"/></svg>
             TIẾP TỤC VỚI GOOGLE
           </Button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
