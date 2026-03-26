@@ -209,25 +209,30 @@ export async function getTopXXDetails(slug: string) {
     const viTrans = Array.isArray(movie.trans) ? (movie.trans.find((t: any) => t.locale === "vi") || movie.trans[0]) : null;
     
     // Normalize mapping for player
-    // PRIORITY: Use direct video_url from API if available, then fallback to play_url or constructed index
-    let playLink = movie.video_url || movie.play_url || `https://topxx.vip/play/index/${movie.code}`;
+    // PRIORITY: Use streamxx.net for Cloud VIP as native topxx.vip often 404s in iframe
+    let playLink = movie.video_url || movie.play_url || "";
     
-    // Some play links are relative, ensure absolute
+    // Construct link if missing
+    if (!playLink && movie.code) {
+        playLink = `https://topxx.vip/play/index/${movie.code}`;
+    }
+
+    // Rewrite to streamxx.net for STABILITY
+    if (playLink && (playLink.includes('topxx.vip/play/index/') || (movie.code && movie.code.length === 10))) {
+        const id = movie.code || playLink.split('/').pop();
+        if (id && id.length === 10) {
+            playLink = `https://embed.streamxx.net/player/${id}`;
+            console.log(`[TopXX] Rewriting to Stable StreamXX: ${playLink}`);
+        }
+    }
+    
+    // Ensure absolute if still native
     if (playLink && playLink.startsWith('/')) {
         playLink = `https://topxx.vip${playLink}`;
     }
 
-    // STABILITY: Many TopXX native links 404 in iframe. If it's a code, streamxx.net is often better.
-    if (playLink.includes('topxx.vip/play/index/')) {
-        const checkId = playLink.split('/').pop();
-        if (checkId && checkId.length === 10) {
-            // Option to prefer steamxx if native is known to fail
-            // playLink = `https://embed.streamxx.net/player/${checkId}`;
-        }
-    }
-
     const episodes = [{
-       name: "Full",
+       name: "Full (Cloud VIP)",
        slug: "full",
        link_embed: playLink,
        link_m3u8: ""

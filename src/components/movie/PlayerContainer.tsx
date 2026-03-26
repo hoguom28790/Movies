@@ -485,12 +485,16 @@ export function PlayerContainer({ url, isHls, rawEmbedUrl, nextEpisodeUrl, movie
   const iframeSrc = `/player.html?url=${encodeURIComponent(resolvedUrl || "")}&theme=${stylePreset}&isEmbed=${isUrlEmbed}&v=3.0`;
 
   return (
-    <div className={isPseudoFS 
-      ? (isPortrait 
-          ? `fixed top-0 left-full w-[100vh] h-[100vw] rotate-90 origin-top-left z-[9999] bg-black ${isIOS ? 'p-safe' : ''}` 
-          : `fixed inset-0 w-screen h-screen z-[9999] bg-black ${isIOS ? 'p-safe' : ''}`)
-      : "w-full h-0 pb-[56.25%] self-start relative shadow-cinematic-2xl bg-black overflow-hidden rounded-[32px] border border-white/5"
-    }>
+    <div 
+      className={isPseudoFS 
+        ? (isPortrait 
+            ? `fixed top-0 left-full w-[100vh] h-[100vw] rotate-90 origin-top-left z-[9999] bg-black ${isIOS ? 'p-safe' : ''}` 
+            : `fixed inset-0 w-screen h-screen z-[9999] bg-black ${isIOS ? 'p-safe' : ''}`)
+        // FIXED player empty space below - set proper aspect-ratio and container height
+        : "w-full aspect-video h-auto max-h-[85vh] self-start relative shadow-cinematic-2xl bg-black overflow-hidden rounded-[32px] border border-white/5"
+      } 
+      style={!isPseudoFS ? { aspectRatio: '16/9' } : {}}
+    >
       {resolvedUrl ? (
         <iframe
           id="main-player"

@@ -14,6 +14,13 @@ import {
 
 export function BottomNav() {
   const pathname = usePathname();
+  const [mounted, setMounted] = React.useState(false);
+
+  React.useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) return null;
 
   const isXX = pathname.startsWith("/v2k9r5w8m3x7n1p4q0z6");
   const isComic = pathname.startsWith("/truyen") || pathname.startsWith("/doc");
