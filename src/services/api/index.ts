@@ -128,7 +128,7 @@ export async function getMovieDetails(slug: string) {
   if (!slug) return null;
 
   // Basic TopXX detection
-  const isTopXXCode = /^[a-zA-Z]{2,5}-\d{2,6}$/i.test(slug);
+  const isTopXXCode = /^[a-zA-Z]{2,5}-\d{2,6}$/i.test(slug) && (slug.match(/-/g) || []).length === 1;
   const isTopXXInternal = /^[a-zA-Z0-9]{10}$/.test(slug);
   const isPossiblyTopXX = slug.startsWith("av-") || isTopXXCode || isTopXXInternal;
 
