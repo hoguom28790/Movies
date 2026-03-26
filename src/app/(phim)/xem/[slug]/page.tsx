@@ -214,7 +214,7 @@ export default async function UnifiedWatchPage({ params, searchParams }: PagePro
                     
                     <PlayerContainer 
                        url={currentEp.link_m3u8} 
-                       isHls={true} 
+                       isHls={!!currentEp.link_m3u8} 
                        rawEmbedUrl={currentEp.link_embed}
                        movieTitle={safeData.name}
                        movieSlug={slug}

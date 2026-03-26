@@ -179,11 +179,7 @@ export function PlayerContainer({ url, isHls, rawEmbedUrl, nextEpisodeUrl, movie
         }
         setSeekAttempted(true);
 
-        // Special case for TopXX/AVDB embeds: save history once on mount since we can't track time
-        // This block is for initial history saving for TopXX/AVDB when player is ready and seek is attempted.
-        // It ensures a history entry exists even if no progress updates are received from the embed.
-        const isEmbed = !isHls; // Assuming isHls means it's our internal player, not an embed
-        if (isTopXX && isEmbed) {
+        if (isTopXX) {
           const now = Date.now(); // Define 'now' for this scope
           const time = 0; // Initial time for TopXX/AVDB embeds
           const duration = 0; // Initial duration for TopXX/AVDB embeds
@@ -201,6 +197,7 @@ export function PlayerContainer({ url, isHls, rawEmbedUrl, nextEpisodeUrl, movie
             lastSaveTimeRef.current = now;
             console.log(`[TopXX] Mount-Sync Progress for ${movieSlug}: ${time.toFixed(2)}s / ${duration.toFixed(2)}s`);
             
+            const absolutePoster = posterUrl?.startsWith('http') ? posterUrl : `https://img.ophim1.com/uploads/movies/${posterUrl}`;
             try {
               const { saveHistory } = await import("@/services/db");
               await saveHistory(user.uid, {
@@ -208,7 +205,7 @@ export function PlayerContainer({ url, isHls, rawEmbedUrl, nextEpisodeUrl, movie
                 movieTitle: movieTitle || "",
                 episodeName: episodeName || "Full",
                 episodeSlug: episodeSlug || "full",
-                posterUrl: posterUrl?.startsWith('http') ? posterUrl : `https://img.ophim1.com/uploads/movies/${posterUrl}`,
+                posterUrl: absolutePoster,
                 progressSeconds: Math.floor(time),
                 durationSeconds: Math.floor(duration),
                 progress: duration > 0 ? Math.round((time / duration) * 100) : 0,
@@ -218,6 +215,18 @@ export function PlayerContainer({ url, isHls, rawEmbedUrl, nextEpisodeUrl, movie
             } catch (err) {
               console.error("[TopXX] History save failed:", err);
             }
+
+            // Local Backup for TopXX sources
+            try {
+              const { saveXXHistory } = await import("@/services/topxxDb");
+              saveXXHistory({
+                movieCode: movieSlug,
+                movieTitle: movieTitle || "",
+                posterUrl: absolutePoster,
+                progressSeconds: Math.floor(time),
+                durationSeconds: Math.floor(duration),
+              });
+            } catch (err) {}
           }
         }
       }
