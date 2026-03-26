@@ -168,67 +168,78 @@ export async function getMovieDetails(slug: string) {
      return null;
   }
 
-  // 1. Parallel Full Multi-Source Fetch
-  const [ophim, kk, ng, vs] = await Promise.allSettled([
-    // OPhim with mirrors
-    Promise.any(OPHIM_MIRRORS.map(async (mirror) => {
-      const cleanMirror = mirror.endsWith('/') ? mirror.slice(0, -1) : mirror;
-      const apiPath = mirror.includes("vsmov.com") ? "/api/phim" : "/v1/api/phim";
-      const res = await fetch(`${cleanMirror}${apiPath}/${slug}`, { 
-        headers: { ...DEFAULT_HEADERS, Referer: cleanMirror + "/" }, 
-        signal: AbortSignal.timeout(8000), 
-        cache: "no-store" 
+  // Helper for safe fetch with manual timeout
+  const fetchSafe = async (url: string, headers: any = {}) => {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 10000); // 10s
+    try {
+      const res = await fetch(url, { 
+        headers: { ...DEFAULT_HEADERS, ...headers }, 
+        signal: controller.signal,
+        cache: "no-store"
       });
-      if (!res.ok) throw new Error("404");
-      const json = await res.json();
-      const movie = json.data?.item || json.movie;
-      if (!movie) throw new Error("No data");
-      return { ...movie, episodes: json.data?.episodes || json.episodes || movie.episodes || [] };
-    })).catch(() => null),
-    
-    // KKPhim
-    fetch(`https://phimapi.com/v1/api/phim/${slug}`, { 
-      headers: { "Accept": "application/json" }, 
-      signal: AbortSignal.timeout(8000) 
-    })
-      .then(r => r.ok ? r.json() : null)
-      .then(json => {
-         if (!json) return null;
-         const movie = json.data?.item || json.movie;
-         if (!movie) return null;
-         return { ...movie, episodes: json.data?.episodes || json.episodes || movie.episodes || [] };
-      })
-      .catch(() => null),
-      
+      clearTimeout(timeoutId);
+      if (!res.ok) return null;
+      return await res.json();
+    } catch (e) {
+      clearTimeout(timeoutId);
+      return null;
+    }
+  };
+
+  // 1. Parallel Full Multi-Source Fetch
+  const [ophimRes, kkRes, ngRes, vsRes] = await Promise.allSettled([
+    // OPhim (Primary Mirror)
+    fetchSafe(`https://vsmov.com/api/phim/${slug}`, { Referer: "https://vsmov.com/" }),
+    // KKPhim (Main)
+    fetchSafe(`https://phimapi.com/v1/api/phim/${slug}`),
     // NguonC
-    fetch(`https://phim.nguonc.com/api/film/${slug}`, { 
-      headers: { "Accept": "application/json" }, 
-      signal: AbortSignal.timeout(8000) 
-    })
-      .then(r => r.ok ? r.json() : null)
-      .then(json => json?.movie || null)
-      .catch(() => null),
-      
-    // VS-MOV (Primary)
-    fetch(`https://vsmov.com/api/phim/${slug}`, { 
-      headers: { "Accept": "application/json" }, 
-      signal: AbortSignal.timeout(8000) 
-    })
-      .then(r => r.ok ? r.json() : null)
-      .then(json => {
-         if (!json) return null;
-         const movie = json.movie || json.data?.item || json.data;
-         if (!movie) return null;
-         return { ...movie, episodes: json.episodes || json.data?.episodes || movie.episodes || [] };
-      })
-      .catch(() => null)
+    fetchSafe(`https://phim.nguonc.com/api/film/${slug}`),
+    // OPhim (Backup Mirror)
+    fetchSafe(`https://ophim1.com/v1/api/phim/${slug}`, { Referer: "https://ophim1.com/" })
   ]);
 
   const availableSources: { id: string, name: string, data: any }[] = [];
-  if (ophim.status === "fulfilled" && ophim.value) availableSources.push({ id: "ophim", name: "OPhim", data: ophim.value });
-  if (kk.status === "fulfilled" && kk.value) availableSources.push({ id: "kkphim", name: "KKPhim", data: kk.value });
-  if (ng.status === "fulfilled" && ng.value) availableSources.push({ id: "nguonc", name: "NguonC", data: ng.value });
-  if (vs.status === "fulfilled" && vs.value) availableSources.push({ id: "vsmov", name: "VS-MOV", data: vs.value });
+  
+  if (ophimRes.status === "fulfilled" && ophimRes.value) {
+    const json = ophimRes.value;
+    const movie = json.data?.item || json.movie;
+    if (movie) availableSources.push({ 
+      id: "ophim", 
+      name: "OPhim", 
+      data: { ...movie, episodes: json.data?.episodes || json.episodes || movie.episodes || [] } 
+    });
+  }
+
+  if (kkRes.status === "fulfilled" && kkRes.value) {
+    const json = kkRes.value;
+    const movie = json.data?.item || json.movie;
+    if (movie) availableSources.push({ 
+      id: "kkphim", 
+      name: "KKPhim", 
+      data: { ...movie, episodes: json.data?.episodes || json.episodes || movie.episodes || [] } 
+    });
+  }
+
+  if (ngRes.status === "fulfilled" && ngRes.value) {
+    const json = ngRes.value;
+    const movie = json.movie || json.data?.item;
+    if (movie) availableSources.push({ 
+      id: "nguonc", 
+      name: "NguonC", 
+      data: { ...movie, episodes: json.episodes || movie.episodes || [] } 
+    });
+  }
+
+  if (vsRes.status === "fulfilled" && vsRes.value) {
+    const json = vsRes.value;
+    const movie = json.movie || json.data?.item;
+    if (movie) availableSources.push({ 
+      id: "vsmov", 
+      name: "VS-MOV", 
+      data: { ...movie, episodes: json.episodes || json.data?.episodes || [] } 
+    });
+  }
 
   if (availableSources.length === 0) return null;
 
