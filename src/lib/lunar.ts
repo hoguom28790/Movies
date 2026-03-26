@@ -92,13 +92,19 @@ export function convertSolarToLunar(dd: number, mm: number, yy: number) {
 }
 
 /**
- * Format: DDMMYYYY (Solar)
+ * Format: DDMMYYYY (Lunar) - CRITICAL: Password must use the current LUNAR date
  */
 export function getLunarAuthPass(): string {
   const now = new Date();
-  const d = String(now.getDate()).padStart(2, "0");
-  const m = String(now.getMonth() + 1).padStart(2, "0");
-  const y = String(now.getFullYear());
+  const d = now.getDate();
+  const m = now.getMonth() + 1;
+  const y = now.getFullYear();
 
-  return `${d}${m}${y}`;
+  const lunar = convertSolarToLunar(d, m, y);
+  
+  const dd = String(lunar.d).padStart(2, "0");
+  const mm = String(lunar.m).padStart(2, "0");
+  const yyyy = lunar.y;
+
+  return `${dd}${mm}${yyyy}`;
 }
