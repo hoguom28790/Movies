@@ -491,14 +491,24 @@ export function PlayerContainer({ url, isHls, rawEmbedUrl, nextEpisodeUrl, movie
           : `fixed inset-0 w-screen h-screen z-[9999] bg-black ${isIOS ? 'p-safe' : ''}`)
       : "w-full aspect-video relative shadow-cinematic-2xl bg-black overflow-hidden rounded-[32px] border border-white/5"
     }>
-      <iframe
-        id="main-player"
-        key={iframeSrc}
-        src={iframeSrc}
-        className="w-full h-full border-0 absolute inset-0 rounded-[28px]"
-        allowFullScreen
-        onLoad={() => setIsLoading(false)}
-      />
+      {resolvedUrl ? (
+        <iframe
+          id="main-player"
+          key={iframeSrc}
+          src={iframeSrc}
+          className="w-full h-full border-0 absolute inset-0 rounded-[28px]"
+          allowFullScreen
+          onLoad={() => setIsLoading(false)}
+        />
+      ) : !isLoading && (
+        <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/90 text-white/40 gap-4">
+           <div className="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center">
+              <X className="w-8 h-8" />
+           </div>
+           <p className="text-sm font-black uppercase tracking-widest italic">Nguồn phim không phản hồi</p>
+           <p className="text-[10px] opacity-50 px-12 text-center">Vui lòng chọn server khác hoặc thử lại sau ít phút (ErrorCode: NULL_STREAM)</p>
+        </div>
+      )}
 
       {/* FIXED: Source Switch Loading Spinner */}
       <AnimatePresence>

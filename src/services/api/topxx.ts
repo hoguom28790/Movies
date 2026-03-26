@@ -158,7 +158,25 @@ export async function getTopXXMovies(
 }
 
 export async function getTopXXDetails(slug: string) {
-  const url = `${BASE_URL}/movies/${slug}`;
+  let finalId = slug;
+
+  // 1. If it's a code (STARS-420), find the internal ID (px7m0yKvZj)
+  if (/^[a-zA-Z]{2,5}-\d{2,6}$/.test(slug)) {
+    console.log(`[TopXX] Code detected: ${slug}. Searching for internal ID...`);
+    const results = await scrapeTopXXSearch(slug);
+    if (results && results.length > 0) {
+      finalId = results[0].code;
+      console.log(`[TopXX] Found internal ID: ${finalId} for code: ${slug}`);
+    } else {
+       // Also try API search as secondary fallback for codes
+       const apiRes = await searchTopXXMovies(slug, 1);
+       if (apiRes.items.length > 0) {
+         finalId = apiRes.items[0].id;
+       }
+    }
+  }
+
+  const url = `${BASE_URL}/movies/${finalId}`;
   try {
     const res = await fetchWithRetry(url, { headers: DEFAULT_HEADERS }, 10000);
     if (!res.ok) return null;
