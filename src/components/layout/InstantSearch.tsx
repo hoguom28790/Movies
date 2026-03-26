@@ -124,7 +124,7 @@ export function InstantSearch() {
               results.map((item) => (
                 <Link
                   key={item.slug}
-                  href={isComicSection ? `/truyen/${item.slug}` : `/phim/${item.slug}`}
+                  href={isComicSection ? `/truyen/${item.slug}` : `/xem/${item.slug}`}
                   onClick={() => setIsOpen(false)}
                   className="flex items-center gap-4 px-4 py-2 hover:bg-foreground/5 transition-colors group"
                 >

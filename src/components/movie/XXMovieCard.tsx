@@ -22,7 +22,7 @@ export function XXMovieCard({
   return (
     <div className="group relative flex flex-col gap-3 transition-all duration-500 hover:z-10">
       <Link 
-        href={`/v2k9r5w8m3x7n1p4q0z6/phim/${slug}`} 
+        href={`/xem/${slug}`} 
         className="relative aspect-[7/10] w-full overflow-hidden rounded-[32px] bg-surface transition-all duration-700 group-hover:-translate-y-2 group-hover:shadow-[0_20px_40px_-10px_rgba(0,0,0,0.8)] border border-white/5 active:scale-95"
       >
         <div className="relative w-full h-full">
@@ -86,7 +86,7 @@ export function XXMovieCard({
       
       <div className="flex flex-col gap-1.5 px-2 mt-1">
         <Link 
-          href={`/v2k9r5w8m3x7n1p4q0z6/phim/${slug}`} 
+          href={`/xem/${slug}`} 
           className="text-[12px] font-black text-foreground/60 group-hover:text-yellow-500 uppercase italic tracking-tighter line-clamp-2 transition-all duration-300 leading-[1.2] drop-shadow-sm" 
           title={title}
         >

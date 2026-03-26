@@ -102,7 +102,7 @@ export function XXHeroSection({ movie }: XXHeroSectionProps) {
           </div>
 
           <div className="flex flex-col md:flex-row items-stretch md:items-center gap-4 md:gap-8 pt-6">
-            <Link href={`/v2k9r5w8m3x7n1p4q0z6/phim/${movie.slug}?play=true`} className="w-full md:w-auto">
+            <Link href={`/xem/${movie.slug}`} className="w-full md:w-auto">
               <Button 
                 size="lg" 
                 className={`${isIPhone ? "h-16 text-lg" : "h-24 px-14 text-3xl"} w-full rounded-[32px] font-black uppercase italic tracking-tighter group/play shadow-cinematic-xl bg-yellow-500 text-black hover:bg-white hover:text-black transition-all duration-500 active-depth hover:scale-[1.02]`}
@@ -113,7 +113,7 @@ export function XXHeroSection({ movie }: XXHeroSectionProps) {
             </Link>
             
             <div className="flex items-center gap-4 w-full md:w-auto">
-              <Link href={`/v2k9r5w8m3x7n1p4q0z6/phim/${movie.slug}`} className="flex-1 md:flex-none">
+              <Link href={`/xem/${movie.slug}`} className="flex-1 md:flex-none">
                 <Button 
                   variant="secondary" 
                   size="lg" 

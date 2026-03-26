@@ -106,7 +106,7 @@ export function HeroSlider({ movies }: HeroSliderProps) {
             </p>
 
             <div className="flex items-center gap-6 mt-6">
-              <Link href={`/phim/${currentMovie.slug}`} className="flex-1 md:flex-none">
+              <Link href={`/xem/${currentMovie.slug}`} className="flex-1 md:flex-none">
                 <Button
                   size="lg"
                   className="h-20 px-16 text-[18px] font-black italic uppercase italic tracking-widest rounded-[32px] gap-4 bg-primary text-white shadow-cinematic-2xl hover:shadow-primary/40 transition-all hover:scale-110 active-depth group"

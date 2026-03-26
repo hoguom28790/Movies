@@ -81,7 +81,8 @@ export function MovieTabs({
               {(servers[activeServer]?.items || []).map((ep: any, idx: number) => (
                 <Link
                   key={idx}
-                  href={`/xem/${source}/${slug}/${ep.slug || ep.name}`}
+                  href={`/xem/${slug}?sv=${activeServer}&ep=${encodeURIComponent(ep.slug || ep.name)}`}
+                  scroll={false}
                   className="flex items-center gap-2 px-3 py-2.5 rounded-lg bg-foreground/[0.03] border border-foreground/[0.06] text-[12px] text-foreground/50 hover:bg-primary/10 hover:text-primary hover:border-primary/30 transition-all"
                 >
                   <Play className="w-3 h-3 flex-shrink-0" />

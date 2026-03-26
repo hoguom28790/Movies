@@ -60,7 +60,7 @@ export function MoviePlaySection({ slug, source, firstEp, movieTitle, year, type
 
   return (
     <div className="flex flex-col gap-4 w-full">
-      <Link href={`/xem/${source}/${slug}/${firstEp.slug || firstEp.name}`} className="w-full group">
+      <Link href={`/xem/${slug}`} className="w-full group">
         <Button className="w-full h-16 rounded-3xl gap-4 font-black text-lg bg-primary hover:bg-primary/90 transition-all shadow-2xl shadow-primary/30 relative overflow-hidden z-20 group-hover:scale-[1.02] active:scale-[0.98]">
           <Play className="w-7 h-7 fill-current" />
           {isWatched ? "ĐÃ XEM (TRAY)" : "XEM PHIM (PRO)"}

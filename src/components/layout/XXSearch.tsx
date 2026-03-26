@@ -104,7 +104,7 @@ export function XXSearch() {
               {results.map((movie) => (
                 <Link
                   key={movie.id}
-                  href={`/v2k9r5w8m3x7n1p4q0z6/phim/${movie.slug}`}
+                  href={`/xem/${movie.slug}`}
                   onClick={() => {
                     setIsOpen(false);
                     setIsExpanded(false);

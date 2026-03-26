@@ -80,7 +80,7 @@ export function ActorModal({ isOpen, onClose, actor }: ActorModalProps) {
 
       if (match) {
         onClose();
-        router.push(`/phim/${match.slug}`); 
+        router.push(`/xem/${match.slug}`); 
       } else {
         setToast({ message: "Sản phẩm chưa có mặt trên cửa hàng.", type: "error" });
       }

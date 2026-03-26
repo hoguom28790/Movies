@@ -27,7 +27,7 @@ export function MovieCard({
   title, slug, posterUrl, year, quality, episodeText, subText, originalTitle, progress, progressText, customHref, score, onDelete, index = 0
 }: MovieCardProps) {
   const [imgError, setImgError] = React.useState(false);
-  const linkHref = customHref || (slug.startsWith('/') ? slug : `/phim/${slug}`);
+  const linkHref = customHref || (slug.startsWith('/') ? slug : `/xem/${slug}`);
   return (
     <motion.div 
       initial={{ opacity: 0, y: 30, filter: "blur(10px)" }}
@@ -37,7 +37,7 @@ export function MovieCard({
       className="group relative flex flex-col gap-4"
     >
       <Link 
-        href={linkHref} 
+        href={`/xem/${slug}`} 
         className="relative aspect-[2/3] w-full overflow-hidden rounded-[32px] bg-[#141416] transition-all duration-700 hover:shadow-primary/20 hover:shadow-2xl active-depth border border-white/5"
       >
         <div className="relative w-full h-full">

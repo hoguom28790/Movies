@@ -114,7 +114,7 @@ export function XXInstantSearch() {
                 results.map((item) => (
                   <Link
                     key={item.slug}
-                    href={`/${TOPXX_PATH}/phim/${item.slug}`}
+                    href={`/xem/${item.slug}`}
                     onClick={() => setIsOpen(false)}
                     className="flex items-center gap-4 px-4 py-2.5 hover:bg-foreground/[0.03] transition-colors group"
                   >
