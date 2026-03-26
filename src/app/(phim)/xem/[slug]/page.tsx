@@ -42,7 +42,8 @@ export default async function UnifiedWatchPage({ params, searchParams }: PagePro
       poster_url: data.posterUrl || data.poster_url || "",
       quality: data.quality || "HD",
       episode_current: data.episode_current || "",
-      category: Array.isArray(data.category) ? data.category : []
+      category: Array.isArray(data.category) ? data.category : [],
+      country: Array.isArray(data.country) ? data.country : []
     };
 
     // 3. Fetch TMDB Enrichment
@@ -140,11 +141,33 @@ export default async function UnifiedWatchPage({ params, searchParams }: PagePro
                        <span className="px-4 py-1.5 rounded-xl bg-white/5 border border-white/10 text-white/60 font-black text-[10px] uppercase italic tracking-widest">
                           {isTopXX ? 'Source: TopXX' : 'Hồ Phim Premium'}
                        </span>
-                       {safeData.category.slice(0, 3).map((cat: any, i: number) => (
-                          <span key={i} className="px-4 py-1.5 rounded-xl bg-white/5 border border-white/10 text-white/30 font-black text-[10px] uppercase italic tracking-widest">
-                             {typeof cat === 'string' ? cat : cat.name}
-                          </span>
-                       ))}
+                        {/* Categories & Countries */}
+                        {safeData.category.slice(0, 5).map((cat: any, i: number) => {
+                           const label = typeof cat === 'string' ? cat : cat.name;
+                           const cSlug = typeof cat === 'object' && cat.slug ? cat.slug : label.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, '-');
+                           return (
+                              <Link 
+                                 key={`cat-${i}`} 
+                                 href={`/the-loai/${cSlug}`}
+                                 className="px-4 py-1.5 rounded-xl bg-white/5 border border-white/10 text-white/30 hover:text-primary hover:border-primary/30 transition-all font-black text-[10px] uppercase italic tracking-widest"
+                              >
+                                 {label}
+                              </Link>
+                           );
+                        })}
+                        {safeData.country.slice(0, 2).map((cnt: any, i: number) => {
+                           const label = typeof cnt === 'string' ? cnt : cnt.name;
+                           const cSlug = typeof cnt === 'object' && cnt.slug ? cnt.slug : label.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, '-');
+                           return (
+                              <Link 
+                                 key={`cnt-${i}`} 
+                                 href={`/quoc-gia/${cSlug}`}
+                                 className="px-4 py-1.5 rounded-xl bg-white/5 border border-white/10 text-primary/40 hover:text-primary hover:border-primary/30 transition-all font-black text-[10px] uppercase italic tracking-widest"
+                              >
+                                 {label}
+                              </Link>
+                           );
+                        })}
                     </div>
 
                     <div className="flex flex-wrap items-center gap-8 py-4 border-y border-white/5">
@@ -231,20 +254,9 @@ export default async function UnifiedWatchPage({ params, searchParams }: PagePro
                        </div>
                     </div>
 
-                    <div className="space-y-6 pt-6 border-t border-white/5">
-                       <h3 className="text-xs font-black text-white uppercase tracking-[0.2em] italic">Diễn viên chính</h3>
-                       <div className="space-y-3">
-                          {tmdbData?.credits?.cast?.slice(0, 5).map((actor: any) => (
-                             <div key={actor.id} className="flex items-center gap-4 group">
-                                <img src={getTMDBImageUrl(actor.profile_path, 'w185') || ""} className="w-10 h-10 rounded-full object-cover grayscale group-hover:grayscale-0 transition-all shadow-xl" alt="" />
-                                <div className="flex-1 min-w-0">
-                                   <p className="text-[11px] font-black text-white uppercase truncate tracking-tight">{actor.name}</p>
-                                   <p className="text-[9px] font-bold text-white/30 uppercase truncate italic">{actor.character}</p>
-                                </div>
-                             </div>
-                          ))}
-                       </div>
-                    </div>
+                     <div className="pt-6 border-t border-white/5">
+                        <CastSection actors={tmdbData?.credits?.cast || []} />
+                     </div>
                  </div>
               </div>
            </div>
