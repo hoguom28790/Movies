@@ -125,19 +125,17 @@ export async function getTopXXMovies(
   try {
     const res = await fetchWithRetry(url, { headers: DEFAULT_HEADERS }, 10000, 2, 800);
     
-    // 2. FALLBACK: If the specific category/genre endpoint fails or returns nothing, 
-    // it's likely because 'slug' is a name (e.g. 'Action') instead of a TopXX internal code.
-    // In this case, we fall back to a search query which is more resilient to human-readable names.
+    // 2. FALLBACK: Use search with isCategorySearch=true to bypass strict title checks
     if (!res.ok) {
-       console.log(`[TopXX] API failed for ${type}/${slug}, falling back to search.`);
-       return searchTopXXMovies(slug, page);
+       console.log(`[TopXX] API failed for ${type}/${slug}, falling back to category search.`);
+       return searchTopXXMovies(slug, page, true);
     }
 
     const data = await res.json();
     if (data.status !== "success" || !data.data || (Array.isArray(data.data) && data.data.length === 0)) {
        // Also fallback if successfully called but empty (could be wrong code)
        if (type === "the-loai" || type === "quoc-gia") {
-         return searchTopXXMovies(slug, page);
+         return searchTopXXMovies(slug, page, true);
        }
        return { items: [], pagination: { currentPage: 1, totalPages: 1, totalItems: 0 } };
     }
@@ -151,9 +149,9 @@ export async function getTopXXMovies(
       }
     };
   } catch (err) {
-    console.warn(`[TopXX] Detail fetch error for ${type}/${slug}, trying search fallback.`, err);
+    console.warn(`[TopXX] Detail fetch error for ${type}/${slug}, trying category search.`, err);
     if (type === "the-loai" || type === "quoc-gia") {
-      return searchTopXXMovies(slug, page);
+      return searchTopXXMovies(slug, page, true);
     }
     return { items: [], pagination: { currentPage: 1, totalPages: 1, totalItems: 0 } };
   }
@@ -177,7 +175,11 @@ export async function getTopXXDetails(slug: string) {
   }
 }
 
-export async function searchTopXXMovies(keyword: string, page: number = 1): Promise<MovieListResponse> {
+/**
+ * TOPXX MEGA SEARCH: Combines API, Scraper, and AVDB
+ * @param isCategorySearch If true, skips strict relevance filtering (useful for genre/tag matching)
+ */
+export async function searchTopXXMovies(keyword: string, page: number = 1, isCategorySearch: boolean = false): Promise<MovieListResponse> {
   const normalizedQuery = (keyword || "").trim().toLowerCase();
 
   if (!normalizedQuery) {
@@ -192,7 +194,7 @@ export async function searchTopXXMovies(keyword: string, page: number = 1): Prom
   const topxxActorUrl = `${BASE_URL}/actors?search=${encodeURIComponent(normalizedQuery)}&page=${page}`;
 
   try {
-    console.log(`[TopXX Search] Initiating parallel search for: "${normalizedQuery}"`);
+    console.log(`[TopXX Search] Initiating parallel search for: "${normalizedQuery}" (CategoryMode: ${isCategorySearch})`);
 
     // We run 5 main sources in parallel (including Scraper fallback)
     const [topxxRes, topxxActorRes, topxxScrapedRes, avdbTitleRes, avdbActorRes] = await Promise.allSettled([
@@ -242,6 +244,8 @@ export async function searchTopXXMovies(keyword: string, page: number = 1): Prom
 
     // Helper for strict relevance checking
     const isLikelyRelevant = (m: Movie, q: string): boolean => {
+      if (isCategorySearch) return true; // Skip filtering for category fallbacks
+      
       const normQ = q.toLowerCase().trim();
       if (!normQ) return true;
       
@@ -296,7 +300,7 @@ export async function searchTopXXMovies(keyword: string, page: number = 1): Prom
     if (topxxScrapedRes.status === "fulfilled" && Array.isArray(topxxScrapedRes.value)) {
       topxxScrapedRes.value.forEach((item: any) => {
         const m = mapTopXXToMovie(item);
-        if (!movieMap.has(m.id)) {
+        if (!movieMap.has(m.id)) { // Scraped results are usually very specific, no need for extra relevance check
           movieMap.set(m.id, m);
         }
       });
