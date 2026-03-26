@@ -187,10 +187,18 @@ export async function getTopXXDetails(slug: string) {
     const viTrans = Array.isArray(movie.trans) ? (movie.trans.find((t: any) => t.locale === "vi") || movie.trans[0]) : null;
     
     // Normalize mapping for player
+    // PRIORITY: Use direct video_url from API if available, then fallback to play_url or constructed index
+    let playLink = movie.video_url || movie.play_url || `https://topxx.vip/play/index/${movie.code}`;
+    
+    // Some play links are relative, ensure absolute
+    if (playLink && playLink.startsWith('/')) {
+        playLink = `https://topxx.vip${playLink}`;
+    }
+
     const episodes = [{
        name: "Full",
        slug: "full",
-       link_embed: `https://topxx.vip/play/index/${movie.code}`,
+       link_embed: playLink,
        link_m3u8: ""
     }];
     
