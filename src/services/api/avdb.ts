@@ -133,8 +133,10 @@ export async function getAVDBDetails(id: string) {
     return {
       ...movie,
       id: movie.id.toString(),
+      name: movie.name,
       title: movie.name,
       posterUrl: movie.poster_url,
+      thumb_url: movie.thumb_url,
       content: movie.description,
       servers: servers,
       source: 'avdb'

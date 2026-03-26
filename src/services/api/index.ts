@@ -141,17 +141,30 @@ export async function getMovieDetails(slug: string) {
      if (tx.status === "fulfilled" && tx.value) return { sources: [{ id: "topxx", data: tx.value }] };
      if (av.status === "fulfilled" && av.value) return { sources: [{ id: "avdb", data: av.value }] };
 
-     // 2. Fallback: Search AVDB if it looks like a code (e.g. DASS-876) but ID fetch failed
-     if (isTopXXCode) {
-        const { getAVDBMovies } = await import("./avdb");
-        const searchRes = await getAVDBMovies(1, undefined, slug).catch(() => null);
-        if (searchRes && searchRes.items.length > 0) {
-           const firstItem = searchRes.items[0];
-           // Fetch full details of the first search match
-           const fullDetails = await getAVDBDetails(firstItem.id.replace('av-', '')).catch(() => null);
-           if (fullDetails) return { sources: [{ id: "avdb", data: fullDetails }] };
-        }
-     }
+      // 2. Fallback: Search all providers if it looks like a code (e.g. DASS-876) but ID fetch failed
+      if (isTopXXCode || isTopXXInternal) {
+         const { getAVDBMovies } = await import("./avdb");
+         const { searchTopXXMovies } = await import("./topxx");
+         
+         const [avSearch, txSearch] = await Promise.allSettled([
+            getAVDBMovies(1, undefined, slug),
+            searchTopXXMovies(slug, 1)
+         ]);
+
+         if (txSearch.status === "fulfilled" && txSearch.value?.items.length > 0) {
+            const firstItem = txSearch.value.items[0];
+            const { getTopXXDetails } = await import("./topxx");
+            const fullDetails = await getTopXXDetails(firstItem.id).catch(() => null);
+            if (fullDetails) return { sources: [{ id: "topxx", data: fullDetails }] };
+         }
+
+         if (avSearch.status === "fulfilled" && avSearch.value?.items.length > 0) {
+            const firstItem = avSearch.value.items[0];
+            const { getAVDBDetails } = await import("./avdb");
+            const fullDetails = await getAVDBDetails(firstItem.id.replace('av-', '')).catch(() => null);
+            if (fullDetails) return { sources: [{ id: "avdb", data: fullDetails }] };
+         }
+      }
      
      return null;
   }

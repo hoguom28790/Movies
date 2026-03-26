@@ -65,26 +65,45 @@ export default async function UnifiedWatchPage({ params, searchParams }: PagePro
       ? getTMDBImageUrl(tmdbData.backdrop_path, 'original') 
       : poster;
 
-    // 4. Server & Episode Logic (Refined for TopXX/AVDB)
-    const episodes = isTopXX ? [data] : (data.episodes || data.items || []);
-    const allServers = episodes.map((srv: any, idx: number) => {
-       const serverItems = isTopXX ? (srv.sources || srv.items || []) : (srv.server_data || srv.items || []);
+    // 4. Server & Episode Logic (Unified Standard)
+    let rawServers = [];
+    if (data.servers && Array.isArray(data.servers)) {
+       rawServers = data.servers;
+    } else {
+       rawServers = isTopXX ? [data] : (data.episodes || data.items || []);
+    }
+
+    const allServers = rawServers.map((srv: any, idx: number) => {
+       // Support for both 'episodes' (Standard) and 'server_data/items' (OPhim/TopXX legacy)
+       const serverItems = srv.episodes || srv.server_data || srv.items || (isTopXX ? (srv.sources || []) : []);
+       
        const items = Array.isArray(serverItems) 
          ? serverItems.map((item: any, idxArr: number) => ({
-             name: item.name || (isTopXX ? `Source ${idxArr + 1}` : ""),
-             slug: item.slug || item.name || "",
-             link_m3u8: item.link_m3u8 || item.link || "",
-             link_embed: item.link_embed || ""
+             name: item.name || (isTopXX ? `Tập ${idxArr + 1}` : (srv.items?.length === 1 ? "Full" : (idxArr + 1).toString())),
+             slug: item.slug || item.name || (idxArr + 1).toString(),
+             link_m3u8: item.link_m3u8 || (typeof item.link === 'string' && item.link.includes('.m3u8') ? item.link : ""),
+             link_embed: item.link_embed || (typeof item.link === 'string' && !item.link.includes('.m3u8') ? item.link : "")
            }))
          : Object.entries(serverItems).map(([name, link]: [string, any]) => {
              if (typeof link === 'object' && link !== null) {
-               return { name: link.name || name, slug: link.slug || name, link_m3u8: link.link_m3u8, link_embed: link.link_embed };
+               return { 
+                 name: link.name || name, 
+                 slug: link.slug || name, 
+                 link_m3u8: link.link_m3u8 || (link.link?.includes('.m3u8') ? link.link : ""), 
+                 link_embed: link.link_embed || (!link.link?.includes('.m3u8') ? link.link : "") 
+               };
              }
-             return { name, slug: name, link_m3u8: link as string, link_embed: "" };
+             const sLink = link as string;
+             return { 
+               name, 
+               slug: name, 
+               link_m3u8: sLink.includes('.m3u8') ? sLink : "", 
+               link_embed: !sLink.includes('.m3u8') ? sLink : "" 
+             };
            });
 
        return {
-         name: srv.server_name || srv.name || `Server ${idx + 1}`,
+         name: srv.server || srv.server_name || srv.name || `Nguồn ${idx + 1}`,
          items
        };
     });

@@ -164,9 +164,32 @@ export async function getTopXXDetails(slug: string) {
     if (!res.ok) return null;
     const data = await res.json();
     if (data.status !== "success" || !data.data) return null;
+    
+    const movie = data.data;
+    const viTrans = Array.isArray(movie.trans) ? (movie.trans.find((t: any) => t.locale === "vi") || movie.trans[0]) : null;
+    
+    // Normalize mapping for player
+    const episodes = [{
+       name: "Full",
+       slug: "full",
+       link_embed: `https://topxx.vip/play/index/${movie.code}`,
+       link_m3u8: ""
+    }];
+    
+    const servers = [{
+       server: "Cloud VIP",
+       episodes: episodes
+    }];
+
     return {
-        ...data.data,
-        id: data.data.code,
+        ...movie,
+        id: movie.code,
+        name: viTrans?.title || movie.title || "No Title",
+        title: viTrans?.title || movie.title || "No Title",
+        posterUrl: movie.thumbnail,
+        thumb_url: movie.thumbnail,
+        content: viTrans?.description || movie.description,
+        servers: servers,
         source: 'topxx'
     };
   } catch (err) {
