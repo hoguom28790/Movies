@@ -183,25 +183,25 @@ export async function getMovieDetails(slug: string) {
 
   if (ophimRes.status === "fulfilled" && ophimRes.value) {
     const json = ophimRes.value;
-    const movie = json.data?.item || json.movie;
+    const movie = json?.data?.item || json?.movie;
     if (movie) availableSources.push({ id: "ophim", name: "OPhim", data: { ...movie, episodes: json.data?.episodes || json.episodes || movie.episodes || [] } });
   }
 
   if (kkRes.status === "fulfilled" && kkRes.value) {
     const json = kkRes.value;
-    const movie = json.data?.item || json.movie;
+    const movie = json?.data?.item || json?.movie;
     if (movie) availableSources.push({ id: "kkphim", name: "KKPhim", data: { ...movie, episodes: json.data?.episodes || json.episodes || movie.episodes || [] } });
   }
 
   if (ngRes.status === "fulfilled" && ngRes.value) {
     const json = ngRes.value;
-    const movie = json.movie || json.data?.item;
+    const movie = json?.movie || json?.data?.item;
     if (movie) availableSources.push({ id: "nguonc", name: "NguonC", data: { ...movie, episodes: json.episodes || movie.episodes || [] } });
   }
 
   if (vsRes.status === "fulfilled" && vsRes.value) {
     const json = vsRes.value;
-    const movie = json.movie || json.data?.item;
+    const movie = json?.movie || json?.data?.item;
     if (movie) availableSources.push({ id: "vsmov", name: "VS-MOV", data: { ...movie, episodes: json.episodes || json.data?.episodes || [] } });
   }
 
