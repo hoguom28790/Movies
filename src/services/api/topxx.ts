@@ -1,5 +1,6 @@
 import { Movie, MovieListResponse } from "@/types/movie";
 import { getAVDBMovies } from "./avdb";
+import * as cheerio from "cheerio";
 
 const BASE_URL = "https://topxx.vip/api/v1";
 
@@ -7,6 +8,51 @@ const DEFAULT_HEADERS = {
   'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
   'Referer': 'https://topxx.vip/'
 };
+
+/**
+ * ELITE SCRAPER FALLBACK: As the TopXX Search API is currently broken/unreliable
+ * for specific codes, we scrape the website's search page directly.
+ */
+async function scrapeTopXXSearch(keyword: string): Promise<any[]> {
+  const url = `https://topxx.vip/search?keyword=${encodeURIComponent(keyword)}`;
+  try {
+    const res = await fetchWithRetry(url, { headers: DEFAULT_HEADERS }, 10000, 1, 500);
+    if (!res.ok) return [];
+
+    const html = await res.text();
+    const $ = cheerio.load(html);
+    const results: any[] = [];
+
+    $("tr.tpx-row").each((_, row) => {
+      const $row = $(row);
+      const title = $row.find(".tpx-title").text().trim();
+      const poster = $row.find(".tpx-poster img").attr("src");
+
+      // Extract internal code (e.g. px7m0yKvZj) from potentially multiple .tpx-sub
+      let internalCode = "";
+      $row.find(".tpx-sub").each((_, el) => {
+        const text = $(el).text().trim();
+        // Look for typical internal code format (10 alphanumeric chars inside parens)
+        const match = text.match(/\(([a-zA-Z0-9]{10})\)/);
+        if (match) internalCode = match[1];
+      });
+
+      if (internalCode && title) {
+        results.push({
+          code: internalCode,
+          title: title,
+          thumbnail: poster
+        });
+      }
+    });
+
+    console.log(`[TopXX Scraper] Scraped ${results.length} items for "${keyword}"`);
+    return results;
+  } catch (err: any) {
+    console.warn(`[TopXX Scraper] Error: ${err.message}`);
+    return [];
+  }
+}
 
 // Helper for timeout-safe fetch
 async function fetchWithTimeout(url: string, options: RequestInit = {}, timeout = 10000) {
@@ -43,7 +89,7 @@ async function fetchWithRetry(url: string, options: RequestInit = {}, timeout = 
 function mapTopXXToMovie(item: any): Movie {
   const viTrans = Array.isArray(item.trans) ? (item.trans.find((t: any) => t.locale === "vi") || item.trans[0]) : null;
   const enTrans = Array.isArray(item.trans) ? (item.trans.find((t: any) => t.locale === "en") || {}) : {};
-  
+
   return {
     id: item.code || `tx-${Math.random().toString(36).substr(2, 9)}`,
     title: viTrans?.title || item.title || "No Title",
@@ -58,13 +104,15 @@ function mapTopXXToMovie(item: any): Movie {
 }
 
 export async function getTopXXMovies(
-  page: number = 1, 
-  type: "danh-sach" | "the-loai" | "quoc-gia" | "dien-vien" = "danh-sach", 
-  slug: string = "phim-moi-cap-nhat"
+  type: "phim-moi" | "phim-hot" | "the-loai" | "quoc-gia" | "dien-vien",
+  slug: string = "",
+  page: number = 1
 ): Promise<MovieListResponse> {
   let url = `${BASE_URL}/movies/latest?page=${page}`;
-  
-  if (type === "the-loai") {
+
+  if (type === "phim-hot") {
+    url = `${BASE_URL}/movies/today?page=${page}`;
+  } else if (type === "the-loai") {
     url = `${BASE_URL}/genres/${slug}/movies?page=${page}`;
   } else if (type === "quoc-gia") {
     url = `${BASE_URL}/countries/${slug}/movies?page=${page}`;
@@ -112,7 +160,7 @@ export async function getTopXXDetails(slug: string) {
 
 export async function searchTopXXMovies(keyword: string, page: number = 1): Promise<MovieListResponse> {
   const normalizedQuery = (keyword || "").trim().toLowerCase();
-  
+
   if (!normalizedQuery) {
     return { items: [], pagination: { currentPage: 1, totalPages: 1, totalItems: 0 } };
   }
@@ -123,12 +171,12 @@ export async function searchTopXXMovies(keyword: string, page: number = 1): Prom
 
   const topxxUrl = `${BASE_URL}/movies/search?keyword=${encodeURIComponent(normalizedQuery)}&page=${page}`;
   const topxxActorUrl = `${BASE_URL}/actors?search=${encodeURIComponent(normalizedQuery)}&page=${page}`;
-  
+
   try {
     console.log(`[TopXX Search] Initiating parallel search for: "${normalizedQuery}"`);
-    
-    // We run 4 main sources in parallel
-    const [topxxRes, topxxActorRes, avdbTitleRes, avdbActorRes] = await Promise.allSettled([
+
+    // We run 5 main sources in parallel (including Scraper fallback)
+    const [topxxRes, topxxActorRes, topxxScrapedRes, avdbTitleRes, avdbActorRes] = await Promise.allSettled([
       fetchWithRetry(topxxUrl, { headers: DEFAULT_HEADERS }, SEARCH_TIMEOUT, SEARCH_RETRIES, 800)
         .then(async r => {
           if (!r.ok) return null;
@@ -140,7 +188,7 @@ export async function searchTopXXMovies(keyword: string, page: number = 1): Prom
           if (!r.ok) return null;
           const json = await r.json();
           if (json?.status === "success" && Array.isArray(json.data) && json.data.length > 0) {
-            // OPTIMIZATION: Start fetching filmography for the top 2 actors IMMEDIATELY 
+            // OPTIMIZATION: Start fetching filmography for the top 2 actors IMMEDIATELY
             const topActors = json.data.slice(0, 2);
             const actorMovies = await Promise.allSettled(
               topActors.map(async (actor: any) => {
@@ -155,13 +203,14 @@ export async function searchTopXXMovies(keyword: string, page: number = 1): Prom
                 return [];
               })
             );
-            
+
             // Flatten found movies
             const extraMovies = actorMovies.flatMap(r => r.status === "fulfilled" ? r.value : []);
             return { ...json, extraMovies };
           }
           return json;
         }),
+      scrapeTopXXSearch(normalizedQuery),
       getAVDBMovies(page, undefined, normalizedQuery)
         .catch(() => ({ items: [], pagination: { totalItems: 0, totalPages: 1, currentPage: 1 } })),
       getAVDBMovies(page, undefined, undefined, normalizedQuery)
@@ -217,7 +266,20 @@ export async function searchTopXXMovies(keyword: string, page: number = 1): Prom
       });
     }
 
-    // 3. Process AVDB Title Search
+    // 3. Process TopXX Scraped results (ELITE Fallback for broken API)
+    if (topxxScrapedRes.status === "fulfilled" && Array.isArray(topxxScrapedRes.value)) {
+      topxxScrapedRes.value.forEach((item: any) => {
+        const m = mapTopXXToMovie(item);
+        if (!movieMap.has(m.id)) {
+          movieMap.set(m.id, m);
+        }
+      });
+      if (totalItems === 0) {
+        totalItems = Math.max(totalItems, topxxScrapedRes.value.length);
+      }
+    }
+
+    // 4. Process AVDB Title Search
     if (avdbTitleRes.status === "fulfilled" && avdbTitleRes.value?.items) {
       avdbTitleRes.value.items.forEach((m: Movie) => {
         if (m && !movieMap.has(m.id) && isLikelyRelevant(m, normalizedQuery)) {
@@ -230,7 +292,7 @@ export async function searchTopXXMovies(keyword: string, page: number = 1): Prom
       }
     }
 
-    // 4. Process AVDB Actor Search
+    // 5. Process AVDB Actor Search
     if (avdbActorRes.status === "fulfilled" && avdbActorRes.value?.items) {
       avdbActorRes.value.items.forEach((m: Movie) => {
         if (m && !movieMap.has(m.id) && isLikelyRelevant(m, normalizedQuery)) {
