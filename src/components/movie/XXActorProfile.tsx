@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Calendar, Ruler, Smile, User, MapPin, Tv, Play, TrendingUp, Sparkles, Star, Heart } from "lucide-react";
