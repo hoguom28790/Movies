@@ -79,18 +79,21 @@ export default async function CatchAllWatchPage({ params, searchParams }: PagePr
        return { name: srv.server || srv.server_name || srv.name || `Nguồn ${idx + 1}`, items };
     });
 
-    if (allServers.length === 0) return notFound();
+    if (allServers.length === 0) throw new Error("API_NO_EPISODES");
 
     const activeServerGroup = allServers[currentServerIdx]?.items || allServers[0]?.items || [];
     const decodedEpSlug = decodeURIComponent(currentEpisodeSlug);
-    const currentEpIdx = currentEpisodeSlug ? activeServerGroup.findIndex((e: any) => e.slug === decodedEpSlug || e.name === decodedEpSlug) : 0;
+    const currentEpIdx = (currentEpisodeSlug && activeServerGroup.length > 0) ? activeServerGroup.findIndex((e: any) => e.slug === decodedEpSlug || e.name === decodedEpSlug) : 0;
     const currentEp = activeServerGroup[currentEpIdx >= 0 ? currentEpIdx : 0] || activeServerGroup[0];
+
+    if (!currentEp) throw new Error("API_NO_ACTIVE_EPISODE");
 
     const nextEp = activeServerGroup[currentEpIdx + 1] || null;
     const nextEpisodeUrl = nextEp ? `/xem/${movieSlug}?sv=${currentServerIdx}&ep=${encodeURIComponent(nextEp.slug)}&src=${sourceId}` : undefined;
 
     return (
       <div className={`min-h-screen ${isTopXX ? 'bg-[#0f1115]' : 'bg-background'} text-white overflow-x-hidden`}>
+        {/* ... (rest of the UI) ... */}
         <div className="relative w-full lg:h-[85vh] flex flex-col justify-end pb-20 pt-32 overflow-hidden">
            <div className="absolute inset-0 z-0">
               <img src={backdrop} className="w-full h-full object-cover opacity-30 blur-sm scale-105" alt="" />
