@@ -61,7 +61,7 @@ export default async function XXSearchPage({ searchParams }: XXSearchPageProps) 
         </div>
         <h2 className="text-3xl font-black text-white uppercase italic tracking-tighter mb-4">Lỗi Đọc Dữ Liệu</h2>
         <p className="text-white/30 text-sm font-black uppercase tracking-widest leading-loose">Hệ thống đang được đồng bộ hóa. Vui lòng quay lại trong giây lát.</p>
-        <button onClick={() => window.location.reload()} className="mt-12 px-12 py-5 bg-white text-black font-black uppercase italic tracking-widest rounded-full hover:bg-yellow-500 transition-all shadow-2xl">Làm Mới</button>
+        <a href="/v2k9r5w8m3x7n1p4q0z6/search" className="mt-12 px-12 py-5 bg-white text-black font-black uppercase italic tracking-widest rounded-full hover:bg-yellow-500 transition-all shadow-2xl inline-block">Thử Lại</a>
       </div>
     );
   }

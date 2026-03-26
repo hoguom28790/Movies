@@ -14,6 +14,8 @@ async function fetchInternal(path: string, mirrorIdx = 0): Promise<any> {
   
   const mirror = JAVL_MIRRORS[mirrorIdx];
   const url = `${mirror}/${path.replace(/^\//, '')}`;
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 5000); // 5s timeout per mirror
   
   try {
     console.log(`[JAVL-SYNC] Mirror ${mirrorIdx}: ${url}`);
@@ -26,8 +28,11 @@ async function fetchInternal(path: string, mirrorIdx = 0): Promise<any> {
         "Pragma": "no-cache",
         "Referer": mirror + "/",
       },
+      signal: controller.signal,
       next: { revalidate: 3600 } // Cache for 1 hour on Vercel
     });
+
+    clearTimeout(timeoutId);
 
     if (res.status === 403) throw new Error("Cloudflare Block");
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -37,6 +42,7 @@ async function fetchInternal(path: string, mirrorIdx = 0): Promise<any> {
 
     return { html: text, url: res.url, mirror };
   } catch (err: any) {
+    clearTimeout(timeoutId);
     console.warn(`[JAVL-SYNC] Mirror ${mirrorIdx} failed: ${err.message}`);
     return fetchInternal(path, mirrorIdx + 1);
   }
@@ -97,30 +103,30 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ name
       };
 
       // Extract Info
-      $("#star_profile tr").each((_, row) => {
-        const label = $(row).find(".header").text();
-        const value = $(row).find("td:not(.header)").text().trim();
-        if (label.includes("Birth Date")) actressData.birthDate = value;
-        if (label.includes("Measurements")) actressData.measurements = value.replace(/\s+/g, '-');
-        if (label.includes("Height")) actressData.height = value;
+      $(".starinfo tr, #star_profile tr").each((_, row) => {
+        const label = $(row).find(".header").text() || $(row).find("td:first-child").text();
+        const value = $(row).find("td:not(.header):last-child").text().trim();
+        if (label.includes("Birth Date") || label.includes("Born")) actressData.birthDate = value;
+        if (label.includes("Measurements") || label.includes("スリーサイズ")) actressData.measurements = value.replace(/\s+/g, '-');
+        if (label.includes("Height") || label.includes("身長")) actressData.height = value;
       });
 
-      const avatar = $("#star_profile img").attr("src");
+      const avatar = $("#star_headimg img, .starimage img, #star_profile img").first().attr("src");
       if (avatar) actressData.profileImage = avatar.startsWith("//") ? "https:" + avatar : avatar;
       if (actressData.profileImage) actressData.gallery.push(actressData.profileImage);
 
       // Filmography - MASTER LISTING
-      $(".videothumblist .video").each((_, video) => {
+      $(".videothumblist .video, .videogrid .video, div.video").each((_, video) => {
           const $v = $(video);
           const code = $v.find(".id").text().trim();
-          const title = $v.find("a").attr("title") || "";
+          const title = $v.find(".title a, a").attr("title") || $v.find(".title").text().trim();
           const poster = $v.find("img").attr("src");
           const rating = $v.find(".score").text().trim();
 
           if (code) {
             actressData.filmography.push({
               code: code.toUpperCase(),
-              title: title.replace(code, '').trim(),
+              title: title.replace(code, '').trim() || title,
               poster: poster?.startsWith("//") ? "https:" + poster : poster,
               year: "N/A",
               rating: rating || "N/A"
@@ -133,7 +139,15 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ name
       // SYNC WITH JAVDB FOR GALLERY (Optional enhancement)
       try {
         console.log("[JAVL-SCRAPE] Attempting to fetch JAVDB gallery for enhancement...");
-        const javdbRes = await fetch(`${req.nextUrl.origin}/api/javdb/actress/${encodeURIComponent(decodedName)}`);
+        const javdbController = new AbortController();
+        const javdbTimeout = setTimeout(() => javdbController.abort(), 4000);
+        
+        const javdbRes = await fetch(`${req.nextUrl.origin}/api/javdb/actress/${encodeURIComponent(decodedName)}`, {
+          signal: javdbController.signal
+        });
+        
+        clearTimeout(javdbTimeout);
+
         if (javdbRes.ok) {
            const javdbData = await javdbRes.json();
            if (javdbData.gallery?.length > 0) {
@@ -147,7 +161,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ name
           console.warn(`[JAVL-SCRAPE] JAVDB gallery fetch failed with status: ${javdbRes.status}`);
         }
       } catch (e: any) {
-        console.warn("[JAVL-SCRAPE] Error fetching JAVDB gallery:", e.message);
+        console.warn("[JAVL-SCRAPE] Error fetching JAVDB gallery (likely timeout):", e.message);
       }
 
       return NextResponse.json(actressData);

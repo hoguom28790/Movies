@@ -1,5 +1,6 @@
 import { getTopXXMovies } from "@/services/api/topxx";
 import { XXMovieGrid } from "@/components/movie/XXMovieGrid";
+import { XXActorProfile } from "@/components/movie/XXActorProfile";
 
 export const dynamic = "force-dynamic";
 
@@ -12,10 +13,12 @@ export default async function XXActorPage({ params }: { params: Promise<{ slug: 
   const initialData = await getTopXXMovies(1, "dien-vien", slug);
 
   return (
-    <div className="container mx-auto">
+    <div className="container mx-auto px-4 md:px-8 py-12 max-w-7xl animate-in fade-in duration-1000">
+      <XXActorProfile actorName={actorName} slug={slug} />
+      
       <XXMovieGrid 
         initialMovies={initialData.items || []} 
-        title={`DIỄN VIÊN: ${actorName}`} 
+        title={`FILMOGRAPHY OF ${actorName}`} 
         fetchUrl={`/api/topxx?type=dien-vien&slug=${slug}`}
         initialPage={1}
         totalPages={initialData.pagination?.totalPages || 1}
