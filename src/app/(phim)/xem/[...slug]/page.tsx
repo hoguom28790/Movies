@@ -43,12 +43,24 @@ export default async function CatchAllWatchPage({ params, searchParams }: PagePr
 
   try {
     const movieRes = await getMovieDetails(movieSlug);
-    if (!movieRes || !movieRes.sources || movieRes.sources.length === 0) return notFound();
+    if (!movieRes || !movieRes.sources || movieRes.sources.length === 0) {
+       return (
+         <div className="min-h-screen bg-black text-white p-20">
+           <h1 className="text-4xl font-black mb-8">DEBUG: NO_MOVIE_DATA</h1>
+           <p className="text-xl mb-4">Slug: {movieSlug}</p>
+           <p className="text-xl">Sources Found: {movieRes?.sources?.length || 0}</p>
+         </div>
+       );
+    }
     
     const { sources } = movieRes;
     const currentSource = sources.find((s: any) => s.id === (querySource || src)) || sources[0];
     const { data } = currentSource;
     const sourceId = currentSource.id;
+
+    if (!data) {
+       return <div className="min-h-screen bg-black text-white p-20"><h1 className="text-4xl font-black">DEBUG: NO_DATA_ON_SOURCE</h1></div>;
+    }
 
     const detectedSource = getMovieSource(movieSlug, sourceId);
     const safeData = normalizeMovieData(data, detectedSource);
@@ -79,22 +91,27 @@ export default async function CatchAllWatchPage({ params, searchParams }: PagePr
        return { name: srv.server || srv.server_name || srv.name || `Nguồn ${idx + 1}`, items };
     });
 
-    if (allServers.length === 0) throw new Error("API_NO_EPISODES");
+    if (allServers.length === 0) {
+       return <div className="min-h-screen bg-black text-white p-20"><h1 className="text-4xl font-black">DEBUG: NO_SERVERS_FOUND</h1></div>;
+    }
 
     const activeServerGroup = allServers[currentServerIdx]?.items || allServers[0]?.items || [];
     const decodedEpSlug = decodeURIComponent(currentEpisodeSlug);
     const currentEpIdx = (currentEpisodeSlug && activeServerGroup.length > 0) ? activeServerGroup.findIndex((e: any) => e.slug === decodedEpSlug || e.name === decodedEpSlug) : 0;
     const currentEp = activeServerGroup[currentEpIdx >= 0 ? currentEpIdx : 0] || activeServerGroup[0];
 
-    if (!currentEp) throw new Error("API_NO_ACTIVE_EPISODE");
+    if (!currentEp) {
+       return <div className="min-h-screen bg-black text-white p-20"><h1 className="text-4xl font-black">DEBUG: NO_ACTIVE_EPISODE</h1></div>;
+    }
 
     const nextEp = activeServerGroup[currentEpIdx + 1] || null;
     const nextEpisodeUrl = nextEp ? `/xem/${movieSlug}?sv=${currentServerIdx}&ep=${encodeURIComponent(nextEp.slug)}&src=${sourceId}` : undefined;
 
     return (
       <div className={`min-h-screen ${isTopXX ? 'bg-[#0f1115]' : 'bg-background'} text-white overflow-x-hidden`}>
-        {/* ... (rest of the UI) ... */}
+        {/* ... */}
         <div className="relative w-full lg:h-[85vh] flex flex-col justify-end pb-20 pt-32 overflow-hidden">
+           {/* ... Rest of existing UI ... */}
            <div className="absolute inset-0 z-0">
               <img src={backdrop} className="w-full h-full object-cover opacity-30 blur-sm scale-105" alt="" />
               <div className={`absolute inset-0 bg-gradient-to-t ${isTopXX ? 'from-[#0f1115]' : 'from-background'} via-transparent to-transparent`} />
@@ -188,8 +205,13 @@ export default async function CatchAllWatchPage({ params, searchParams }: PagePr
         </div>
       </div>
     );
-  } catch (err) {
-    console.error("CATCH ALL PAGE ERROR:", err);
-    return notFound();
+  } catch (err: any) {
+    return (
+      <div className="min-h-screen bg-black text-white p-20">
+        <h1 className="text-4xl font-black mb-8 italic">DIAGNOSTIC_ERR</h1>
+        <p className="text-xl text-red-500">{err?.message || "Unknown Runtime Error"}</p>
+        <pre className="mt-8 p-4 bg-white/5 rounded-xl text-xs">{JSON.stringify(err, null, 2)}</pre>
+      </div>
+    );
   }
 }
