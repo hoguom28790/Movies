@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/Button";
 import { getCombinedSkipTimes, SkipTime } from "@/services/skipService";
 import { getUserSettings, saveUserSettings } from "@/services/db";
 import { motion, AnimatePresence } from "framer-motion";
+import { getMovieSource, getPosterUrl } from "@/lib/movie-utils";
 
 interface PlayerContainerProps {
   url: string;
@@ -130,8 +131,7 @@ export function PlayerContainer({ url, isHls, rawEmbedUrl, nextEpisodeUrl, movie
   useEffect(() => {
     const resolve = async () => {
       const targetUrl = url || rawEmbedUrl || "";
-      const isTopXX = source === 'topxx' || source === 'avdb' || 
-                      (movieSlug && (movieSlug.startsWith('av-') || /^[A-Z]{2,6}-\d{2,6}$/i.test(movieSlug) || /^[a-zA-Z0-9]{10}$/.test(movieSlug)));
+      const isTopXX = getMovieSource(movieSlug || "", source) === 'topxx' || getMovieSource(movieSlug || "", source) === 'avdb';
       
       if (isTopXX && targetUrl && !targetUrl.includes('.m3u8')) {
         console.log(`[TopXX] Resolving stream for: ${targetUrl}`);
@@ -159,16 +159,16 @@ export function PlayerContainer({ url, isHls, rawEmbedUrl, nextEpisodeUrl, movie
     if (!user || !movieSlug) return;
     
     const MOUNT_SAVE_DELAY = 1500;
-    const isTopXX = source === 'topxx' || source === 'avdb' || 
-                    (movieSlug && (movieSlug.startsWith('av-') || /^[A-Z]{2,6}-\d{2,6}$/i.test(movieSlug) || /^[a-zA-Z0-9]{10}$/.test(movieSlug)));
+    const detectedSource = getMovieSource(movieSlug, source);
+    const isTopXX = detectedSource === 'topxx' || detectedSource === 'avdb';
 
     if (isTopXX) {
        const timer = setTimeout(async () => {
          const { getMovieHistory, saveHistory } = await import("@/services/db");
-         const absolutePoster = posterUrl?.startsWith('http') ? posterUrl : `https://img.ophim1.com/uploads/movies/${posterUrl}`;
+         const absolutePoster = getPosterUrl(posterUrl, detectedSource);
          
          try {
-           const existing = await getMovieHistory(user.uid, movieSlug, source);
+           const existing = await getMovieHistory(user.uid, movieSlug, detectedSource);
            // We only save if no history exists or it was just started (0s)
            if (!existing || existing.progressSeconds === 0) {
               await saveHistory(user.uid, {
@@ -180,7 +180,7 @@ export function PlayerContainer({ url, isHls, rawEmbedUrl, nextEpisodeUrl, movie
                 progressSeconds: 0,
                 durationSeconds: 0,
                 progress: 0,
-                source: source || 'ophim'
+                source: detectedSource
               });
               console.log(`[TopXX] MOUNT-SYNC to Firebase for: ${movieSlug}`);
            }
@@ -213,10 +213,10 @@ export function PlayerContainer({ url, isHls, rawEmbedUrl, nextEpisodeUrl, movie
         console.log("HANDSHAKE PONG received. Sending SEEK...");
         clearInterval(pingInterval);
         const { getMovieHistory } = await import("@/services/db");
-        const isTopXX = source === 'topxx' || source === 'avdb' || 
-                        (movieSlug && (movieSlug.startsWith('av-') || /^[A-Z]{2,6}-\d{2,6}$/i.test(movieSlug) || /^[a-zA-Z0-9]{10}$/.test(movieSlug)));
+        const detectedSource = getMovieSource(movieSlug, source);
+        const isTopXX = detectedSource === 'topxx' || detectedSource === 'avdb';
         
-        const history = await getMovieHistory(user.uid, movieSlug, source);
+        const history = await getMovieHistory(user.uid, movieSlug, detectedSource);
         console.log(`[RESUME DEBUG] source: ${source} history_found: ${!!history} history_ep: ${history?.episodeSlug} current_ep: ${episodeSlug}`);
         
         const isSameEpisode = isTopXX || !episodeSlug || history?.episodeSlug === episodeSlug;
@@ -305,9 +305,8 @@ export function PlayerContainer({ url, isHls, rawEmbedUrl, nextEpisodeUrl, movie
           console.log(`[TopXX] Progress Update for ${movieSlug}: ${time.toFixed(2)}s / ${duration.toFixed(2)}s`);
           
           const { saveHistory } = await import("@/services/db");
-          const absolutePoster = posterUrl?.startsWith('http') 
-            ? posterUrl 
-            : `https://img.ophim1.com/uploads/movies/${posterUrl}`;
+          const detectedSource = getMovieSource(movieSlug, source);
+          const absolutePoster = getPosterUrl(posterUrl, detectedSource);
 
           try {
             await saveHistory(user.uid, {
@@ -319,15 +318,14 @@ export function PlayerContainer({ url, isHls, rawEmbedUrl, nextEpisodeUrl, movie
               progressSeconds: Math.floor(time),
               durationSeconds: Math.floor(duration),
               progress: Math.round(percent),
-              source: source || 'ophim'
+              source: detectedSource
             });
-            console.log(`[TopXX] Successfully saved position to Firebase (${source === 'topxx' ? 'xx_history' : 'history'})`);
+            console.log(`[TopXX] Successfully saved position to Firebase (${detectedSource})`);
           } catch (err) {
             console.error("[TopXX] History save failed:", err);
           }
 
-          const isTopXX = source === 'topxx' || source === 'avdb' || 
-                          (movieSlug && (movieSlug.startsWith('av-') || /^[A-Z]{2,6}-\d{2,6}$/i.test(movieSlug) || /^[a-zA-Z0-9]{10}$/.test(movieSlug)));
+          const isTopXX = detectedSource === 'topxx' || detectedSource === 'avdb';
           if (isTopXX) {
             const { saveXXHistory } = await import("@/services/topxxDb");
             saveXXHistory({

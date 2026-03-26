@@ -11,6 +11,7 @@ import { MovieRatings } from "@/components/movie/MovieRatings";
 import { CastSection } from "@/components/movie/CastSection";
 import { getTMDBImageUrl, getTMDBMovieDetails, searchTMDBMovie } from "@/services/tmdb";
 import { getMovieDetails } from "@/services/api";
+import { getMovieSource, normalizeMovieData } from "@/lib/movie-utils";
 
 export const dynamic = "force-dynamic";
 
@@ -35,20 +36,10 @@ export default async function UnifiedWatchPage({ params, searchParams }: PagePro
     const { data } = currentSource;
     const source = currentSource.id;
 
-    const isTopXX = source === 'topxx' || source === 'avdb';
-
-    // 2. Normalize and Clean Data
-    const safeData = {
-      name: data.name || (Array.isArray(data.trans) ? (data.trans.find((t: any) => t.locale === "vi")?.title || data.title) : data.title) || "Đang cập nhật",
-      origin_name: data.origin_name || data.original_name || data.movie_code || "",
-      year: data.year || "",
-      description: data.content || data.description || "",
-      poster_url: data.posterUrl || data.poster_url || data.thumbnail || "",
-      quality: data.quality || "HD",
-      episode_current: data.episode_current || "",
-      category: Array.isArray(data.category) ? data.category : [],
-      country: Array.isArray(data.country) ? data.country : []
-    };
+    // 2. Normalize and Clean Data using ELITE UTILS
+    const detectedSource = getMovieSource(slug, source);
+    const safeData = normalizeMovieData(data, detectedSource);
+    const isTopXX = detectedSource === 'topxx' || detectedSource === 'avdb';
 
     // 3. Fetch TMDB Enrichment
     const sYear = parseInt(safeData.year.toString());
@@ -57,9 +48,7 @@ export default async function UnifiedWatchPage({ params, searchParams }: PagePro
 
     const poster = tmdbData?.poster_path 
       ? getTMDBImageUrl(tmdbData.poster_path, 'w780') 
-      : (safeData.poster_url.startsWith("http") 
-          ? safeData.poster_url 
-          : `https://img.ophim.live/uploads/movies/${safeData.poster_url.replace(/^\/+/, '')}`);
+      : safeData.posterUrl;
 
     const backdrop = tmdbData?.backdrop_path 
       ? getTMDBImageUrl(tmdbData.backdrop_path, 'original') 
@@ -153,7 +142,7 @@ export default async function UnifiedWatchPage({ params, searchParams }: PagePro
                           {safeData.name}
                        </h1>
                        <div className="flex flex-wrap items-center gap-4 text-white/40">
-                          <p className="text-xl md:text-2xl font-black italic tracking-widest uppercase">{safeData.origin_name}</p>
+                          <p className="text-xl md:text-2xl font-black italic tracking-widest uppercase">{safeData.originName}</p>
                           <span className="w-1.5 h-1.5 rounded-full bg-white/10" />
                           <p className="text-xl md:text-2xl font-black italic tracking-tighter">{safeData.year}</p>
                        </div>
