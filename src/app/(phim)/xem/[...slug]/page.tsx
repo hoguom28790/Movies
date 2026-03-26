@@ -139,7 +139,7 @@ export default async function CatchAllWatchPage({ params, searchParams }: PagePr
 
         <div className="bg-background/50 backdrop-blur-3xl py-12 relative">
            <div className="container mx-auto px-4 lg:px-12">
-              <div className="grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-12">
+               <div className="grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-12 items-start">
                  <div className="space-y-8">
                     <PlayerContainer 
                        url={currentEp.link_m3u8} isHls={!!currentEp.link_m3u8} rawEmbedUrl={currentEp.link_embed}
