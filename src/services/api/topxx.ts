@@ -222,23 +222,30 @@ export async function searchTopXXMovies(keyword: string, page: number = 1): Prom
     let totalPages = 1;
 
     // Helper for strict relevance checking
-    const isLikelyRelevant = (m: Movie, q: string) => {
-      const normalizedQ = q.toLowerCase().replace(/[^a-z0-9]/g, '');
-      const searchSpace = `${m.title} ${m.slug} ${m.id}`.toLowerCase().replace(/[^a-z0-9]/g, '');
+    const isLikelyRelevant = (m: Movie, q: string): boolean => {
+      const normQ = q.toLowerCase().trim();
+      if (!normQ) return true;
       
-      // If code-like search (has both letters and numbers)
-      if (/[a-z]/.test(normalizedQ) && /[0-9]/.test(normalizedQ)) {
-        // Break into alpha and numeric parts for strict check
-        const alphaPart = normalizedQ.replace(/[0-9]/g, '');
-        const numericPart = normalizedQ.replace(/[a-z]/g, '');
-        return searchSpace.includes(alphaPart) && searchSpace.includes(numericPart);
-      }
-      
-      // Default: check if all query parts are in search space
-      const parts = normalizedQ.split(/\s+/).filter(p => p.length > 1);
-      return parts.every(p => searchSpace.includes(p));
-    };
+      const searchSpace = `${m.title} ${m.slug} ${m.id}`.toLowerCase();
+      const cleanSearchSpace = searchSpace.replace(/[^a-z0-9]/g, "");
 
+      // 1. Check for specific movie codes (e.g., DASS-534)
+      const codeMatch = normQ.match(/[a-z]{2,5}\s?\d{2,6}/i);
+      if (codeMatch) {
+        const fullCode = codeMatch[0].replace(/\s/g, "");
+        const alpha = fullCode.match(/[a-z]+/i)?.[0] || "";
+        const numeric = fullCode.match(/\d+/)?.[0] || "";
+        if (cleanSearchSpace.includes(alpha) && cleanSearchSpace.includes(numeric)) return true;
+      }
+
+      // 2. Keyword permutation match (e.g., "Yua Mikami" matches "Mikami Yua")
+      const words = normQ.split(/\s+/).filter(w => w.length > 0);
+      return words.every(word => {
+        if (searchSpace.includes(word)) return true;
+        const cleanWord = word.replace(/[^a-z0-9]/g, "");
+        return cleanWord && cleanSearchSpace.includes(cleanWord);
+      });
+    };
     // 1. Process TopXX Movie Search results (Primary Source)
     if (topxxRes.status === "fulfilled" && topxxRes.value) {
       const data = topxxRes.value;
