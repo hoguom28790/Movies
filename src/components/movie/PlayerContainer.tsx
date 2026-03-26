@@ -489,7 +489,7 @@ export function PlayerContainer({ url, isHls, rawEmbedUrl, nextEpisodeUrl, movie
       ? (isPortrait 
           ? `fixed top-0 left-full w-[100vh] h-[100vw] rotate-90 origin-top-left z-[9999] bg-black ${isIOS ? 'p-safe' : ''}` 
           : `fixed inset-0 w-screen h-screen z-[9999] bg-black ${isIOS ? 'p-safe' : ''}`)
-      : "w-full aspect-video relative shadow-cinematic-2xl bg-black overflow-hidden rounded-[32px] border border-white/5"
+      : "w-full aspect-video self-start relative shadow-cinematic-2xl bg-black overflow-hidden rounded-[32px] border border-white/5"
     }>
       {resolvedUrl ? (
         <iframe
