@@ -117,8 +117,8 @@ export async function searchTopXXMovies(keyword: string, page: number = 1): Prom
     return { items: [], pagination: { currentPage: 1, totalPages: 1, totalItems: 0 } };
   }
 
-  // OPTIMIZED: Use lower timeouts for Search to keep it responsive
-  const SEARCH_TIMEOUT = 5000;
+  // OPTIMIZED: Use safer timeouts for search accuracy
+  const SEARCH_TIMEOUT = 8000;
   const SEARCH_RETRIES = 1;
 
   const topxxUrl = `${BASE_URL}/movies/search?keyword=${encodeURIComponent(normalizedQuery)}&page=${page}`;
@@ -127,10 +127,9 @@ export async function searchTopXXMovies(keyword: string, page: number = 1): Prom
   try {
     console.log(`[TopXX Search] Initiating parallel search for: "${normalizedQuery}"`);
     
-    // We run 5 main sources in parallel for maximum accuracy and speed
-    // NOTE: Actor movies are now fetched nested inside the actor search to maximize parallelism
-    const [topxxRes, topxxActorRes, topxxLatestSearchRes, avdbTitleRes, avdbActorRes] = await Promise.allSettled([
-      fetchWithRetry(topxxUrl, { headers: DEFAULT_HEADERS }, SEARCH_TIMEOUT, SEARCH_RETRIES, 500)
+    // We run 4 main sources in parallel
+    const [topxxRes, topxxActorRes, avdbTitleRes, avdbActorRes] = await Promise.allSettled([
+      fetchWithRetry(topxxUrl, { headers: DEFAULT_HEADERS }, SEARCH_TIMEOUT, SEARCH_RETRIES, 800)
         .then(async r => {
           if (!r.ok) return null;
           const json = await r.json();
@@ -142,7 +141,6 @@ export async function searchTopXXMovies(keyword: string, page: number = 1): Prom
           const json = await r.json();
           if (json?.status === "success" && Array.isArray(json.data) && json.data.length > 0) {
             // OPTIMIZATION: Start fetching filmography for the top 2 actors IMMEDIATELY 
-            // This runs in parallel with other main search sources
             const topActors = json.data.slice(0, 2);
             const actorMovies = await Promise.allSettled(
               topActors.map(async (actor: any) => {
@@ -164,12 +162,6 @@ export async function searchTopXXMovies(keyword: string, page: number = 1): Prom
           }
           return json;
         }),
-      fetchWithRetry(`${BASE_URL}/movies/latest?search=${encodeURIComponent(normalizedQuery)}&page=${page}`, { headers: DEFAULT_HEADERS }, SEARCH_TIMEOUT, SEARCH_RETRIES, 500)
-        .then(async r => {
-          if (!r.ok) return null;
-          const json = await r.json();
-          return json?.status === "success" ? json : null;
-        }),
       getAVDBMovies(page, undefined, normalizedQuery)
         .catch(() => ({ items: [], pagination: { totalItems: 0, totalPages: 1, currentPage: 1 } })),
       getAVDBMovies(page, undefined, undefined, normalizedQuery)
@@ -180,27 +172,27 @@ export async function searchTopXXMovies(keyword: string, page: number = 1): Prom
     let totalItems = 0;
     let totalPages = 1;
 
-    const processTopXXData = (data: any) => {
-      if (data && Array.isArray(data.data)) {
+    // 1. Process TopXX Movie Search results (Primary Source)
+    if (topxxRes.status === "fulfilled" && topxxRes.value) {
+      const data = topxxRes.value;
+      if (Array.isArray(data.data)) {
         data.data.forEach((item: any) => {
           const m = mapTopXXToMovie(item);
           movieMap.set(m.id, m);
         });
-        totalItems = Math.max(totalItems, data.meta?.total || 0);
-        totalPages = Math.max(totalPages, data.meta?.last_page || 1);
       }
-    };
+      totalItems = data.meta?.total || 0;
+      totalPages = data.meta?.last_page || 1;
+    }
 
-    // 1. Process TopXX Movie Search results
-    if (topxxRes.status === "fulfilled") processTopXXData(topxxRes.value);
-    if (topxxLatestSearchRes.status === "fulfilled") processTopXXData(topxxLatestSearchRes.value);
-
-    // 2. Process TopXX Actor filmographies (collected in parallel)
+    // 2. Process TopXX Actor filmographies (Parallel cached result)
     if (topxxActorRes.status === "fulfilled" && topxxActorRes.value) {
       const extraMovies = (topxxActorRes.value as any).extraMovies || [];
       extraMovies.forEach((m: any) => {
         const movie = mapTopXXToMovie(m);
-        movieMap.set(movie.id, movie);
+        if (!movieMap.has(movie.id)) {
+          movieMap.set(movie.id, movie);
+        }
       });
     }
 
@@ -209,8 +201,10 @@ export async function searchTopXXMovies(keyword: string, page: number = 1): Prom
       avdbTitleRes.value.items.forEach((m: Movie) => {
         if (m && !movieMap.has(m.id)) movieMap.set(m.id, m);
       });
-      totalItems = Math.max(totalItems, avdbTitleRes.value.pagination.totalItems);
-      totalPages = Math.max(totalPages, avdbTitleRes.value.pagination.totalPages);
+      if (totalItems === 0) {
+        totalItems = avdbTitleRes.value.pagination.totalItems;
+        totalPages = avdbTitleRes.value.pagination.totalPages;
+      }
     }
 
     // 4. Process AVDB Actor Search
@@ -218,8 +212,10 @@ export async function searchTopXXMovies(keyword: string, page: number = 1): Prom
       avdbActorRes.value.items.forEach((m: Movie) => {
         if (m && !movieMap.has(m.id)) movieMap.set(m.id, m);
       });
-      totalItems = Math.max(totalItems, avdbActorRes.value.pagination.totalItems);
-      totalPages = Math.max(totalPages, avdbActorRes.value.pagination.totalPages);
+      if (totalItems === 0) {
+        totalItems = Math.max(totalItems, avdbActorRes.value.pagination.totalItems);
+        totalPages = Math.max(totalPages, avdbActorRes.value.pagination.totalPages);
+      }
     }
 
     const finalItems = Array.from(movieMap.values());
