@@ -1,5 +1,5 @@
 import { Movie, MovieListResponse } from "@/types/movie";
-import { getAVDBMovies } from "./avdb";
+import { getAVDBMovies, getAVDBDetails } from "./avdb";
 import * as cheerio from "cheerio";
 
 const BASE_URL = "https://topxx.vip/api/v1";
@@ -178,11 +178,33 @@ export async function getTopXXDetails(slug: string) {
 
   const url = `${BASE_URL}/movies/${finalId}`;
   try {
-    const res = await fetchWithRetry(url, { headers: DEFAULT_HEADERS }, 10000);
-    if (!res.ok) return null;
-    const data = await res.json();
-    if (data.status !== "success" || !data.data) return null;
+    const res = await fetchWithRetry(url, { headers: DEFAULT_HEADERS }, 10000, 2, 800);
     
+    // 3. IF NATIVE API FAILS, FALLBACK TO AVDB (AVDB is more resilient for codes)
+    if (!res.ok || res.status === 404) {
+       console.log(`[TopXX] Detail not found on native API for ${finalId}. Falling back to AVDB search...`);
+       const avdbResults = await searchTopXXMovies(slug, 1, false); // searchTopXXMovies uses AVDB by default or fallback
+       if (avdbResults.items.length > 0) {
+           // If we find it on AVDB, try to get full AVDB details instead of native
+           const avdbDetail = await getAVDBDetails(avdbResults.items[0].id);
+           if (avdbDetail) {
+              console.log(`[TopXX] Native 404 resolved via AVDB: ${avdbDetail.name}`);
+              return avdbDetail;
+           }
+       }
+       return null;
+    }
+
+    const data = await res.json();
+    if (data.status !== "success" || !data.data) {
+       // Also fallback if status is not success
+       const avdbResults = await searchTopXXMovies(slug, 1, false);
+       if (avdbResults.items.length > 0) {
+          return await getAVDBDetails(avdbResults.items[0].id);
+       }
+       return null;
+    }
+
     const movie = data.data;
     const viTrans = Array.isArray(movie.trans) ? (movie.trans.find((t: any) => t.locale === "vi") || movie.trans[0]) : null;
     
@@ -193,6 +215,15 @@ export async function getTopXXDetails(slug: string) {
     // Some play links are relative, ensure absolute
     if (playLink && playLink.startsWith('/')) {
         playLink = `https://topxx.vip${playLink}`;
+    }
+
+    // STABILITY: Many TopXX native links 404 in iframe. If it's a code, streamxx.net is often better.
+    if (playLink.includes('topxx.vip/play/index/')) {
+        const checkId = playLink.split('/').pop();
+        if (checkId && checkId.length === 10) {
+            // Option to prefer steamxx if native is known to fail
+            // playLink = `https://embed.streamxx.net/player/${checkId}`;
+        }
     }
 
     const episodes = [{
@@ -206,6 +237,26 @@ export async function getTopXXDetails(slug: string) {
        server: "Cloud VIP",
        episodes: episodes
     }];
+
+    // Also try to find AVDB server as secondary for this movie to ensure it opens!
+    try {
+        const avdbFallback = await getAVDBMovies(1, undefined, slug);
+        if (avdbFallback.items.length > 0) {
+            const avMovie = await getAVDBDetails(avdbFallback.items[0].id);
+            if (avMovie && avMovie.servers && avMovie.servers.length > 0) {
+                // Add AVDB episodes as additional source/server
+                servers.push({
+                   server: "Backup VIP (AVDB)",
+                   episodes: avMovie.servers[0].episodes.map((ep: any) => ({
+                      name: ep.name,
+                      slug: ep.name.toLowerCase().replace(/\s+/g, '-'),
+                      link_embed: ep.link,
+                      link_m3u8: ep.link?.includes('.m3u8') ? ep.link : ""
+                   }))
+                });
+            }
+        }
+    } catch (e) { /* silent backup failure */ }
 
     return {
         ...movie,
