@@ -138,7 +138,7 @@ export default function XXPlaylistsPage() {
                       <Play className="w-8 h-8 text-white/10" />
                    </div>
                    <p className="text-white/20 font-black uppercase tracking-[0.2em]">Playlist này còn trống</p>
-                   <Link href=`/${TOPXX_PATH}` className="mt-8">
+                   <Link href={`/${TOPXX_PATH}`} className="mt-8">
                       <Button variant="secondary" className="rounded-2xl border-white/10 px-8 py-6 h-auto font-black uppercase tracking-widest text-xs">Đi tìm phim ngay</Button>
                    </Link>
                 </div>

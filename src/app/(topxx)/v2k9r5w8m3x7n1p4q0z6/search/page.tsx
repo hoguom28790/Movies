@@ -1,41 +1,27 @@
-import { SearchResultsClient } from "@/components/movie/SearchResultsClient";
-import { HomeSearchBar } from "@/components/movie/HomeSearchBar";
 import { Suspense } from "react";
 import { Loader2 } from "lucide-react";
+import { SearchResultsClient } from "@/components/movie/SearchResultsClient";
+import { HomeSearchBar } from "@/components/movie/HomeSearchBar";
 import { TOPXX_PATH } from "@/lib/constants";
 
 export const dynamic = "force-dynamic";
 
-interface XXSearchPageProps {
-  searchParams: Promise<{
-    q?: string;
-    page?: string;
-  }>;
-}
+export default async function TopXXSearchPage({ 
+  searchParams 
+}: { 
+  searchParams: Promise<{ q?: string; page?: string }> 
+}) {
+  const params = await searchParams;
+  const q = params.q || "";
+  const currentPage = parseInt(params.page || "1", 10);
 
-export default async function XXSearchPage({ searchParams }: XXSearchPageProps) {
-  // FIXED TopXX full search by reusing instant search logic + safe Server Component
   try {
-    const params = await searchParams;
-    const q = params.q || "";
-    const pageStr = params.page || "1";
-    const currentPage = Math.max(1, parseInt(pageStr, 10));
-
-    // Server-side logging for initial hit
-    console.log("[TopXX Full Search] Received request for query:", q);
-
     return (
-      <div className="flex flex-col gap-12 max-w-7xl mx-auto px-4 lg:px-12 py-16 mt-16 lg:mt-24 min-h-screen">
-        {/* Search Header */}
-        <div className="flex flex-col gap-10 animate-in fade-in slide-in-from-top-4 duration-1000">
-          <div className="flex flex-col gap-3">
-             <div className="h-1.5 w-20 bg-yellow-500 rounded-full shadow-[0_0_20px_#fbbf24] animate-pulse" />
-             <h1 className="text-5xl md:text-8xl font-black italic uppercase tracking-tighter text-white font-headline drop-shadow-2xl leading-none">
-               KHO Tàng <span className="text-yellow-500 underline decoration-yellow-500/20 underline-offset-8">VIP</span>
-             </h1>
-             <p className="text-white/20 font-black uppercase tracking-[0.8em] text-[10px] italic pr-12">
-               Phòng Lưu Trữ Phim Cao Cấp & Độc Quyền
-             </p>
+      <div className="container mx-auto px-4 py-12 min-h-screen">
+        <div className="flex flex-col gap-12 mb-16 max-w-4xl mx-auto text-center">
+          <div className="space-y-4">
+            <h1 className="text-5xl font-black text-white uppercase tracking-tighter italic">Tìm Kiếm</h1>
+            <p className="text-white/20 text-xs font-black uppercase tracking-[0.4em] italic">Khám phá nội dung giải trí cao cấp</p>
           </div>
 
           <HomeSearchBar isXX />
@@ -62,7 +48,7 @@ export default async function XXSearchPage({ searchParams }: XXSearchPageProps) 
         </div>
         <h2 className="text-3xl font-black text-white uppercase italic tracking-tighter mb-4">Lỗi Đọc Dữ Liệu</h2>
         <p className="text-white/30 text-sm font-black uppercase tracking-widest leading-loose">Hệ thống đang được đồng bộ hóa. Vui lòng quay lại trong giây lát.</p>
-        <a href="/${TOPXX_PATH}/search" className="mt-12 px-12 py-5 bg-white text-black font-black uppercase italic tracking-widest rounded-full hover:bg-yellow-500 transition-all shadow-2xl inline-block">Thử Lại</a>
+        <a href={`/${TOPXX_PATH}/search`} className="mt-12 px-12 py-5 bg-white text-black font-black uppercase italic tracking-widest rounded-full hover:bg-yellow-500 transition-all shadow-2xl inline-block">Thử Lại</a>
       </div>
     );
   }
