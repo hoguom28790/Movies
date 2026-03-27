@@ -6,6 +6,7 @@ import { Movie } from "@/types/movie";
 import { MovieCard } from "./MovieCard";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
+import { TOPXX_PATH } from "@/lib/constants";
 
 interface SearchResultsClientProps {
   initialQuery: string;
@@ -117,7 +118,7 @@ export function SearchResultsClient({ initialQuery, initialPage, isXX = false }:
             </p>
           </div>
           <Link 
-            href={isXX ? "/v2k9r5w8m3x7n1p4q0z6" : "/"} 
+            href={isXX ? `/${TOPXX_PATH}` : "/"} 
             className={cn(
               "inline-block px-10 py-4 font-black uppercase italic tracking-widest text-[11px] rounded-full border transition-all shadow-2xl",
               isXX ? "bg-yellow-500/5 text-yellow-500 hover:bg-yellow-500 hover:text-black border-yellow-500/20" : "bg-primary/5 text-primary hover:bg-primary hover:text-white border-primary/20"
@@ -130,7 +131,7 @@ export function SearchResultsClient({ initialQuery, initialPage, isXX = false }:
     );
   }
 
-  const searchPath = isXX ? "/v2k9r5w8m3x7n1p4q0z6/search" : "/search";
+  const searchPath = isXX ? "/${TOPXX_PATH}/search" : "/search";
 
   return (
     <div className="flex flex-col gap-16 animate-in fade-in slide-in-from-bottom-4 duration-700">

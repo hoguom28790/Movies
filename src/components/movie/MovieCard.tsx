@@ -7,6 +7,7 @@ import { Play, X, Star } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { WatchlistBtn } from './WatchlistBtn';
 import { cn } from '@/lib/utils';
+import { TOPXX_PATH } from "@/lib/constants";
 
 interface MovieCardProps {
   title: string;
@@ -30,7 +31,7 @@ export function MovieCard({
   title, slug, posterUrl, year, quality, episodeText, subText, originalTitle, progress, progressText, customHref, score, onDelete, index = 0, isXX = false
 }: MovieCardProps) {
   const [imgError, setImgError] = React.useState(false);
-  const linkHref = customHref || (slug.startsWith('/') ? slug : (isXX ? `/v2k9r5w8m3x7n1p4q0z6/xem/${slug}` : `/xem/${slug}`));
+  const linkHref = customHref || (slug.startsWith('/') ? slug : (isXX ? `/${TOPXX_PATH}/xem/${slug}` : `/xem/${slug}`));
   
   // XX Specific adjustments
   const primaryColor = isXX ? "text-yellow-500" : "text-primary";

@@ -3,13 +3,13 @@
 import React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { TOPXX_PATH } from "@/lib/constants";
 import { 
   Home, 
   History, 
   LayoutGrid,
   Heart,
-  BookOpen, 
-  Zap
+  BookOpen
 } from "lucide-react";
 
 export const BottomNav = React.memo(function BottomNav() {
@@ -22,14 +22,14 @@ export const BottomNav = React.memo(function BottomNav() {
 
   if (!mounted) return null;
 
-  const isXX = pathname.startsWith("/v2k9r5w8m3x7n1p4q0z6");
+  const isXX = pathname.startsWith(`/${TOPXX_PATH}`);
   const isComic = pathname.startsWith("/truyen") || pathname.startsWith("/doc");
 
   const navItems = isXX ? [
-    { label: "Trang chủ", icon: Home, href: "/v2k9r5w8m3x7n1p4q0z6", activeRegex: /^\/v2k9r5w8m3x7n1p4q0z6$/ },
-    { label: "Duyệt Tìm", icon: LayoutGrid, href: "/v2k9r5w8m3x7n1p4q0z6", activeRegex: /^\/v2k9r5w8m3x7n1p4q0z6$/ },
-    { label: "Lịch sử", icon: History, href: "/v2k9r5w8m3x7n1p4q0z6/lich-su", activeRegex: /\/lich-su/ },
-    { label: "Yêu thích", icon: Heart, href: "/v2k9r5w8m3x7n1p4q0z6/yeu-thich", activeRegex: /\/yeu-thich/ },
+    { label: "Trang chủ", icon: Home, href: `/${TOPXX_PATH}`, activeRegex: new RegExp(`^/${TOPXX_PATH}$`) },
+    { label: "Duyệt Tìm", icon: LayoutGrid, href: `/${TOPXX_PATH}`, activeRegex: new RegExp(`^/${TOPXX_PATH}$`) },
+    { label: "Lịch sử", icon: History, href: `/${TOPXX_PATH}/lich-su`, activeRegex: /\/lich-su/ },
+    { label: "Yêu thích", icon: Heart, href: `/${TOPXX_PATH}/yeu-thich`, activeRegex: /\/yeu-thich/ },
   ] : [
     { label: "Trang chủ", icon: Home, href: isComic ? "/truyen" : "/", activeRegex: isComic ? /^\/truyen$/ : /^\/$/ },
     { label: "Duyệt Tìm", icon: LayoutGrid, href: isComic ? "/truyen?genre=all" : "/the-loai", activeRegex: /\/(the-loai|search|truyen\?genre)/ },

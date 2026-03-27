@@ -10,6 +10,7 @@ import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
 import { cn } from "@/lib/utils";
+import { TOPXX_PATH } from "@/lib/constants";
 
 interface ActorModalProps {
   isOpen: boolean;
@@ -121,7 +122,7 @@ export function ActorModal({ isOpen, onClose, actor, isXX = false }: ActorModalP
 
         if (topxxMatch) {
           onClose();
-          router.push(`/v2k9r5w8m3x7n1p4q0z6/xem/${topxxMatch.slug}`);
+          router.push(`/${TOPXX_PATH}/xem/${topxxMatch.slug}`);
         } else {
           setToast({ message: `Phim ${code || title} chưa có trên site.`, submessage: "Vui lòng xem trên JAVDB hoặc quay lại sau.", type: "error" });
           window.open(`https://javdb.com/search?q=${code || title}`, "_blank");
@@ -224,7 +225,7 @@ export function ActorModal({ isOpen, onClose, actor, isXX = false }: ActorModalP
                                   {details?.source?.includes('jav') && (
                                     <span className="px-6 py-3 rounded-2xl bg-yellow-500/10 text-yellow-500 text-[11px] font-black tracking-widest uppercase italic border border-yellow-500/20">{details.source.toUpperCase()} SYNC</span>
                                   )}
-                                  <button onClick={() => { onClose(); router.push(`/v2k9r5w8m3x7n1p4q0z6/dien-vien/${actor?.name.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`); }} className="flex items-center gap-2 px-6 py-3 rounded-2xl bg-white/5 border border-white/10 text-white/60 hover:text-primary hover:bg-white/10 transition-all font-black uppercase italic tracking-widest text-[11px]"><Search className="w-4 h-4" /> TẤT CẢ PHIM</button>
+                                  <button onClick={() => { onClose(); router.push(`/${TOPXX_PATH}/dien-vien/${actor?.name.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`); }} className="flex items-center gap-2 px-6 py-3 rounded-2xl bg-white/5 border border-white/10 text-white/60 hover:text-primary hover:bg-white/10 transition-all font-black uppercase italic tracking-widest text-[11px]"><Search className="w-4 h-4" /> TẤT CẢ PHIM</button>
                                   <button onClick={handleToggleFav} className={`p-4 rounded-2xl border transition-all active-depth ${isFav ? 'bg-[#ef4444] border-[#ef4444] text-white shadow-lg' : 'bg-white/5 border-white/10 text-white/40 hover:text-white hover:bg-white/10'}`}><Heart className={`w-7 h-7 ${isFav ? 'fill-current' : ''}`} /></button>
                                </div>
                             </div>

@@ -19,6 +19,7 @@ import {
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import { MovieCard } from "@/components/movie/MovieCard";
+import { TOPXX_PATH } from "@/lib/constants";
 
 export default function TopXXLibraryPage() {
   const router = useRouter();
@@ -297,7 +298,7 @@ export default function TopXXLibraryPage() {
                                    onClick={(e) => {
                                       e.preventDefault();
                                       e.stopPropagation();
-                                      router.push(`/v2k9r5w8m3x7n1p4q0z6/search?q=${encodeURIComponent(actor.name)}`);
+                                      router.push(`/${TOPXX_PATH}/search?q=${encodeURIComponent(actor.name)}`);
                                    }}
                                    className="px-4 py-2 rounded-xl bg-primary text-black text-[10px] font-black uppercase tracking-widest flex items-center gap-2 hover:scale-105 transition-transform"
                                  >
@@ -394,7 +395,7 @@ export default function TopXXLibraryPage() {
                        <Play className="w-8 h-8 text-foreground/10" />
                     </div>
                     <p className="text-foreground/20 font-black uppercase tracking-[0.2em]">Danh sách này còn trống</p>
-                    <Link href="/v2k9r5w8m3x7n1p4q0z6" className="mt-8">
+                    <Link href=`/${TOPXX_PATH}` className="mt-8">
                        <Button variant="secondary" className="rounded-2xl border-foreground/10 px-8 py-6 h-auto font-black uppercase tracking-widest text-[11px]">Khám phá kho phim</Button>
                     </Link>
                  </div>

@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Play } from "lucide-react";
 import type { Movie } from "@/types/movie";
 import { cn } from "@/lib/utils";
+import { TOPXX_PATH } from "@/lib/constants";
 
 interface BentoGridProps {
   title: string;
@@ -94,7 +95,7 @@ function BentoItem({ movie, className, large = false, isXX = false }: { movie: M
   const primaryBorder = isXX ? "hover:border-yellow-500/50" : "hover:border-primary/50";
   const primaryShadow = isXX ? "hover:shadow-[0_0_40px_rgba(234,179,8,0.1)]" : "hover:shadow-[0_0_40px_rgba(var(--primary-rgb),0.1)]";
 
-  const linkHref = isXX ? `/v2k9r5w8m3x7n1p4q0z6/phim/${movie.slug}` : (movie.slug.startsWith('/') ? movie.slug : `/phim/${movie.slug}`);
+  const linkHref = isXX ? `/${TOPXX_PATH}/phim/${movie.slug}` : (movie.slug.startsWith('/') ? movie.slug : `/phim/${movie.slug}`);
 
   return (
     <Link 

@@ -1,5 +1,5 @@
 import { Movie, MovieListResponse } from "@/types/movie";
-import { VsmovListResponse, VsmovResponse } from "@/types/api";
+import { VsmovListResponse, VsmovResponse } from "@/types/api-providers";
 
 const BASE_URL = "https://vsmov.com/api";
 
@@ -10,16 +10,16 @@ export async function getVsmovMovies(page: number = 1): Promise<MovieListRespons
       signal: AbortSignal.timeout(5000)
     });
     if (!res.ok) throw new Error("Failed to fetch Vsmov");
-    const data: any = await res.json();
+    const data: VsmovListResponse = await res.json();
     
     // Vsmov usually provides full URLs in their API response
-    const items: Movie[] = (data.items || []).map((item: any) => ({
-      id: item.slug,
-      title: item.name,
-      originalTitle: item.origin_name,
+    const items: Movie[] = (data.items || []).map((item) => ({
+      id: String(item.slug),
+      title: item.title || item.name || "",
+      originalTitle: item.origin_title || item.origin_name || "",
       slug: item.slug,
-      posterUrl: item.poster_url?.startsWith('http') ? item.poster_url : `https://vsmov.com${item.poster_url.startsWith('/') ? '' : '/'}${item.poster_url}`,
-      thumbUrl: item.thumb_url?.startsWith('http') ? item.thumb_url : `https://vsmov.com${item.thumb_url.startsWith('/') ? '' : '/'}${item.thumb_url}`,
+      posterUrl: item.poster_url?.startsWith('http') ? item.poster_url : `https://vsmov.com${(item.poster_url || "").startsWith('/') ? '' : '/'}${item.poster_url || ""}`,
+      thumbUrl: item.thumb_url?.startsWith('http') ? item.thumb_url : `https://vsmov.com${(item.thumb_url || "").startsWith('/') ? '' : '/'}${item.thumb_url || ""}`,
       year: item.year?.toString() || "",
       status: item.status || item.episode_current || "",
       source: 'vsmov' as const
@@ -48,17 +48,17 @@ export async function searchMovies(keyword: string, page: number = 1): Promise<M
       signal: AbortSignal.timeout(5000)
     });
     if (!res.ok) throw new Error("Failed to search Vsmov");
-    const data: any = await res.json();
+    const data: VsmovListResponse = await res.json();
     
-    if (data.status === false) return { items: [], pagination: { currentPage: 1, totalPages: 1, totalItems: 0 } };
+    if (data.status !== "success") return { items: [], pagination: { currentPage: 1, totalPages: 1, totalItems: 0 } };
 
-    const items: Movie[] = (data.items || []).map((item: any) => ({
-      id: item.slug,
-      title: item.name,
-      originalTitle: item.origin_name,
+    const items: Movie[] = (data.items || []).map((item) => ({
+      id: String(item.slug),
+      title: item.title || item.name || "",
+      originalTitle: item.origin_title || item.origin_name || "",
       slug: item.slug,
-      posterUrl: item.poster_url?.startsWith('http') ? item.poster_url : `https://vsmov.com${item.poster_url.startsWith('/') ? '' : '/'}${item.poster_url}`,
-      thumbUrl: item.thumb_url?.startsWith('http') ? item.thumb_url : `https://vsmov.com${item.thumb_url.startsWith('/') ? '' : '/'}${item.thumb_url}`,
+      posterUrl: item.poster_url?.startsWith('http') ? item.poster_url : `https://vsmov.com${(item.poster_url || "").startsWith('/') ? '' : '/'}${item.poster_url || ""}`,
+      thumbUrl: item.thumb_url?.startsWith('http') ? item.thumb_url : `https://vsmov.com${(item.thumb_url || "").startsWith('/') ? '' : '/'}${item.thumb_url || ""}`,
       year: item.year?.toString() || "",
       quality: item.quality || "",
       status: item.status || item.episode_current || "",

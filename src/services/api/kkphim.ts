@@ -1,5 +1,5 @@
 import { Movie, MovieListResponse } from "@/types/movie";
-import { KKPhimListResponse } from "@/types/api";
+import { KKPhimListResponse, KKPhimSearchResponse } from "@/types/api-providers";
 
 const BASE_URL = "https://phimapi.com/danh-sach";
 
@@ -42,12 +42,12 @@ export async function searchMovies(keyword: string, page: number = 1): Promise<M
     signal: AbortSignal.timeout(5000)
   });
   if (!res.ok) throw new Error("Failed to search KKPhim");
-  const data: any = await res.json();
+  const data: KKPhimSearchResponse = await res.json();
   
   if (data.status !== "success") return { items: [], pagination: { currentPage: 1, totalPages: 1, totalItems: 0 } };
 
   const imagePrefix = data.data?.APP_DOMAIN_CDN_IMAGE || "https://phimimg.com";
-  const items: Movie[] = (data.data?.items || []).map((item: any) => ({
+  const items: Movie[] = (data.data?.items || []).map((item) => ({
     id: item.slug,
     title: item.name,
     originalTitle: item.origin_name,

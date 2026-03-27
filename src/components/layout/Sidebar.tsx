@@ -12,6 +12,7 @@ import {
   Sparkles,
   BookOpen
 } from "lucide-react";
+import { TOPXX_PATH } from "@/lib/constants";
 
 const menuItems = [
   { icon: Home, label: "Trang chủ", href: "/" },
@@ -24,16 +25,16 @@ const menuItems = [
 ];
 
 const mobileItems = [
-  { icon: Home, label: "Trang chủ", href: "/", xxHref: "/v2k9r5w8m3x7n1p4q0z6" },
-  { icon: LayoutGrid, label: "Duyệt Tìm", href: "/the-loai", xxHref: "/v2k9r5w8m3x7n1p4q0z6/the-loai" },
-  { icon: History, label: "Lịch sử", href: "/history", xxHref: "/v2k9r5w8m3x7n1p4q0z6/lich-su" },
-  { icon: Heart, label: "Yêu thích", href: "/watchlist", xxHref: "/v2k9r5w8m3x7n1p4q0z6/yeu-thich" },
-  { icon: BookOpen, label: "Hồ Truyện", href: "/truyen", xxHref: "/v2k9r5w8m3x7n1p4q0z6/truyen" },
+  { icon: Home, label: "Trang chủ", href: "/", xxHref: `/${TOPXX_PATH}` },
+  { icon: LayoutGrid, label: "Duyệt Tìm", href: "/the-loai", xxHref: `/${TOPXX_PATH}/the-loai` },
+  { icon: History, label: "Lịch sử", href: "/history", xxHref: `/${TOPXX_PATH}/lich-su` },
+  { icon: Heart, label: "Yêu thích", href: "/watchlist", xxHref: `/${TOPXX_PATH}/yeu-thich` },
+  { icon: BookOpen, label: "Hồ Truyện", href: "/truyen", xxHref: `/${TOPXX_PATH}/truyen` },
 ];
 
 export function Sidebar({ hideDesktop }: { hideDesktop?: boolean } = {}) {
   const pathname = usePathname();
-  const isXX = pathname.startsWith("/v2k9r5w8m3x7n1p4q0z6");
+  const isXX = pathname.startsWith(`/${TOPXX_PATH}`);
 
   const isActive = (href: string) => 
     href === "/" ? pathname === "/" : pathname.startsWith(href);
@@ -45,10 +46,10 @@ export function Sidebar({ hideDesktop }: { hideDesktop?: boolean } = {}) {
         <aside className="fixed left-0 top-0 z-40 hidden h-screen w-[72px] flex-col items-center border-r border-white/[0.06] bg-[#0a0a0a] pt-20 md:flex">
           <nav className="flex flex-1 flex-col items-center gap-6 pt-4">
             {(isXX ? [
-              { icon: Home, label: "Home", href: "/v2k9r5w8m3x7n1p4q0z6" },
-              { icon: LayoutGrid, label: "Thể loại", href: "/v2k9r5w8m3x7n1p4q0z6/the-loai" },
-              { icon: History, label: "Lịch sử", href: "/v2k9r5w8m3x7n1p4q0z6/lich-su" },
-              { icon: Heart, label: "Thư viện", href: "/v2k9r5w8m3x7n1p4q0z6/yeu-thich" },
+              { icon: Home, label: "Home", href: `/${TOPXX_PATH}` },
+              { icon: LayoutGrid, label: "Thể loại", href: `/${TOPXX_PATH}/the-loai` },
+              { icon: History, label: "Lịch sử", href: `/${TOPXX_PATH}/lich-su` },
+              { icon: Heart, label: "Thư viện", href: `/${TOPXX_PATH}/yeu-thich` },
             ] : menuItems).map((item) => {
               const active = isActive(item.href);
               return (

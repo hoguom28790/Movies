@@ -15,6 +15,8 @@ export interface Movie {
   votes?: number;
   tmdbId?: string;
   imdbId?: string;
+  actor?: string;
+  content?: string;
   source: 'nguonc' | 'kkphim' | 'ophim' | 'topxx' | 'avdb' | 'vsmov';
 }
 

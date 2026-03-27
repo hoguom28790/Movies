@@ -5,6 +5,7 @@ import { getOPhimMovies, searchMovies as searchOP } from "./ophim";
 import { getVsmovMovies, searchMovies as searchVS } from "./vsmov";
 import { normalizeTitle } from "@/lib/normalize";
 import { TopXXMovie, TopXXResponse } from "@/types/api";
+import { OPhimMovie, KKPhimMovie, NguonCMovie, VsmovMovie, ProviderMovie } from "@/types/api-providers";
 
 export * from "./category";
 
@@ -19,8 +20,8 @@ const OPHIM_MIRRORS = [
   "https://vsmov.com"
 ];
 
-const fetchSafe = async (url: string, headers: Record<string, string> = {}, sourceId?: string): Promise<any> => {
-  const tryFetch = async (targetUrl: string): Promise<any> => {
+const fetchSafe = async <T = any>(url: string, headers: Record<string, string> = {}, sourceId?: string): Promise<T | null> => {
+  const tryFetch = async (targetUrl: string): Promise<T | null> => {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 8000); 
     try {
@@ -31,7 +32,7 @@ const fetchSafe = async (url: string, headers: Record<string, string> = {}, sour
       });
       clearTimeout(timeoutId);
       if (!res.ok) return null;
-      return await res.json();
+      return await res.json() as T;
     } catch (e) {
       clearTimeout(timeoutId);
       return null;
@@ -152,7 +153,7 @@ export async function getLatestMovies(page: number = 1): Promise<MovieListRespon
 export interface UnifiedMovieSource {
   id: string;
   name: string;
-  data: any; // Complex union of provider types
+  data: ProviderMovie;
 }
 
 export async function getMovieDetails(slug: string): Promise<{ sources: UnifiedMovieSource[] } | null> {
@@ -193,7 +194,7 @@ export async function getMovieDetails(slug: string): Promise<{ sources: UnifiedM
       if (data.status === false || data.msg === "Movie not found" || data.message === "Not Found") return;
 
       const movie = data.data?.item || data.movie || data.movie_info;
-      const episodes = data.data?.episodes || data.episodes || movie?.episodes || [];
+      const episodes = data.data?.episodes || data.episodes || (movie as any)?.episodes || [];
       
       if (movie && (movie.slug || movie.id) && episodes.some((s: any) => (s.server_data || s.items || []).length > 0)) {
         availableSources.push({ 

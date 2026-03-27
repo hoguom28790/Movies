@@ -37,7 +37,7 @@ export function Navbar({ mode: initialMode }: NavbarProps) {
     }
   });
   
-  if (pathname.startsWith("/v2k9r5w8m3x7n1p4q0z6") || pathname.startsWith(`/${TOPXX_PATH}`)) return null;
+  if (pathname.startsWith(`/${TOPXX_PATH}`)) return null;
   
   const isComicSection = initialMode === "truyen" || pathname.startsWith("/truyen") || pathname.startsWith("/doc");
   

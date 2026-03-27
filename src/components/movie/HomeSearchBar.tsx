@@ -4,6 +4,7 @@ import React from "react";
 import { Search, Mic } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
+import { TOPXX_PATH } from "@/lib/constants";
 
 interface HomeSearchBarProps {
   isXX?: boolean;
@@ -17,7 +18,7 @@ export function HomeSearchBar({ isXX = false }: HomeSearchBarProps) {
     const formData = new FormData(e.currentTarget);
     const query = formData.get("q") as string;
     if (query?.trim()) {
-      const path = isXX ? `/v2k9r5w8m3x7n1p4q0z6/search?q=${encodeURIComponent(query)}` : `/search?q=${encodeURIComponent(query)}`;
+      const path = isXX ? `/${TOPXX_PATH}/search?q=${encodeURIComponent(query)}` : `/search?q=${encodeURIComponent(query)}`;
       router.push(path);
     }
   };

@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { HeroSection } from "@/components/movie/HeroSection";
 import { MovieCard } from "@/components/movie/MovieCard";
 import { Movie } from "@/types/movie";
+import { TOPXX_PATH } from "@/lib/constants";
 
 export const dynamic = "force-dynamic";
 
@@ -67,7 +68,7 @@ export default async function TopXXSourcePage({
                 <div className="flex items-center justify-center gap-4 py-10">
                     {currentPage > 1 && (
                         <a 
-                           href={`/v2k9r5w8m3x7n1p4q0z6/nguon/${source}?page=${currentPage - 1}`}
+                           href={`/${TOPXX_PATH}/nguon/${source}?page=${currentPage - 1}`}
                            className="px-6 py-3 rounded-2xl bg-white/5 border border-white/10 text-white font-black uppercase text-[10px] tracking-widest hover:bg-yellow-500 hover:text-black transition-all"
                         >
                            Trang trước
@@ -76,7 +77,7 @@ export default async function TopXXSourcePage({
                     <span className="text-white font-black text-sm uppercase italic tracking-tighter">Trang {currentPage} / {data.pagination.totalPages}</span>
                     {currentPage < data.pagination.totalPages && (
                          <a 
-                            href={`/v2k9r5w8m3x7n1p4q0z6/nguon/${source}?page=${currentPage + 1}`}
+                            href={`/${TOPXX_PATH}/nguon/${source}?page=${currentPage + 1}`}
                             className="px-6 py-3 rounded-2xl bg-white/5 border border-white/10 text-white font-black uppercase text-[10px] tracking-widest hover:bg-yellow-500 hover:text-black transition-all"
                          >
                             Trang sau

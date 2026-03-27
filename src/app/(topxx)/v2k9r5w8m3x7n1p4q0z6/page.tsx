@@ -6,6 +6,7 @@ import { MovieGrid } from "@/components/movie/MovieGrid";
 import { BentoGrid } from "@/components/movie/BentoGrid";
 import { HomeSearchBar } from "@/components/movie/HomeSearchBar";
 import { ActorGrid } from "@/components/movie/ActorGrid";
+import { TOPXX_PATH } from "@/lib/constants";
 
 export const dynamic = "force-dynamic";
 
@@ -58,21 +59,21 @@ export default async function XXHomePage() {
           <MovieRow 
             title="PHIM MỚI CẬP NHẬT" 
             movies={latestData?.items?.slice(1, 13) || []} 
-            viewAllLink="/v2k9r5w8m3x7n1p4q0z6/the-loai/phim-moi-cap-nhat"
+            viewAllLink="/${TOPXX_PATH}/the-loai/phim-moi-cap-nhat"
             isXX
           />
           
           <BentoGrid 
             title="AVDB PREMIUM EXCLUSIVE" 
             movies={(avdbData?.items?.filter(Boolean) || []) as any[]} 
-            viewAllLink="/v2k9r5w8m3x7n1p4q0z6/nguon/avdb"
+            viewAllLink="/${TOPXX_PATH}/nguon/avdb"
             isXX
           />
 
           <MovieRow 
             title="SIÊU PHẨM JAV (NHẬT)" 
             movies={javData?.items || []} 
-            viewAllLink="/v2k9r5w8m3x7n1p4q0z6/the-loai/vQMGvwTw5G"
+            viewAllLink="/${TOPXX_PATH}/the-loai/vQMGvwTw5G"
             isXX
           />
 
@@ -81,7 +82,7 @@ export default async function XXHomePage() {
           <MovieRow 
             title="PHIM KHÔNG CHE HOT" 
             movies={uncensoredData?.items || []} 
-            viewAllLink="/v2k9r5w8m3x7n1p4q0z6/the-loai/vdDkXwQsHi"
+            viewAllLink="/${TOPXX_PATH}/the-loai/vdDkXwQsHi"
             isXX
           />
 

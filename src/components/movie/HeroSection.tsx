@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/Button";
 import { WatchlistBtn } from "@/components/movie/WatchlistBtn";
 import { useDevice } from "@/contexts/DeviceContext";
 import { cn } from "@/lib/utils";
+import { TOPXX_PATH } from "@/lib/constants";
 
 interface Movie {
   id: string;
@@ -120,7 +121,7 @@ export function HeroSection({ movie, isXX = false }: HeroSectionProps) {
           </div>
 
           <div className="flex flex-col md:flex-row items-stretch md:items-center gap-4 md:gap-8 pt-6">
-            <Link href={isXX ? `/v2k9r5w8m3x7n1p4q0z6/xem/${movie.slug}` : `/xem/${movie.slug}`} className="w-full md:w-auto">
+            <Link href={isXX ? `/${TOPXX_PATH}/xem/${movie.slug}` : `/xem/${movie.slug}`} className="w-full md:w-auto">
               <Button 
                 size="lg" 
                 className={cn(
@@ -137,7 +138,7 @@ export function HeroSection({ movie, isXX = false }: HeroSectionProps) {
             </Link>
             
             <div className="flex items-center gap-4 w-full md:w-auto">
-              <Link href={isXX ? `/v2k9r5w8m3x7n1p4q0z6/phim/${movie.slug}` : `/phim/${movie.slug}`} className="flex-1 md:flex-none">
+              <Link href={isXX ? `/${TOPXX_PATH}/phim/${movie.slug}` : `/phim/${movie.slug}`} className="flex-1 md:flex-none">
                 <Button 
                   variant="secondary" 
                   size="lg" 

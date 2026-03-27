@@ -1,6 +1,6 @@
 import { Movie, MovieListResponse } from "@/types/movie";
 import { getAVDBMovies, getAVDBDetails } from "./avdb";
-import { TopXXMovie, TopXXResponse } from "@/types/api";
+import { TopXXMovie, TopXXResponse } from "@/types/api-providers";
 import * as cheerio from "cheerio";
 
 const BASE_URL = "https://topxx.vip/api/v1";
@@ -94,7 +94,7 @@ async function fetchWithRetry(url: string, options: RequestInit = {}, timeout = 
 }
 
 function mapTopXXToMovie(item: TopXXMovie): Movie {
-  const viTrans = Array.isArray(item.trans) ? (item.trans.find((t: any) => t.locale === "vi") || item.trans[0]) : null;
+  const viTrans = Array.isArray(item.trans) ? (item.trans.find((t) => t.locale === "vi") || item.trans[0]) : null;
   const enTrans = Array.isArray(item.trans) ? (item.trans.find((t: any) => t.locale === "en") || {}) : {};
 
   return {
@@ -233,7 +233,7 @@ export async function getTopXXDetails(slug: string) {
     }
 
     const movie: TopXXMovie = data.data;
-    const viTrans = Array.isArray(movie.trans) ? (movie.trans.find((t: any) => t.locale === "vi") || movie.trans[0]) : null;
+    const viTrans = Array.isArray(movie.trans) ? (movie.trans.find((t) => t.locale === "vi") || movie.trans[0]) : null;
     
     // Normalize mapping for player
     // PRIORITY: Use streamxx.net for Cloud VIP as native topxx.vip often 404s in iframe
@@ -352,7 +352,7 @@ export async function searchTopXXMovies(keyword: string, page: number = 1, isCat
             // OPTIMIZATION: Start fetching filmography for the top 2 actors IMMEDIATELY
             const topActors = json.data.slice(0, 2);
             const actorMovies = await Promise.allSettled(
-              topActors.map(async (actor: any) => {
+              topActors.map(async (actor) => {
                 const actorSlug = actor.trans?.find((t: any) => t.locale === "vi")?.slug || actor.trans?.[0]?.slug;
                 if (!actorSlug) return [];
                 const url = `${BASE_URL}/actors/${actorSlug}/movies?page=1`;

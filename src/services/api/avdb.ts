@@ -1,5 +1,5 @@
-import { AVDBMovie, AVDBResponse } from "@/types/api";
-import { MovieListResponse } from "@/types/movie"; 
+import { AVDBMovie, AVDBResponse } from "@/types/api-providers";
+import { Movie, MovieListResponse } from "@/types/movie"; 
 
 const BASE_URL = "https://avdbapi.com/api.php/provide/vod?ac=detail&at=json";
 
@@ -60,7 +60,7 @@ export async function getAVDBMovies(page = 1, typeId?: number, keyword?: string,
     }
 
     return {
-      items: data.list.map((m: any) => {
+      items: (data.list.map((m) => {
         if (!m) return null;
         return {
           id: m.id?.toString() || Math.random().toString(),
@@ -74,7 +74,7 @@ export async function getAVDBMovies(page = 1, typeId?: number, keyword?: string,
           actor: Array.isArray(m.actor) ? m.actor.join(", ") : (m.actor || ""),
           source: 'avdb' as const
         };
-      }).filter(Boolean),
+      }) as (Movie | null)[]).filter((m): m is Movie => !!m),
       pagination: {
         totalItems: data.total || 0,
         totalPages: data.pagecount || 1,
