@@ -215,9 +215,11 @@ export async function getMovieDetails(slug: string): Promise<{ sources: UnifiedM
     if (res.status === "fulfilled" && res.value) {
       const data = res.value;
       if (data.status === false || data.msg === "Movie not found" || data.message === "Not Found") return;
+      if (data.status === "success" && !data.movie && !data.data?.item) return; // Search result instead of detail
 
       const movie = data.data?.item || data.movie || data.movie_info;
       const episodes = data.data?.episodes || data.episodes || (movie as any)?.episodes || [];
+      
       const validEpisodes = episodes.filter((s: any) => {
         const items = s.server_data || s.items || [];
         return items.some((item: any) => !!(item.link_m3u8 || item.link_embed || (typeof item.link === 'string' && item.link.trim())));
@@ -237,6 +239,34 @@ export async function getMovieDetails(slug: string): Promise<{ sources: UnifiedM
   processSource(ophimRes, "ophim", "OPhim");
   processSource(ngRes, "nguonc", "Nguồn C");
   processSource(vsRes, "vsmov", "VS-MOV");
+
+  // SMART SEARCH FALLBACK: If NO sources found by direct slug, try searching by title (extracted from slug)
+  if (availableSources.length === 0 && !isPossiblyTopXX) {
+    const titleQuery = slug.split('-').join(' ');
+    console.log(`[API] Smart Fallback Search for: "${titleQuery}"`);
+    
+    try {
+      const searchRes = await searchMovies(titleQuery, 1);
+      if (searchRes.items.length > 0) {
+        // Find best match (compare slug or title)
+        const bestMatch = searchRes.items.find((item: any) => {
+          const itemTitle = (item.title || "").toLowerCase();
+          const itemOrigin = (item.originalTitle || "").toLowerCase();
+          const target = titleQuery.toLowerCase();
+          return itemTitle.includes(target) || target.includes(itemTitle) || 
+                 itemOrigin.includes(target) || target.includes(itemOrigin);
+        }) || searchRes.items[0];
+
+        if (bestMatch && bestMatch.slug !== slug) {
+          console.log(`[API] Found alternative slug for "${slug}": ${bestMatch.slug}`);
+          const altRes = await getMovieDetails(bestMatch.slug);
+          if (altRes) return altRes;
+        }
+      }
+    } catch (e) {
+      console.error("[API] Smart search fallback error:", e);
+    }
+  }
 
   if (availableSources.length === 0) return null;
 
