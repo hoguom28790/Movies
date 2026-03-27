@@ -157,7 +157,7 @@ export function MobileMenu({ mode }: MobileMenuProps) {
         }`}
       >
         {/* Header */}
-        <div className="flex h-16 items-center justify-between px-6 border-b border-white/[0.06] pt-safe">
+        <div className="flex h-[var(--header-h)] items-center justify-between px-6 border-b border-white/[0.06] pt-[env(safe-area-inset-top,0px)]">
           <span className={`text-2xl font-black italic tracking-tighter uppercase ${isComicSection ? 'text-indigo-500' : 'text-primary'}`}>Hồ {isComicSection ? 'Truyện' : 'Phim'}</span>
           <button 
             onClick={() => setIsOpen(false)}
@@ -168,7 +168,7 @@ export function MobileMenu({ mode }: MobileMenuProps) {
         </div>
  
         {/* Scrollable Content */}
-        <div className="h-[calc(100vh-56px)] overflow-y-auto px-4 py-6 space-y-6">
+        <div className="h-[calc(100svh-var(--header-h))] overflow-y-auto px-4 py-6 space-y-6 pb-20">
           {/* Quick Search */}
           <Link 
             href="/search"

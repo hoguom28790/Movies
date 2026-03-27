@@ -44,6 +44,17 @@
   --glass-bg: oklch(100% 0 0 / 5%);
   --glass-border: oklch(100% 0 0 / 10%);
   --glass-blur: 24px;
+
+  /* Responsive Heights & Safe Areas */
+  --mobile-nav-h: 80px;
+  --header-h: 80px;
+}
+
+/* Base Responsive Scales */
+@media (min-width: 1920px) {
+  :root {
+    font-size: 18px;
+  }
 }
 
 :root {
@@ -192,6 +203,24 @@ body {
 /* Base Styles & Utility Overrides */
 .pb-safe { padding-bottom: max(1rem, env(safe-area-inset-bottom, 0px)); }
 .pt-safe { padding-top: max(1rem, env(safe-area-inset-top, 0px)); }
+.nav-bottom-safe { padding-bottom: max(0px, env(safe-area-inset-bottom, 16px)); }
+
+/* Accessibility & TV Focus */
+:focus-visible {
+  outline: 3px solid var(--primary);
+  outline-offset: 4px;
+  border-radius: 8px;
+}
+
+@media (min-width: 1920px) {
+  button, a, [role="button"] {
+    min-height: 52px;
+    min-width: 52px;
+  }
+  .container {
+    max-width: 1600px;
+  }
+}
 
 /* Premium Card Glass Effect */
 .glass {

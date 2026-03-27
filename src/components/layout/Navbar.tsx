@@ -63,7 +63,7 @@ export function Navbar({ mode: initialMode }: NavbarProps) {
       >
         <div className="mx-auto px-4 md:px-10 lg:px-16 py-4">
           <div className={`
-            glass-pro rounded-[28px] px-6 md:px-8 h-20 flex items-center justify-between gap-6 pointer-events-auto
+            glass-pro rounded-[28px] px-6 md:px-8 h-[var(--header-h)] flex items-center justify-between gap-6 pointer-events-auto
             transition-all duration-700
             ${isScrolled ? 'shadow-cinematic-xl' : 'shadow-none'}
           `}>

@@ -80,7 +80,7 @@ export function XXMovieGrid({ initialMovies, title, fetchUrl, initialPage, total
           <p className="text-foreground/20 text-sm font-black uppercase tracking-[0.4em] italic">No content found</p>
         </div>
       ) : (
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-x-6 gap-y-12">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-7 tv:grid-cols-8 gap-x-6 gap-y-12">
           {movies.map((movie) => (
             <XXMovieCard key={movie.id} title={movie.title} slug={movie.slug} posterUrl={movie.posterUrl} year={movie.year} quality={movie.quality} />
           ))}

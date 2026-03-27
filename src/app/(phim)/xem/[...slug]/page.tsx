@@ -144,12 +144,12 @@ export default async function CatchAllWatchPage({ params, searchParams }: PagePr
               </div>
            </div>
         </div>
-
-         <div className="bg-black/10 backdrop-blur-3xl py-12 lg:py-16 relative">
-            <div className="container max-w-7xl mx-auto px-4 lg:px-12">
-               {/* 2. Main content area: Player + Episode List */}
-               <div className="flex flex-col md:flex-row gap-8 lg:gap-12 items-start">
-                  <div className="flex-1 min-w-0 space-y-8 lg:space-y-12">
+         {/* Main content grid: Top-level Flex/Col for Mobile, Grid for Desktop */}
+         <div className="bg-black/10 backdrop-blur-3xl py-10 lg:py-20 relative pb-[calc(var(--mobile-nav-h)+4rem)] lg:pb-32">
+            <div className="container mx-auto px-4 lg:px-12">
+               <div className="flex flex-col lg:grid lg:grid-cols-[1fr_360px] gap-8 lg:gap-16 items-start">
+                  {/* Left Column: Player & Meta */}
+                  <div className="w-full flex-1 min-w-0 space-y-8 lg:space-y-12">
                      {activeServerGroup.length > 0 ? (
                         <PlayerContainer 
                            url={currentEp.link_m3u8} isHls={!!currentEp.link_m3u8} rawEmbedUrl={currentEp.link_embed}
@@ -166,24 +166,30 @@ export default async function CatchAllWatchPage({ params, searchParams }: PagePr
                         </div>
                      )}
                      
-                     {/* MOBILE ONLY: Quick Source & Episode Selection */}
-                     <div className="md:hidden space-y-8 p-4 rounded-3xl bg-white/5 border border-white/10 shadow-inner">
+                     {/* MOBILE ONLY: Source & Episodes (Hidden on Desktop) */}
+                     <div className="block lg:hidden space-y-10">
                          {!isTopXX && sources.length > 1 && (
-                             <div className="space-y-4">
-                                <h3 className="text-xs font-black text-white uppercase tracking-[0.2em] italic opacity-40">Chọn Nguồn</h3>
-                                <div className="flex flex-wrap gap-2">
+                             <div className="space-y-6">
+                                <h3 className="text-xs font-black text-white/40 uppercase tracking-[0.3em] italic flex items-center gap-3">
+                                   <div className="w-1 h-3 bg-primary rounded-full transition-all" />
+                                   CHỌN NGUỒN
+                                </h3>
+                                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                                    {sources.map((s: any) => (
-                                      <Link key={s.id} href={`/xem/${movieSlug}?src=${s.id}`} className={`flex-1 min-w-[100px] text-center py-2.5 rounded-xl text-[11px] font-black uppercase italic tracking-widest border transition-all ${sourceId === s.id ? 'bg-primary border-primary text-white shadow-lg shadow-primary/20' : 'bg-white/5 border-white/5 text-white/30 hover:bg-white/10'}`}>{s.name}</Link>
+                                      <Link key={s.id} href={`/xem/${movieSlug}?src=${s.id}`} className={`text-center py-4 rounded-2xl text-[11px] font-black uppercase italic tracking-widest transition-all ${sourceId === s.id ? 'bg-primary text-white shadow-cinematic-lg' : 'bg-white/[0.03] border border-white/5 text-white/40 hover:bg-white/10'}`}>{s.name}</Link>
                                    ))}
                                 </div>
                              </div>
                          )}
                          <div className="space-y-6">
-                            <h3 className="text-xs font-black text-white uppercase tracking-[0.2em] italic opacity-40">Danh sách tập</h3>
-                            <div className="flex flex-wrap gap-2">
+                            <h3 className="text-xs font-black text-white/40 uppercase tracking-[0.3em] italic flex items-center gap-3">
+                               <div className="w-1 h-3 bg-primary rounded-full transition-all" />
+                               DANH SÁCH TẬP
+                            </h3>
+                            <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 gap-2">
                                {(allServers[currentServerIdx]?.items || allServers[0]?.items || []).map((epItem: any, idx: number) => (
-                                  <Link key={idx} href={`/xem/${movieSlug}?sv=${currentServerIdx}&ep=${encodeURIComponent(epItem.slug || epItem.name)}&src=${sourceId}`} className="flex-1 min-w-[60px]">
-                                     <button className={`w-full py-2.5 text-[10px] font-black italic rounded-xl border transition-all ${((epItem.slug === currentEp.slug || epItem.name === currentEp.name)) ? 'bg-primary border-primary text-white scale-95' : 'bg-white/5 border-white/5 text-white/40'}`}>
+                                  <Link key={idx} href={`/xem/${movieSlug}?sv=${currentServerIdx}&ep=${encodeURIComponent(epItem.slug || epItem.name)}&src=${sourceId}`}>
+                                     <button className={`w-full py-3.5 text-[11px] font-black italic rounded-xl border transition-all ${((epItem.slug === currentEp.slug || epItem.name === currentEp.name)) ? 'bg-primary border-primary text-white shadow-cinematic' : 'bg-white/5 border-white/5 text-white/40'}`}>
                                         {epItem.name}
                                      </button>
                                   </Link>
@@ -196,28 +202,29 @@ export default async function CatchAllWatchPage({ params, searchParams }: PagePr
                      <MovieTabs slug={movieSlug} source={sourceId} servers={allServers} recommendations={tmdbData?.recommendations?.results || []} collection={tmdbData?.belongs_to_collection} />
                   </div>
 
-                  <div className="hidden md:block w-full md:w-[360px] flex-shrink-0 space-y-12">
+                  {/* Desktop Right Column: Sidebar Contents */}
+                  <div className="hidden lg:block w-full space-y-12">
                      {!isTopXX && sources.length > 1 && (
                          <div className="space-y-6">
-                            <h3 className="text-xs font-black text-white uppercase tracking-[0.2em] italic opacity-40">Chọn Nguồn</h3>
-                            <div className="flex flex-wrap gap-2">
+                            <h3 className="text-[11px] font-black text-white/30 uppercase tracking-[0.4em] italic">Chọn Nguồn</h3>
+                            <div className="flex flex-wrap gap-3">
                                {sources.map((s: any) => (
-                                  <Link key={s.id} href={`/xem/${movieSlug}?src=${s.id}`} className={`flex-1 min-w-[100px] text-center py-2.5 rounded-xl text-[11px] font-black uppercase italic tracking-widest border transition-all ${sourceId === s.id ? 'bg-primary border-primary text-white shadow-lg shadow-primary/20' : 'bg-white/5 border-white/5 text-white/30 hover:bg-white/10'}`}>{s.name}</Link>
+                                  <Link key={s.id} href={`/xem/${movieSlug}?src=${s.id}`} className={`flex-1 min-w-[100px] text-center py-3 rounded-xl text-[11px] font-black uppercase italic tracking-widest border transition-all ${sourceId === s.id ? 'bg-primary border-primary text-white shadow-cinematic' : 'bg-white/[0.04] border-white/5 text-white/30 hover:bg-white/10 hover:border-white/10'}`}>{s.name}</Link>
                                ))}
                             </div>
                          </div>
                      )}
                      
                      <div className="space-y-8">
-                        <h3 className="text-xs font-black text-white uppercase tracking-[0.2em] italic opacity-40">Danh sách tập</h3>
-                        <div className="max-h-[600px] overflow-y-auto custom-scrollbar pr-2 space-y-6">
+                        <h3 className="text-[11px] font-black text-white/30 uppercase tracking-[0.4em] italic">Danh sách tập</h3>
+                        <div className="max-h-[700px] overflow-y-auto custom-scrollbar pr-4 space-y-10">
                            {allServers.map((server: any, sIdx: number) => (
-                              <div key={sIdx} className="space-y-4">
-                                 <h4 className="text-[10px] font-black text-white/20 uppercase tracking-[0.3em] italic">{server.name}</h4>
+                              <div key={sIdx} className="space-y-5">
+                                 <h4 className="text-[10px] font-black text-primary/60 uppercase tracking-[0.3em] italic">{server.name}</h4>
                                  <div className="grid grid-cols-4 gap-2">
                                     {server.items.map((epItem: any, idx: number) => (
                                        <Link key={idx} href={`/xem/${movieSlug}?sv=${sIdx}&ep=${encodeURIComponent(epItem.slug || epItem.name)}&src=${sourceId}`}>
-                                          <button className={`w-full py-2.5 text-[11px] font-black italic rounded-xl border transition-all ${(sIdx === currentServerIdx && (epItem.slug === currentEp.slug || epItem.name === currentEp.name)) ? 'bg-primary border-primary text-white scale-95' : 'bg-white/5 border-white/5 text-white/40'}`}>
+                                          <button className={`w-full py-2.5 text-[11px] font-black italic rounded-xl border transition-all ${(sIdx === currentServerIdx && (epItem.slug === currentEp.slug || epItem.name === currentEp.name)) ? 'bg-primary border-primary text-white scale-95 shadow-cinematic' : 'bg-white/5 border-white/5 text-white/30 hover:bg-white/10'}`}>
                                              {epItem.name}
                                           </button>
                                        </Link>

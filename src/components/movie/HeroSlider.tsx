@@ -38,7 +38,7 @@ export function HeroSlider({ movies }: HeroSliderProps) {
   const currentMovie = movies[currentIndex];
 
   return (
-    <section className="relative w-full h-[90vh] min-h-[800px] flex items-end overflow-hidden mt-[-80px] group select-none">
+    <section className="relative w-full h-[60vh] sm:h-[70vh] lg:h-[85vh] max-h-[1000px] flex items-end overflow-hidden mt-[-84px] group select-none">
       {/* Background Layer with Parallax & Neural Blur */}
       <AnimatePresence initial={false} custom={direction}>
         <motion.div 
@@ -68,7 +68,7 @@ export function HeroSlider({ movies }: HeroSliderProps) {
       </AnimatePresence>
 
       {/* Main Content Interface */}
-      <div className="container relative z-20 mx-auto px-6 lg:px-16 pb-32 w-full">
+      <div className="container relative z-20 mx-auto px-6 lg:px-16 pb-20 sm:pb-32 w-full">
         <AnimatePresence mode="wait">
           <motion.div 
             key={currentIndex} 
@@ -76,28 +76,28 @@ export function HeroSlider({ movies }: HeroSliderProps) {
             animate={{ opacity: 1, x: 0, filter: "blur(0px)" }}
             exit={{ opacity: 0, x: 30, filter: "blur(20px)" }}
             transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-            className="flex flex-col items-start gap-8 max-w-5xl"
+            className="flex flex-col items-start gap-4 sm:gap-8 max-w-5xl"
           >
             <motion.div 
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3 }}
-              className="flex items-center gap-3 px-6 py-2 glass-pro rounded-full border border-white/10 shadow-cinematic-lg"
+              className="flex items-center gap-3 px-4 sm:px-6 py-1.5 sm:py-2 glass-pro rounded-full border border-white/10 shadow-cinematic-lg"
             >
-               <Sparkles className="w-4 h-4 text-primary animate-pulse" />
-               <span className="text-[11px] font-black uppercase tracking-[0.4em] italic text-white/80">Nổi Bật</span>
+               <Sparkles className="w-3.5 h-3.5 text-primary animate-pulse" />
+               <span className="text-[9px] sm:text-[11px] font-black uppercase tracking-[0.4em] italic text-white/80">Nổi Bật</span>
             </motion.div>
 
-            <div className="space-y-4">
-               <h1 className="text-6xl sm:text-7xl md:text-9xl font-black font-headline leading-[0.85] tracking-tighter text-white uppercase italic italic shadow-2xl skew-x-[-2deg]">
+            <div className="space-y-3 sm:space-y-4">
+               <h1 className="text-4xl sm:text-6xl md:text-8xl lg:text-9xl font-black font-headline leading-[0.9] sm:leading-[0.85] tracking-tighter text-white uppercase italic shadow-2xl skew-x-[-2deg] line-clamp-2 md:line-clamp-none">
                  {currentMovie.title}
                </h1>
-               <div className="flex flex-wrap items-center gap-6 text-[14px] font-black uppercase italic tracking-widest text-white/40">
-                 <span className="flex items-center gap-2"><Star className="w-4 h-4 fill-primary text-primary" /> {currentMovie.imdbRating || currentMovie.tmdbRating || "9.8"}</span>
+               <div className="flex flex-wrap items-center gap-4 sm:gap-6 text-[12px] sm:text-[14px] font-black uppercase italic tracking-widest text-white/40">
+                 <span className="flex items-center gap-2"><Star className="w-3.5 h-3.5 sm:w-4 h-4 fill-primary text-primary" /> {currentMovie.imdbRating || currentMovie.tmdbRating || "9.8"}</span>
                  <span className="w-1.5 h-1.5 rounded-full bg-white/10" />
                  <span className="text-primary">{currentMovie.year}</span>
                  <span className="w-1.5 h-1.5 rounded-full bg-white/10" />
-                 <span className="px-3 py-1 bg-white/5 border border-white/10 rounded-xl text-[10px] text-white/60">{currentMovie.quality}</span>
+                 <span className="px-3 py-0.5 sm:py-1 bg-white/5 border border-white/10 rounded-xl text-[9px] sm:text-[10px] text-white/60">{currentMovie.quality}</span>
                </div>
             </div>
 
@@ -105,22 +105,22 @@ export function HeroSlider({ movies }: HeroSliderProps) {
               {currentMovie.overview || "Trải nghiệm độ phân giải 4K HDR cùng hệ thống âm thanh vòm Dolby Atmos 2026. Một tác phẩm điện ảnh đỉnh cao được tinh chỉnh riêng cho cộng đồng Hồ Phim."}
             </p>
 
-            <div className="flex items-center gap-6 mt-6">
-              <Link href={`/xem/${currentMovie.slug}`} className="flex-1 md:flex-none">
+            <div className="flex items-center gap-4 sm:gap-6 mt-4 sm:mt-6 w-full sm:w-auto">
+              <Link href={`/xem/${currentMovie.slug}`} className="flex-1 sm:flex-none">
                 <Button
                   size="lg"
-                  className="h-20 px-16 text-[18px] font-black italic uppercase italic tracking-widest rounded-[32px] gap-4 bg-primary text-white shadow-cinematic-2xl hover:shadow-primary/40 transition-all hover:scale-110 active-depth group"
+                  className="w-full sm:w-auto h-16 sm:h-20 px-8 sm:px-16 text-[15px] sm:text-[18px] font-black italic uppercase tracking-widest rounded-[24px] sm:rounded-[32px] gap-3 sm:gap-4 bg-primary text-white shadow-cinematic-2xl hover:shadow-primary/40 transition-all hover:scale-110 active-depth group"
                 >
-                  <Play className="w-8 h-8 fill-current group-hover:scale-125 transition-transform duration-500" />
+                  <Play className="w-6 h-6 sm:w-8 h-8 fill-current group-hover:scale-125 transition-transform duration-500" />
                   XEM NGAY
                 </Button>
               </Link>
               
               <button 
                 onClick={() => setIsPlaylistModalOpen(true)}
-                className="w-20 h-20 glass-pro rounded-[32px] flex items-center justify-center text-white hover:bg-primary hover:text-white hover:scale-110 active-depth transition-all shadow-cinematic-xl border border-white/10 group"
+                className="w-16 h-16 sm:w-20 sm:h-20 flex-shrink-0 glass-pro rounded-[24px] sm:rounded-[32px] flex items-center justify-center text-white hover:bg-primary hover:text-white hover:scale-110 active-depth transition-all shadow-cinematic-xl border border-white/10 group"
               >
-                <Plus className="w-10 h-10 stroke-[3px] group-hover:rotate-180 transition-transform duration-700" />
+                <Plus className="w-8 h-8 sm:w-10 h-10 stroke-[3px] group-hover:rotate-180 transition-transform duration-700" />
               </button>
             </div>
           </motion.div>
