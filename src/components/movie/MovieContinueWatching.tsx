@@ -3,8 +3,8 @@
 import React, { useEffect, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { deleteFromHistory } from "@/services/db";
-import { getXXFirestoreHistory, deleteXXFirestoreHistoryItem } from "@/services/topxxFirestore";
-import { getXXHistory, removeXXHistoryItem } from "@/services/topxxDb";
+import { getTopXXFirestoreHistory, deleteTopXXFirestoreHistoryItem } from "@/services/topxxFirestore";
+import { getTopXXHistory, removeTopXXHistoryItem } from "@/services/topxxDb";
 import { HistoryEntry } from "@/types/database";
 import { MovieCard } from "./MovieCard";
 import { History, ChevronRight, PlayCircle, Zap } from "lucide-react";
@@ -33,13 +33,13 @@ export function MovieContinueWatching({ isXX = false }: MovieContinueWatchingPro
       const fetchXXHistory = async () => {
         try {
           if (user) {
-            const cloudHistory = await getXXFirestoreHistory(user.uid);
+            const cloudHistory = await getTopXXFirestoreHistory(user.uid);
             setItems(cloudHistory.slice(0, 20));
           } else {
-            setItems(getXXHistory().slice(0, 20));
+            setItems(getTopXXHistory().slice(0, 20));
           }
         } catch (err) {
-          setItems(getXXHistory().slice(0, 20));
+          setItems(getTopXXHistory().slice(0, 20));
         } finally {
           setLoading(false);
         }
@@ -81,8 +81,8 @@ export function MovieContinueWatching({ isXX = false }: MovieContinueWatchingPro
     e.stopPropagation();
     if (isXX) {
       try {
-        if (user) await deleteXXFirestoreHistoryItem(user.uid, itemId);
-        removeXXHistoryItem(itemId);
+        if (user) await deleteTopXXFirestoreHistoryItem(user.uid, itemId);
+        removeTopXXHistoryItem(itemId);
         setItems(prev => prev.filter(item => (item.movieCode || item.movieSlug) !== itemId));
       } catch (err) {
         console.error("Delete TopXX history failed:", err);

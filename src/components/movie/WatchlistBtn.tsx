@@ -5,9 +5,12 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/Button';
 import { Bookmark, BookmarkCheck, Loader2 } from 'lucide-react';
 import { isMovieInAnyPlaylist } from '@/services/db';
-import { isMovieInAnyXXPlaylist } from '@/services/topxxDb';
-import { AuthModal } from '@/components/auth/AuthModal';
-import { PlaylistModal } from '@/components/movie/PlaylistModal';
+import { isMovieInAnyTopXXPlaylist } from '@/services/topxxDb';
+import dynamic from 'next/dynamic';
+
+const AuthModal = dynamic(() => import('@/components/auth/AuthModal').then(mod => mod.AuthModal), { ssr: false });
+const PlaylistModal = dynamic(() => import('@/components/movie/PlaylistModal').then(mod => mod.PlaylistModal), { ssr: false });
+
 import { cn } from '@/lib/utils';
 
 interface WatchlistBtnProps {
@@ -37,10 +40,11 @@ export function WatchlistBtn({ movieSlug, movieCode, movieTitle, posterUrl, vari
     }
     setLoading(true);
     if (isXX) {
-      const saved = isMovieInAnyXXPlaylist(identifier);
+      const saved = isMovieInAnyTopXXPlaylist(identifier);
       setIsSaved(saved);
       setLoading(false);
-    } else if (user) {
+    }
+ else if (user) {
       isMovieInAnyPlaylist(user.uid, identifier)
         .then(saved => {
           setIsSaved(saved);

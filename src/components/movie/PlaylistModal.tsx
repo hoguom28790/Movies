@@ -13,11 +13,11 @@ import {
   ensureDefaultPlaylist
 } from "@/services/db";
 import {
-  getXXPlaylists,
-  createXXPlaylist,
-  addMovieToXXPlaylist,
-  removeMovieFromXXPlaylist,
-  saveXXPlaylists
+  getTopXXPlaylists,
+  createTopXXPlaylist,
+  addMovieToTopXXPlaylist,
+  removeMovieFromTopXXPlaylist,
+  saveTopXXPlaylists
 } from "@/services/topxxDb";
 import { motion, AnimatePresence } from "framer-motion";
 import { Plus, Check, X as CloseIcon, Loader2 } from "lucide-react";
@@ -59,15 +59,15 @@ export function PlaylistModal({ isOpen, onClose, movieSlug, movieCode, movieTitl
       try {
         if (isXX) {
           if (user) {
-            const { getUserXXFirestorePlaylists } = await import("@/services/topxxFirestore");
-            const cloudData = await getUserXXFirestorePlaylists(user.uid);
+            const { getUserTopXXFirestorePlaylists } = await import("@/services/topxxFirestore");
+            const cloudData = await getUserTopXXFirestorePlaylists(user.uid);
             if (isMounted) {
-               const finalPlaylists = cloudData.length > 0 ? cloudData : getXXPlaylists();
+               const finalPlaylists = cloudData.length > 0 ? cloudData : getTopXXPlaylists();
                setPlaylists(finalPlaylists);
-               if (cloudData.length > 0) saveXXPlaylists(cloudData);
+               if (cloudData.length > 0) saveTopXXPlaylists(cloudData);
             }
           } else {
-            setPlaylists(getXXPlaylists());
+            setPlaylists(getTopXXPlaylists());
           }
         } else if (user) {
           await ensureDefaultPlaylist(user.uid);
@@ -75,7 +75,7 @@ export function PlaylistModal({ isOpen, onClose, movieSlug, movieCode, movieTitl
           if (isMounted) setPlaylists(data);
         }
       } catch (err) {
-        if (isXX) setPlaylists(getXXPlaylists());
+        if (isXX) setPlaylists(getTopXXPlaylists());
       } finally {
         if (isMounted) setLoading(false);
       }
@@ -92,12 +92,12 @@ export function PlaylistModal({ isOpen, onClose, movieSlug, movieCode, movieTitl
     setIsCreating(true);
     try {
       if (isXX) {
-        const newId = createXXPlaylist(newPlaylistName.trim());
-        const localPlaylists = getXXPlaylists();
+        const newId = createTopXXPlaylist(newPlaylistName.trim());
+        const localPlaylists = getTopXXPlaylists();
         const newPl = localPlaylists.find(p => p.id === newId);
         if (user && newPl) {
-          const { saveXXFirestorePlaylist } = await import("@/services/topxxFirestore");
-          await saveXXFirestorePlaylist(user.uid, newPl);
+          const { saveTopXXFirestorePlaylist } = await import("@/services/topxxFirestore");
+          await saveTopXXFirestorePlaylist(user.uid, newPl);
         }
         setPlaylists(localPlaylists);
       } else if (user) {
@@ -122,17 +122,17 @@ export function PlaylistModal({ isOpen, onClose, movieSlug, movieCode, movieTitl
 
     try {
       if (isXX) {
-        if (hasMovie) removeMovieFromXXPlaylist(playlist.id, identifier);
-        else addMovieToXXPlaylist(playlist.id, { movieCode: identifier, movieTitle, posterUrl });
+        if (hasMovie) removeMovieFromTopXXPlaylist(playlist.id, identifier);
+        else addMovieToTopXXPlaylist(playlist.id, { movieCode: identifier, movieTitle, posterUrl });
         
-        const localPlaylists = getXXPlaylists();
+        const localPlaylists = getTopXXPlaylists();
         setPlaylists(localPlaylists);
         
         if (user) {
           const updatedPl = localPlaylists.find(p => p.id === playlist.id);
           if (updatedPl) {
-            const { saveXXFirestorePlaylist } = await import("@/services/topxxFirestore");
-            await saveXXFirestorePlaylist(user.uid, updatedPl);
+            const { saveTopXXFirestorePlaylist } = await import("@/services/topxxFirestore");
+            await saveTopXXFirestorePlaylist(user.uid, updatedPl);
           }
         }
       } else if (user) {

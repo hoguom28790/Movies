@@ -9,9 +9,6 @@ import { MovieCard } from "@/components/movie/MovieCard";
 import { Trash, Library, Loader2, X, Plus, Heart, Search, Film, Edit2, Check, X as CloseIcon, User, Star, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { ActorModal } from "@/components/movie/ActorModal";
-import dynamic from "next/dynamic";
-
-const XXActorModal = dynamic(() => import("@/components/movie/XXActorModal").then(mod => mod.XXActorModal), { ssr: false });
 
 interface FavoriteActor {
   id: number | string;
@@ -36,7 +33,7 @@ export default function MovieLibraryPage() {
   const [favoriteActors, setFavoriteActors] = useState<FavoriteActor[]>([]);
   const [selectedActor, setSelectedActor] = useState<FavoriteActor | null>(null);
   const [isActorModalOpen, setIsActorModalOpen] = useState(false);
-  const [isXXActorModalOpen, setIsXXActorModalOpen] = useState(false);
+  const [actorIsXX, setActorIsXX] = useState(false);
 
   const loadData = async () => {
     if (!user) return;
@@ -126,11 +123,9 @@ export default function MovieLibraryPage() {
     });
     
     // Distinguish by ID type: string ids are usually TopXX/JAVDB slugs, numbers are TMDB
-    if (typeof actor.id === 'string' && isNaN(Number(actor.id))) {
-      setIsXXActorModalOpen(true);
-    } else {
-      setIsActorModalOpen(true);
-    }
+    const isXX = typeof actor.id === 'string' && isNaN(Number(actor.id));
+    setActorIsXX(isXX);
+    setIsActorModalOpen(true);
   };
 
   if (authLoading || loading) return <div className="p-8 flex justify-center mt-40"><Loader2 className="w-10 h-10 animate-spin text-primary" /></div>;
@@ -371,12 +366,7 @@ export default function MovieLibraryPage() {
         isOpen={isActorModalOpen}
         onClose={() => setIsActorModalOpen(false)}
         actor={selectedActor as any}
-      />
-      
-      <XXActorModal
-        isOpen={isXXActorModalOpen}
-        onClose={() => setIsXXActorModalOpen(false)}
-        actor={selectedActor as any}
+        isXX={actorIsXX}
       />
     </div>
   );

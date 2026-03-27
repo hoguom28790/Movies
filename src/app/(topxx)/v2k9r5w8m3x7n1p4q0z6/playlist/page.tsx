@@ -3,17 +3,17 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Play, Trash2, ListMusic, Plus, ChevronRight } from "lucide-react";
-import { getXXPlaylists, deleteXXPlaylist, removeMovieFromXXPlaylist, createXXPlaylist, XXPlaylist } from "@/services/topxxDb";
+import { getTopXXPlaylists, deleteTopXXPlaylist, removeMovieFromTopXXPlaylist, createTopXXPlaylist, TopXXPlaylist } from "@/services/topxxDb";
 import { Button } from "@/components/ui/Button";
 
 export default function XXPlaylistsPage() {
-  const [playlists, setPlaylists] = useState<XXPlaylist[]>([]);
+  const [playlists, setPlaylists] = useState<TopXXPlaylist[]>([]);
   const [activeId, setActiveId] = useState<string | null>(null);
   const [isCreating, setIsCreating] = useState(false);
   const [newName, setNewName] = useState("");
 
   useEffect(() => {
-    const data = getXXPlaylists();
+    const data = getTopXXPlaylists();
     setPlaylists(data);
     if (data.length > 0 && !activeId) {
       setActiveId(data[0].id);
@@ -24,8 +24,8 @@ export default function XXPlaylistsPage() {
 
   const handleDelete = (id: string) => {
     if (confirm("Bạn có chắc chắn muốn xóa Playlist này?")) {
-      deleteXXPlaylist(id);
-      const remaining = getXXPlaylists();
+      deleteTopXXPlaylist(id);
+      const remaining = getTopXXPlaylists();
       setPlaylists(remaining);
       if (activeId === id) {
         setActiveId(remaining[0]?.id || null);
@@ -34,15 +34,15 @@ export default function XXPlaylistsPage() {
   };
 
   const handleRemoveMovie = (playlistId: string, movieCode: string) => {
-    removeMovieFromXXPlaylist(playlistId, movieCode);
-    setPlaylists(getXXPlaylists());
+    removeMovieFromTopXXPlaylist(playlistId, movieCode);
+    setPlaylists(getTopXXPlaylists());
   };
 
   const handleCreate = (e: React.FormEvent) => {
     e.preventDefault();
     if (!newName.trim()) return;
-    const newId = createXXPlaylist(newName);
-    setPlaylists(getXXPlaylists());
+    const newId = createTopXXPlaylist(newName);
+    setPlaylists(getTopXXPlaylists());
     setActiveId(newId);
     setNewName("");
     setIsCreating(false);
