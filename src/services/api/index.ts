@@ -220,16 +220,14 @@ export async function getMovieDetails(slug: string): Promise<{ sources: UnifiedM
       const movie = data.data?.item || data.movie || data.movie_info;
       const episodes = data.data?.episodes || data.episodes || (movie as any)?.episodes || [];
       
-      const validEpisodes = episodes.filter((s: any) => {
-        const items = s.server_data || s.items || [];
-        return items.some((item: any) => !!(item.link_m3u8 || item.link_embed || (typeof item.link === 'string' && item.link.trim())));
-      });
-      
-      if (movie && (movie.slug || movie.id) && validEpisodes.length > 0) {
+      const hasContent = episodes.length > 0 || 
+                        !!(movie.link_m3u8 || movie.link_embed || (movie.sources && movie.sources.length > 0));
+
+      if (movie && (movie.slug || movie.id) && hasContent) {
         availableSources.push({ 
             id: sourceId, 
             name: sourceName, 
-            data: { ...movie, episodes: validEpisodes } as ProviderMovie
+            data: { ...movie, episodes: episodes } as ProviderMovie
         });
       }
     }

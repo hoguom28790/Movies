@@ -12,6 +12,7 @@ import { getTMDBImageUrl, getTMDBMovieDetails, searchTMDBMovie } from "@/service
 import { getMovieDetails } from "@/services/api";
 import { getMovieSource, normalizeMovieData } from "@/lib/movie-utils";
 import { cn } from "@/lib/utils";
+import { SourceSwitcher } from "./SourceSwitcher";
 
 export const dynamic = "force-dynamic";
 
@@ -161,9 +162,9 @@ export default async function CatchAllWatchPage({ params, searchParams }: PagePr
                      {activeServerGroup.length > 0 ? (
                         <div className="rounded-[20px] overflow-hidden shadow-xl bg-surface">
                            <PlayerContainer 
-                              url={currentEp.link_m3u8} isHls={!!currentEp.link_m3u8} rawEmbedUrl={currentEp.link_embed}
-                              movieTitle={safeData.name} movieSlug={movieSlug} episodeName={currentEp.name}
-                              episodeSlug={currentEp.slug} posterUrl={poster} source={sourceId} nextEpisodeUrl={nextEpisodeUrl}
+                               url={currentEp.link_m3u8} isHls={!!currentEp.link_m3u8} rawEmbedUrl={currentEp.link_embed}
+                               movieTitle={safeData.name} movieSlug={movieSlug} episodeName={currentEp.name}
+                               episodeSlug={currentEp.slug} posterUrl={poster} source={sourceId} nextEpisodeUrl={nextEpisodeUrl}
                            />
                         </div>
                      ) : (
@@ -241,6 +242,8 @@ export default async function CatchAllWatchPage({ params, searchParams }: PagePr
                </div>
             </div>
          </div>
+         {/* Auto Switcher Logic */}
+         <SourceSwitcher totalSources={allServers.length} />
       </div>
     );
   } catch (err: any) {

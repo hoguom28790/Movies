@@ -497,9 +497,45 @@ export function PlayerContainer({ url, isHls, rawEmbedUrl, nextEpisodeUrl, movie
     return () => { document.body.style.overflow = ""; };
   }, [isPseudoFS]);
 
+  const [useProxy, setUseProxy] = useState(false);
+  const [proxySettings, setProxySettings] = useState<{ url: string; referer: string } | null>(null);
+
+  useEffect(() => {
+    if (!resolvedUrl || playerReady) return;
+
+    // Task 4: Proxy Retry after 8 seconds
+    const proxyTimer = setTimeout(() => {
+      if (!playerReady) {
+        console.log("[Player] Source taking too long, attempting proxy...");
+        const referer = source === 'ophim' ? 'https://ophim1.com/' : 
+                        source === 'vsmov' ? 'https://vsmov.com/' : 
+                        new URL(resolvedUrl).origin;
+        setProxySettings({ url: resolvedUrl, referer });
+        setUseProxy(true);
+      }
+    }, 8000);
+
+    // Task 5: Auto-fallback notify after 10 seconds
+    const fallbackTimer = setTimeout(() => {
+      if (!playerReady) {
+        setToast("Nguồn này chậm, đang thử nguồn khác...");
+        window.dispatchEvent(new Event('player:source-failed'));
+      }
+    }, 10000);
+
+    return () => {
+      clearTimeout(proxyTimer);
+      clearTimeout(fallbackTimer);
+    };
+  }, [resolvedUrl, playerReady, source]);
+
   const isDirectVideo = url.includes('.m3u8') || url.includes('.mp4') || url.includes('.mkv') || url.includes('.ts') || url.includes('m3u8') || url.includes('mp4') || url.includes('googlevideo') || url.includes('cdn');
   
-  const iframeSrc = `/player.html?url=${encodeURIComponent(resolvedUrl || "")}&theme=${stylePreset}&isEmbed=${isUrlEmbed}&time=${Math.floor(initialTime)}&v=4.0`;
+  const finalUrl = useProxy && proxySettings 
+    ? `/api/stream-proxy?url=${encodeURIComponent(proxySettings.url)}&referer=${encodeURIComponent(proxySettings.referer)}`
+    : (resolvedUrl || "");
+
+  const iframeSrc = `/player.html?url=${encodeURIComponent(finalUrl)}&theme=${stylePreset}&isEmbed=${isUrlEmbed}&time=${Math.floor(initialTime)}&v=4.0`;
 
   return (
     <div 
@@ -507,7 +543,6 @@ export function PlayerContainer({ url, isHls, rawEmbedUrl, nextEpisodeUrl, movie
         ? (isPortrait 
             ? `fixed top-0 left-full w-[100vh] h-[100vw] rotate-90 origin-top-left z-[9999] bg-black ${isIOS ? 'p-safe' : ''}` 
             : `fixed inset-0 w-screen h-screen z-[9999] bg-black ${isIOS ? 'p-safe' : ''}`)
-        // FIXED: Enforce strict 16:9 ratio and use responsive height to avoid internal gaps
         : "w-full aspect-video h-auto min-h-[180px] max-h-[45vh] sm:max-h-[55vh] md:max-h-[70vh] lg:max-h-[80vh] self-start relative shadow-cinematic-2xl bg-black overflow-hidden rounded-[32px] border border-white/5"
       } 
       style={!isPseudoFS ? { aspectRatio: '16/9' } : {}}
@@ -521,7 +556,10 @@ export function PlayerContainer({ url, isHls, rawEmbedUrl, nextEpisodeUrl, movie
           allowFullScreen
           allow="autoplay; fullscreen; picture-in-picture"
           referrerPolicy="no-referrer-when-downgrade"
-          onLoad={() => setIsLoading(false)}
+          onLoad={() => {
+             // If we were loading and finally loaded, stop loading state
+             if (playerReady) setIsLoading(false);
+          }}
         />
       ) : !isLoading && (
         <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/90 text-white/40 gap-4">

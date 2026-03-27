@@ -113,7 +113,17 @@
     }
 
     function initPlayer() {
-      const isHlsUrl = source.includes('m3u8') || source.includes('streamxx') || source.includes('hls') || source.includes('googlevideo') || source.includes('cdn');
+      const isHlsUrl = (
+        source.includes('.m3u8') ||
+        source.includes('m3u8') ||
+        source.includes('.ts?') ||
+        source.includes('/hls/') ||
+        source.includes('/live/') ||
+        source.includes('googlevideo.com') ||
+        source.includes('akamaized.net') ||
+        source.includes('cloudfront.net') ||
+        (source.includes('.php?') && !source.includes('embed'))
+      );
       
       const plyrOptions = {
         controls: [
@@ -135,15 +145,36 @@
             autoStartLoad: true,
             enableWorker: true,
             maxBufferLength: 60,
-            backBufferLength: 30
+            backBufferLength: 30,
+            startLevel: -1
         });
         
         hls.loadSource(source);
         hls.attachMedia(video);
+
+        hls.on(Hls.Events.ERROR, function(event, data) {
+          if (data.fatal) {
+            switch(data.type) {
+              case Hls.ErrorTypes.NETWORK_ERROR:
+                console.log("[Player] Network error, retrying...");
+                hls.startLoad();
+                break;
+              case Hls.ErrorTypes.MEDIA_ERROR:
+                console.log("[Player] Media error, recovering...");
+                hls.recoverMediaError();
+                break;
+              default:
+                console.log("[Player] Fatal error, falling back to embed");
+                embedFrame.src = source;
+                embedFrame.style.display = 'block';
+                video.style.display = 'none';
+                break;
+            }
+          }
+        });
         
         hls.on(Hls.Events.MANIFEST_PARSED, () => {
             const hlsQualities = hls.levels.map(l => l.height);
-            // Deduplicate and sort qualities descending
             const uniqueQualities = [...new Set(hlsQualities)].sort((a,b) => b-a);
             
             player = new Plyr(video, {
