@@ -115,7 +115,7 @@ export async function getAVDBDetails(id: string) {
 
     return {
       ...movie,
-      id: movie.id.toString(),
+      id: movie.id?.toString() || id,
       name: movie.name,
       title: movie.name,
       posterUrl: movie.poster_url,

@@ -200,7 +200,7 @@ export async function getMovieDetails(slug: string): Promise<{ sources: UnifiedM
         availableSources.push({ 
             id: sourceId, 
             name: sourceName, 
-            data: { ...movie, episodes } 
+            data: { ...movie, episodes } as ProviderMovie
         });
       }
     }

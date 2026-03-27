@@ -300,7 +300,7 @@ export async function getTopXXDetails(slug: string) {
 
     return {
         ...movie,
-        id: movie.code,
+        id: (movie as any).code || slug,
         name: viTrans?.title || movie.title || "No Title",
         title: viTrans?.title || movie.title || "No Title",
         posterUrl: movie.thumbnail,

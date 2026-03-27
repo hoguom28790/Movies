@@ -78,7 +78,7 @@ export default async function XXWatchPage({
              <PlayerContainer 
                 url={resolveTopXXLink(currentSource.link || "")}
                 isHls={(currentSource.link || "").includes('.m3u8') || (currentSource.link || "").includes('streamxx')}
-                rawEmbedUrl={!(currentSource.link || "").includes('.m3u8') && !(currentSource.link || "").includes('streamxx') ? currentSource.link : ""}
+                rawEmbedUrl={!(currentSource.link || "").includes('.m3u8') && !(currentSource.link || "").includes('streamxx') ? (currentSource.link || "") : ""}
                 movieTitle={(viTrans as any)?.title || (item as any)?.title || (item as any)?.name}
                 movieSlug={slug}
                 posterUrl={item.posterUrl}
