@@ -189,7 +189,7 @@ export default function LibraryPage() {
                         <div className="relative w-full aspect-square rounded-[54px] overflow-hidden shadow-apple-lg border border-foreground/5 ring-1 ring-white/5 transition-transform duration-700 group-hover:scale-105">
                           {a.profilePath ? (
                             <img 
-                              src={getTMDBImageUrl(a.profilePath, 'w300')!} 
+                              src={getTMDBImageUrl(a.profilePath, 'w342')!} 
                               alt={a.name} 
                               className="w-full h-full object-cover group-hover:rotate-3 transition-transform duration-1000" 
                             />
