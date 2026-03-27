@@ -184,9 +184,11 @@ export async function getMovieDetails(slug: string) {
       // Many providers return status: false or "Movie not found" inside 200 OK
       if (data.status === false || data.msg === "Movie not found" || data.message === "Not Found") return;
 
-      const movie = data.data?.item || data.movie;
-      if (movie && (movie.slug || movie.id)) {
-        const episodes = data.data?.episodes || data.episodes || movie.episodes || [];
+      const movie = data.data?.item || data.movie || data.movie_info;
+      const episodes = data.data?.episodes || data.episodes || movie?.episodes || [];
+      
+      // CRITICAL: Filter out sources that have no episodes or report errors (avoid 404/Empty buttons)
+      if (movie && (movie.slug || movie.id) && episodes.some((s: any) => (s.server_data || s.items || []).length > 0)) {
         availableSources.push({ 
             id: sourceId, 
             name: sourceName, 
