@@ -3,9 +3,10 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { Menu, X, ChevronDown, Heart, Search, History as HistoryIcon, Settings } from "lucide-react";
-import { usePathname } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
 import { getLunarAuthPass } from "@/lib/lunar";
+import { TOPXX_PATH } from "@/lib/constants";
  
 const GENRES: { name: string; slug?: string; href?: string }[] = [
   { name: "Hành Động", slug: "hanh-dong" },
@@ -108,7 +109,14 @@ export function MobileMenu({ mode }: MobileMenuProps) {
   const [openSection, setOpenSection] = useState<string | null>(null);
   const pathname = usePathname();
   const isComicSection = mode === "truyen" || pathname.startsWith("/truyen") || pathname.startsWith("/doc");
+  const searchParams = useSearchParams();
   const { user } = useAuth();
+
+  const slug = pathname.startsWith("/xem/") ? pathname.split("/").pop() : "";
+  const isTopXXSource = searchParams.get("src") === "topxx" || searchParams.get("src") === "avdb";
+  const isTopXXCode = /^[A-Z]{2,5}-\d{2,6}$/i.test(slug || "");
+  const isTopXXInternal = slug ? /^[a-zA-Z0-9]{10}$/.test(slug) : false;
+  const isTopXXSection = pathname.startsWith("/xem/") && (isTopXXSource || isTopXXCode || isTopXXInternal);
  
   // Close menu on navigation
   useEffect(() => {
@@ -139,7 +147,7 @@ export function MobileMenu({ mode }: MobileMenuProps) {
         className="p-2 text-white/60 hover:text-white transition-colors"
         aria-label="Open Menu"
       >
-        <Menu className="h-6 w-6" />
+        <Menu className="h-6 w-6 stroke-[1.5px]" />
       </button>
  
       {/* Overlay Drawer */}
@@ -149,13 +157,13 @@ export function MobileMenu({ mode }: MobileMenuProps) {
         }`}
       >
         {/* Header */}
-        <div className="flex h-14 items-center justify-between px-4 border-b border-white/[0.06]">
-          <span className={`text-xl font-bold ${isComicSection ? 'text-indigo-500' : 'text-primary'}`}>Hồ {isComicSection ? 'Truyện' : 'Phim'}</span>
+        <div className="flex h-16 items-center justify-between px-6 border-b border-white/[0.06] pt-safe">
+          <span className={`text-2xl font-black italic tracking-tighter uppercase ${isComicSection ? 'text-indigo-500' : 'text-primary'}`}>Hồ {isComicSection ? 'Truyện' : 'Phim'}</span>
           <button 
             onClick={() => setIsOpen(false)}
             className="p-2 text-white/60"
           >
-            <X className="h-6 w-6" />
+            <X className="h-6 w-6 stroke-[1.5px]" />
           </button>
         </div>
  
@@ -166,7 +174,7 @@ export function MobileMenu({ mode }: MobileMenuProps) {
             href="/search"
             className="flex items-center gap-3 w-full p-4 rounded-xl bg-white/5 text-white/60 border border-white/[0.06]"
           >
-            <Search className="h-5 w-5" />
+            <Search className="h-5 w-5 stroke-[1.5px]" />
             <span className="text-[14px]">Tìm kiếm phim...</span>
           </Link>
           
@@ -192,7 +200,7 @@ export function MobileMenu({ mode }: MobileMenuProps) {
                   className="flex items-center justify-between w-full p-4 rounded-xl bg-white/[0.02] text-white/80 text-[14px] font-semibold"
                 >
                   Thể loại
-                  <ChevronDown className={`h-4 w-4 transition-transform ${openSection === "genres" ? "rotate-180" : ""}`} />
+                  <ChevronDown className={`h-4 w-4 stroke-[1.5px] transition-transform ${openSection === "genres" ? "rotate-180" : ""}`} />
                 </button>
                 {openSection === "genres" && (
                   <div className="grid grid-cols-2 gap-2 p-2 mt-1 animate-in fade-in slide-in-from-top-2 duration-200">
@@ -230,7 +238,7 @@ export function MobileMenu({ mode }: MobileMenuProps) {
                   className="flex items-center justify-between w-full p-4 rounded-xl bg-white/[0.02] text-white/80 text-[14px] font-semibold"
                 >
                   Quốc gia
-                  <ChevronDown className={`h-4 w-4 transition-transform ${openSection === "countries" ? "rotate-180" : ""}`} />
+                  <ChevronDown className={`h-4 w-4 stroke-[1.5px] transition-transform ${openSection === "countries" ? "rotate-180" : ""}`} />
                 </button>
                 {openSection === "countries" && (
                   <div className="grid grid-cols-2 gap-2 p-2 mt-1 animate-in fade-in slide-in-from-top-2 duration-200">
@@ -258,7 +266,7 @@ export function MobileMenu({ mode }: MobileMenuProps) {
                   className="flex items-center justify-between w-full p-4 rounded-xl bg-white/[0.02] text-white/80 text-[14px] font-semibold"
                 >
                   Thể loại Truyện
-                  <ChevronDown className={`h-4 w-4 transition-transform ${openSection === "comic_genres" ? "rotate-180" : ""}`} />
+                  <ChevronDown className={`h-4 w-4 stroke-[1.5px] transition-transform ${openSection === "comic_genres" ? "rotate-180" : ""}`} />
                 </button>
                 {openSection === "comic_genres" && (
                   <div className="grid grid-cols-2 gap-2 p-2 mt-1 animate-in fade-in slide-in-from-top-2 duration-200">
@@ -282,7 +290,7 @@ export function MobileMenu({ mode }: MobileMenuProps) {
                   className="flex items-center justify-between w-full p-4 rounded-xl bg-white/[0.02] text-white/80 text-[14px] font-semibold"
                 >
                   Trạng thái
-                  <ChevronDown className={`h-4 w-4 transition-transform ${openSection === "comic_status" ? "rotate-180" : ""}`} />
+                  <ChevronDown className={`h-4 w-4 stroke-[1.5px] transition-transform ${openSection === "comic_status" ? "rotate-180" : ""}`} />
                 </button>
                 {openSection === "comic_status" && (
                   <div className="grid grid-cols-2 gap-2 p-2 mt-1 animate-in fade-in slide-in-from-top-2 duration-200">
@@ -304,17 +312,17 @@ export function MobileMenu({ mode }: MobileMenuProps) {
           {/* Footer Info */}
           <div className="pt-8 pb-12 border-t border-white/[0.06] space-y-3">
             <Link 
-              href={isComicSection ? "/truyen/yeu-thich" : "/watchlist"}
+              href={isComicSection ? "/truyen/yeu-thich" : "/yeu-thich"}
               className="flex items-center gap-3 p-4 rounded-xl bg-primary/10 border border-primary/20 text-primary"
             >
-              <Heart className="h-5 w-5 fill-current" />
+              <Heart className="h-5 w-5 stroke-[1.5px] fill-current" />
               <span className="font-bold text-[14px]">Danh sách yêu thích</span>
             </Link>
             <Link 
-              href={isComicSection ? "/truyen/lich-su" : "/history"}
+              href={isTopXXSection ? `/${TOPXX_PATH}/lich-su` : isComicSection ? "/truyen/lich-su" : "/lich-su"}
               className="flex items-center gap-3 p-4 rounded-xl bg-white/5 border border-white/[0.06] text-white/80"
             >
-              <HistoryIcon className="h-5 w-5" />
+              <HistoryIcon className="h-5 w-5 stroke-[1.5px]" />
               <span className="font-bold text-[14px]">Lịch sử {isComicSection ? 'đọc truyện' : 'xem phim'}</span>
             </Link>
             {user && !isComicSection && (
@@ -322,7 +330,7 @@ export function MobileMenu({ mode }: MobileMenuProps) {
                 href="/settings"
                 className="flex items-center gap-3 p-4 rounded-xl bg-white/5 border border-white/[0.06] text-white/80"
               >
-                <Settings className="h-5 w-5" />
+                <Settings className="h-5 w-5 stroke-[1.5px]" />
                 <span className="font-bold text-[14px]">Cài đặt đồng bộ Trakt.tv</span>
               </Link>
             )}

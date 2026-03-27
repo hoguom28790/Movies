@@ -12,7 +12,7 @@ import {
   Zap
 } from "lucide-react";
 
-export function BottomNav() {
+export const BottomNav = React.memo(function BottomNav() {
   const pathname = usePathname();
   const [mounted, setMounted] = React.useState(false);
 
@@ -41,7 +41,7 @@ export function BottomNav() {
   return (
     <>
       {/* Bottom Navigation Bar */}
-      <nav className="fixed bottom-0 left-0 w-full h-20 bg-[#0a0a0a]/80 backdrop-blur-2xl border-t border-white/5 shadow-[0_-10px_40px_rgba(0,0,0,0.5)] flex justify-around items-center px-4 pb-4 z-50 rounded-t-3xl md:hidden">
+      <nav className="fixed bottom-0 left-0 w-full h-[calc(5rem+env(safe-area-inset-bottom,0px))] bg-[#0a0a0a]/80 backdrop-blur-2xl border-t border-white/5 shadow-[0_-10px_40px_rgba(0,0,0,0.5)] flex justify-around items-center px-4 pb-[env(safe-area-inset-bottom,0px)] z-50 rounded-t-3xl md:hidden">
         {navItems.map((item) => {
           const isActive = item.activeRegex.test(pathname);
           const Icon = item.icon;
@@ -54,8 +54,8 @@ export function BottomNav() {
                 isActive ? "text-primary scale-110" : "text-white/40 hover:text-white/70 active:scale-90"
               }`}
             >
-              <Icon className={`w-6 h-6 ${isActive ? "fill-current" : ""}`} />
-              <span className={`text-[10px] font-medium tracking-wide uppercase mt-1 ${isActive ? "opacity-100" : "opacity-70"}`}>
+              <Icon className={`w-[22px] h-[22px] stroke-[1.5px] ${isActive ? "fill-current" : ""}`} />
+              <span className={`text-[10px] font-bold tracking-tight uppercase mt-1 transition-opacity ${isActive ? "opacity-100" : "opacity-60"}`}>
                 {item.label}
               </span>
             </Link>
@@ -64,4 +64,4 @@ export function BottomNav() {
       </nav>
     </>
   );
-}
+});

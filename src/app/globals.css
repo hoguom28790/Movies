@@ -30,10 +30,10 @@
   --radius-3xl: 2rem;
   
   /* Typography */
-  --font-sans: var(--font-inter);
-  --font-headline: var(--font-epilogue);
-  --font-body: var(--font-inter);
-  --font-label: var(--font-inter);
+  --font-sans: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-headline: var(--font-sans);
+  --font-body: var(--font-sans);
+  --font-label: var(--font-sans);
 
   /* Premium Elevations */
   --shadow-cinematic: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
@@ -177,9 +177,14 @@
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: var(--font-sans), system-ui, -apple-system, sans-serif;
+  font-family: var(--font-sans);
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  font-optical-sizing: auto;
+  letter-spacing: -0.015em;
+  font-feature-settings: "ss01", "cv01", "tnum";
   /* Fix 100vh on mobile */
   min-height: calc(var(--vh, 1vh) * 100);
 }
@@ -351,9 +356,9 @@ html.is-lg-tv {
   @apply w-10 h-10;
 }
 
-/* Premium Progress Bar */
-.progress-bar-premium {
-  @apply absolute left-0 right-0 h-2 bg-white/5 rounded-full overflow-hidden z-20 shadow-inner border border-white/5;
+/* Lucide Icons SF Symbols Aesthetic */
+svg.lucide {
+  stroke-width: 1.5px !important;
 }
 
 /* Cinematic Grain/Noise Overlay */
@@ -367,8 +372,9 @@ html.is-lg-tv {
   background: url("/noise.svg");
   opacity: 0.04;
   pointer-events: none;
-  z-index: 9999;
-  animation: grain 8s steps(10) infinite;
+  z-index: 100;
+  animation: grain 8s steps(8) infinite;
+  will-change: transform;
 }
 
 @keyframes grain {

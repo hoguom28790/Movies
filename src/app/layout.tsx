@@ -13,13 +13,7 @@ import { LgTvDetector } from "@/components/layout/LgTvDetector";
 const inter = Inter({
   variable: "--font-inter",
   subsets: ["latin"],
-  display: "swap",
-});
-
-const epilogue = Epilogue({
-  variable: "--font-epilogue",
-  subsets: ["latin"],
-  display: "swap",
+  display: "optional",
 });
 
 export const metadata: Metadata = {
@@ -33,6 +27,7 @@ export const viewport: Viewport = {
   maximumScale: 1, /* Responsive: Prevent zooming on touch */
   userScalable: false,
   viewportFit: "cover",
+  themeColor: "#000000",
 };
 
 import { LayoutWrapper } from "@/components/layout/LayoutWrapper";
@@ -45,10 +40,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="vi" className={`${inter.variable} ${epilogue.variable}`} suppressHydrationWarning>
-      <head>
-        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" />
-      </head>
+    <html lang="vi" className={`${inter.variable}`} suppressHydrationWarning>
+      <head />
       <body className="bg-background text-foreground selection:bg-primary/30 antialiased font-sans cinema-grain">
         <QueryProvider>
           <DeviceProvider>

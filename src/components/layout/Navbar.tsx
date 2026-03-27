@@ -70,7 +70,7 @@ export function Navbar({ mode: initialMode }: NavbarProps) {
             {/* Logo */}
             <Link href={isComicSection ? "/truyen" : "/"} className="flex items-center gap-3 group flex-shrink-0">
                <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center shadow-lg shadow-primary/30 group-hover:rotate-12 transition-transform duration-500">
-                  {isComicSection ? <BookOpen className="w-6 h-6 text-white" /> : <Film className="w-6 h-6 text-white" />}
+                  {isComicSection ? <BookOpen className="w-6 h-6 text-white stroke-[1.5px]" /> : <Film className="w-6 h-6 text-white stroke-[1.5px]" />}
                </div>
                <span className="text-2xl md:text-3xl font-black tracking-tighter bg-clip-text text-transparent bg-gradient-to-br from-foreground to-foreground/60 font-headline uppercase italic leading-none transition-all group-hover:tracking-normal">
                   {isComicSection ? "Hồ Truyện" : "Hồ Phim"}
@@ -86,11 +86,11 @@ export function Navbar({ mode: initialMode }: NavbarProps) {
               <div className="hidden xl:flex items-center gap-2 mr-2">
                 {isComicSection ? (
                   <Link href="/" className="group flex items-center gap-2 px-6 py-2.5 rounded-2xl bg-foreground/5 hover:bg-foreground/10 text-foreground text-[11px] font-black uppercase tracking-widest italic transition-all active-depth">
-                    <Film className="w-4 h-4 text-primary" /> Phim <ChevronRight className="w-3.5 h-3.5 opacity-0 group-hover:opacity-100 transition-all group-hover:translate-x-1" />
+                    <Film className="w-4 h-4 text-primary stroke-[1.5px]" /> Phim <ChevronRight className="w-3.5 h-3.5 opacity-0 group-hover:opacity-100 transition-all group-hover:translate-x-1 stroke-[1.5px]" />
                   </Link>
                 ) : (
                   <Link href="/truyen" className="group flex items-center gap-2 px-6 py-2.5 rounded-2xl bg-primary/10 hover:bg-primary/20 text-primary text-[11px] font-black uppercase tracking-widest italic transition-all active-depth shadow-sm">
-                    <BookOpen className="w-4 h-4" /> Truyện <ChevronRight className="w-3.5 h-3.5 opacity-0 group-hover:opacity-100 transition-all group-hover:translate-x-1" />
+                    <BookOpen className="w-4 h-4 stroke-[1.5px]" /> Truyện <ChevronRight className="w-3.5 h-3.5 opacity-0 group-hover:opacity-100 transition-all group-hover:translate-x-1 stroke-[1.5px]" />
                   </Link>
                 )}
               </div>
@@ -113,7 +113,7 @@ export function Navbar({ mode: initialMode }: NavbarProps) {
                   className="p-3 rounded-2xl text-foreground/70 hover:text-primary hover:bg-primary/10 transition-all active-depth"
                   title="Tìm kiếm"
                 >
-                  <Search className="h-5 w-5 stroke-[2.5px]" />
+                  <Search className="h-5 w-5 stroke-[1.5px]" />
                 </Link>
                 
                 <Link
@@ -123,7 +123,7 @@ export function Navbar({ mode: initialMode }: NavbarProps) {
                   }`}
                   title="Lịch sử"
                 >
-                  <HistoryIcon className="h-5 w-5 stroke-[2.5px]" />
+                  <HistoryIcon className="h-5 w-5 stroke-[1.5px]" />
                 </Link>
 
                 <div className="hidden xs:block">
@@ -137,7 +137,7 @@ export function Navbar({ mode: initialMode }: NavbarProps) {
                   }`}
                   title="Yêu thích"
                 >
-                  <Heart className={`h-5 w-5 stroke-[2.5px] ${ (pathname === "/yeu-thich" || pathname === "/truyen/yeu-thich" || (isTopXXSection && pathname.includes('/yeu-thich'))) ? "fill-current" : ""}`} />
+                  <Heart className={`h-5 w-5 stroke-[1.5px] ${ (pathname === "/yeu-thich" || pathname === "/truyen/yeu-thich" || (isTopXXSection && pathname.includes('/yeu-thich'))) ? "fill-current" : ""}`} />
                 </Link>
 
                 {user ? (
@@ -149,7 +149,7 @@ export function Navbar({ mode: initialMode }: NavbarProps) {
                     onClick={() => setIsAuthOpen(true)}
                     className="ml-2 group flex items-center gap-2 px-8 py-3 rounded-2xl bg-primary hover:bg-primary/90 text-white text-[11px] font-black uppercase tracking-[0.2em] italic transition-all active-depth shadow-lg shadow-primary/30"
                   >
-                    <LogIn className="w-4 h-4" />
+                    <LogIn className="w-4 h-4 stroke-[1.5px]" />
                     <span>Đăng nhập</span>
                   </button>
                 )}

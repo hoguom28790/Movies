@@ -39,7 +39,7 @@ export function ProfileDropdown() {
                         <img src={user.photoURL} alt="Avatar" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
                     ) : (
                         <div className="w-full h-full flex items-center justify-center text-foreground/40 group-hover:text-primary transition-colors">
-                            <User className="w-5 h-5 stroke-[2.5px]" />
+                            <User className="w-5 h-5 stroke-[1.5px]" />
                         </div>
                     )}
                 </Menu.Button>
@@ -87,7 +87,7 @@ export function ProfileDropdown() {
                                 >
                                     <div className="flex items-center gap-4">
                                         <div className={`p-2.5 rounded-xl transition-all duration-500 ${autoSkipIntro ? 'bg-primary text-white shadow-lg shadow-primary/30' : 'bg-foreground/5 text-foreground/40'}`}>
-                                            <ShieldCheck className="h-5 w-5 stroke-[2.5px]" />
+                                            <ShieldCheck className="h-5 w-5 stroke-[1.5px]" />
                                         </div>
                                         <div className="flex flex-col items-start">
                                             <span className="text-foreground font-black text-[13px] italic uppercase tracking-tight leading-none">Auto Skip Intro</span>
@@ -114,7 +114,7 @@ export function ProfileDropdown() {
                                 >
                                     <div className="flex items-center gap-4">
                                         <div className={`p-2.5 rounded-xl transition-all duration-500 shadow-sm ${isTraktConnected ? 'bg-red-500 text-white shadow-red-500/30' : 'bg-foreground/5 text-foreground/40'}`}>
-                                            <Film className="h-5 w-5 stroke-[2.5px]" />
+                                            <Film className="h-5 w-5 stroke-[1.5px]" />
                                         </div>
                                         <div className="flex flex-col items-start px-0.5">
                                             <span className="text-foreground font-black text-[13px] italic uppercase tracking-tight leading-none">Phim (Trakt)</span>
@@ -125,10 +125,10 @@ export function ProfileDropdown() {
                                     </div>
                                     {isTraktConnected ? (
                                         <div className="p-1.5 rounded-full bg-green-500/10 text-green-500">
-                                            <CheckCircle2 className="h-4 w-4 stroke-[3px]" />
+                                            <CheckCircle2 className="h-4 w-4 stroke-[1.5px]" />
                                         </div>
                                     ) : (
-                                        <ChevronRight className="h-4 w-4 text-foreground/10" />
+                                        <ChevronRight className="h-4 w-4 stroke-[1.5px] text-foreground/10" />
                                     )}
                                 </button>
                             )}
@@ -144,7 +144,7 @@ export function ProfileDropdown() {
                                 >
                                     <div className="flex items-center gap-4">
                                         <div className={`p-2.5 rounded-xl transition-all duration-500 shadow-sm ${isAniListConnected ? 'bg-sky-500 text-white shadow-sky-500/30' : 'bg-foreground/5 text-foreground/40'}`}>
-                                            <Book className="h-5 w-5 stroke-[2.5px]" />
+                                            <Book className="h-5 w-5 stroke-[1.5px]" />
                                         </div>
                                         <div className="flex flex-col items-start px-0.5">
                                             <span className="text-foreground font-black text-[13px] italic uppercase tracking-tight leading-none">Truyện (AniList)</span>
@@ -155,10 +155,10 @@ export function ProfileDropdown() {
                                     </div>
                                     {isAniListConnected ? (
                                         <div className="p-1.5 rounded-full bg-green-500/10 text-green-500">
-                                            <CheckCircle2 className="h-4 w-4 stroke-[3px]" />
+                                            <CheckCircle2 className="h-4 w-4 stroke-[1.5px]" />
                                         </div>
                                     ) : (
-                                        <ChevronRight className="h-4 w-4 text-foreground/10" />
+                                        <ChevronRight className="h-4 w-4 stroke-[1.5px] text-foreground/10" />
                                     )}
                                 </button>
                             )}
@@ -175,7 +175,7 @@ export function ProfileDropdown() {
                                     } group flex w-full items-center gap-4 rounded-2xl px-4 py-4 transition-all duration-500 border border-transparent hover:border-red-500/20`}
                                 >
                                     <div className={`p-2 rounded-lg ${active ? 'bg-white/20' : 'bg-red-500/10 text-red-500'} transition-colors`}>
-                                        <LogOut className="h-4 w-4 stroke-[3px]" />
+                                        <LogOut className="h-4 w-4 stroke-[1.5px]" />
                                     </div>
                                     <span className="text-[11px] font-black uppercase tracking-[0.3em] italic">Đăng xuất</span>
                                 </button>
@@ -187,7 +187,7 @@ export function ProfileDropdown() {
                         <p className="text-[9px] text-foreground/20 italic font-black uppercase tracking-[0.2em]">
                            PREMIUM UI 2026
                         </p>
-                        <Heart className="w-3.5 h-3.5 text-primary/40 animate-pulse fill-current" />
+                        <Heart className="w-3.5 h-3.5 text-primary/40 animate-pulse fill-current stroke-[1.5px]" />
                     </div>
                 </Menu.Items>
             </Transition>

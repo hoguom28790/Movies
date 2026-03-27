@@ -137,6 +137,7 @@ export function PlayerContainer({ url, isHls, rawEmbedUrl, nextEpisodeUrl, movie
         console.log(`[TopXX] Resolving stream for: ${targetUrl}`);
         try {
           const res = await fetch(`/api/topxx/resolve?url=${encodeURIComponent(targetUrl)}`);
+          if (!res.ok) throw new Error("Resolution failed");
           const data = await res.json();
           console.log(`[TopXX] Resolved URL: ${data.url} (Type: ${data.type})`);
           setResolvedUrl(data.url);
@@ -491,7 +492,7 @@ export function PlayerContainer({ url, isHls, rawEmbedUrl, nextEpisodeUrl, movie
             ? `fixed top-0 left-full w-[100vh] h-[100vw] rotate-90 origin-top-left z-[9999] bg-black ${isIOS ? 'p-safe' : ''}` 
             : `fixed inset-0 w-screen h-screen z-[9999] bg-black ${isIOS ? 'p-safe' : ''}`)
         // FIXED player empty space below - set proper aspect-ratio and container height
-        : "w-full aspect-video h-auto self-start relative shadow-cinematic-2xl bg-black overflow-hidden rounded-[32px] border border-white/5"
+        : "w-full aspect-video h-auto min-h-[180px] self-start relative shadow-cinematic-2xl bg-black overflow-hidden rounded-[32px] border border-white/5"
       } 
       style={!isPseudoFS ? { aspectRatio: '16/9' } : {}}
     >
@@ -502,6 +503,8 @@ export function PlayerContainer({ url, isHls, rawEmbedUrl, nextEpisodeUrl, movie
           src={iframeSrc}
           className="w-full h-full border-0 absolute inset-0 rounded-[28px]"
           allowFullScreen
+          allow="autoplay; fullscreen; picture-in-picture"
+          referrerPolicy="no-referrer-when-downgrade"
           onLoad={() => setIsLoading(false)}
         />
       ) : !isLoading && (
