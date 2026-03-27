@@ -7,37 +7,49 @@ import { normalizeTitle } from "@/lib/normalize";
 export * from "./category";
 
 const OPHIM_MIRRORS = [
-  "https://ophim1.com", 
-  "https://ophim18.cc", 
-  "https://ophim17.com", 
-  "https://ophim17.cc", 
+  "https://phimapi.com",
+  "https://ophim17.com",
+  "https://ophim17.cc",
+  "https://ophim18.cc",
   "https://ophim10.com",
   "https://ophim8.cc",
   "https://ophim10.cc",
-  "https://vsmov.com",
-  "https://phimapi.com"
+  "https://vsmov.com"
 ];
 
-// Helper for safe fetch with manual timeout
-const fetchSafe = async (url: string, headers: any = {}) => {
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 10000); 
-  try {
-    const res = await fetch(url, { 
-      headers: { 
-        "Accept": "application/json",
-        ...headers 
-      }, 
-      signal: controller.signal,
-      cache: "no-store"
-    });
-    clearTimeout(timeoutId);
-    if (!res.ok) return null;
-    return await res.json();
-  } catch (e) {
-    clearTimeout(timeoutId);
-    return null;
+// Helper for safe fetch with manual timeout and mirror fallback for OPhim
+const fetchSafe = async (url: string, headers: any = {}, sourceId?: string) => {
+  const tryFetch = async (targetUrl: string) => {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 8000); 
+    try {
+      const res = await fetch(targetUrl, { 
+        headers: { "Accept": "application/json", ...headers }, 
+        signal: controller.signal,
+        cache: "no-store"
+      });
+      clearTimeout(timeoutId);
+      if (!res.ok) return null;
+      return await res.json();
+    } catch (e) {
+      clearTimeout(timeoutId);
+      return null;
+    }
+  };
+
+  const initialRes = await tryFetch(url);
+  if (initialRes) return initialRes;
+
+  // Mirror rotation for OPhim
+  if (sourceId === 'ophim') {
+     for (const mirror of OPHIM_MIRRORS) {
+        const mirrorUrl = url.replace(/https:\/\/[^\/]+/, mirror);
+        const res = await tryFetch(mirrorUrl);
+        if (res) return res;
+     }
   }
+  
+  return null;
 };
 
 export async function searchMovies(keyword: string, page: number = 1, section: "hop" | "tx" = "hop"): Promise<MovieListResponse> {
@@ -172,10 +184,10 @@ export async function getMovieDetails(slug: string) {
 
   // 2. Execute parallel check for ALL standard sources with robust timeouts
   const [kkRes, ophimRes, ngRes, vsRes] = await Promise.allSettled([
-    fetchSafe(`https://phimapi.com/v1/api/phim/${slug}`),
-    fetchSafe(`https://ophim1.com/v1/api/phim/${slug}`, { Referer: "https://ophim1.com/" }),
-    fetchSafe(`https://phim.nguonc.com/api/film/${slug}`),
-    fetchSafe(`https://vsmov.com/api/phim/${slug}`, { Referer: "https://vsmov.com/" })
+    fetchSafe(`https://phimapi.com/v1/api/phim/${slug}`, {}, 'kkphim'),
+    fetchSafe(`https://phimapi.com/v1/api/phim/${slug}`, { Referer: "https://ophim1.com/" }, 'ophim'),
+    fetchSafe(`https://phim.nguonc.com/api/film/${slug}`, {}, 'nguonc'),
+    fetchSafe(`https://vsmov.com/api/phim/${slug}`, { Referer: "https://vsmov.com/" }, 'vsmov')
   ]);
 
   const processSource = (res: any, sourceId: string, sourceName: string) => {

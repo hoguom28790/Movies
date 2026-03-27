@@ -49,6 +49,22 @@ export function PlayerContainer({ url, isHls, rawEmbedUrl, nextEpisodeUrl, movie
   const lastProcessedSkip = useRef<number | null>(null);
   const lastSaveTimeRef = useRef<number>(Date.now());
 
+  // 0. Fetch initial progress to pass to player.html for instant resume
+  const { data: historyData } = useQuery({
+    queryKey: ["movie-progress", user?.uid, movieSlug, episodeSlug],
+    queryFn: async () => {
+      if (!user || !movieSlug) return null;
+      const { getMovieHistory } = await import("@/services/db");
+      return getMovieHistory(user.uid, movieSlug, getMovieSource(movieSlug, source));
+    },
+    enabled: !!user && !!movieSlug,
+    staleTime: 1000 * 60, // 1 minute stale
+  });
+
+  const initialTime = (historyData?.episodeSlug === (episodeSlug || 'full') || historyData?.episodeName === (episodeName || 'Full')) 
+    ? historyData.progressSeconds 
+    : 0;
+
   useEffect(() => {
     if (toast) {
       const timer = setTimeout(() => setToast(null), 3000);
@@ -481,9 +497,9 @@ export function PlayerContainer({ url, isHls, rawEmbedUrl, nextEpisodeUrl, movie
     return () => { document.body.style.overflow = ""; };
   }, [isPseudoFS]);
 
-  const isDirectVideo = url.includes('.m3u8') || url.includes('.mp4') || url.includes('.mkv') || url.includes('.ts') || url.includes('m3u8') || url.includes('mp4');
-
-  const iframeSrc = `/player.html?url=${encodeURIComponent(resolvedUrl || "")}&theme=${stylePreset}&isEmbed=${isUrlEmbed}&v=3.0`;
+  const isDirectVideo = url.includes('.m3u8') || url.includes('.mp4') || url.includes('.mkv') || url.includes('.ts') || url.includes('m3u8') || url.includes('mp4') || url.includes('googlevideo') || url.includes('cdn');
+  
+  const iframeSrc = `/player.html?url=${encodeURIComponent(resolvedUrl || "")}&theme=${stylePreset}&isEmbed=${isUrlEmbed}&time=${Math.floor(initialTime)}&v=4.0`;
 
   return (
     <div 
