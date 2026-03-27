@@ -8,7 +8,8 @@ import {
   getUserFavoriteActors, 
   getUserPlaylists, 
   deletePlaylist,
-  removeMovieFromPlaylist
+  removeMovieFromPlaylist,
+  deleteFromWatchlist
 } from "@/services/db";
 import { 
   Heart, 
@@ -81,6 +82,16 @@ export default function LibraryPage() {
       }));
     } catch (err) {
       alert("Lỗi khi xóa phim");
+    }
+  };
+
+  const handleDeleteWatchlist = async (movieSlug: string) => {
+    if (!user) return;
+    try {
+      await deleteFromWatchlist(user.uid, movieSlug);
+      setWatchlist(prev => prev.filter(m => m.movieSlug !== movieSlug));
+    } catch (err) {
+      alert("Lỗi khi xóa phim khỏi danh sách đã lưu");
     }
   };
 
@@ -164,6 +175,7 @@ export default function LibraryPage() {
                         slug={m.movieSlug}
                         title={m.movieTitle}
                         posterUrl={m.posterUrl}
+                        onDelete={() => handleDeleteWatchlist(m.movieSlug)}
                         index={idx % 20}
                       />
                     ))}
