@@ -1,16 +1,18 @@
 import { Movie, MovieListResponse } from "@/types/movie";
+import { KKPhimListResponse } from "@/types/api";
 
 const BASE_URL = "https://phimapi.com/danh-sach";
 
 export async function getKKPhimMovies(page: number = 1): Promise<MovieListResponse> {
   const res = await fetch(`${BASE_URL}/phim-moi-cap-nhat?page=${page}`, { 
-    next: { revalidate: 3600 },
+    next: { revalidate: 300 },
     signal: AbortSignal.timeout(5000)
   });
   if (!res.ok) throw new Error("Failed to fetch KKPhim");
-  const data = await res.json();
+  const data: KKPhimListResponse = await res.json();
   const imagePrefix = data.pathImage || "https://phimimg.com/";
-  const items: Movie[] = data.items.map((item: any) => ({
+  
+  const items: Movie[] = (data.items || []).map((item) => ({
     id: item.slug,
     title: item.name,
     originalTitle: item.origin_name,
@@ -18,37 +20,34 @@ export async function getKKPhimMovies(page: number = 1): Promise<MovieListRespon
     posterUrl: item.poster_url?.startsWith('http') ? item.poster_url : `${imagePrefix}${item.poster_url.replace(/^\//,'')}`,
     thumbUrl: item.thumb_url?.startsWith('http') ? item.thumb_url : `${imagePrefix}${item.thumb_url.replace(/^\//,'')}`,
     year: item.year?.toString() || "",
-    status: item.status || item.episode_current || "",
-    tmdbId: item.tmdb?.id || item.tmdb_id || "",
-    imdbId: item.imdb?.id || item.imdb_id || "",
-    source: 'kkphim'
+    status: item.status || "",
+    source: 'kkphim' as const
   })).filter((item: Movie) => 
-    item.status?.toLowerCase() !== "trailer" && 
-    item.quality?.toLowerCase() !== "trailer"
+    item.status?.toLowerCase() !== "trailer"
   );
 
   return {
     items,
     pagination: {
-      currentPage: data.pagination.currentPage,
-      totalPages: data.pagination.totalPages,
-      totalItems: data.pagination.totalItems
+      currentPage: data.pagination?.currentPage || page,
+      totalPages: data.pagination?.pageRanges || 1,
+      totalItems: data.pagination?.totalItems || 0
     }
   };
 }
 
 export async function searchMovies(keyword: string, page: number = 1): Promise<MovieListResponse> {
   const res = await fetch(`https://phimapi.com/v1/api/tim-kiem?keyword=${encodeURIComponent(keyword)}&page=${page}`, { 
-    cache: "no-store",
+    next: { revalidate: 300 },
     signal: AbortSignal.timeout(5000)
   });
   if (!res.ok) throw new Error("Failed to search KKPhim");
-  const data = await res.json();
+  const data: any = await res.json();
   
   if (data.status !== "success") return { items: [], pagination: { currentPage: 1, totalPages: 1, totalItems: 0 } };
 
   const imagePrefix = data.data?.APP_DOMAIN_CDN_IMAGE || "https://phimimg.com";
-  const items: Movie[] = data.data.items.map((item: any) => ({
+  const items: Movie[] = (data.data?.items || []).map((item: any) => ({
     id: item.slug,
     title: item.name,
     originalTitle: item.origin_name,
@@ -57,22 +56,20 @@ export async function searchMovies(keyword: string, page: number = 1): Promise<M
     thumbUrl: item.thumb_url?.startsWith('http') ? item.thumb_url : `${imagePrefix}/${item.thumb_url.replace(/^\//,'')}`,
     year: item.year?.toString() || "",
     quality: item.quality || "",
-    status: item.status || item.episode_current || "",
-    tmdbId: item.tmdb?.id || item.tmdb_id || "",
-    imdbId: item.imdb?.id || item.imdb_id || "",
-    source: 'kkphim'
+    status: item.episode_current || "",
+    source: 'kkphim' as const
   })).filter((item: Movie) => 
-    item.status?.toLowerCase() !== "trailer" && 
-    item.quality?.toLowerCase() !== "trailer"
+    item.status?.toLowerCase() !== "trailer"
   );
 
-  const pg = data.data.params.pagination;
+  const pg = data.data?.params.pagination || { currentPage: page, totalItems: 0, totalItemsPerPage: 20 };
   return {
     items,
     pagination: {
       currentPage: pg.currentPage,
-      totalPages: Math.ceil(pg.totalItems / pg.totalItemsPerPage),
+      totalPages: Math.ceil(pg.totalItems / pg.totalItemsPerPage) || 1,
       totalItems: pg.totalItems
     }
   };
 }
+

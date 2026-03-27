@@ -1,8 +1,11 @@
 import { getTopXXMovies } from "@/services/api/topxx";
-import { XXHeroSection } from "@/components/movie/XXHeroSection";
-import { XXContinueWatching } from "@/components/movie/XXContinueWatching";
-import { XXMovieRow } from "@/components/movie/XXMovieRow";
-import { XXMovieGrid } from "@/components/movie/XXMovieGrid";
+import { HeroSection } from "@/components/movie/HeroSection";
+import { MovieContinueWatching } from "@/components/movie/MovieContinueWatching";
+import { MovieRow } from "@/components/movie/MovieRow";
+import { MovieGrid } from "@/components/movie/MovieGrid";
+import { BentoGrid } from "@/components/movie/BentoGrid";
+import { HomeSearchBar } from "@/components/movie/HomeSearchBar";
+import { ActorGrid } from "@/components/movie/ActorGrid";
 
 export const dynamic = "force-dynamic";
 
@@ -10,10 +13,6 @@ export const metadata = {
   title: "TopXX - Kho Phim Cao Cấp",
   description: "Trải nghiệm không gian phim giải trí đỉnh cao từ TopXX.",
 };
-
-import { XXBentoGrid } from "@/components/movie/XXBentoGrid";
-import { XXSearchBar } from "@/components/movie/XXSearchBar";
-import { XXActorGrid } from "@/components/movie/XXActorGrid";
 
 export default async function XXHomePage() {
   // FINAL FIX TopXX Server Component error: Robut try-catch for all data fetching
@@ -42,7 +41,7 @@ export default async function XXHomePage() {
     return (
       <div className="flex flex-col gap-16 pb-20 mt-[-20px] max-w-7xl mx-auto">
         {heroMovie ? (
-          <XXHeroSection movie={heroMovie} />
+          <HeroSection movie={heroMovie} isXX />
         ) : (
           <div className="h-[70vh] w-full bg-surface rounded-[40px] animate-pulse flex items-center justify-center border border-white/5 mx-4">
              <span className="text-white/10 text-xl font-black uppercase tracking-[1em]">TopXX Premium</span>
@@ -50,45 +49,50 @@ export default async function XXHomePage() {
         )}
         
         {/* Search Bar */}
-        <XXSearchBar />
+        <HomeSearchBar isXX />
         
         {/* Xem Tiếp */}
-        <XXContinueWatching />
+        <MovieContinueWatching isXX />
         
         <div className="flex flex-col gap-20">
-          <XXMovieRow 
+          <MovieRow 
             title="PHIM MỚI CẬP NHẬT" 
             movies={latestData?.items?.slice(1, 13) || []} 
             viewAllLink="/v2k9r5w8m3x7n1p4q0z6/the-loai/phim-moi-cap-nhat"
+            isXX
           />
           
-          <XXBentoGrid 
+          <BentoGrid 
             title="AVDB PREMIUM EXCLUSIVE" 
-            movies={avdbData?.items || []} 
+            movies={(avdbData?.items?.filter(Boolean) || []) as any[]} 
             viewAllLink="/v2k9r5w8m3x7n1p4q0z6/nguon/avdb"
+            isXX
           />
 
-          <XXMovieRow 
+          <MovieRow 
             title="SIÊU PHẨM JAV (NHẬT)" 
             movies={javData?.items || []} 
             viewAllLink="/v2k9r5w8m3x7n1p4q0z6/the-loai/vQMGvwTw5G"
+            isXX
           />
 
-          <XXActorGrid />
+          <ActorGrid isXX />
 
-          <XXMovieRow 
+          <MovieRow 
             title="PHIM KHÔNG CHE HOT" 
             movies={uncensoredData?.items || []} 
             viewAllLink="/v2k9r5w8m3x7n1p4q0z6/the-loai/vdDkXwQsHi"
+            isXX
           />
 
           {/* Use grid for the rest or more categories */}
-          <XXMovieGrid 
+          <MovieGrid 
             initialMovies={latestData?.items?.slice(13) || []} 
             title="KHÁM PHÁ THÊM" 
             fetchUrl="/api/topxx?slug=phim-moi-cap-nhat"
             initialPage={1}
             totalPages={latestData?.pagination?.totalPages || 1}
+            isXX
           />
         </div>
       </div>

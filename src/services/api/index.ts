@@ -1,9 +1,11 @@
-import { MovieListResponse } from "@/types/movie";
+import { Movie, MovieListResponse } from "@/types/movie";
 import { getNguonCMovies } from "./nguonc";
 import { getKKPhimMovies, searchMovies as searchKK } from "./kkphim";
 import { getOPhimMovies, searchMovies as searchOP } from "./ophim";
 import { getVsmovMovies, searchMovies as searchVS } from "./vsmov";
 import { normalizeTitle } from "@/lib/normalize";
+import { TopXXMovie, TopXXResponse } from "@/types/api";
+
 export * from "./category";
 
 const OPHIM_MIRRORS = [
@@ -17,16 +19,15 @@ const OPHIM_MIRRORS = [
   "https://vsmov.com"
 ];
 
-// Helper for safe fetch with manual timeout and mirror fallback for OPhim
-const fetchSafe = async (url: string, headers: any = {}, sourceId?: string) => {
-  const tryFetch = async (targetUrl: string) => {
+const fetchSafe = async (url: string, headers: Record<string, string> = {}, sourceId?: string): Promise<any> => {
+  const tryFetch = async (targetUrl: string): Promise<any> => {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 8000); 
     try {
       const res = await fetch(targetUrl, { 
         headers: { "Accept": "application/json", ...headers }, 
         signal: controller.signal,
-        cache: "no-store"
+        next: { revalidate: 300 }
       });
       clearTimeout(timeoutId);
       if (!res.ok) return null;
@@ -40,7 +41,6 @@ const fetchSafe = async (url: string, headers: any = {}, sourceId?: string) => {
   const initialRes = await tryFetch(url);
   if (initialRes) return initialRes;
 
-  // Mirror rotation for OPhim
   if (sourceId === 'ophim') {
      for (const mirror of OPHIM_MIRRORS) {
         const mirrorUrl = url.replace(/https:\/\/[^\/]+/, mirror);
@@ -55,35 +55,30 @@ const fetchSafe = async (url: string, headers: any = {}, sourceId?: string) => {
 export async function searchMovies(keyword: string, page: number = 1, section: "hop" | "tx" = "hop"): Promise<MovieListResponse> {
   console.log(`[API] Global Search: "${keyword}" (${section})`);
   
-  // 1. Parallel search across ALL standard providers
   const [opResults, kkResults, vsResults] = await Promise.allSettled([
     searchOP(keyword, page),
     searchKK(keyword, page),
     searchVS(keyword, page)
   ]);
 
-  // 2. Also search TopXX/AVDB (Premium Sources) in parallel
-  let txResults: any = { items: [] };
+  let txResults: MovieListResponse = { items: [], pagination: { currentPage: 1, totalPages: 1, totalItems: 0 } };
   try {
      const { searchTopXXMovies } = await import("./topxx");
-     txResults = await searchTopXXMovies(keyword, page).catch(() => ({ items: [] }));
+     txResults = await searchTopXXMovies(keyword, page).catch(() => ({ items: [], pagination: { currentPage: 1, totalPages: 1, totalItems: 0 } }));
   } catch (e) {}
 
-  const allItems: any[] = [];
+  const allItems: Movie[] = [];
   
-  // Combine all sources, prioritizing section-specific results but including everything for discovery
   if (section === "tx") {
      if (txResults.items) allItems.push(...txResults.items);
-     if (kkResults.status === "fulfilled") allItems.push(...kkResults.value.items.filter((i: any) => i.title.toLowerCase().includes(keyword.toLowerCase())));
+     if (kkResults.status === "fulfilled") allItems.push(...kkResults.value.items.filter((i: Movie) => i.title.toLowerCase().includes(keyword.toLowerCase())));
   } else {
      if (opResults.status === "fulfilled") allItems.push(...opResults.value.items);
      if (kkResults.status === "fulfilled") allItems.push(...kkResults.value.items);
      if (vsResults.status === "fulfilled") allItems.push(...vsResults.value.items);
-     // Include TopXX in Home Search if no results found elsewhere or if it's a code
      if (txResults.items) allItems.push(...txResults.items);
   }
 
-  // Deduplicate by slug
   const seenSlugs = new Set();
   const mergedItems = allItems.filter(item => {
     if (!item.slug || seenSlugs.has(item.slug)) return false;
@@ -108,7 +103,6 @@ export async function searchMovies(keyword: string, page: number = 1, section: "
 }
 
 export async function getLatestMovies(page: number = 1): Promise<MovieListResponse> {
-  // Try to find a healthy OPhim mirror for latest
   let ophimData: MovieListResponse = { items: [], pagination: { currentPage: 1, totalPages: 1, totalItems: 0 } };
   for (const mirror of OPHIM_MIRRORS) {
      try {
@@ -127,12 +121,12 @@ export async function getLatestMovies(page: number = 1): Promise<MovieListRespon
       getVsmovMovies(page)
     ]);
 
-    const items: any[] = [...ophimData.items];
+    const items: Movie[] = [...ophimData.items];
     if (nguonc.status === "fulfilled") items.push(...nguonc.value.items);
     if (kkphim.status === "fulfilled") items.push(...kkphim.value.items);
     if (vsmov.status === "fulfilled") items.push(...vsmov.value.items);
 
-    const merged = [];
+    const merged: Movie[] = [];
     const opItems = ophimData.items;
     const kkItems = kkphim.status === "fulfilled" ? kkphim.value.items : [];
     const ngItems = nguonc.status === "fulfilled" ? nguonc.value.items : [];
@@ -155,17 +149,21 @@ export async function getLatestMovies(page: number = 1): Promise<MovieListRespon
   }
 }
 
-export async function getMovieDetails(slug: string) {
+export interface UnifiedMovieSource {
+  id: string;
+  name: string;
+  data: any; // Complex union of provider types
+}
+
+export async function getMovieDetails(slug: string): Promise<{ sources: UnifiedMovieSource[] } | null> {
   if (!slug) return null;
 
-  // Pattern detection for Premium Sources (TopXX/AVDB)
   const isTopXXCode = /^[a-zA-Z]{2,6}-\d{2,6}$/i.test(slug) && (slug.match(/-/g) || []).length === 1;
   const isTopXXInternal = /^[a-zA-Z0-9]{10}$/.test(slug);
   const isPossiblyTopXX = slug.startsWith("av-") || isTopXXCode || isTopXXInternal;
 
-  const availableSources: { id: string, name: string, data: any }[] = [];
+  const availableSources: UnifiedMovieSource[] = [];
 
-  // 1. If possibly TopXX/AV-Movie, try those with HIGH PRIORITY
   if (isPossiblyTopXX) {
     try {
        const { getTopXXDetails } = await import("./topxx");
@@ -182,7 +180,6 @@ export async function getMovieDetails(slug: string) {
     } catch {}
   }
 
-  // 2. Execute parallel check for ALL standard sources with robust timeouts
   const [kkRes, ophimRes, ngRes, vsRes] = await Promise.allSettled([
     fetchSafe(`https://phimapi.com/v1/api/phim/${slug}`, {}, 'kkphim'),
     fetchSafe(`https://phimapi.com/v1/api/phim/${slug}`, { Referer: "https://ophim1.com/" }, 'ophim'),
@@ -190,16 +187,14 @@ export async function getMovieDetails(slug: string) {
     fetchSafe(`https://vsmov.com/api/phim/${slug}`, { Referer: "https://vsmov.com/" }, 'vsmov')
   ]);
 
-  const processSource = (res: any, sourceId: string, sourceName: string) => {
+  const processSource = (res: PromiseSettledResult<any>, sourceId: string, sourceName: string) => {
     if (res.status === "fulfilled" && res.value) {
       const data = res.value;
-      // Many providers return status: false or "Movie not found" inside 200 OK
       if (data.status === false || data.msg === "Movie not found" || data.message === "Not Found") return;
 
       const movie = data.data?.item || data.movie || data.movie_info;
       const episodes = data.data?.episodes || data.episodes || movie?.episodes || [];
       
-      // CRITICAL: Filter out sources that have no episodes or report errors (avoid 404/Empty buttons)
       if (movie && (movie.slug || movie.id) && episodes.some((s: any) => (s.server_data || s.items || []).length > 0)) {
         availableSources.push({ 
             id: sourceId, 
@@ -217,17 +212,16 @@ export async function getMovieDetails(slug: string) {
 
   if (availableSources.length === 0) return null;
 
-  // 3. HEALTH-BASED SORTING: Prioritize sources that actually have episode links (not empty 200s)
   availableSources.sort((a, b) => {
-     // Count servers/episodes that have actual content
-     const getLinkCount = (src: any) => {
+     const getLinkCount = (src: UnifiedMovieSource) => {
         const eps = src.data.episodes || [];
-        return eps.reduce((count: number, server: any) => count + (server.server_data?.length || 0), 0);
+        return eps.reduce((count: number, server: any) => count + (server.server_data?.length || server.items?.length || 0), 0);
      };
      const countA = getLinkCount(a);
      const countB = getLinkCount(b);
-     return countB - countA; // Source with more links comes first
+     return countB - countA;
   });
 
   return { sources: availableSources };
 }
+

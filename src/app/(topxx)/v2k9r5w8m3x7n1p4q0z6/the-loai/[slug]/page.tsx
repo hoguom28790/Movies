@@ -1,5 +1,5 @@
 import { getTopXXMovies } from "@/services/api/topxx";
-import { XXMovieGrid } from "@/components/movie/XXMovieGrid";
+import { MovieGrid } from "@/components/movie/MovieGrid";
 import { notFound } from "next/navigation";
 
 export const dynamic = "force-dynamic";
@@ -13,12 +13,13 @@ export default async function XXCategoryPage({ params }: { params: Promise<{ slu
 
     return (
       <div className="container mx-auto">
-        <XXMovieGrid 
+        <MovieGrid 
           initialMovies={initialData.items} 
           title={`THỂ LOẠI: ${title}`} 
           fetchUrl={`/api/topxx?type=the-loai&slug=${slug}`}
           initialPage={1}
           totalPages={initialData.pagination.totalPages}
+          isXX
         />
       </div>
     );

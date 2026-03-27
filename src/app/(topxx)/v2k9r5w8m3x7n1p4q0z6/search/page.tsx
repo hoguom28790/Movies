@@ -1,5 +1,5 @@
-import { XXSearchResultsClient } from "@/components/movie/XXSearchResultsClient";
-import { XXSearchBar } from "@/components/movie/XXSearchBar";
+import { SearchResultsClient } from "@/components/movie/SearchResultsClient";
+import { HomeSearchBar } from "@/components/movie/HomeSearchBar";
 import { Suspense } from "react";
 import { Loader2 } from "lucide-react";
 
@@ -37,7 +37,7 @@ export default async function XXSearchPage({ searchParams }: XXSearchPageProps) 
              </p>
           </div>
 
-          <XXSearchBar />
+          <HomeSearchBar isXX />
         </div>
 
         {/* Results Body - Delegated to Client for stability and parity with Instant Search */}
@@ -47,7 +47,7 @@ export default async function XXSearchPage({ searchParams }: XXSearchPageProps) 
             <p className="text-white/5 text-[10px] font-black uppercase tracking-[0.8em] italic">Initializing Elite Search...</p>
           </div>
         }>
-          <XXSearchResultsClient initialQuery={q} initialPage={currentPage} />
+          <SearchResultsClient initialQuery={q} initialPage={currentPage} isXX />
         </Suspense>
       </div>
     );

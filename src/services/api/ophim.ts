@@ -1,22 +1,21 @@
 import { Movie, MovieListResponse } from "@/types/movie";
-
-const BASE_URL = "https://ophim1.com/danh-sach";
+import { OPhimListResponse } from "@/types/api";
 
 export async function getOPhimMovies(page: number = 1, baseUrl: string = "https://ophim1.com"): Promise<MovieListResponse> {
   const res = await fetch(`${baseUrl}/danh-sach/phim-moi-cap-nhat?page=${page}`, { 
-    next: { revalidate: 3600 },
+    next: { revalidate: 300 },
     signal: AbortSignal.timeout(5000)
   });
   if (!res.ok) throw new Error("Failed to fetch OPhim");
-  const data = await res.json();
+  const data: OPhimListResponse = await res.json();
   
-  let imagePrefix = data.pathImage || data.data?.APP_DOMAIN_CDN_IMAGE || "https://img.ophim1.com/uploads/movies/";
+  let imagePrefix = data.pathImage || "https://img.ophim1.com/uploads/movies/";
   if (!imagePrefix.includes('/uploads/movies')) {
     imagePrefix = imagePrefix.replace(/\/$/, '') + '/uploads/movies/';
   }
   if (imagePrefix && !imagePrefix.endsWith('/')) imagePrefix += '/';
 
-  const items: Movie[] = data.items.map((item: any) => ({
+  const items: Movie[] = (data.items || []).map((item) => ({
     id: item.slug,
     title: item.name,
     originalTitle: item.origin_name,
@@ -24,13 +23,10 @@ export async function getOPhimMovies(page: number = 1, baseUrl: string = "https:
     posterUrl: item.poster_url?.startsWith('http') ? item.poster_url : `${imagePrefix}${item.poster_url}`,
     thumbUrl: item.thumb_url?.startsWith('http') ? item.thumb_url : `${imagePrefix}${item.thumb_url}`,
     year: item.year?.toString() || "",
-    status: item.status || item.episode_current || "",
-    tmdbId: item.tmdb?.id || item.tmdb_id || "",
-    imdbId: item.imdb?.id || item.imdb_id || "",
-    source: 'ophim'
+    status: "",
+    source: 'ophim' as const
   })).filter((item: Movie) => 
-    item.status?.toLowerCase() !== "trailer" && 
-    item.quality?.toLowerCase() !== "trailer"
+    item.status?.toLowerCase() !== "trailer"
   );
 
   return {
@@ -45,20 +41,21 @@ export async function getOPhimMovies(page: number = 1, baseUrl: string = "https:
 
 export async function searchMovies(keyword: string, page: number = 1, baseUrl: string = "https://ophim1.com"): Promise<MovieListResponse> {
   const res = await fetch(`${baseUrl}/v1/api/tim-kiem?keyword=${encodeURIComponent(keyword)}&page=${page}`, { 
-    cache: "no-store",
+    next: { revalidate: 300 },
     signal: AbortSignal.timeout(5000)
   });
   if (!res.ok) throw new Error("Failed to search OPhim");
-  const data = await res.json();
+  const data: any = await res.json();
   
   if (data.status !== "success") return { items: [], pagination: { currentPage: 1, totalPages: 1, totalItems: 0 } };
 
   let imagePrefix = data.data?.APP_DOMAIN_CDN_IMAGE || data.pathImage || "https://img.ophim1.com";
-  if (!imagePrefix.includes('/uploads/movies') && !data.data?.items?.[0]?.poster_url?.includes('/')) {
+  if (!imagePrefix.includes('/uploads/movies')) {
     imagePrefix = imagePrefix.replace(/\/$/, '') + '/uploads/movies/';
   }
   if (imagePrefix && !imagePrefix.endsWith('/')) imagePrefix += '/';
-  const items: Movie[] = data.data.items.map((item: any) => ({
+  
+  const items: Movie[] = (data.data?.items || []).map((item: any) => ({
     id: item.slug,
     title: item.name,
     originalTitle: item.origin_name,
@@ -67,22 +64,20 @@ export async function searchMovies(keyword: string, page: number = 1, baseUrl: s
     thumbUrl: item.thumb_url?.startsWith('http') ? item.thumb_url : `${imagePrefix}${item.thumb_url}`,
     year: item.year?.toString() || "",
     quality: item.quality || "",
-    status: item.status || item.episode_current || "",
-    tmdbId: item.tmdb?.id || item.tmdb_id || "",
-    imdbId: item.imdb?.id || item.imdb_id || "",
-    source: 'ophim'
+    status: item.episode_current || "",
+    source: 'ophim' as const
   })).filter((item: Movie) => 
-    item.status?.toLowerCase() !== "trailer" && 
-    item.quality?.toLowerCase() !== "trailer"
+    item.status?.toLowerCase() !== "trailer"
   );
 
-  const pg = data.data.params.pagination;
+  const pg = data.data?.params.pagination;
   return {
     items,
     pagination: {
-      currentPage: pg.currentPage,
-      totalPages: Math.ceil(pg.totalItems / pg.totalItemsPerPage),
-      totalItems: pg.totalItems
+      currentPage: pg?.currentPage || 1,
+      totalPages: pg ? Math.ceil(pg.totalItems / pg.totalItemsPerPage) : 1,
+      totalItems: pg?.totalItems || 0
     }
   };
 }
+

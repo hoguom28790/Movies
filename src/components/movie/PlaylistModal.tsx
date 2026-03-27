@@ -12,25 +12,37 @@ import {
   removeMovieFromPlaylist,
   ensureDefaultPlaylist
 } from "@/services/db";
+import {
+  getXXPlaylists,
+  createXXPlaylist,
+  addMovieToXXPlaylist,
+  removeMovieFromXXPlaylist,
+  saveXXPlaylists
+} from "@/services/topxxDb";
 import { motion, AnimatePresence } from "framer-motion";
 import { Plus, Check, X as CloseIcon, Loader2 } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface PlaylistModalProps {
   isOpen: boolean;
   onClose: () => void;
-  movieSlug: string;
+  movieSlug?: string;
+  movieCode?: string; // used for XX
   movieTitle: string;
   posterUrl: string;
+  isXX?: boolean;
 }
 
-export function PlaylistModal({ isOpen, onClose, movieSlug, movieTitle, posterUrl }: PlaylistModalProps) {
+export function PlaylistModal({ isOpen, onClose, movieSlug, movieCode, movieTitle, posterUrl, isXX = false }: PlaylistModalProps) {
   const { user } = useAuth();
-  const [playlists, setPlaylists] = useState<Playlist[]>([]);
+  const [playlists, setPlaylists] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [newPlaylistName, setNewPlaylistName] = useState("");
   const [isCreating, setIsCreating] = useState(false);
   const [processingId, setProcessingId] = useState<string | null>(null);
   const [mounted, setMounted] = useState(false);
+
+  const identifier = isXX ? movieCode : movieSlug;
 
   useEffect(() => {
     setMounted(true);
@@ -38,71 +50,100 @@ export function PlaylistModal({ isOpen, onClose, movieSlug, movieTitle, posterUr
   }, []);
 
   useEffect(() => {
-    if (!isOpen || !user) return;
+    if (!isOpen) return;
 
     let isMounted = true;
     
     const loadPlaylists = async () => {
       setLoading(true);
       try {
-        await ensureDefaultPlaylist(user.uid);
-        const data = await getUserPlaylists(user.uid);
-        if (isMounted) setPlaylists(data);
+        if (isXX) {
+          if (user) {
+            const { getUserXXFirestorePlaylists } = await import("@/services/topxxFirestore");
+            const cloudData = await getUserXXFirestorePlaylists(user.uid);
+            if (isMounted) {
+               const finalPlaylists = cloudData.length > 0 ? cloudData : getXXPlaylists();
+               setPlaylists(finalPlaylists);
+               if (cloudData.length > 0) saveXXPlaylists(cloudData);
+            }
+          } else {
+            setPlaylists(getXXPlaylists());
+          }
+        } else if (user) {
+          await ensureDefaultPlaylist(user.uid);
+          const data = await getUserPlaylists(user.uid);
+          if (isMounted) setPlaylists(data);
+        }
       } catch (err) {
-        console.error("Lỗi khi tải Playlist:", err);
+        if (isXX) setPlaylists(getXXPlaylists());
       } finally {
         if (isMounted) setLoading(false);
       }
     };
 
     loadPlaylists();
-
     return () => { isMounted = false; };
-  }, [isOpen, user]);
+  }, [isOpen, user, isXX]);
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!user || !newPlaylistName.trim()) return;
+    if (!newPlaylistName.trim()) return;
 
     setIsCreating(true);
     try {
-      await createPlaylist(user.uid, newPlaylistName.trim());
+      if (isXX) {
+        const newId = createXXPlaylist(newPlaylistName.trim());
+        const localPlaylists = getXXPlaylists();
+        const newPl = localPlaylists.find(p => p.id === newId);
+        if (user && newPl) {
+          const { saveXXFirestorePlaylist } = await import("@/services/topxxFirestore");
+          await saveXXFirestorePlaylist(user.uid, newPl);
+        }
+        setPlaylists(localPlaylists);
+      } else if (user) {
+        await createPlaylist(user.uid, newPlaylistName.trim());
+        const updated = await getUserPlaylists(user.uid);
+        setPlaylists(updated);
+      }
       setNewPlaylistName("");
-      const updated = await getUserPlaylists(user.uid);
-      setPlaylists(updated);
     } catch (err) {
-      console.error("Lỗi khi tạo playlist:", err);
-      alert("Không thể tạo thư mục lúc này.");
+       console.error("Create playlist error:", err);
     } finally {
       setIsCreating(false);
     }
   };
 
-  const toggleMovieInPlaylist = async (playlist: Playlist) => {
+  const toggleMovieInPlaylist = async (playlist: any) => {
+    if (!identifier) return;
     setProcessingId(playlist.id);
-    const hasMovie = playlist.movies.some(m => m.movieSlug === movieSlug);
+    const hasMovie = isXX 
+      ? playlist.movies.some((m: any) => m.movieCode === identifier)
+      : playlist.movies.some((m: any) => m.movieSlug === identifier);
 
     try {
-      if (hasMovie) {
-        await removeMovieFromPlaylist(playlist.id, movieSlug);
-      } else {
-        await addMovieToPlaylist(playlist.id, { movieSlug, movieTitle, posterUrl });
-      }
-      
-      setPlaylists(prev => prev.map(p => {
-        if (p.id === playlist.id) {
-          return {
-            ...p,
-            movies: hasMovie 
-              ? p.movies.filter(m => m.movieSlug !== movieSlug)
-              : [...p.movies, { movieSlug, movieTitle, posterUrl, addedAt: Date.now() }]
-          };
+      if (isXX) {
+        if (hasMovie) removeMovieFromXXPlaylist(playlist.id, identifier);
+        else addMovieToXXPlaylist(playlist.id, { movieCode: identifier, movieTitle, posterUrl });
+        
+        const localPlaylists = getXXPlaylists();
+        setPlaylists(localPlaylists);
+        
+        if (user) {
+          const updatedPl = localPlaylists.find(p => p.id === playlist.id);
+          if (updatedPl) {
+            const { saveXXFirestorePlaylist } = await import("@/services/topxxFirestore");
+            await saveXXFirestorePlaylist(user.uid, updatedPl);
+          }
         }
-        return p;
-      }));
-
+      } else if (user) {
+        if (hasMovie) await removeMovieFromPlaylist(playlist.id, identifier);
+        else await addMovieToPlaylist(playlist.id, { movieSlug: identifier, movieTitle, posterUrl });
+        
+        const updated = await getUserPlaylists(user.uid);
+        setPlaylists(updated);
+      }
     } catch (err) {
-      console.error("Lỗi cập nhật playlist:", err);
+      console.error("Toggle movie error:", err);
     } finally {
       setProcessingId(null);
     }
@@ -112,97 +153,70 @@ export function PlaylistModal({ isOpen, onClose, movieSlug, movieTitle, posterUr
 
   return createPortal(
     <AnimatePresence>
-      {isOpen && (
-        <div 
-          className="fixed inset-0 z-[11000] flex items-center justify-center bg-black/80 backdrop-blur-md p-4 overflow-hidden"
-          onClick={onClose}
-        >
+      {isOpen && ( identifier && (
+        <div className="fixed inset-0 z-[11000] flex items-center justify-center bg-black/85 backdrop-blur-md p-4 overflow-hidden" onClick={onClose}>
           <motion.div 
             initial={{ opacity: 0, scale: 0.9, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.9, y: 20 }}
-            transition={{ type: "spring", damping: 25, stiffness: 300 }}
-            className="bg-surface p-6 md:p-8 rounded-[32px] border border-white/10 shadow-2xl w-full max-w-md relative flex flex-col gap-6"
+            className={cn(
+              "p-6 md:p-8 rounded-[40px] border border-white/10 shadow-2xl w-full max-w-md relative flex flex-col gap-6",
+              isXX ? "bg-[#141416]" : "bg-surface"
+            )}
             onClick={(e) => e.stopPropagation()}
           >
-            
             <div className="flex justify-between items-center">
               <div className="space-y-1">
-                 <h2 className="text-xl md:text-2xl font-black text-white uppercase italic tracking-tighter leading-none">Lưu vào thư mục</h2>
-                 <p className="text-[10px] font-bold text-white/30 uppercase tracking-widest leading-none mt-1">{movieTitle}</p>
+                 <h2 className="text-xl md:text-2xl font-black text-white italic uppercase tracking-tighter leading-none">{isXX ? "Thêm vào Playlist" : "Lưu vào thư mục"}</h2>
+                 <p className={cn("text-[10px] font-bold uppercase tracking-widest leading-none mt-1", isXX ? "text-yellow-500" : "text-white/30")}>{isXX ? "TOPXX PREMIUM" : movieTitle}</p>
               </div>
-              <button 
-                onClick={onClose} 
-                className="text-neutral-400 hover:text-white bg-white/5 hover:bg-white/10 rounded-full p-2 transition-all shadow-xl"
-              >
-                <CloseIcon className="w-5 h-5" />
-              </button>
+              <button onClick={onClose} className="text-neutral-400 hover:text-white bg-white/5 hover:bg-white/10 rounded-full p-2 transition-all shadow-xl"><CloseIcon className="w-5 h-5" /></button>
             </div>
 
-            {/* Danh sách Playlists */}
             <div className="flex flex-col gap-3 max-h-[50vh] overflow-y-auto pr-2 custom-scrollbar">
               {loading ? (
-                <div className="flex items-center justify-center py-12">
-                  <Loader2 className="w-8 h-8 animate-spin text-primary" />
-                </div>
+                <div className="flex items-center justify-center py-12"><Loader2 className={cn("w-8 h-8 animate-spin", isXX ? "text-yellow-500" : "text-primary")} /></div>
               ) : playlists.length === 0 ? (
                 <div className="text-center py-12 space-y-4 bg-white/[0.02] rounded-2xl border border-dashed border-white/5">
-                   <Plus className="w-8 h-8 text-white/5 mx-auto" />
-                   <p className="text-[10px] font-bold text-white/20 uppercase tracking-[0.2em]">Chưa có thư mục nào</p>
+                    <Plus className="w-8 h-8 text-white/5 mx-auto" /><p className="text-[10px] font-bold text-white/20 uppercase tracking-[0.2em]">{isXX ? "Ký ức chưa được đặt tên..." : "Chưa có thư mục nào"}</p>
                 </div>
               ) : (
                 playlists.map(playlist => {
-                  const checked = playlist.movies.some(m => m.movieSlug === movieSlug);
+                  const checked = isXX ? playlist.movies.some((m: any) => m.movieCode === identifier) : playlist.movies.some((m: any) => m.movieSlug === identifier);
                   return (
-                    <button
-                      key={playlist.id}
-                      onClick={() => toggleMovieInPlaylist(playlist)}
-                      disabled={processingId === playlist.id}
-                      className={`flex items-center justify-between p-5 rounded-2xl border transition-all duration-300 text-left active-depth ${checked ? 'bg-primary/10 border-primary/50 text-white shadow-lg shadow-primary/5' : 'bg-white/5 border-transparent text-white/70 hover:bg-white/10 hover:text-white'}`}
-                    >
+                    <button key={playlist.id} onClick={() => toggleMovieInPlaylist(playlist)} disabled={processingId === playlist.id} className={cn(
+                      "flex items-center justify-between p-5 rounded-3xl border transition-all duration-300 text-left active-depth",
+                      checked 
+                        ? (isXX ? 'bg-yellow-500/10 border-yellow-500/30 text-white shadow-lg' : 'bg-primary/10 border-primary/50 text-white shadow-lg') 
+                        : 'bg-white/5 border-white/5 text-white/40 hover:bg-white/10 hover:text-white'
+                    )}>
                       <div className="flex flex-col gap-1">
-                        <span className="font-black text-base uppercase italic tracking-tight leading-none">{playlist.name}</span>
-                        <span className="text-[10px] font-bold opacity-40 uppercase tracking-widest italic">{playlist.movies.length} PHIM</span>
+                        <span className={cn("font-black uppercase italic tracking-tighter text-base leading-none", checked && isXX && "text-yellow-500")}>{playlist.name}</span>
+                        <span className="text-[10px] font-bold uppercase tracking-widest opacity-30 leading-none">{playlist.movies.length} {isXX ? "VIDEO" : "PHIM"}</span>
                       </div>
-                      
-                      <div className={`w-7 h-7 rounded-full flex items-center justify-center border-2 transition-all duration-300 ${checked ? 'bg-primary border-primary shadow-lg shadow-primary/30' : 'border-white/10'}`}>
-                        {processingId === playlist.id ? (
-                          <Loader2 className="w-3 h-3 animate-spin text-white" />
-                        ) : checked ? (
-                          <Check className="w-4 h-4 text-white stroke-[3px]" />
-                        ) : null}
+                      <div className={cn(
+                        "w-7 h-7 rounded-full flex items-center justify-center border-2 transition-all duration-300",
+                        checked 
+                          ? (isXX ? 'bg-yellow-500 border-yellow-500 shadow-[0_0_20px_rgba(234,179,8,0.4)]' : 'bg-primary border-primary shadow-lg') 
+                          : 'border-white/10'
+                      )}>
+                        {processingId === playlist.id ? <Loader2 className="w-3 h-3 animate-spin text-white" /> : checked && (isXX ? <Check className="w-4 h-4 text-black font-black" /> : <Check className="w-4 h-4 text-white stroke-[3px]" />)}
                       </div>
                     </button>
                   );
                 })
               )}
             </div>
-
             <div className="h-px bg-white/5 w-full shrink-0" />
-
-            {/* Thêm Playlist mới */}
             <form onSubmit={handleCreate} className="flex gap-3">
-              <input 
-                id="new-playlist-input"
-                name="playlist-name"
-                type="text" 
-                placeholder="Tên thư mục mới..." 
-                value={newPlaylistName}
-                onChange={(e) => setNewPlaylistName(e.target.value)}
-                className="flex-1 bg-black/40 border border-white/5 rounded-2xl px-5 py-4 text-sm text-white placeholder:text-white/20 focus:outline-none focus:border-primary/40 focus:bg-black/60 transition-all font-bold"
-              />
-              <Button 
-                type="submit" 
-                disabled={!newPlaylistName.trim() || isCreating}
-                className="rounded-2xl w-14 h-14 p-0 shadow-xl"
-              >
-                {isCreating ? <Loader2 className="w-5 h-5 animate-spin" /> : <Plus className="w-6 h-6 stroke-[3px]" />}
+              <input type="text" placeholder="Tên thư mục mới..." value={newPlaylistName} onChange={(e) => setNewPlaylistName(e.target.value)} className={cn("flex-1 bg-black/40 border border-white/5 rounded-2xl px-5 py-4 text-sm text-white focus:outline-none focus:bg-black/60 transition-all placeholder:text-white/20 font-bold", isXX ? "focus:border-yellow-500/40" : "focus:border-primary/40")} />
+              <Button type="submit" disabled={!newPlaylistName.trim() || isCreating} className={cn("rounded-2xl w-14 h-14 p-0 shadow-xl", isXX ? "bg-yellow-500 text-black hover:bg-white" : "")}>
+                {isCreating ? <Loader2 className="w-5 h-5 animate-spin" /> : <Plus className="w-7 h-7 stroke-[3px]" />}
               </Button>
             </form>
-
           </motion.div>
         </div>
-      )}
+      ))}
     </AnimatePresence>,
     document.body
   );

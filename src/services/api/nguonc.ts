@@ -1,16 +1,17 @@
 import { Movie, MovieListResponse } from "@/types/movie";
+import { NguonCListResponse } from "@/types/api";
 
 const BASE_URL = "https://phim.nguonc.com/api/films";
 
 export async function getNguonCMovies(page: number = 1): Promise<MovieListResponse> {
   const res = await fetch(`${BASE_URL}/phim-moi-cap-nhat?page=${page}`, { 
-    next: { revalidate: 3600 },
+    next: { revalidate: 300 },
     signal: AbortSignal.timeout(5000)
   });
   if (!res.ok) throw new Error("Failed to fetch NguonC");
-  const data = await res.json();
+  const data: NguonCListResponse = await res.json();
   
-  const items: Movie[] = data.items.map((item: any) => ({
+  const items: Movie[] = data.items.map((item) => ({
     id: item.slug,
     title: item.name,
     originalTitle: item.original_name,
@@ -20,7 +21,7 @@ export async function getNguonCMovies(page: number = 1): Promise<MovieListRespon
     year: item.year?.toString() || "",
     quality: item.quality,
     status: item.status || item.episode_current || "",
-    source: 'nguonc'
+    source: 'nguonc' as const
   })).filter((item: Movie) => 
     item.status?.toLowerCase() !== "trailer" && 
     item.quality?.toLowerCase() !== "trailer"

@@ -15,7 +15,7 @@ export interface Movie {
   votes?: number;
   tmdbId?: string;
   imdbId?: string;
-  source: 'nguonc' | 'kkphim' | 'ophim' | 'topxx' | 'avdb';
+  source: 'nguonc' | 'kkphim' | 'ophim' | 'topxx' | 'avdb' | 'vsmov';
 }
 
 export interface Pagination {

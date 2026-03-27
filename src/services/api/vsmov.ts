@@ -1,18 +1,19 @@
 import { Movie, MovieListResponse } from "@/types/movie";
+import { VsmovListResponse, VsmovResponse } from "@/types/api";
 
 const BASE_URL = "https://vsmov.com/api";
 
 export async function getVsmovMovies(page: number = 1): Promise<MovieListResponse> {
   try {
     const res = await fetch(`${BASE_URL}/danh-sach/phim-moi-cap-nhat?page=${page}`, { 
-      next: { revalidate: 3600 },
+      next: { revalidate: 300 },
       signal: AbortSignal.timeout(5000)
     });
     if (!res.ok) throw new Error("Failed to fetch Vsmov");
-    const data = await res.json();
+    const data: any = await res.json();
     
     // Vsmov usually provides full URLs in their API response
-    const items: Movie[] = data.items.map((item: any) => ({
+    const items: Movie[] = (data.items || []).map((item: any) => ({
       id: item.slug,
       title: item.name,
       originalTitle: item.origin_name,
@@ -21,20 +22,17 @@ export async function getVsmovMovies(page: number = 1): Promise<MovieListRespons
       thumbUrl: item.thumb_url?.startsWith('http') ? item.thumb_url : `https://vsmov.com${item.thumb_url.startsWith('/') ? '' : '/'}${item.thumb_url}`,
       year: item.year?.toString() || "",
       status: item.status || item.episode_current || "",
-      tmdbId: item.tmdb?.id || item.tmdb_id || "",
-      imdbId: item.imdb?.id || item.imdb_id || "",
-      source: 'vsmov'
+      source: 'vsmov' as const
     })).filter((item: Movie) => 
-      item.status?.toLowerCase() !== "trailer" && 
-      item.quality?.toLowerCase() !== "trailer"
+      item.status?.toLowerCase() !== "trailer"
     );
 
     return {
       items,
       pagination: {
-        currentPage: data.pagination.currentPage,
-        totalPages: data.pagination.totalPages,
-        totalItems: data.pagination.totalItems
+        currentPage: data.pagination?.currentPage || page,
+        totalPages: data.pagination?.totalPages || 1,
+        totalItems: data.pagination?.totalItems || 0
       }
     };
   } catch (error) {
@@ -46,15 +44,15 @@ export async function getVsmovMovies(page: number = 1): Promise<MovieListRespons
 export async function searchMovies(keyword: string, page: number = 1): Promise<MovieListResponse> {
   try {
     const res = await fetch(`${BASE_URL}/tim-kiem?keyword=${encodeURIComponent(keyword)}&page=${page}`, { 
-      cache: "no-store",
+      next: { revalidate: 300 },
       signal: AbortSignal.timeout(5000)
     });
     if (!res.ok) throw new Error("Failed to search Vsmov");
-    const data = await res.json();
+    const data: any = await res.json();
     
     if (data.status === false) return { items: [], pagination: { currentPage: 1, totalPages: 1, totalItems: 0 } };
 
-    const items: Movie[] = data.items.map((item: any) => ({
+    const items: Movie[] = (data.items || []).map((item: any) => ({
       id: item.slug,
       title: item.name,
       originalTitle: item.origin_name,
@@ -64,21 +62,18 @@ export async function searchMovies(keyword: string, page: number = 1): Promise<M
       year: item.year?.toString() || "",
       quality: item.quality || "",
       status: item.status || item.episode_current || "",
-      tmdbId: item.tmdb?.id || item.tmdb_id || "",
-      imdbId: item.imdb?.id || item.imdb_id || "",
-      source: 'vsmov'
+      source: 'vsmov' as const
     })).filter((item: Movie) => 
-      item.status?.toLowerCase() !== "trailer" && 
-      item.quality?.toLowerCase() !== "trailer"
+      item.status?.toLowerCase() !== "trailer"
     );
 
     const pg = data.pagination;
     return {
       items,
       pagination: {
-        currentPage: pg.currentPage,
-        totalPages: pg.totalPages,
-        totalItems: pg.totalItems
+        currentPage: pg?.currentPage || page,
+        totalPages: pg?.totalPages || 1,
+        totalItems: pg?.totalItems || 0
       }
     };
   } catch (error) {
@@ -86,3 +81,17 @@ export async function searchMovies(keyword: string, page: number = 1): Promise<M
     return { items: [], pagination: { currentPage: 1, totalPages: 1, totalItems: 0 } };
   }
 }
+
+export async function getVsmovDetails(slug: string): Promise<VsmovResponse | null> {
+  try {
+    const res = await fetch(`${BASE_URL}/phim/${slug}`, { 
+      next: { revalidate: 300 },
+      signal: AbortSignal.timeout(5000)
+    });
+    if (!res.ok) return null;
+    return await res.json();
+  } catch (error) {
+    return null;
+  }
+}
+

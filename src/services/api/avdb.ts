@@ -1,32 +1,7 @@
+import { AVDBMovie, AVDBResponse } from "@/types/api";
+import { MovieListResponse } from "@/types/movie"; 
+
 const BASE_URL = "https://avdbapi.com/api.php/provide/vod?ac=detail&at=json";
-
-export interface AVDBMovie {
-  id: number;
-  name: string;
-  slug: string;
-  poster_url: string;
-  thumb_url: string;
-  actor: string[] | string;
-  director: string[] | string;
-  year: string;
-  quality: string;
-  description: string;
-  movie_code: string;
-  episodes: {
-    server_name?: string;
-    server_data?: Record<string, string | { link_embed?: string }>;
-  };
-}
-
-export interface AVDBResponse {
-  code: number;
-  msg: string;
-  page: number;
-  pagecount: number;
-  limit: string;
-  total: number;
-  list: AVDBMovie[];
-}
 
 // Helper for timeout-safe fetch
 async function fetchWithTimeout(url: string, options: RequestInit = {}, timeout = 10000) {
@@ -70,10 +45,10 @@ export async function getAVDBMovies(page = 1, typeId?: number, keyword?: string,
   if (actor) url += `&vod_actor=${encodeURIComponent(actor)}`; // Help says vod_actor
 
   try {
-    const res = await fetchWithRetry(url, { next: { revalidate: 3600 } }, 10000, 2, 800);
+    const res = await fetchWithRetry(url, { next: { revalidate: 300 } }, 10000, 2, 800);
     if (!res.ok) return { items: [], pagination: { totalItems: 0, totalPages: 1, currentPage: 1 } };
     
-    let data: any;
+    let data: AVDBResponse;
     try {
       data = await res.json();
     } catch(e) {
@@ -115,7 +90,7 @@ export async function getAVDBMovies(page = 1, typeId?: number, keyword?: string,
 export async function getAVDBDetails(id: string) {
   const url = `${BASE_URL}&ids=${id}`;
   try {
-    const res = await fetchWithTimeout(url, { cache: "no-store" }, 10000);
+    const res = await fetchWithTimeout(url, { next: { revalidate: 300 } }, 10000);
     const data: AVDBResponse = await res.json();
     if (!data.list || !data.list.length) return null;
     const movie = data.list[0];
