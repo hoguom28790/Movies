@@ -50,7 +50,7 @@ export default async function XXWatchPage({
               <div className="p-2 rounded-full bg-white/5 group-hover:bg-yellow-500 group-hover:text-black transition-colors">
                 <ArrowLeft className="w-4 h-4" />
               </div>
-              <span className="truncate uppercase italic tracking-widest text-[11px]">{viTrans?.title}</span>
+              <span className="truncate uppercase italic tracking-widest text-[11px]">{(viTrans as any)?.title || (item as any)?.title || (item as any)?.name}</span>
             </Link>
 
             <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-2 md:pb-0">
@@ -78,9 +78,9 @@ export default async function XXWatchPage({
                 url={resolveTopXXLink(currentSource.link)}
                 isHls={currentSource.link.includes('.m3u8') || currentSource.link.includes('streamxx')}
                 rawEmbedUrl={!currentSource.link.includes('.m3u8') && !currentSource.link.includes('streamxx') ? currentSource.link : ""}
-                movieTitle={viTrans?.title}
+                movieTitle={(viTrans as any)?.title || (item as any)?.title || (item as any)?.name}
                 movieSlug={slug}
-                posterUrl={item.thumbnail}
+                posterUrl={item.posterUrl}
                 source="topxx"
              />
           </div>
@@ -90,13 +90,13 @@ export default async function XXWatchPage({
            <div className="flex flex-col md:flex-row md:items-center justify-between gap-8">
               <div className="space-y-4">
                  <h1 className="text-3xl md:text-5xl font-black text-white uppercase italic tracking-tighter leading-tight">
-                    {viTrans?.title} 
+                    {(viTrans as any)?.title || (item as any)?.title || (item as any)?.name} 
                     <span className="text-yellow-500 ml-4 block sm:inline">#SV{currentIdx + 1}</span>
                  </h1>
                  <div className="flex items-center gap-4">
                     <span className="px-3 py-1 rounded-lg bg-yellow-500 text-black text-[10px] font-black uppercase italic">{item.quality}</span>
-                    <span className="text-white/40 text-xs font-bold uppercase tracking-widest">{item.duration}</span>
-                    <span className="text-white/20 text-[10px] font-black uppercase tracking-[0.2em]">{item.views?.toLocaleString()} lượt xem</span>
+                    <span className="text-white/40 text-xs font-bold uppercase tracking-widest">{(item as any).duration || ""}</span>
+                    <span className="text-white/20 text-[10px] font-black uppercase tracking-[0.2em]">{(item as any).views?.toLocaleString() || 0} lượt xem</span>
                  </div>
               </div>
 
@@ -136,7 +136,7 @@ export default async function XXWatchPage({
                  </h3>
                  <div 
                    className="text-white/60 text-sm md:text-base leading-relaxed md:leading-loose font-medium italic"
-                   dangerouslySetInnerHTML={{ __html: viTrans?.content || "Khám phá câu chuyện hấp dẫn trong tác phẩm điện ảnh đặc sắc này..." }}
+                   dangerouslySetInnerHTML={{ __html: (viTrans as any)?.description || (viTrans as any)?.content || (item as any)?.content || (item as any)?.description || "Khám phá câu chuyện hấp dẫn trong tác phẩm điện ảnh đặc sắc này..." }}
                  />
               </div>
            </div>

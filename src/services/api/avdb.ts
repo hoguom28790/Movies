@@ -105,6 +105,14 @@ export async function getAVDBDetails(id: string) {
       }))
     }];
 
+    // Normalize for unified watch page
+    const sourcesArr = servers.flatMap(s => 
+      s.episodes.map(ep => ({
+        name: ep.name,
+        link: ep.link
+      }))
+    );
+
     return {
       ...movie,
       id: movie.id.toString(),
@@ -113,8 +121,8 @@ export async function getAVDBDetails(id: string) {
       posterUrl: movie.poster_url,
       thumb_url: movie.thumb_url,
       content: movie.description,
-      servers: servers,
-      source: 'avdb'
+      sources: sourcesArr,
+      source: 'avdb' as const
     };
   } catch (error) {
     console.error("AVDB Detail Error:", error);

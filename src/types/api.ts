@@ -149,6 +149,7 @@ export interface KKPhimListResponse {
     thumb_url: string;
     poster_url: string;
     year: number;
+    status: string;
   }[];
   pathImage: string;
   pagination: {
@@ -224,3 +225,29 @@ export interface TopXXResponse {
   };
 }
 
+export interface AVDBMovie {
+  id: string | number;
+  name: string;
+  movie_code?: string;
+  slug?: string;
+  poster_url?: string;
+  thumb_url?: string;
+  year?: string | number;
+  quality?: string;
+  actor?: string | string[];
+  description?: string;
+  episodes?: {
+    server_name: string;
+    server_data: { [key: string]: string | { link_embed: string } };
+  };
+}
+
+export interface AVDBResponse {
+  code: number;
+  msg: string;
+  page: number;
+  pagecount: number;
+  limit: number | string;
+  total: number;
+  list: AVDBMovie[];
+}

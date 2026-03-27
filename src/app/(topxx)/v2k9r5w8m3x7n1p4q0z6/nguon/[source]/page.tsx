@@ -32,8 +32,8 @@ export default async function TopXXSourcePage({
     return (
         <div className="space-y-16 animate-in fade-in duration-1000">
             {/* Hero for the source */}
-            {data.items.length > 0 && (
-                <HeroSection movie={data.items[0]} isXX />
+            {data.items.length > 0 && data.items[0] && (
+                <HeroSection movie={data.items[0] as unknown as Movie} isXX />
             )}
 
             <div className="container mx-auto px-4 lg:px-12 pb-20 space-y-20">
@@ -50,7 +50,7 @@ export default async function TopXXSourcePage({
 
                 {/* Movie Grid for this source */}
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6 md:gap-10">
-                    {data.items.map((movie: Movie) => (
+                    {(data.items as unknown as Movie[]).map((movie: Movie) => (
                         <MovieCard 
                             key={movie.id}
                             title={movie.title}

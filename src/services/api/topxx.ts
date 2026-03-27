@@ -100,7 +100,7 @@ function mapTopXXToMovie(item: TopXXMovie): Movie {
   return {
     id: item.code || `tx-${Math.random().toString(36).substr(2, 9)}`,
     title: viTrans?.title || item.title || "No Title",
-    originalTitle: enTrans?.title || "",
+    originalTitle: (enTrans as any)?.title || "",
     slug: item.code || "",
     posterUrl: item.thumbnail || "",
     thumbUrl: item.thumbnail || "",
@@ -196,18 +196,38 @@ export async function getTopXXDetails(slug: string) {
            const avdbDetail = await getAVDBDetails(avdbResults.items[0].id);
            if (avdbDetail) {
               console.log(`[TopXX] Native 404 resolved via AVDB: ${avdbDetail.name}`);
-              return avdbDetail;
+              return {
+                ...avdbDetail,
+                trans: [{
+                  locale: "vi",
+                  title: avdbDetail.name,
+                  description: avdbDetail.content,
+                  slug: avdbDetail.id
+                }]
+              };
            }
        }
        return null;
     }
 
     const data: TopXXResponse = await res.json();
-    if (data.status !== "success" || !data.data) {
+    if (data.status !== "success" || !data.data || Array.isArray(data.data)) {
        // Also fallback if status is not success
        const avdbResults = await searchTopXXMovies(slug, 1, false);
        if (avdbResults.items.length > 0) {
-          return await getAVDBDetails(avdbResults.items[0].id);
+          const avdbDetail = await getAVDBDetails(avdbResults.items[0].id);
+          if (avdbDetail) {
+             console.log(`[TopXX] Native fail resolved via AVDB: ${avdbDetail.name}`);
+             return {
+                ...avdbDetail,
+                trans: [{
+                  locale: "vi",
+                  title: avdbDetail.name,
+                  description: avdbDetail.content,
+                  slug: avdbDetail.id
+                }]
+             };
+          }
        }
        return null;
     }
@@ -253,13 +273,13 @@ export async function getTopXXDetails(slug: string) {
     // Also try to find AVDB server as secondary for this movie to ensure it opens!
     try {
         const avdbFallback = await getAVDBMovies(1, undefined, slug);
-        if (avdbFallback.items.length > 0) {
+        if (avdbFallback.items.length > 0 && avdbFallback.items[0]) {
             const avMovie = await getAVDBDetails(avdbFallback.items[0].id);
-            if (avMovie && avMovie.servers && avMovie.servers.length > 0) {
+            if (avMovie && avMovie.sources && avMovie.sources.length > 0) {
                 // Add AVDB episodes as additional source/server
                 servers.push({
                    server: "Backup VIP (AVDB)",
-                   episodes: avMovie.servers[0].episodes.map((ep: any) => ({
+                   episodes: avMovie.sources.map((ep: any) => ({
                       name: ep.name,
                       slug: ep.name.toLowerCase().replace(/\s+/g, '-'),
                       link_embed: ep.link,
@@ -270,6 +290,14 @@ export async function getTopXXDetails(slug: string) {
         }
     } catch (e) { /* silent backup failure */ }
 
+    // Final Flattening for XXWatchPage (expects sources: {name, link}[])
+    const finalSources = servers.flatMap(s => 
+      s.episodes.map(ep => ({
+        name: `${s.server} - ${ep.name}`,
+        link: ep.link_embed || ep.link_m3u8
+      }))
+    );
+
     return {
         ...movie,
         id: movie.code,
@@ -278,7 +306,7 @@ export async function getTopXXDetails(slug: string) {
         posterUrl: movie.thumbnail,
         thumb_url: movie.thumbnail,
         content: viTrans?.description || movie.description,
-        servers: servers,
+        sources: finalSources,
         source: 'topxx' as const
     };
   } catch (err) {
@@ -423,7 +451,7 @@ export async function searchTopXXMovies(keyword: string, page: number = 1, isCat
 
     // 4. Process AVDB Title Search
     if (avdbTitleRes.status === "fulfilled" && avdbTitleRes.value?.items) {
-      avdbTitleRes.value.items.forEach((m: Movie) => {
+      (avdbTitleRes.value.items as unknown as Movie[]).forEach((m: Movie) => {
         if (m && !movieMap.has(m.id) && isLikelyRelevant(m, normalizedQuery)) {
           movieMap.set(m.id, m);
         }
@@ -436,7 +464,7 @@ export async function searchTopXXMovies(keyword: string, page: number = 1, isCat
 
     // 5. Process AVDB Actor Search
     if (avdbActorRes.status === "fulfilled" && avdbActorRes.value?.items) {
-      avdbActorRes.value.items.forEach((m: Movie) => {
+      (avdbActorRes.value.items as unknown as Movie[]).forEach((m: Movie) => {
         if (m && !movieMap.has(m.id) && isLikelyRelevant(m, normalizedQuery)) {
           movieMap.set(m.id, m);
         }
