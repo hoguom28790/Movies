@@ -32,6 +32,8 @@ export interface OPhimMovie {
   duration?: string;
   episodes?: any;
   servers?: any;
+  items?: any;
+  server_data?: any;
 }
 
 export interface KKPhimMovie extends OPhimMovie {
@@ -61,6 +63,8 @@ export interface NguonCMovie {
   episode_current?: string;
   episodes?: any;
   servers?: any;
+  items?: any;
+  server_data?: any;
 }
 
 export interface VsmovMovie {
@@ -88,6 +92,8 @@ export interface VsmovMovie {
   episode_current?: string;
   episodes?: any;
   servers?: any;
+  items?: any;
+  server_data?: any;
 }
 
 export interface TopXXMovie {
@@ -117,6 +123,8 @@ export interface TopXXMovie {
   sources?: any[];
   episodes?: any;
   servers?: any;
+  items?: any;
+  server_data?: any;
 }
 
 export type ProviderMovie = OPhimMovie | KKPhimMovie | NguonCMovie | VsmovMovie | TopXXMovie;
@@ -243,6 +251,8 @@ export interface AVDBMovie {
   };
   sources?: { name: string; link: string }[];
   servers?: any;
+  items?: any;
+  server_data?: any;
 }
 
 export interface AVDBResponse {
