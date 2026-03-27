@@ -40,17 +40,25 @@ const fetchSafe = async <T = any>(url: string, headers: Record<string, string> =
   };
 
   const initialRes = await tryFetch(url);
-  if (initialRes) return initialRes;
+  if (initialRes && (initialRes as any).status !== false) return initialRes;
 
   if (sourceId === 'ophim') {
      for (const mirror of OPHIM_MIRRORS) {
-        const mirrorUrl = url.replace(/https:\/\/[^\/]+/, mirror);
-        const res = await tryFetch(mirrorUrl);
-        if (res) return res;
+        // Try both v1 and root api versions as mirrors have varied structures
+        const mirrorBase = mirror.replace(/\/$/, '');
+        const urlsToTry = [
+          url.replace(/https:\/\/[^\/]+/, mirrorBase),
+          url.replace(/https:\/\/[^\/]+\/v1\/api/, `${mirrorBase}/api`) // Fallback to classic API path
+        ];
+
+        for (const mirrorUrl of urlsToTry) {
+           const res = await tryFetch(mirrorUrl);
+           if (res && (res as any).status !== false) return res;
+        }
      }
   }
   
-  return null;
+  return initialRes && (initialRes as any).status !== false ? initialRes : null;
 };
 
 export async function searchMovies(keyword: string, page: number = 1, section: "hop" | "tx" = "hop"): Promise<MovieListResponse> {
