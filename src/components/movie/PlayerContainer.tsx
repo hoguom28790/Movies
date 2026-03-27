@@ -491,8 +491,8 @@ export function PlayerContainer({ url, isHls, rawEmbedUrl, nextEpisodeUrl, movie
         ? (isPortrait 
             ? `fixed top-0 left-full w-[100vh] h-[100vw] rotate-90 origin-top-left z-[9999] bg-black ${isIOS ? 'p-safe' : ''}` 
             : `fixed inset-0 w-screen h-screen z-[9999] bg-black ${isIOS ? 'p-safe' : ''}`)
-        // FIXED player empty space below - set proper aspect-ratio and container height
-        : "w-full aspect-video h-auto min-h-[180px] self-start relative shadow-cinematic-2xl bg-black overflow-hidden rounded-[32px] border border-white/5"
+        // FIXED: Enforce strict 16:9 ratio and cap height for large monitors + avoid stretching
+        : "w-full aspect-[16/9] h-auto min-h-[180px] max-h-[75vh] self-start relative shadow-cinematic-2xl bg-black overflow-hidden rounded-[32px] border border-white/5"
       } 
       style={!isPseudoFS ? { aspectRatio: '16/9' } : {}}
     >
