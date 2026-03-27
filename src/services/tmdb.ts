@@ -146,7 +146,10 @@ export type TMDBImageSize = 'w92' | 'w154' | 'w185' | 'w342' | 'w500' | 'w780' |
 
 export function getTMDBImageUrl(path: string | null, size: TMDBImageSize = 'w500') {
   if (!path) return null;
+  if (path.startsWith('http')) return path;
+  
   const baseUrl = "https://image.tmdb.org/t/p/";
-  return `${baseUrl}${size}${path}`;
+  const cleanPath = path.startsWith('/') ? path : `/${path}`;
+  return `${baseUrl}${size}${cleanPath}`;
 }
 

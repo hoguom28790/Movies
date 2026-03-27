@@ -252,11 +252,12 @@ export default function LibraryPage() {
                         
                         <div className="grid grid-cols-2 sm:grid-cols-4 gap-6">
                           {p.movies?.slice(0, 4).map((m: any) => (
-                            <div key={m.movieSlug} className="relative aspect-[2/3] rounded-[24px] overflow-hidden group/item shadow-apple border border-foreground/5 cursor-pointer active-depth">
-                               <img 
-                                 src={getTMDBImageUrl(m.posterUrl || m.poster_path, 'w185')!} 
-                                 className="w-full h-full object-cover transition-transform duration-1000 group-hover/item:scale-110" 
-                               />
+                             <div key={m.movieSlug} className="relative aspect-[2/3] rounded-[24px] overflow-hidden group/item shadow-apple border border-foreground/5 cursor-pointer active-depth bg-foreground/[0.03]">
+                                <img 
+                                  src={getTMDBImageUrl(m.posterUrl || m.poster_path, 'w342') || "https://placehold.co/500x750/111/fff&text=No+Poster"} 
+                                  className="w-full h-full object-cover transition-transform duration-1000 group-hover/item:scale-110" 
+                                  loading="lazy"
+                                />
                                <div className="absolute inset-0 bg-black/60 opacity-0 group-hover/item:opacity-100 transition-opacity flex items-center justify-center gap-2">
                                   <Link href={`/xem/${m.movieSlug}`} className="p-3 bg-white rounded-full text-black shadow-xl scale-50 group-hover/item:scale-100 transition-transform">
                                     <PlayCircle className="w-5 h-5" />
