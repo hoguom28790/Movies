@@ -12,7 +12,10 @@ const OPHIM_MIRRORS = [
   "https://ophim17.com", 
   "https://ophim17.cc", 
   "https://ophim10.com",
-  "https://vsmov.com"
+  "https://ophim8.cc",
+  "https://ophim10.cc",
+  "https://vsmov.com",
+  "https://phimapi.com"
 ];
 
 // Helper for safe fetch with manual timeout

@@ -93,7 +93,7 @@ export default async function CatchAllWatchPage({ params, searchParams }: PagePr
 
     return (
       <div className={`min-h-screen ${isTopXX ? 'bg-[#0f1115]' : 'bg-background'} text-white overflow-x-hidden`}>
-        <div className="relative w-full lg:h-[85vh] flex flex-col justify-end pb-20 pt-32 overflow-hidden">
+        <div className="relative w-full lg:h-[85vh] min-h-[40vh] flex flex-col justify-end pb-12 lg:pb-20 pt-20 lg:pt-32 overflow-hidden">
            <div className="absolute inset-0 z-0">
               <img src={backdrop} className="w-full h-full object-cover opacity-30 blur-sm scale-105" alt="" />
               <div className={`absolute inset-0 bg-gradient-to-t ${isTopXX ? 'from-[#0f1115]' : 'from-background'} via-transparent to-transparent`} />
@@ -131,7 +131,7 @@ export default async function CatchAllWatchPage({ params, searchParams }: PagePr
                           <span className="text-[10px] font-black uppercase tracking-widest italic">Chia sẻ</span>
                        </button>
                     </div>
-                    <p className="text-xl text-white/60 leading-relaxed italic line-clamp-3 max-w-4xl">{tmdbData?.overview || safeData.description}</p>
+                    <p className="text-xl text-white/60 leading-relaxed italic line-clamp-2 lg:line-clamp-3 max-w-4xl">{tmdbData?.overview || safeData.description}</p>
                  </div>
               </div>
            </div>
@@ -141,18 +141,54 @@ export default async function CatchAllWatchPage({ params, searchParams }: PagePr
             <div className="container max-w-7xl mx-auto px-4 lg:px-12">
                {/* 2. Main content area: Player + Episode List */}
                 <div className="grid grid-cols-1 lg:grid-cols-[1fr_360px] gap-8 lg:gap-12" style={{ alignItems: 'start' }}>
-                  <div className="space-y-12">
-                     <PlayerContainer 
-                        url={currentEp.link_m3u8} isHls={!!currentEp.link_m3u8} rawEmbedUrl={currentEp.link_embed}
-                        movieTitle={safeData.name} movieSlug={movieSlug} episodeName={currentEp.name}
-                        episodeSlug={currentEp.slug} posterUrl={poster} source={sourceId} nextEpisodeUrl={nextEpisodeUrl}
-                     />
-                     {/* FIXED: Move Cast and Tabs below player to prevent sidebar stretch issues */}
+                  <div className="space-y-8 lg:space-y-12">
+                     {activeServerGroup.length > 0 ? (
+                        <PlayerContainer 
+                           url={currentEp.link_m3u8} isHls={!!currentEp.link_m3u8} rawEmbedUrl={currentEp.link_embed}
+                           movieTitle={safeData.name} movieSlug={movieSlug} episodeName={currentEp.name}
+                           episodeSlug={currentEp.slug} posterUrl={poster} source={sourceId} nextEpisodeUrl={nextEpisodeUrl}
+                        />
+                     ) : (
+                        <div className="aspect-video w-full rounded-[32px] glass-pro bg-white/5 flex flex-col items-center justify-center p-8 lg:p-12 text-center gap-6 border border-white/10">
+                           <Calendar className="w-10 h-10 text-primary animate-pulse" />
+                           <div className="space-y-2 text-white">
+                              <h3 className="text-xl lg:text-2xl font-black italic uppercase tracking-widest">Chưa có bản phát sóng</h3>
+                              <p className="text-white/40 text-[10px] lg:text-xs italic">Tiêu đề này đang cập nhật link phim. Vui lòng quay lại sau.</p>
+                           </div>
+                        </div>
+                     )}
+                     
+                     {/* MOBILE ONLY: Quick Source & Episode Selection */}
+                     <div className="lg:hidden space-y-8 p-4 rounded-3xl bg-white/5 border border-white/10 shadow-inner">
+                         {!isTopXX && sources.length > 1 && (
+                             <div className="space-y-4">
+                                <h3 className="text-xs font-black text-white uppercase tracking-[0.2em] italic opacity-40">Chọn Nguồn</h3>
+                                <div className="flex flex-wrap gap-2">
+                                   {sources.map((s: any) => (
+                                      <Link key={s.id} href={`/xem/${movieSlug}?src=${s.id}`} className={`flex-1 min-w-[100px] text-center py-2.5 rounded-xl text-[11px] font-black uppercase italic tracking-widest border transition-all ${sourceId === s.id ? 'bg-primary border-primary text-white shadow-lg shadow-primary/20' : 'bg-white/5 border-white/5 text-white/30 hover:bg-white/10'}`}>{s.name}</Link>
+                                   ))}
+                                </div>
+                             </div>
+                         )}
+                         <div className="space-y-6">
+                            <h3 className="text-xs font-black text-white uppercase tracking-[0.2em] italic opacity-40">Danh sách tập</h3>
+                            <div className="flex flex-wrap gap-2">
+                               {(allServers[currentServerIdx]?.items || allServers[0]?.items || []).map((epItem: any, idx: number) => (
+                                  <Link key={idx} href={`/xem/${movieSlug}?sv=${currentServerIdx}&ep=${encodeURIComponent(epItem.slug || epItem.name)}&src=${sourceId}`} className="flex-1 min-w-[60px]">
+                                     <button className={`w-full py-2.5 text-[10px] font-black italic rounded-xl border transition-all ${((epItem.slug === currentEp.slug || epItem.name === currentEp.name)) ? 'bg-primary border-primary text-white scale-95' : 'bg-white/5 border-white/5 text-white/40'}`}>
+                                        {epItem.name}
+                                     </button>
+                                  </Link>
+                               ))}
+                            </div>
+                         </div>
+                     </div>
+
                      <CastSection actors={tmdbData?.credits?.cast || []} />
                      <MovieTabs slug={movieSlug} source={sourceId} servers={allServers} recommendations={tmdbData?.recommendations?.results || []} collection={tmdbData?.belongs_to_collection} />
                   </div>
 
-                  <div className="space-y-12">
+                  <div className="hidden lg:block space-y-12">
                      {!isTopXX && sources.length > 1 && (
                          <div className="space-y-6">
                             <h3 className="text-xs font-black text-white uppercase tracking-[0.2em] italic opacity-40">Chọn Nguồn</h3>
