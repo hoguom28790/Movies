@@ -104,9 +104,14 @@ export default async function CatchAllWatchPage({ params, searchParams }: PagePr
                  <div className="hidden lg:block w-72 flex-shrink-0 group">
                     <div className="relative aspect-[2/3] rounded-[40px] overflow-hidden shadow-2xl border border-white/10 group-hover:scale-[1.02] transition-transform duration-700">
                        <img src={poster} className="w-full h-full object-cover" alt={safeData.name} />
-                       <div className="absolute bottom-6 left-1/2 -translate-x-1/2">
-                          <WatchlistBtn movieSlug={movieSlug} movieTitle={safeData.name} posterUrl={poster} />
-                       </div>
+                        <div className="absolute bottom-6 right-6">
+                           <WatchlistBtn 
+                             movieSlug={movieSlug} 
+                             movieTitle={safeData.name} 
+                             posterUrl={poster} 
+                             variant="compact"
+                           />
+                        </div>
                     </div>
                  </div>
                  <div className="flex-1 space-y-8">
@@ -124,13 +129,16 @@ export default async function CatchAllWatchPage({ params, searchParams }: PagePr
                            <span key={i} className="px-4 py-1.5 rounded-xl bg-white/5 border border-white/10 text-white/30 font-black text-[10px] uppercase italic tracking-widest">{typeof cat === 'string' ? cat : cat.name}</span>
                         ))}
                     </div>
-                    <div className="flex flex-wrap items-center gap-8 py-4 border-y border-white/5">
-                       <MovieRatings tmdbRating={tmdbData?.vote_average || 0} />
-                       <button className="flex items-center gap-2 text-white/40 hover:text-white transition-colors group">
-                          <Share2 className="w-5 h-5 group-hover:scale-110" />
-                          <span className="text-[10px] font-black uppercase tracking-widest italic">Chia sẻ</span>
-                       </button>
-                    </div>
+                     <div className="flex flex-wrap items-center gap-8 py-4 border-y border-white/5">
+                        <MovieRatings tmdbRating={tmdbData?.vote_average || 0} />
+                        <div className="lg:hidden">
+                           <WatchlistBtn movieSlug={movieSlug} movieTitle={safeData.name} posterUrl={poster} />
+                        </div>
+                        <button className="flex items-center gap-2 text-white/40 hover:text-white transition-colors group">
+                           <Share2 className="w-5 h-5 group-hover:scale-110" />
+                           <span className="text-[10px] font-black uppercase tracking-widest italic">Chia sẻ</span>
+                        </button>
+                     </div>
                     <p className="text-xl text-white/60 leading-relaxed italic line-clamp-2 lg:line-clamp-3 max-w-4xl">{tmdbData?.overview || safeData.description}</p>
                  </div>
               </div>

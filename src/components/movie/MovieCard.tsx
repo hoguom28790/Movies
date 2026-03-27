@@ -5,6 +5,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { Play, X, Star } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { WatchlistBtn } from './WatchlistBtn';
 
 interface MovieCardProps {
   title: string;
@@ -129,6 +130,16 @@ export function MovieCard({
               <X className="w-6 h-6 stroke-[3px]" />
            </button>
         )}
+
+        {/* Global Save Control (Floating Premium Button) */}
+        <div className="absolute bottom-4 right-4 z-40 transition-all duration-700 ease-out pointer-events-auto">
+           <WatchlistBtn 
+             movieSlug={slug} 
+             movieTitle={title} 
+             posterUrl={posterUrl} 
+             variant="compact" 
+           />
+        </div>
       </Link>
       
       {/* Title & Metadata (Premium Layout) */}
