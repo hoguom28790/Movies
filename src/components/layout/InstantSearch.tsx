@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import Image from "next/image";
 import { Search, X, Loader2, Play, BookOpen } from "lucide-react";
 import { Movie } from "@/types/movie";
+import { cn } from "@/lib/utils";
 
 export function InstantSearch() {
   const [query, setQuery] = useState("");
@@ -27,11 +28,11 @@ export function InstantSearch() {
             if (res.ok) {
               const data = await res.json();
               const domain_cdn = data?.data?.APP_DOMAIN_CDN_IMAGE || "https://otruyenapi.com/uploads/comics";
-              const parsedComics = (data?.data?.items || []).slice(0, 10).map((c: any) => ({
+              const parsedComics = (data?.data?.items || []).slice(0, 5).map((c: any) => ({
                 title: c.name,
                 slug: c.slug,
                 posterUrl: `${domain_cdn}/uploads/comics/${c.thumb_url}`,
-                originalTitle: c.origin_name?.[0] || `Ch. ${c.chaptersLatest?.[0]?.chapter_name || '??'}`,
+                originalTitle: c.origin_name?.[0] || "",
                 year: "Truyện"
               }));
               setResults(parsedComics);
@@ -41,7 +42,7 @@ export function InstantSearch() {
             const res = await fetch(`/api/movies?type=search&keyword=${encodeURIComponent(query)}`);
             if (res.ok) {
               const data = await res.json();
-              setResults(data.items.slice(0, 10)); // Show top 10
+              setResults(data.items.slice(0, 5)); 
               setIsOpen(true);
             }
           }
@@ -57,7 +58,7 @@ export function InstantSearch() {
     }, 300);
 
     return () => clearTimeout(timer);
-  }, [query]);
+  }, [query, isComicSection]);
 
   // Close dropdown on click outside
   useEffect(() => {
@@ -75,21 +76,21 @@ export function InstantSearch() {
     if (query.trim().length > 1) {
       setIsOpen(false);
       const url = isComicSection ? `/truyen/search?q=${encodeURIComponent(query)}` : `/search?q=${encodeURIComponent(query)}`;
-      window.location.href = url; // Hard nav or use router.push if we add useRouter
+      window.location.href = url;
     }
   };
 
   return (
-    <div className="relative flex-1 max-w-md hidden md:block mx-auto" ref={dropdownRef}>
+    <div className="relative w-full max-w-sm" ref={dropdownRef}>
       <form 
         onSubmit={handleSearchSubmit}
-        className={`relative flex items-center bg-surface border border-foreground/5 rounded-lg px-4 py-2 transition-all duration-300 ${
-          isOpen ? "ring-1 ring-primary/30 bg-surface shadow-lg" : "hover:bg-foreground/[0.03]"
-        }`}
+        className={cn(
+          "relative flex items-center h-10 px-4 transition-all duration-300 rounded-full",
+          "bg-foreground/5 dark:bg-foreground/10",
+          isOpen ? "bg-surface shadow-lg ring-1 ring-primary/20" : "hover:bg-foreground/10"
+        )}
       >
-        <button type="submit" className="outline-none" aria-label="Search">
-           <Search className={`h-4 w-4 transition-colors ${loading ? "text-primary animate-pulse" : "text-foreground/20 hover:text-foreground"}`} />
-        </button>
+        <Search size={16} className="text-foreground-secondary flex-shrink-0" />
         <input
           id="instant-search-input"
           name="keyword"
@@ -97,28 +98,24 @@ export function InstantSearch() {
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           onFocus={() => query.trim().length > 1 && setIsOpen(true)}
-          placeholder={isComicSection ? "Tìm kiếm truyện tranh..." : "Tìm kiếm phim, diễn viên..."}
-          className="ml-3 flex-1 bg-transparent text-[13px] text-foreground placeholder:text-foreground/20 outline-none font-medium tracking-tight"
+          placeholder={isComicSection ? "Tìm truyện..." : "Tìm phim..."}
+          className="ml-2 flex-1 bg-transparent text-sm text-foreground placeholder:text-foreground-secondary outline-none font-medium"
         />
-        {query && (
-          <button type="button" onClick={() => setQuery("")} className="ml-2 text-foreground/20 hover:text-foreground transition-colors">
-            <X className="h-4 w-4" />
+        {loading && <Loader2 size={16} className="text-primary animate-spin" />}
+        {query && !loading && (
+          <button type="button" onClick={() => setQuery("")} className="ml-1 p-1 hover:text-foreground transition-colors">
+            <X size={14} className="text-foreground-secondary" />
           </button>
         )}
       </form>
 
-      {/* Dropdown Results */}
+      {/* Dropdown Results - Apple Style */}
       {isOpen && (results.length > 0 || loading) && (
-        <div className="absolute top-full left-0 right-0 mt-2 bg-surface border border-foreground/5 rounded-xl shadow-2xl overflow-hidden z-50 animate-in fade-in slide-in-from-top-2 duration-300">
-          <div className="px-4 py-3 border-b border-foreground/5">
-             <span className="text-[10px] font-black text-foreground/30 uppercase tracking-[0.2em]">{isComicSection ? "Danh sách truyện" : "Danh sách phim"}</span>
-          </div>
-          
-          <div className="max-h-[70vh] overflow-y-auto scrollbar-hide py-2">
+        <div className="absolute top-full left-0 right-0 mt-2 bg-background/95 backdrop-blur-2xl border border-separator rounded-2xl shadow-2xl overflow-hidden z-50 animate-in fade-in slide-in-from-top-2">
+          <div className="py-2">
             {loading ? (
-              <div className="flex flex-col items-center justify-center py-12 gap-3">
-                 <Loader2 className="h-6 w-6 text-primary animate-spin" />
-                 <span className="text-xs text-foreground/20 font-medium">Đang tìm kiếm...</span>
+              <div className="flex flex-col items-center justify-center py-6 gap-2">
+                 <Loader2 size={24} className="text-primary animate-spin" />
               </div>
             ) : (
               results.map((item) => (
@@ -126,27 +123,21 @@ export function InstantSearch() {
                   key={item.slug}
                   href={isComicSection ? `/truyen/${item.slug}` : `/xem/${item.slug}`}
                   onClick={() => setIsOpen(false)}
-                  className="flex items-center gap-4 px-4 py-2 hover:bg-foreground/5 transition-colors group"
+                  className="flex items-center gap-3 px-4 py-2 hover:bg-foreground/5 transition-colors group"
                 >
-                  <div className="relative h-16 w-11 flex-shrink-0 rounded-md overflow-hidden bg-foreground/5">
+                  <div className="relative h-12 w-8 flex-shrink-0 rounded-lg overflow-hidden bg-foreground/5">
                     <Image
                       src={item.posterUrl}
                       alt={item.title}
                       fill
-                      className="object-cover group-hover:scale-110 transition-transform duration-500"
+                      className="object-cover"
                     />
-                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                       {isComicSection ? <BookOpen className="h-4 w-4 text-white fill-current" /> : <Play className="h-4 w-4 text-white fill-current" />}
-                    </div>
                   </div>
-                  <div className="flex flex-col gap-1 overflow-hidden">
-                    <h4 className="text-[13px] font-bold text-foreground group-hover:text-primary transition-colors truncate">
-                      {item.title}
-                    </h4>
-                    <p className="text-[11px] text-foreground/40 font-medium truncate italic opacity-80">
+                  <div className="flex flex-col gap-0.5 overflow-hidden">
+                    <h4 className="text-sm font-bold text-foreground truncate">{item.title}</h4>
+                    <p className="text-[11px] text-foreground-secondary font-medium truncate italic">
                       {item.originalTitle || item.title}
                     </p>
-                    <span className="text-[10px] font-black text-foreground/10">{item.year || (isComicSection ? "Truyện" : "2024")}</span>
                   </div>
                 </Link>
               ))
@@ -157,15 +148,15 @@ export function InstantSearch() {
             <Link
               href={isComicSection ? `/truyen/search?q=${encodeURIComponent(query)}` : `/search?q=${encodeURIComponent(query)}`}
               onClick={() => setIsOpen(false)}
-              className="block w-full py-3 bg-foreground/[0.03] text-center text-[11px] font-black text-foreground/30 hover:text-primary hover:bg-foreground/[0.05] transition-all border-t border-foreground/5 uppercase tracking-widest"
+              className="block w-full py-3 text-center text-xs font-bold text-primary hover:bg-foreground/5 transition-all border-t border-separator"
             >
-              Toàn bộ kết quả
+              Xem tất cả
             </Link>
           )}
 
           {!loading && results.length === 0 && query && (
-             <div className="py-12 text-center">
-                 <span className="text-xs text-foreground/20 font-medium">Không tìm thấy kết quả nào cho "{query}"</span>
+             <div className="py-6 text-center">
+                 <span className="text-xs text-foreground-secondary font-medium">Không tìm thấy "{query}"</span>
              </div>
           )}
         </div>

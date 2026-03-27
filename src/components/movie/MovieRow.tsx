@@ -29,83 +29,52 @@ export function MovieRow({ title, movies, viewAllHref, viewAllLink, isXX = false
   if (movies.length === 0 && isXX) return null;
 
   return (
-    <section className={cn("relative", isXX ? "space-y-6 mb-16 animate-in fade-in duration-700" : "")}>
+    <section className="relative w-full">
       {/* Header */}
-      <div className={cn(
-        "flex items-center justify-between px-4 lg:px-12",
-        isXX ? "px-2 mb-0" : "mb-5"
-      )}>
-        <h3 className={cn(
-          "font-black uppercase italic tracking-tighter",
-          isXX ? "text-xl md:text-2xl text-foreground" : "text-xl font-headline tracking-tight text-foreground"
-        )}>
+      <div className="flex items-center justify-between px-6 lg:px-12 mb-6">
+        <h3 className="text-2xl font-bold tracking-tight text-foreground">
           {title}
         </h3>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-4">
           {finalViewAll && (
             <Link
               href={finalViewAll}
-              className={cn(
-                "transition-colors uppercase italic",
-                isXX ? "text-sm font-bold text-foreground/40 hover:text-yellow-500 tracking-[0.2em]" : "text-[12px] text-foreground/40 hover:text-foreground"
-              )}
+              className="text-sm font-bold text-primary hover:opacity-80 transition-all flex items-center gap-1"
             >
-              Xem toàn bộ
+              Xem tất cả <ChevronRight size={14} />
             </Link>
           )}
-          {!isXX && (
-            <div className="hidden sm:flex items-center gap-1">
-              <button
-                onClick={() => scroll("left")}
-                className="p-1.5 rounded-lg bg-white/5 text-white/30 hover:text-white hover:bg-white/10 transition-all"
-                aria-label="Cuộn trái"
-              >
-                <ChevronLeft className="w-4 h-4" />
-              </button>
-              <button
-                onClick={() => scroll("right")}
-                className="p-1.5 rounded-lg bg-white/5 text-white/30 hover:text-white hover:bg-white/10 transition-all"
-                aria-label="Cuộn phải"
-              >
-                <ChevronRight className="w-4 h-4" />
-              </button>
-            </div>
-          )}
+          <div className="hidden sm:flex items-center gap-2">
+            <button
+              onClick={() => scroll("left")}
+              className="w-8 h-8 rounded-full bg-surface text-foreground-secondary hover:text-foreground transition-all flex items-center justify-center shadow-sm"
+              aria-label="Cuộn trái"
+            >
+              <ChevronLeft size={16} />
+            </button>
+            <button
+              onClick={() => scroll("right")}
+              className="w-8 h-8 rounded-full bg-surface text-foreground-secondary hover:text-foreground transition-all flex items-center justify-center shadow-sm"
+              aria-label="Cuộn phải"
+            >
+              <ChevronRight size={16} />
+            </button>
+          </div>
         </div>
       </div>
 
       {/* Scrollable Row */}
-      <div className={cn("relative group", isXX && "px-0")}>
-        {isXX && (
-          <>
-            <button 
-              onClick={() => scroll("left")}
-              className="absolute left-[-20px] top-1/2 -translate-y-1/2 z-10 w-12 h-12 rounded-full bg-foreground/5 backdrop-blur-3xl border border-foreground/10 flex items-center justify-center text-foreground/40 hover:text-yellow-500 hover:bg-yellow-500/10 opacity-0 group-hover:opacity-100 transition-all shadow-2xl"
-            >
-              <ChevronLeft className="w-6 h-6" />
-            </button>
-            <button 
-              onClick={() => scroll("right")}
-              className="absolute right-[-20px] top-1/2 -translate-y-1/2 z-10 w-12 h-12 rounded-full bg-foreground/5 backdrop-blur-3xl border border-foreground/10 flex items-center justify-center text-foreground/40 hover:text-yellow-500 hover:bg-yellow-500/10 opacity-0 group-hover:opacity-100 transition-all shadow-2xl"
-            >
-              <ChevronRight className="w-6 h-6" />
-            </button>
-          </>
-        )}
-
+      <div className="relative group">
         <div
           ref={rowRef}
-          className={cn(
-            "flex overflow-x-auto pb-4 scroll-smooth px-4 lg:px-12 scrollbar-hide no-scrollbar",
-            isXX ? "gap-4 md:gap-6 pb-8 snap-x snap-mandatory" : "gap-3"
-          )}
+          className="flex overflow-x-auto pb-4 scroll-smooth px-6 lg:px-12 no-scrollbar gap-4 md:gap-6"
         >
           {movies.map((movie, idx) => (
             <div 
               key={`${movie.id}-${idx}`} 
               className={cn(
                 "flex-shrink-0",
-                isXX ? "min-w-[160px] md:min-w-[220px] snap-start" : "w-[145px] sm:w-[160px]"
+                isXX ? "w-[160px] md:w-[220px]" : "w-[150px] sm:w-[180px] md:w-[200px]"
               )}
             >
               <MovieCard
@@ -123,18 +92,6 @@ export function MovieRow({ title, movies, viewAllHref, viewAllLink, isXX = false
           ))}
         </div>
       </div>
-      
-      {isXX && (
-        <style jsx global>{`
-          .no-scrollbar::-webkit-scrollbar {
-            display: none;
-          }
-          .no-scrollbar {
-            -ms-overflow-style: none;
-            scrollbar-width: none;
-          }
-        `}</style>
-      )}
     </section>
   );
 }

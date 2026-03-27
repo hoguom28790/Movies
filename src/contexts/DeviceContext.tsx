@@ -7,6 +7,7 @@ interface DeviceContextType {
   isIPhone: boolean;
   isIPad: boolean;
   isTouch: boolean;
+  isTV: boolean;
 }
  
 const DeviceContext = createContext<DeviceContextType>({
@@ -14,6 +15,7 @@ const DeviceContext = createContext<DeviceContextType>({
   isIPhone: false,
   isIPad: false,
   isTouch: false,
+  isTV: false,
 });
  
 export const DeviceProvider = ({ children }: { children: React.ReactNode }) => {
@@ -22,6 +24,7 @@ export const DeviceProvider = ({ children }: { children: React.ReactNode }) => {
     isIPhone: false,
     isIPad: false,
     isTouch: false,
+    isTV: false,
   });
  
   useEffect(() => {
@@ -30,8 +33,11 @@ export const DeviceProvider = ({ children }: { children: React.ReactNode }) => {
     const isIPad = /iPad/i.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
     const isIOS = isIPhone || isIPad;
     const isTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+    
+    // TV Detection (WebOS, Tizen, Sony, etc.)
+    const isTV = /WebOS|Tizen|SmartTV|SonyDTV|Viera|AppleTV|AndroidTV|Roku/i.test(ua);
  
-    setDevice({ isIOS, isIPhone, isIPad, isTouch });
+    setDevice({ isIOS, isIPhone, isIPad, isTouch, isTV });
  
     // Inject global classes to HTML for CSS targeting
     const root = document.documentElement;
@@ -39,6 +45,7 @@ export const DeviceProvider = ({ children }: { children: React.ReactNode }) => {
     if (isIPhone) root.classList.add('is-iphone');
     if (isIPad) root.classList.add('is-ipad');
     if (isTouch) root.classList.add('is-touch');
+    if (isTV) root.classList.add('is-tv');
  
     // Handle viewport height on mobile (the 100vh issue)
     const setVH = () => {

@@ -8,11 +8,11 @@ import { motion, useScroll, useMotionValueEvent } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { InstantSearch } from "./InstantSearch";
-import { NavMenu } from "./NavMenu";
 import { ProfileDropdown } from "./ProfileDropdown";
 import { ComicFilters } from "@/components/comic/ComicFilters";
 import { AuthModal } from "@/components/auth/AuthModal";
 import { TOPXX_PATH } from "@/lib/constants";
+import { cn } from "@/lib/utils";
 
 interface NavbarProps {
   mode?: "phim" | "truyen";
@@ -29,7 +29,7 @@ export function Navbar({ mode: initialMode }: NavbarProps) {
 
   useMotionValueEvent(scrollY, "change", (latest) => {
     const previous = scrollY.getPrevious() ?? 0;
-    setIsScrolled(latest > 50);
+    setIsScrolled(latest > 20);
     if (latest > previous && latest > 150) {
       setIsHidden(true);
     } else {
@@ -41,14 +41,12 @@ export function Navbar({ mode: initialMode }: NavbarProps) {
   
   const isComicSection = initialMode === "truyen" || pathname.startsWith("/truyen") || pathname.startsWith("/doc");
   
-  // Detect if on a TopXX watch page at the unified /xem/[slug] route
+  // Detect if on a TopXX watch page
   const slug = pathname.startsWith("/xem/") ? pathname.split("/").pop() : "";
   const isTopXXSource = searchParams.get("src") === "topxx" || searchParams.get("src") === "avdb";
-  const isTopXXCode = /^[A-Z]{2,5}-\d{2,6}$/i.test(slug || "");
-  const isTopXXInternal = slug ? /^[a-zA-Z0-9]{10}$/.test(slug) : false;
-  const isTopXXSection = pathname.startsWith("/xem/") && (isTopXXSource || isTopXXCode || isTopXXInternal);
+  const isTopXXSection = pathname.startsWith("/xem/") && (isTopXXSource || /^[A-Z]{2,5}-\d{2,6}$/i.test(slug || "") || (slug ? /^[a-zA-Z0-9]{10}$/.test(slug) : false));
 
-  const mode = isComicSection ? "truyen" : "phim";
+  const isHome = pathname === "/" || pathname === "/truyen";
 
   return (
     <>
@@ -58,103 +56,66 @@ export function Navbar({ mode: initialMode }: NavbarProps) {
           hidden: { y: -100, opacity: 0 },
         }}
         animate={isHidden ? "hidden" : "visible"}
-        transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-        className="fixed top-0 z-[60] w-full pt-safe pointer-events-none"
+        transition={{ duration: 0.4, ease: "easeInOut" }}
+        className={cn(
+          "fixed top-0 z-[60] w-full apple-transition",
+          "backdrop-blur-2xl bg-background/80",
+          isScrolled ? "apple-nav-separator shadow-sm" : ""
+        )}
       >
-        <div className="mx-auto px-4 md:px-10 lg:px-16 py-4">
-          <div className={`
-            glass-pro rounded-[28px] px-6 md:px-8 h-[var(--header-h)] flex items-center justify-between gap-6 pointer-events-auto
-            transition-all duration-700
-            ${isScrolled ? 'shadow-cinematic-xl' : 'shadow-none'}
-          `}>
-            {/* Logo */}
-            <Link href={isComicSection ? "/truyen" : "/"} className="flex items-center gap-3 group flex-shrink-0">
-               <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center shadow-lg shadow-primary/30 group-hover:rotate-12 transition-transform duration-500">
-                  {isComicSection ? <BookOpen className="w-6 h-6 text-white stroke-[1.5px]" /> : <Film className="w-6 h-6 text-white stroke-[1.5px]" />}
-               </div>
-               <span className="text-2xl md:text-3xl font-black tracking-tighter bg-clip-text text-transparent bg-gradient-to-br from-foreground to-foreground/60 font-headline uppercase italic leading-none transition-all group-hover:tracking-normal">
-                  {isComicSection ? "Hồ Truyện" : "Hồ Phim"}
-               </span>
+        <div className="mx-auto px-4 md:px-8 lg:px-12 h-16 flex items-center justify-between gap-4">
+          {/* Logo - SF style */}
+          <Link href={isComicSection ? "/truyen" : "/"} className="flex items-center gap-2 group flex-shrink-0">
+             <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center text-white shadow-md">
+                {isComicSection ? <BookOpen size={20} fill="currentColor" strokeWidth={0} /> : <Film size={20} fill="currentColor" strokeWidth={0} />}
+             </div>
+             <span className={cn(
+               "text-lg font-bold tracking-tight text-foreground",
+               "font-sans" // Use SF Pro
+             )}>
+                {isComicSection ? "Hồ Truyện" : "Hồ Phim"}
+             </span>
+          </Link>
+
+          {/* Search Pill - iOS Style */}
+          <div className="hidden md:flex flex-1 max-w-lg justify-center px-4">
+            <InstantSearch />
+          </div>
+
+          {/* Right Actions */}
+          <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
+            <Link
+              href={isTopXXSection ? `/${TOPXX_PATH}/lich-su` : (isComicSection ? "/truyen/lich-su" : "/lich-su")}
+              className="p-2 rounded-full text-foreground-secondary hover:bg-surface transition-colors"
+            >
+              <HistoryIcon size={20} />
             </Link>
 
-            <div className="hidden lg:flex items-center gap-2 flex-1 justify-center">
-              <NavMenu mode={mode as any} />
-            </div>
+            <Link
+              href={isTopXXSection ? `/${TOPXX_PATH}/yeu-thich` : (isComicSection ? "/truyen/yeu-thich" : "/yeu-thich")}
+              className="p-2 rounded-full text-foreground-secondary hover:bg-surface transition-colors"
+            >
+              <Heart 
+                size={20} 
+                fill={(pathname.includes("yeu-thich")) ? "currentColor" : "none"} 
+                className={pathname.includes("yeu-thich") ? "text-primary" : ""}
+              />
+            </Link>
 
-            {/* Right: Search + Actions */}
-            <div className="flex items-center gap-3 flex-shrink-0">
-              <div className="hidden xl:flex items-center gap-2 mr-2">
-                {isComicSection ? (
-                  <Link href="/" className="group flex items-center gap-2 px-6 py-2.5 rounded-2xl bg-foreground/5 hover:bg-foreground/10 text-foreground text-[11px] font-black uppercase tracking-widest italic transition-all active-depth">
-                    <Film className="w-4 h-4 text-primary stroke-[1.5px]" /> Phim <ChevronRight className="w-3.5 h-3.5 opacity-0 group-hover:opacity-100 transition-all group-hover:translate-x-1 stroke-[1.5px]" />
-                  </Link>
-                ) : (
-                  <Link href="/truyen" className="group flex items-center gap-2 px-6 py-2.5 rounded-2xl bg-primary/10 hover:bg-primary/20 text-primary text-[11px] font-black uppercase tracking-widest italic transition-all active-depth shadow-sm">
-                    <BookOpen className="w-4 h-4 stroke-[1.5px]" /> Truyện <ChevronRight className="w-3.5 h-3.5 opacity-0 group-hover:opacity-100 transition-all group-hover:translate-x-1 stroke-[1.5px]" />
-                  </Link>
-                )}
-              </div>
-              
-              {isComicSection && (
-                <div className="hidden sm:block mr-2">
-                  <Suspense fallback={<div className="w-24 h-10 bg-white/5 animate-pulse rounded-2xl" />}>
-                    <ComicFilters />
-                  </Suspense>
-                </div>
-              )}
-              
-              <div className="hidden lg:block w-56 xl:w-72">
-                <InstantSearch />
-              </div>
-              
-              <div className="flex items-center gap-1.5 sm:gap-3">
-                <Link
-                  href={isComicSection ? "/truyen/search" : "/search"}
-                  className="p-3 rounded-2xl text-foreground/70 hover:text-primary hover:bg-primary/10 transition-all active-depth"
-                  title="Tìm kiếm"
-                >
-                  <Search className="h-5 w-5 stroke-[1.5px]" />
-                </Link>
-                
-                <Link
-                  href={isTopXXSection ? `/${TOPXX_PATH}/lich-su` : isComicSection ? "/truyen/lich-su" : "/lich-su"}
-                  className={`p-3 rounded-2xl transition-all active-depth ${
-                    (pathname === "/lich-su" || pathname === "/truyen/lich-su" || (isTopXXSection && pathname.includes('/lich-su'))) ? "bg-primary text-white shadow-lg shadow-primary/30" : "text-foreground/70 hover:bg-foreground/5 hover:text-foreground"
-                  }`}
-                  title="Lịch sử"
-                >
-                  <HistoryIcon className="h-5 w-5 stroke-[1.5px]" />
-                </Link>
+            <div className="h-4 w-[1px] bg-separator mx-1" />
 
-                <div className="hidden xs:block">
-                  <ThemeToggle />
-                </div>
+            <ThemeToggle />
 
-                <Link
-                  href={isTopXXSection ? `/${TOPXX_PATH}/yeu-thich` : isComicSection ? "/truyen/yeu-thich" : "/yeu-thich"}
-                  className={`p-3 rounded-2xl transition-all active-depth ${
-                    (pathname === "/yeu-thich" || pathname === "/truyen/yeu-thich" || (isTopXXSection && pathname.includes('/yeu-thich'))) ? "bg-primary text-white shadow-lg shadow-primary/30" : "text-foreground/70 hover:bg-foreground/5 hover:text-foreground"
-                  }`}
-                  title="Yêu thích"
-                >
-                  <Heart className={`h-5 w-5 stroke-[1.5px] ${ (pathname === "/yeu-thich" || pathname === "/truyen/yeu-thich" || (isTopXXSection && pathname.includes('/yeu-thich'))) ? "fill-current" : ""}`} />
-                </Link>
-
-                {user ? (
-                   <div className="ml-2 pl-4 border-l border-white/10 hidden sm:block">
-                      <ProfileDropdown />
-                   </div>
-                ) : (
-                  <button
-                    onClick={() => setIsAuthOpen(true)}
-                    className="ml-2 group flex items-center gap-2 px-8 py-3 rounded-2xl bg-primary hover:bg-primary/90 text-white text-[11px] font-black uppercase tracking-[0.2em] italic transition-all active-depth shadow-lg shadow-primary/30"
-                  >
-                    <LogIn className="w-4 h-4 stroke-[1.5px]" />
-                    <span>Đăng nhập</span>
-                  </button>
-                )}
-              </div>
-            </div>
+            {user ? (
+               <ProfileDropdown />
+            ) : (
+              <button
+                onClick={() => setIsAuthOpen(true)}
+                className="ml-2 px-4 h-9 rounded-full bg-primary text-white text-xs font-bold transition-all active:scale-95 shadow-sm"
+              >
+                Đăng nhập
+              </button>
+            )}
           </div>
         </div>
       </motion.header>

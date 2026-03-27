@@ -132,13 +132,24 @@ export function MovieGrid({
   }
 
   return (
-    <div className="container mx-auto px-4 lg:px-12 py-8 mt-16">
-      <h1 className="text-xl md:text-2xl font-semibold mb-8 text-white/90">{title}</h1>
+    <div className="container mx-auto px-4 lg:px-12 py-12 md:py-16 animate-in fade-in duration-700">
+      <div className="flex flex-col gap-4 mb-10 border-b border-foreground/5 pb-8">
+        <h1 className="text-3xl md:text-5xl font-bold text-foreground/90 tracking-tighter leading-tight">
+          {title}
+        </h1>
+        <div className="flex items-center gap-3">
+          <div className="h-1 w-12 bg-primary rounded-full" />
+          <span className="text-[10px] font-bold text-foreground/20 uppercase tracking-[0.2em]">Bộ sưu tập trực tuyến</span>
+        </div>
+      </div>
 
       {movies.length === 0 ? (
-        <p className="text-neutral-400 text-center py-20">Không tìm thấy phim nào.</p>
+        <div className="flex flex-col items-center justify-center py-32 bg-foreground/[0.02] rounded-[40px] border border-dashed border-foreground/5 space-y-4">
+          <Loader2 className="w-10 h-10 text-foreground/10" />
+          <p className="text-foreground/30 font-medium">Đang chuẩn bị danh sách phim cho bạn...</p>
+        </div>
       ) : (
-        <div className="grid grid-cols-2 xs:grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 sm:gap-4 md:gap-5">
+        <div className="grid grid-cols-2 xs:grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 sm:gap-6 md:gap-8 lg:gap-10">
           {movies.map((movie, idx) => (
             <MovieCard 
               key={movie.id} 
@@ -155,14 +166,19 @@ export function MovieGrid({
 
       {/* Infinite Scroll Loading Trigger */}
       {page < totalPages && (
-        <div ref={observerTarget} className="w-full py-12 flex items-center justify-center">
-          {loading && <Loader2 className="w-8 h-8 animate-spin text-primary" />}
+        <div ref={observerTarget} className="w-full py-20 flex flex-col items-center justify-center gap-4">
+          {loading && (
+            <>
+              <Loader2 className="w-8 h-8 animate-spin text-primary/40" />
+              <span className="text-[10px] font-bold text-foreground/20 uppercase tracking-[0.3em]">Đang tải thêm</span>
+            </>
+          )}
         </div>
       )}
       
       {page >= totalPages && movies.length > 0 && (
-         <div className="w-full py-12 flex items-center justify-center">
-         <p className="text-neutral-500 text-sm font-medium">Bạn đã xem hết danh sách phim.</p>
+         <div className="w-full py-20 flex items-center justify-center mt-12 border-t border-foreground/5">
+         <p className="text-foreground/20 text-[11px] font-bold uppercase tracking-[0.25em]">Bạn đã xem hết danh sách này.</p>
        </div>
       )}
     </div>

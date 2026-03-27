@@ -9,9 +9,9 @@ import Link from "next/link";
 import { HeroSlider } from "@/components/movie/HeroSlider";
 import { MovieContinueWatching } from "@/components/movie/MovieContinueWatching";
 import { CategoryShortcuts } from "@/components/movie/CategoryShortcuts";
-import { getTrendingMovies, getTMDBImageUrl } from "@/services/tmdb";
+import { getTrendingMovies } from "@/services/tmdb";
 import { BentoMovieRow } from "@/components/movie/BentoMovieRow";
-import { searchMovies as searchLocal } from "@/services/api";
+import { unstable_cache } from "next/cache";
 
 const MANUAL_MAPPING: Record<string, string> = {
   "Cách giết để giàu": "gia-tai-cua-ngoai",
@@ -19,7 +19,6 @@ const MANUAL_MAPPING: Record<string, string> = {
   "Cứu": "cuu",
   "Sàn Đấu Sinh Tử": "san-dau-sinh-tu"
 };
-import { unstable_cache } from "next/cache";
 
 async function resolveTrendingMoviesInternal(trending: any[]) {
   const { searchMovies: searchLocal } = await import("@/services/api");
@@ -29,7 +28,6 @@ async function resolveTrendingMoviesInternal(trending: any[]) {
     const title = m.title || m.name;
     const year = m.release_date?.split("-")[0];
     
-    // Check manual mapping first
     if (MANUAL_MAPPING[title]) {
       const slug = MANUAL_MAPPING[title];
       return {
@@ -48,10 +46,8 @@ async function resolveTrendingMoviesInternal(trending: any[]) {
 
     try {
       const resolutionPromise = (async () => {
-        // Parallel search on local providers
         let res = await searchLocal(title);
         
-        // Fallback to original title if no results for translated title
         if (res.items.length === 0 && m.original_title && m.original_title !== title) {
           res = await searchLocal(m.original_title);
         }
@@ -59,54 +55,28 @@ async function resolveTrendingMoviesInternal(trending: any[]) {
         const normalize = (s: string) => s.toLowerCase()
           .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
           .replace(/[đĐ]/g, "d")
-          .replace(/[^a-z0-9\s]/g, "") // Remove all non-alphanumeric
+          .replace(/[^a-z0-9\s]/g, "") 
           .replace(/\s+/g, " ").trim();
 
         const normalizedTarget = normalize(title);
         const normalizedOriginal = normalize(m.original_title || "");
 
-        // Try to find a precise match
         let match = res.items.find((item: any) => {
           const itemTitle = normalize(item.title);
           const itemOrigin = normalize(item.originalTitle || "");
-          const itemSlug = item.slug.toLowerCase();
-          const yearStr = year || "";
+          const itemYear = parseInt(item.year);
+          const targetYear = parseInt(year || "");
           
           const isExactMatch = itemTitle === normalizedTarget || itemOrigin === normalizedTarget || 
                              itemTitle === normalizedOriginal || itemOrigin === normalizedOriginal;
           
-          const isPartialMatch = itemTitle.startsWith(normalizedTarget) || normalizedTarget.startsWith(itemTitle);
-          
-          const cleanSlug = itemSlug.replace(/-/g, " ");
-          const isSlugMatch = itemSlug === title.toLowerCase().replace(/\s+/g, '-') || 
-                             cleanSlug.includes(normalizedTarget);
-          
-          const itemYear = parseInt(item.year);
-          const targetYear = parseInt(yearStr);
-          const isYearMatch = yearStr ? (itemYear === targetYear || itemYear === targetYear + 1 || itemYear === targetYear - 1) : true;
-          
-          return (isExactMatch && isYearMatch) || (isSlugMatch && isYearMatch) || (isPartialMatch && isYearMatch);
+          const isYearMatch = year ? (itemYear === targetYear || itemYear === targetYear + 1 || itemYear === targetYear - 1) : true;
+          return isExactMatch && isYearMatch;
         });
 
         if (!match) {
-          const candidateSlug = `${title.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[đĐ]/g, "d").replace(/[^a-z0-9\s]/g, "").replace(/\s+/g, '-')}-${year || '2025'}`;
-          const candidateSlugNoYear = `${title.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[đĐ]/g, "d").replace(/[^a-z0-9\s]/g, "").replace(/\s+/g, '-')}`;
-          
-          for (const mirror of ["https://ophim1.com", "https://ophim18.cc"]) {
-            for (const s of [candidateSlug, candidateSlugNoYear]) {
-              try {
-                const check = await fetch(`${mirror}/v1/api/phim/${s}`, { signal: AbortSignal.timeout(1500) });
-                if (check.ok) {
-                  const json = await check.json();
-                  if (json.status === "success" || json.data?.item) {
-                     match = { slug: s } as any;
-                     break;
-                  }
-                }
-              } catch (e) {}
-            }
-            if (match) break;
-          }
+           const candidateSlug = `${title.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[đĐ]/g, "d").replace(/[^a-z0-9\s]/g, "").replace(/\s+/g, '-')}-${year || '2025'}`;
+           match = { slug: candidateSlug } as any; // default fallback slug
         }
 
         return match ? match.slug : `/search?q=${encodeURIComponent(title)}`;
@@ -114,7 +84,7 @@ async function resolveTrendingMoviesInternal(trending: any[]) {
 
       const finalSlug = await Promise.race([
          resolutionPromise,
-         new Promise<string>((resolve) => setTimeout(() => resolve(`/search?q=${encodeURIComponent(title)}`), 2500))
+         new Promise<string>((resolve) => setTimeout(() => resolve(`/search?q=${encodeURIComponent(title)}`), 2000))
       ]);
 
       return {
@@ -168,7 +138,6 @@ export default async function Home() {
   const trending = trendingData.status === "fulfilled" ? trendingData.value?.results || [] : [];
 
   const { enrichMovies } = await import("@/services/movieEnricher");
-  // Enrich first 10 for hero pool and next 20 for grid to ensure high-res coverage
   const [heroEnriched, gridEnriched] = await Promise.all([
     enrichMovies(latest.items.slice(0, 10)),
     enrichMovies(latest.items.slice(10, 30))
@@ -178,39 +147,31 @@ export default async function Home() {
   const displayGrid = gridEnriched;
 
   return (
-    <div className="flex flex-col gap-10 pb-20 min-h-screen">
-      {/* Hero with Cinematic Style */}
+    <div className="flex flex-col gap-12 pb-20 min-h-screen">
       <HeroSlider movies={heroMovies} />
 
-      {/* Tiếp tục xem */}
       <MovieContinueWatching />
 
-      {/* Category Shortcuts */}
       <CategoryShortcuts />
 
-      {/* Phim Hot Nhất (Bento Style) */}
       {trending.length > 0 && (
         <BentoMovieRow 
-          title="Phim Hot Nhất" 
+          title="Phát hành gần đây" 
           movies={await resolveTrendingMovies(trending.slice(0, 10))} 
           viewAllHref="/phim-moi"
         />
       )}
 
-      {/* Phim Mới Cập Nhật (Grid) */}
-      <section className="container mx-auto px-6 lg:px-12 relative z-10">
-        <div className="flex items-center justify-between mb-6">
-          <div>
-            <h3 className="text-2xl font-black font-headline tracking-tight text-foreground uppercase">
-              Phim Mới Cập Nhật
-            </h3>
-            <div className="h-1 w-12 bg-primary mt-1 rounded-full"></div>
-          </div>
-          <Link href="/phim-moi" className="text-primary text-[12px] font-black flex items-center gap-1 uppercase tracking-widest hover:translate-x-1 transition-transform">
-            Tất cả <ChevronRight className="h-4 w-4" />
+      <section className="container mx-auto px-6 lg:px-12 relative z-10 transition-all">
+        <div className="flex items-center justify-between mb-8 group">
+          <h2 className="text-2xl font-bold tracking-tight text-foreground">
+            Phim mới cập nhật
+          </h2>
+          <Link href="/phim-moi" className="text-primary text-sm font-bold flex items-center gap-1 hover:gap-1.5 transition-all">
+            Xem tất cả <ChevronRight className="h-4 w-4" />
           </Link>
         </div>
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-7 2xl:grid-cols-8 gap-3 sm:gap-6">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-7 2xl:grid-cols-8 gap-4 md:gap-6">
           {displayGrid.map((movie) => (
             <MovieCard 
               key={movie.slug} 
@@ -226,14 +187,12 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* Phim Bộ */}
       {phimBo.items.length > 0 && (
-        <MovieRow title="Phim Bộ Đặc Sắc" movies={await enrichMovies(phimBo.items.slice(0, 20))} viewAllHref="/phim-bo" />
+        <MovieRow title="Phim bộ đặc sắc" movies={await enrichMovies(phimBo.items.slice(0, 20))} viewAllHref="/phim-bo" />
       )}
 
-      {/* Phim Lẻ */}
       {phimLe.items.length > 0 && (
-        <MovieRow title="Phim Lẻ Tuyển Chọn" movies={await enrichMovies(phimLe.items.slice(0, 20))} viewAllHref="/phim-le" />
+        <MovieRow title="Phim lẻ tuyển chọn" movies={await enrichMovies(phimLe.items.slice(0, 20))} viewAllHref="/phim-le" />
       )}
     </div>
   );

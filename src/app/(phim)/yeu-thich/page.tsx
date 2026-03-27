@@ -1,373 +1,299 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
-import { useAuth } from "@/contexts/AuthContext";
+import { useEffect, useState } from "react";
 import Link from "next/link";
-import { getUserPlaylists, deletePlaylist, removeMovieFromPlaylist, ensureDefaultPlaylist, createPlaylist, updatePlaylistName } from "@/services/db";
-import { Playlist } from "@/types/database";
-import { MovieCard } from "@/components/movie/MovieCard";
-import { Trash, Library, Loader2, X, Plus, Heart, Search, Film, Edit2, Check, X as CloseIcon, User, Star, ArrowRight } from "lucide-react";
-import { Button } from "@/components/ui/Button";
-import { ActorModal } from "@/components/movie/ActorModal";
+import { useAuth } from "@/contexts/AuthContext";
+import { 
+  getFavoriteMovies, 
+  getFavoriteActors, 
+  getCustomPlaylists, 
+  deleteCustomPlaylist,
+  removeFromPlaylist
+} from "@/services/db";
+import { 
+  Heart, 
+  User, 
+  ListMusic, 
+  Trash2, 
+  ChevronRight, 
+  PlayCircle, 
+  Clock, 
+  Star,
+  Film,
+  AlertCircle,
+  Loader2
+} from "lucide-react";
+import { getTMDBImageUrl } from "@/services/tmdb";
+import MovieCard from "@/components/movie/MovieCard";
+import { cn } from "@/lib/utils";
 
-interface FavoriteActor {
-  id: number | string;
-  name: string;
-  profilePath: string | null;
-  type?: 'movie' | 'topxx';
-}
+type Tab = "watchlist" | "actors" | "playlists";
 
-// Separate movie library page in Hồ Phim
-export default function MovieLibraryPage() {
-  const { user, loading: authLoading } = useAuth();
-  const [playlists, setPlaylists] = useState<Playlist[]>([]);
+export default function LibraryPage() {
+  const { user } = useAuth();
+  const [activeTab, setActiveTab] = useState<Tab>("watchlist");
+  const [watchlist, setWatchlist] = useState<any[]>([]);
+  const [actors, setActors] = useState<any[]>([]);
+  const [playlists, setPlaylists] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [activePlaylistId, setActivePlaylistId] = useState<string | null>(null);
-  const [isCreating, setIsCreating] = useState(false);
-  const [newName, setNewName] = useState("");
-  const [searchQuery, setSearchQuery] = useState("");
-  const [isEditingName, setIsEditingName] = useState(false);
-  const [editNameValue, setEditNameValue] = useState("");
-  
-  const [activeTab, setActiveTab] = useState<'movies' | 'actors'>('movies');
-  const [favoriteActors, setFavoriteActors] = useState<FavoriteActor[]>([]);
-  const [selectedActor, setSelectedActor] = useState<FavoriteActor | null>(null);
-  const [isActorModalOpen, setIsActorModalOpen] = useState(false);
-  const [actorIsXX, setActorIsXX] = useState(false);
-
-  const loadData = async () => {
-    if (!user) return;
-    try {
-      await ensureDefaultPlaylist(user.uid);
-      const [movieData, actorData] = await Promise.all([
-        getUserPlaylists(user.uid),
-        (await import("@/services/db")).getUserFavoriteActors(user.uid, 'movie')
-      ]);
-      
-      setPlaylists(movieData);
-      setFavoriteActors(actorData as FavoriteActor[]);
-      
-      if (movieData.length > 0 && !activePlaylistId) {
-        setActivePlaylistId(movieData[0].id);
-      }
-    } catch (err) {
-      console.error("Lỗi khi tải thư viện:", err);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   useEffect(() => {
-    if (authLoading) return;
-    if (user) loadData();
-    else setLoading(false);
-  }, [user, authLoading]);
+    async function loadData() {
+      if (!user) {
+        setLoading(false);
+        return;
+      }
+      try {
+        const [w, a, p] = await Promise.all([
+          getFavoriteMovies(user.uid),
+          getFavoriteActors(user.uid),
+          getCustomPlaylists(user.uid)
+        ]);
+        setWatchlist(w || []);
+        setActors(a || []);
+        setPlaylists(p || []);
+      } catch (err) {
+        console.error("Error loading library data:", err);
+      } finally {
+        setLoading(false);
+      }
+    }
+    loadData();
+  }, [user]);
 
-  const handleCreate = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!user || !newName.trim()) return;
+  const handleDeletePlaylist = async (id: string) => {
+    if (!user || !confirm("Bạn có chắc chắn muốn xóa danh sách phát này?")) return;
     try {
-      const newId = await createPlaylist(user.uid, newName);
-      await loadData();
-      setActivePlaylistId(newId);
-      setNewName("");
-      setIsCreating(false);
-    } catch (err) { }
-  };
-
-  const handleRename = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!activePlaylistId || !editNameValue.trim()) return;
-    try {
-      await updatePlaylistName(activePlaylistId, editNameValue.trim());
-      await loadData();
-      setIsEditingName(false);
-    } catch (err) { }
-  };
-
-  const startEditing = () => {
-    if (activePlaylist) {
-      setEditNameValue(activePlaylist.name);
-      setIsEditingName(true);
+      await deleteCustomPlaylist(user.uid, id);
+      setPlaylists(prev => prev.filter(p => p.id !== id));
+    } catch (err) {
+      alert("Không thể xóa danh sách phát");
     }
   };
 
-  const handleDeletePlaylist = async (id: string, name: string) => {
-    if (!window.confirm(`Xóa toàn bộ thư mục "${name}"?`)) return;
-    try {
-      await deletePlaylist(id);
-      setPlaylists(prev => prev.filter(p => p.id !== id));
-      if (activePlaylistId === id) setActivePlaylistId(playlists.find(p => p.id !== id)?.id || null);
-    } catch (err) { }
-  };
-
-  const handleRemoveMovie = async (playlistId: string, movieSlug: string, e: React.MouseEvent) => {
-    e.preventDefault();
+  const handleRemoveFromPlaylist = async (playlistId: string, movieId: number) => {
     if (!user) return;
     try {
-      await removeMovieFromPlaylist(playlistId, movieSlug);
+      await removeFromPlaylist(user.uid, playlistId, movieId);
       setPlaylists(prev => prev.map(p => {
         if (p.id === playlistId) {
-          return { ...p, movies: p.movies.filter(m => m.movieSlug !== movieSlug) };
+          return { ...p, movies: p.movies.filter((m: any) => m.id !== movieId) };
         }
         return p;
       }));
-    } catch (err) { }
+    } catch (err) {
+      alert("Lỗi khi xóa phim");
+    }
   };
-
-  const openActorDetail = (actor: FavoriteActor) => {
-    setSelectedActor({
-      id: actor.id,
-      name: actor.name,
-      profilePath: actor.profilePath
-    });
-    
-    // Distinguish by ID type: string ids are usually TopXX/JAVDB slugs, numbers are TMDB
-    const isXX = typeof actor.id === 'string' && isNaN(Number(actor.id));
-    setActorIsXX(isXX);
-    setIsActorModalOpen(true);
-  };
-
-  if (authLoading || loading) return <div className="p-8 flex justify-center mt-40"><Loader2 className="w-10 h-10 animate-spin text-primary" /></div>;
 
   if (!user) {
     return (
-      <div className="container mx-auto px-4 py-32 text-center">
-        <Heart className="w-16 h-16 text-foreground/10 mx-auto mb-6" />
-        <h2 className="text-4xl font-bold italic tracking-tighter uppercase mb-4 text-foreground">Bạn chưa đăng nhập</h2>
-        <p className="text-foreground/40 font-bold mb-8">Vui lòng đăng nhập để xem thư viện phim yêu thích của bạn.</p>
-        <Button onClick={() => window.location.href='/login'} className="px-8 py-4 rounded-2xl font-bold uppercase">Đăng Nhập Ngay</Button>
+      <div className="min-h-[80vh] flex flex-col items-center justify-center p-6 bg-background">
+        <div className="w-24 h-24 rounded-[32px] bg-foreground/[0.03] flex items-center justify-center mb-8 shadow-apple border border-foreground/5">
+           <AlertCircle className="w-10 h-10 text-primary animate-pulse" />
+        </div>
+        <h1 className="text-3xl font-black text-foreground mb-4 tracking-tighter uppercase italic">Thư Viện Cá Nhân</h1>
+        <p className="text-foreground/40 mb-10 text-center max-w-sm font-medium leading-relaxed">
+          Đăng nhập để lưu lại những bộ phim yêu thích và tạo danh sách phát của riêng bạn.
+        </p>
+        <Link 
+          href="/auth" 
+          className="bg-primary hover:bg-primary/90 text-white px-12 py-4 rounded-2xl font-bold transition-all shadow-apple-lg active-depth"
+        >
+          Đăng nhập ngay
+        </Link>
       </div>
     );
   }
 
-  const activePlaylist = playlists.find(p => p.id === activePlaylistId);
-  const filteredMovies = (activePlaylist?.movies || []).filter(m => 
-    m.movieTitle.toLowerCase().includes(searchQuery.toLowerCase())
-  );
-
   return (
-    <div className="container mx-auto px-4 py-16 mt-8 animate-in fade-in duration-700 min-h-[80vh]">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12 border-b border-foreground/[0.06] pb-8">
-        <h1 className="text-4xl md:text-6xl font-black text-foreground italic tracking-tighter uppercase leading-none">Thư Viện</h1>
-        
-        {/* Tab Switcher */}
-        <div className="flex bg-foreground/5 p-1 rounded-2xl border border-foreground/5">
-           <button 
-             onClick={() => setActiveTab('movies')}
-             className={`px-6 py-2.5 rounded-xl text-[12px] font-black uppercase tracking-widest transition-all ${activeTab === 'movies' ? 'bg-primary text-primary-foreground shadow-lg' : 'text-foreground/40 hover:text-foreground'}`}
-           >
-              🎬 Phim ({playlists.reduce((acc, p) => acc + p.movies.length, 0)})
-           </button>
-           <button 
-             onClick={() => setActiveTab('actors')}
-             className={`px-6 py-2.5 rounded-xl text-[12px] font-black uppercase tracking-widest transition-all ${activeTab === 'actors' ? 'bg-primary text-primary-foreground shadow-lg' : 'text-foreground/40 hover:text-foreground'}`}
-           >
-              ✨ Diễn Viên ({favoriteActors.length})
-           </button>
-        </div>
-      </div>
-
-      {activeTab === 'movies' ? (
-        <div className="flex flex-col lg:flex-row gap-12">
-          {/* Sidebar */}
-          <aside className="w-full lg:w-[300px] space-y-8 flex-shrink-0">
-             <div className="flex items-center justify-between px-2">
-                <h3 className="text-[10px] font-black text-foreground/20 uppercase tracking-[0.4em]">Danh Sách Thư Mục</h3>
-                <button onClick={() => setIsCreating(true)} className="p-2 rounded-xl bg-foreground/5 text-foreground hover:bg-primary hover:text-primary-foreground transition-all">
-                   <Plus className="w-4 h-4" />
-                </button>
-             </div>
-
-             {isCreating && (
-               <form onSubmit={handleCreate} className="bg-foreground/[0.03] p-5 rounded-3xl border border-foreground/10 shadow-2xl">
-                  <input 
-                    autoFocus
-                    placeholder="Tên thư mục phim..."
-                    value={newName}
-                    onChange={e => setNewName(e.target.value)}
-                    className="w-full bg-foreground/5 border border-foreground/10 text-foreground rounded-2xl px-4 py-3 text-sm focus:outline-none focus:border-primary transition-all mb-3 font-bold"
-                  />
-                  <Button type="submit" size="sm" className="w-full rounded-xl">Tạo Thư Mục</Button>
-               </form>
-             )}
-
-             <div className="space-y-4">
-                {playlists.map(p => (
-                  <div 
-                    key={p.id}
-                    onClick={() => setActivePlaylistId(p.id)}
-                    className={`group relative p-5 rounded-3xl cursor-pointer transition-all border ${
-                      activePlaylistId === p.id 
-                        ? "bg-primary text-primary-foreground border-primary shadow-2xl shadow-primary/20 scale-[1.02]" 
-                        : "bg-foreground/[0.02] text-foreground/40 border-foreground/5 hover:bg-foreground/5 hover:text-foreground"
-                    }`}
-                  >
-                     <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-4 truncate font-black italic uppercase tracking-tight">
-                           <Library className="w-4 h-4 flex-shrink-0" />
-                           <span className="truncate">{p.name}</span>
-                        </div>
-                        <span className="text-[10px] font-black opacity-40">{p.movies.length}</span>
-                     </div>
-                     
-                     <div className="absolute right-3 top-3 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity">
-                        <button 
-                          onClick={(e) => { e.stopPropagation(); handleDeletePlaylist(p.id, p.name); }}
-                          className="p-2 rounded-xl bg-red-500/20 text-red-500 hover:bg-red-500 hover:text-primary-foreground transition-all shadow-xl"
-                        >
-                           <Trash className="w-3.5 h-3.5" />
-                        </button>
-                     </div>
-                  </div>
-                ))}
-             </div>
-          </aside>
-
-          {/* Main */}
-          <div className="flex-1 space-y-12">
-              <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6">
-                  <div>
-                     <div className="flex items-center gap-3">
-                       {isEditingName ? (
-                         <form onSubmit={handleRename} className="flex items-center gap-2">
-                            <input 
-                              autoFocus
-                              type="text"
-                              value={editNameValue}
-                              onChange={(e) => setEditNameValue(e.target.value)}
-                              className="bg-foreground/5 border border-foreground/10 rounded-xl px-4 py-2 text-2xl md:text-4xl font-black text-foreground uppercase italic tracking-tighter outline-none focus:border-primary/50"
-                            />
-                            <button type="submit" className="p-2 bg-primary rounded-xl text-primary-foreground hover:opacity-80 transition-opacity">
-                               <Check className="w-6 h-6" />
-                            </button>
-                            <button type="button" onClick={() => setIsEditingName(false)} className="p-2 bg-foreground/5 rounded-xl text-foreground hover:bg-red-500 hover:text-white transition-colors">
-                               <CloseIcon className="w-6 h-6" />
-                            </button>
-                         </form>
-                       ) : (
-                         <>
-                           <h2 className="text-4xl font-black italic uppercase tracking-tighter text-foreground/90">{activePlaylist?.name}</h2>
-                           <button 
-                             onClick={startEditing}
-                             className="p-2 rounded-xl bg-foreground/5 text-foreground/20 hover:text-primary hover:bg-primary/10 transition-all ml-2"
-                           >
-                              <Edit2 className="w-5 h-5" />
-                           </button>
-                         </>
-                       )}
-                     </div>
-                     <div className="mt-2 h-1 w-24 bg-primary rounded-full"></div>
-                  </div>
-
-                  <div className="relative max-w-sm w-full sm:w-80">
-                     <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-foreground/20" />
-                     <input 
-                       type="text"
-                       placeholder="Tìm phim trong danh sách..."
-                       value={searchQuery}
-                       onChange={e => setSearchQuery(e.target.value)}
-                       className="w-full bg-foreground/5 border border-foreground/5 rounded-2xl pl-10 pr-4 py-4 text-[14px] text-foreground focus:outline-none focus:border-primary/50 transition-all font-bold shadow-2xl"
-                     />
-                  </div>
+    <div className="min-h-screen pb-32 bg-background transition-colors duration-500 pt-32">
+      <div className="container mx-auto px-4 sm:px-8 lg:px-16">
+        {/* Header Section */}
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-16 border-b border-foreground/5 pb-12">
+           <div className="space-y-3">
+              <div className="flex items-center gap-3">
+                <div className="h-1.5 w-12 bg-primary rounded-full" />
+                <span className="text-[10px] font-black text-foreground/20 uppercase tracking-[0.4em] italic">Personal Collection</span>
               </div>
+              <h1 className="text-5xl md:text-7xl font-black text-foreground tracking-tighter leading-none italic uppercase">Thư viện</h1>
+           </div>
+           
+           <nav className="flex gap-2 p-1.5 bg-foreground/[0.03] rounded-[24px] border border-foreground/5 shadow-inner backdrop-blur-xl">
+             {[
+               { id: "watchlist", label: "Phim Đã Lưu", icon: Heart },
+               { id: "actors", label: "Diễn Viên", icon: User },
+               { id: "playlists", label: "Playlist", icon: ListMusic }
+             ].map((tab) => (
+               <button
+                 key={tab.id}
+                 onClick={() => setActiveTab(tab.id as Tab)}
+                 className={cn(
+                   "flex items-center gap-3 px-6 py-3.5 rounded-[18px] text-xs font-bold uppercase tracking-widest transition-all duration-500",
+                   activeTab === tab.id 
+                    ? "bg-background text-foreground shadow-apple border border-foreground/5" 
+                    : "text-foreground/30 hover:text-foreground/60"
+                 )}
+               >
+                 <tab.icon className={cn("w-4 h-4", activeTab === tab.id ? "text-primary fill-current" : "")} />
+                 <span className="hidden sm:inline">{tab.label}</span>
+               </button>
+             ))}
+           </nav>
+        </div>
 
-              {filteredMovies.length === 0 ? (
-                 <div className="py-24 text-center bg-foreground/[0.01] rounded-[40px] border border-dashed border-foreground/5 space-y-4">
-                    <Film className="w-12 h-12 text-foreground/5 mx-auto" />
-                    <p className="text-foreground/20 font-black uppercase tracking-widest text-sm">Danh sách trống</p>
-                 </div>
-              ) : (
-                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-5 gap-6 sm:gap-8 animate-in slide-in-from-bottom-4 duration-700">
-                    {filteredMovies.map(movie => (
-                      <div key={movie.movieSlug} className="group relative pt-4">
-                         <MovieCard title={movie.movieTitle} slug={movie.movieSlug} posterUrl={movie.posterUrl} />
-                         <button 
-                           onClick={(e) => handleRemoveMovie(activePlaylistId!, movie.movieSlug, e)}
-                           className="delete-btn-premium !top-6 !right-2"
-                         >
-                            <Trash className="w-5 h-5" />
-                         </button>
+        {/* Content Section */}
+        <div className="animate-in fade-in slide-in-from-bottom-6 duration-700">
+          {loading ? (
+            <div className="flex flex-col items-center justify-center py-40 gap-4">
+              <Loader2 className="w-10 h-10 animate-spin text-primary/40" />
+              <p className="text-[10px] font-bold text-foreground/20 uppercase tracking-[0.4em]">Đang tải dữ liệu</p>
+            </div>
+          ) : (
+            <>
+              {activeTab === "watchlist" && (
+                watchlist.length === 0 ? (
+                  <EmptyState 
+                    icon={Heart} 
+                    title="Chưa có phim lưu lại" 
+                    desc="Các phim bạn lưu trong quá trình xem sẽ xuất hiện ở đây." 
+                  />
+                ) : (
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-x-6 gap-y-12">
+                    {watchlist.map((m, idx) => (
+                      <MovieCard 
+                        key={m.id || m.slug} 
+                        {...m} 
+                        index={idx % 20}
+                      />
+                    ))}
+                  </div>
+                )
+              )}
+
+              {activeTab === "actors" && (
+                actors.length === 0 ? (
+                  <EmptyState 
+                    icon={User} 
+                    title="Chưa lưu diễn viên nào" 
+                    desc="Theo dõi các diễn viên bạn yêu thích để xem các tác phẩm mới nhất của họ." 
+                  />
+                ) : (
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-8 gap-8">
+                    {actors.map((a) => (
+                      <Link 
+                        key={a.id} 
+                        href={`/dien-vien/${a.id}`} 
+                        className="group flex flex-col items-center gap-6 active-depth"
+                      >
+                        <div className="relative w-full aspect-square rounded-[54px] overflow-hidden shadow-apple-lg border border-foreground/5 ring-1 ring-white/5 transition-transform duration-700 group-hover:scale-105">
+                          {a.profilePath ? (
+                            <img 
+                              src={getTMDBImageUrl(a.profilePath, 'w300')!} 
+                              alt={a.name} 
+                              className="w-full h-full object-cover group-hover:rotate-3 transition-transform duration-1000" 
+                            />
+                          ) : (
+                            <div className="w-full h-full bg-foreground/[0.03] flex items-center justify-center text-foreground/10">
+                              <User className="w-16 h-16" />
+                            </div>
+                          )}
+                          <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                        </div>
+                        <p className="text-[14px] font-black text-foreground/80 text-center uppercase tracking-tighter group-hover:text-primary transition-colors line-clamp-1">{a.name}</p>
+                      </Link>
+                    ))}
+                  </div>
+                )
+              )}
+
+              {activeTab === "playlists" && (
+                playlists.length === 0 ? (
+                  <EmptyState 
+                    icon={ListMusic} 
+                    title="Tạo playlist của riêng bạn" 
+                    desc="Tổ chức các bộ phim theo chủ đề hoặc cảm xúc riêng." 
+                  />
+                ) : (
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+                    {playlists.map((p) => (
+                      <div key={p.id} className="apple-glass rounded-[48px] p-10 space-y-10 shadow-apple border-foreground/5 group hover:shadow-apple-lg transition-all duration-700">
+                        <div className="flex items-start justify-between border-b border-foreground/5 pb-8">
+                          <div className="space-y-3">
+                             <div className="flex items-center gap-3">
+                               <PlayCircle className="w-6 h-6 text-primary" />
+                               <h3 className="text-3xl font-black text-foreground italic uppercase tracking-tighter leading-none">{p.name}</h3>
+                             </div>
+                             <div className="flex items-center gap-4 text-foreground/30 text-[10px] font-bold uppercase tracking-widest">
+                                <span>{p.movies?.length || 0} Phim</span>
+                                <div className="w-1 h-1 rounded-full bg-foreground/10" />
+                                <span className="flex items-center gap-1.5"><Clock className="w-3.5 h-3.5" /> {new Date(p.createdAt).toLocaleDateString("vi-VN")}</span>
+                             </div>
+                          </div>
+                          <button 
+                            onClick={() => handleDeletePlaylist(p.id)}
+                            className="p-4 rounded-2xl bg-foreground/[0.03] text-foreground/20 hover:text-red-500 hover:bg-red-500/10 transition-all active-depth"
+                          >
+                            <Trash2 className="w-5 h-5" />
+                          </button>
+                        </div>
+                        
+                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-6">
+                          {p.movies?.slice(0, 4).map((m: any) => (
+                            <div key={m.id} className="relative aspect-[2/3] rounded-[24px] overflow-hidden group/item shadow-apple border border-foreground/5 cursor-pointer active-depth">
+                               <img 
+                                 src={getTMDBImageUrl(m.posterUrl || m.poster_path, 'w185')!} 
+                                 className="w-full h-full object-cover transition-transform duration-1000 group-hover/item:scale-110" 
+                               />
+                               <div className="absolute inset-0 bg-black/60 opacity-0 group-hover/item:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                                  <Link href={`/xem/${m.slug}`} className="p-3 bg-white rounded-full text-black shadow-xl scale-50 group-hover/item:scale-100 transition-transform">
+                                    <PlayCircle className="w-5 h-5" />
+                                  </Link>
+                                  <button 
+                                    onClick={() => handleRemoveFromPlaylist(p.id, m.id)}
+                                    className="p-3 bg-red-500 rounded-full text-white shadow-xl scale-50 group-hover/item:scale-100 transition-transform delay-75"
+                                  >
+                                    <Trash2 className="w-4 h-4" />
+                                  </button>
+                               </div>
+                            </div>
+                          ))}
+                          {(!p.movies || p.movies.length === 0) && (
+                            <div className="col-span-4 py-12 flex flex-col items-center justify-center text-foreground/10 space-y-3">
+                               <Film className="w-12 h-12" />
+                               <p className="text-[10px] font-bold uppercase tracking-widest">Danh sách trống</p>
+                            </div>
+                          )}
+                        </div>
+                        
+                        {p.movies?.length > 4 && (
+                           <div className="flex justify-center border-t border-foreground/5 pt-8">
+                             <span className="text-[10px] font-bold text-foreground/20 uppercase tracking-[0.2em]">Cùng +{p.movies.length - 4} phim khác</span>
+                           </div>
+                        )}
                       </div>
                     ))}
-                 </div>
+                  </div>
+                )
               )}
-          </div>
+            </>
+          )}
         </div>
-      ) : (
-        /* Actors Tab Content */
-        <div className="animate-in slide-in-from-bottom-4 duration-700">
-           {favoriteActors.length === 0 ? (
-              <div className="py-32 text-center bg-foreground/[0.01] rounded-[40px] border border-dashed border-foreground/5 space-y-6">
-                 <div className="w-20 h-20 rounded-full bg-foreground/5 flex items-center justify-center mx-auto mb-4 border border-foreground/5 shadow-inner">
-                    <User className="w-10 h-10 text-foreground/10" />
-                 </div>
-                 <div className="space-y-2">
-                    <h3 className="text-3xl font-black italic uppercase tracking-tighter text-foreground/30">Bạn chưa yêu thích diễn viên nào</h3>
-                    <p className="text-foreground/10 font-bold uppercase tracking-[0.3em] text-[10px]">Thêm diễn viên vào thư viện để xem kho phim của họ</p>
-                 </div>
-              </div>
-           ) : (
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6 md:gap-8">
-                 {favoriteActors.map(actor => (
-                   <div key={actor.id} className="group relative">
-                      <div 
-                        onClick={() => openActorDetail(actor)}
-                        className="relative aspect-[1/1] rounded-[40px] overflow-hidden bg-foreground/5 border border-foreground/10 group-hover:border-primary/50 transition-all shadow-xl group-hover:shadow-2xl group-hover:-translate-y-2 cursor-pointer"
-                      >
-                         <img 
-                           src={actor.profilePath?.startsWith('http') 
-                             ? actor.profilePath 
-                             : (actor.profilePath ? `https://image.tmdb.org/t/p/w500${actor.profilePath}` : "/placeholder-actor.png")
-                           } 
-                           alt={actor.name}
-                           className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 group-hover:rotate-1"
-                         />
-                         
-                         {/* Hover Overlay */}
-                         <div className="absolute inset-0 bg-gradient-to-t from-primary/90 via-primary/20 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-500 backdrop-blur-[2px] p-6 flex flex-col justify-end items-center">
-                             <div className="w-12 h-12 rounded-2xl bg-white text-primary flex items-center justify-center shadow-2xl scale-50 group-hover:scale-100 transition-transform duration-500 delay-100">
-                                <ArrowRight className="w-6 h-6 stroke-[3px]" />
-                             </div>
-                             <span className="text-[10px] font-black text-white uppercase tracking-[0.3em] mt-3 italic drop-shadow-md">Xem Kho Phim</span>
-                         </div>
-                         
-                         
-                         {/* Remove Button for Actors */}
-                         <button 
-                           onClick={async (e) => {
-                             e.preventDefault();
-                             e.stopPropagation();
-                             if (!window.confirm(`Gỡ ${actor.name} khỏi yêu thích?`)) return;
-                             const { toggleFavoriteActor } = await import("@/services/db");
-                             await toggleFavoriteActor(user!.uid, { ...actor, type: 'movie' });
-                             loadData();
-                           }}
-                           className="absolute top-4 right-4 w-11 h-11 rounded-2xl bg-black/40 backdrop-blur-2xl border border-white/10 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all scale-75 group-hover:scale-100 hover:bg-red-500 hover:border-red-400 shadow-2xl z-30"
-                         >
-                            <Trash className="w-4 h-4" />
-                         </button>
-                      </div>
-                      <div className="mt-5 text-center px-4" onClick={() => openActorDetail(actor)}>
-                         <h4 className="text-[15px] font-black uppercase tracking-tight text-foreground group-hover:text-primary transition-colors line-clamp-1 italic cursor-pointer">
-                            {actor.name}
-                         </h4>
-                         <p className="text-[9px] font-bold text-foreground/20 uppercase tracking-[0.25em] mt-1 italic">DIỄN VIÊN</p>
-                      </div>
-                   </div>
-                 ))}
-              </div>
-           )}
-        </div>
-      )}
+      </div>
+    </div>
+  );
+}
 
-      {/* Actor Detail Modal */}
-      <ActorModal 
-        isOpen={isActorModalOpen}
-        onClose={() => setIsActorModalOpen(false)}
-        actor={selectedActor as any}
-        isXX={actorIsXX}
-      />
+function EmptyState({ icon: Icon, title, desc }: { icon: any, title: string, desc: string }) {
+  return (
+    <div className="flex flex-col items-center justify-center py-40 bg-foreground/[0.01] border border-dashed border-foreground/5 rounded-[64px] animate-in zoom-in-95 duration-700">
+      <div className="w-24 h-24 rounded-[36px] bg-foreground/[0.03] flex items-center justify-center mb-8 shadow-apple-lg border border-foreground/5">
+        <Icon className="w-10 h-10 text-foreground/10" />
+      </div>
+      <h3 className="text-2xl font-black text-foreground/60 mb-3 tracking-tight italic uppercase">{title}</h3>
+      <p className="text-foreground/20 text-center max-w-sm text-sm font-medium leading-relaxed uppercase tracking-tighter">
+        {desc}
+      </p>
     </div>
   );
 }

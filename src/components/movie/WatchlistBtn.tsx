@@ -44,7 +44,7 @@ export function WatchlistBtn({ movieSlug, movieCode, movieTitle, posterUrl, vari
       setIsSaved(saved);
       setLoading(false);
     }
- else if (user) {
+    else if (user) {
       isMovieInAnyPlaylist(user.uid, identifier)
         .then(saved => {
           setIsSaved(saved);
@@ -82,59 +82,23 @@ export function WatchlistBtn({ movieSlug, movieCode, movieTitle, posterUrl, vari
     checkSavedStatus(); 
   };
 
-  if (isXX) {
-    return (
-      <>
-        <Button 
-          onClick={handleToggle} 
-          variant={isSaved ? "primary" : "secondary"} 
-          size="lg" 
-          className={cn(
-            "h-14 rounded-2xl px-8 gap-3 transition-all duration-500 font-black uppercase italic tracking-tighter hover:scale-105 active:scale-95",
-            isSaved ? "bg-yellow-500 text-black shadow-[0_0_30px_rgba(234,179,8,0.3)] border-yellow-500 hover:bg-white" : "bg-white/5 text-white/40 border-white/10 hover:border-yellow-500/50 hover:text-yellow-500",
-            (loading || authLoading) && "opacity-70",
-            className
-          )}
-        >
-          {loading ? (
-            <Loader2 className="w-5 h-5 animate-spin" />
-          ) : isSaved ? (
-            <BookmarkCheck className="w-5 h-5 fill-current" />
-          ) : (
-            <Bookmark className="w-5 h-5" />
-          )}
-          {loading ? "CHECKING..." : (isSaved ? "Đã Lưu" : "Lưu Phim")}
-        </Button>
-        <PlaylistModal 
-          isOpen={showPlaylistModal} 
-          onClose={handleCloseModal} 
-          movieCode={movieCode} 
-          movieTitle={movieTitle} 
-          posterUrl={posterUrl} 
-          isXX={true}
-        />
-      </>
-    );
-  }
-
   if (variant === "compact") {
     return (
       <>
         <button
           onClick={handleToggle}
           className={cn(
-            "group/save relative flex items-center justify-center w-10 h-10 rounded-2xl transition-all duration-500 overflow-hidden active-depth border",
-            isSaved ? 'bg-primary border-primary shadow-[0_0_20px_rgba(0,99,229,0.3)] opacity-100' : 'glass-pro border-white/10 hover:border-primary/50 opacity-40 group-hover:opacity-100',
+            "group/save relative flex items-center justify-center w-10 h-10 rounded-full transition-all duration-300 active:scale-95 shadow-md",
+            isSaved ? 'bg-primary text-white' : 'backdrop-blur-xl bg-black/20 text-white',
             loading && "opacity-50 pointer-events-none",
             className
           )}
-          title={isSaved ? "Đã lưu vào danh sách" : "Lưu vào danh sách"}
+          title={isSaved ? "Đã lưu" : "Lưu phim"}
         >
-          {isSaved ? <BookmarkCheck className="w-5 h-5 text-white fill-current" /> : <Bookmark className={cn("w-5 h-5 text-white/40 group-hover/save:text-primary")} />}
-          <div className="absolute inset-0 bg-primary/20 blur-[10px] opacity-0 group-hover/save:opacity-100 transition-opacity" />
+          {isSaved ? <BookmarkCheck size={20} fill="currentColor" strokeWidth={0} /> : <Bookmark size={20} />}
         </button>
         <AuthModal isOpen={showAuth} onClose={() => setShowAuth(false)} />
-        <PlaylistModal isOpen={showPlaylistModal} onClose={handleCloseModal} movieSlug={movieSlug} movieTitle={movieTitle} posterUrl={posterUrl} />
+        <PlaylistModal isOpen={showPlaylistModal} onClose={handleCloseModal} movieSlug={movieSlug} movieTitle={movieTitle} posterUrl={posterUrl} isXX={isXX} />
       </>
     );
   }
@@ -146,17 +110,23 @@ export function WatchlistBtn({ movieSlug, movieCode, movieTitle, posterUrl, vari
         variant={isSaved ? "primary" : "secondary"} 
         size="lg" 
         className={cn(
-          "rounded-full px-8 gap-2 transition-all duration-300 hover:scale-105",
-          (loading || authLoading) ? "opacity-70" : "opacity-100",
-          isSaved && "bg-gradient-to-r from-primary to-primary shadow-[0_0_30px_rgba(0,99,229,0.5)]",
+          "rounded-full px-6 h-12 gap-2 transition-all duration-300 font-bold shadow-sm active:scale-95",
+          isSaved ? "bg-primary text-white" : "bg-surface text-foreground",
+          (loading || authLoading) && "opacity-70",
           className
         )}
       >
-        {isSaved ? <BookmarkCheck className="w-5 h-5 fill-current" /> : <Bookmark className="w-5 h-5" />}
-        {loading ? "Đang xử lý..." : (isSaved ? "Đã Thêm" : "Lưu Phim")}
+        {loading ? (
+          <Loader2 size={18} className="animate-spin" />
+        ) : isSaved ? (
+          <BookmarkCheck size={18} fill="currentColor" strokeWidth={0} />
+        ) : (
+          <Bookmark size={18} />
+        )}
+        {loading ? "Đang tải..." : (isSaved ? "Đã Thêm" : "Lưu Phim")}
       </Button>
       <AuthModal isOpen={showAuth} onClose={() => setShowAuth(false)} />
-      <PlaylistModal isOpen={showPlaylistModal} onClose={handleCloseModal} movieSlug={movieSlug} movieTitle={movieTitle} posterUrl={posterUrl} />
+      <PlaylistModal isOpen={showPlaylistModal} onClose={handleCloseModal} movieSlug={movieSlug} movieTitle={movieTitle} posterUrl={posterUrl} isXX={isXX} />
     </>
   );
 }
