@@ -64,8 +64,23 @@ const fetchSafe = async <T = any>(url: string, headers: Record<string, string> =
 export async function searchMovies(keyword: string, page: number = 1, section: "hop" | "tx" = "hop"): Promise<MovieListResponse> {
   console.log(`[API] Global Search: "${keyword}" (${section})`);
   
+  const searchOPMirror = async (keyword: string, page: number) => {
+    const res = await searchOP(keyword, page);
+    if (res.items.length > 0) return res;
+    
+    // Fallback to mirrors
+    for (const mirror of OPHIM_MIRRORS) {
+      if (mirror.includes("phimapi.com")) continue;
+      try {
+        const mirrorRes = await searchOP(keyword, page, mirror);
+        if (mirrorRes.items.length > 0) return mirrorRes;
+      } catch (e) {}
+    }
+    return res;
+  };
+
   const [opResults, kkResults, vsResults] = await Promise.allSettled([
-    searchOP(keyword, page),
+    searchOPMirror(keyword, page),
     searchKK(keyword, page),
     searchVS(keyword, page)
   ]);
