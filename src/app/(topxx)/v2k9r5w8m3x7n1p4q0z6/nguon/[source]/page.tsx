@@ -1,13 +1,13 @@
 import { getTopXXMovies } from "@/services/api/topxx";
 import { getAVDBMovies } from "@/services/api/avdb";
 import { notFound } from "next/navigation";
-import { XXMovieRow } from "@/components/movie/XXMovieRow";
-import { XXHeroSection } from "@/components/movie/XXHeroSection";
+import { HeroSection } from "@/components/movie/HeroSection";
+import { MovieCard } from "@/components/movie/MovieCard";
 import { Movie } from "@/types/movie";
 
 export const dynamic = "force-dynamic";
 
-export default async function XXSourcePage({ 
+export default async function TopXXSourcePage({ 
     params, 
     searchParams 
 }: { 
@@ -33,7 +33,7 @@ export default async function XXSourcePage({
         <div className="space-y-16 animate-in fade-in duration-1000">
             {/* Hero for the source */}
             {data.items.length > 0 && (
-                <XXHeroSection movie={data.items[0]} />
+                <HeroSection movie={data.items[0]} isXX />
             )}
 
             <div className="container mx-auto px-4 lg:px-12 pb-20 space-y-20">
@@ -51,21 +51,15 @@ export default async function XXSourcePage({
                 {/* Movie Grid for this source */}
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6 md:gap-10">
                     {data.items.map((movie: Movie) => (
-                        <div key={movie.id} className="group flex flex-col gap-4">
-                             <div className="relative aspect-[2/3] rounded-[30px] overflow-hidden border border-white/5 shadow-2xl transition-all duration-700 group-hover:border-yellow-500/30 group-hover:-translate-y-3">
-                                <img 
-                                  src={movie.posterUrl} 
-                                  alt={movie.title} 
-                                  className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110" 
-                                />
-                                <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-60" />
-                                <a href={`/v2k9r5w8m3x7n1p4q0z6/movie/${movie.slug}`} className="absolute inset-0" />
-                             </div>
-                             <div className="px-1 space-y-1">
-                                <h3 className="text-sm font-black text-white group-hover:text-yellow-500 transition-colors line-clamp-2 uppercase leading-tight tracking-tight">{movie.title}</h3>
-                                <p className="text-[10px] font-black text-white/20 uppercase tracking-widest">{movie.year} • {movie.quality}</p>
-                             </div>
-                        </div>
+                        <MovieCard 
+                            key={movie.id}
+                            title={movie.title}
+                            slug={movie.slug}
+                            posterUrl={movie.posterUrl}
+                            year={movie.year}
+                            quality={movie.quality}
+                            isXX
+                        />
                     ))}
                 </div>
 

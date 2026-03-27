@@ -5,7 +5,7 @@ import { Movie } from "@/types/movie";
 const HISTORY_KEY = "topxx-history";
 const FAVORITES_KEY = "topxx-favorites";
 
-export interface XXHistoryEntry {
+export interface TopXXHistoryEntry {
   movieCode: string;
   movieTitle: string;
   posterUrl: string;
@@ -14,20 +14,20 @@ export interface XXHistoryEntry {
   durationSeconds: number;
 }
 
-export interface XXFavoriteEntry {
+export interface TopXXFavoriteEntry {
   movieCode: string;
   movieTitle: string;
   posterUrl: string;
   addedAt: number;
 }
 
-export function saveXXHistory(entry: Omit<XXHistoryEntry, 'updatedAt'>) {
+export function saveTopXXHistory(entry: Omit<TopXXHistoryEntry, 'updatedAt'>) {
   if (typeof window === 'undefined') return;
   
-  const history = getXXHistory();
+  const history = getTopXXHistory();
   const index = history.findIndex(h => h.movieCode === entry.movieCode);
   
-  const newEntry: XXHistoryEntry = {
+  const newEntry: TopXXHistoryEntry = {
     ...entry,
     updatedAt: Date.now()
   };
@@ -43,32 +43,32 @@ export function saveXXHistory(entry: Omit<XXHistoryEntry, 'updatedAt'>) {
   localStorage.setItem(HISTORY_KEY, JSON.stringify(limitedHistory));
 }
 
-export function getXXHistory(): XXHistoryEntry[] {
+export function getTopXXHistory(): TopXXHistoryEntry[] {
   if (typeof window === 'undefined') return [];
   const stored = localStorage.getItem(HISTORY_KEY);
   return stored ? JSON.parse(stored) : [];
 }
 
-export function getMovieXXHistory(movieCode: string): XXHistoryEntry | null {
-  const history = getXXHistory();
+export function getMovieTopXXHistory(movieCode: string): TopXXHistoryEntry | null {
+  const history = getTopXXHistory();
   return history.find(h => h.movieCode === movieCode) || null;
 }
 
-export function removeXXHistoryItem(movieCode: string) {
+export function removeTopXXHistoryItem(movieCode: string) {
   if (typeof window === 'undefined') return;
-  const history = getXXHistory().filter(h => h.movieCode !== movieCode);
+  const history = getTopXXHistory().filter(h => h.movieCode !== movieCode);
   localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
 }
 
-export function clearXXHistory() {
+export function clearTopXXHistory() {
   if (typeof window === 'undefined') return;
   localStorage.removeItem(HISTORY_KEY);
 }
 
-export function toggleXXFavorite(movie: { movieCode: string; movieTitle: string; posterUrl: string }): boolean {
+export function toggleTopXXFavorite(movie: { movieCode: string; movieTitle: string; posterUrl: string }): boolean {
   if (typeof window === 'undefined') return false;
   
-  const favorites = getXXFavorites();
+  const favorites = getTopXXFavorites();
   const index = favorites.findIndex(f => f.movieCode === movie.movieCode);
   
   if (index >= 0) {
@@ -76,7 +76,7 @@ export function toggleXXFavorite(movie: { movieCode: string; movieTitle: string;
     localStorage.setItem(FAVORITES_KEY, JSON.stringify(favorites));
     return false;
   } else {
-    const newEntry: XXFavoriteEntry = {
+    const newEntry: TopXXFavoriteEntry = {
       ...movie,
       addedAt: Date.now()
     };
@@ -86,31 +86,31 @@ export function toggleXXFavorite(movie: { movieCode: string; movieTitle: string;
   }
 }
 
-export function getXXFavorites(): XXFavoriteEntry[] {
+export function getTopXXFavorites(): TopXXFavoriteEntry[] {
   if (typeof window === 'undefined') return [];
   const stored = localStorage.getItem(FAVORITES_KEY);
   return stored ? JSON.parse(stored) : [];
 }
 
-export function isXXFavorite(movieCode: string): boolean {
-  const favorites = getXXFavorites();
+export function isTopXXFavorite(movieCode: string): boolean {
+  const favorites = getTopXXFavorites();
   return favorites.some(f => f.movieCode === movieCode);
 }
 
 const PLAYLISTS_KEY = "topxx-playlists";
 
-export interface XXPlaylist {
+export interface TopXXPlaylist {
   id: string;
   name: string;
   createdAt: number;
-  movies: XXFavoriteEntry[];
+  movies: TopXXFavoriteEntry[];
 }
 
-export function createXXPlaylist(name: string): string {
+export function createTopXXPlaylist(name: string): string {
   if (typeof window === 'undefined') return "";
-  const playlists = getXXPlaylists();
+  const playlists = getTopXXPlaylists();
   const id = Math.random().toString(36).substring(2, 11);
-  const newPlaylist: XXPlaylist = {
+  const newPlaylist: TopXXPlaylist = {
     id,
     name,
     createdAt: Date.now(),
@@ -121,21 +121,21 @@ export function createXXPlaylist(name: string): string {
   return id;
 }
 
-export function getXXPlaylists(): XXPlaylist[] {
+export function getTopXXPlaylists(): TopXXPlaylist[] {
   if (typeof window === 'undefined') return [];
   const stored = localStorage.getItem(PLAYLISTS_KEY);
   return stored ? JSON.parse(stored) : [];
 }
 
-export function deleteXXPlaylist(id: string) {
+export function deleteTopXXPlaylist(id: string) {
   if (typeof window === 'undefined') return;
-  const playlists = getXXPlaylists().filter(p => p.id !== id);
+  const playlists = getTopXXPlaylists().filter(p => p.id !== id);
   localStorage.setItem(PLAYLISTS_KEY, JSON.stringify(playlists));
 }
 
-export function addMovieToXXPlaylist(playlistId: string, movie: Omit<XXFavoriteEntry, 'addedAt'>) {
+export function addMovieToTopXXPlaylist(playlistId: string, movie: Omit<TopXXFavoriteEntry, 'addedAt'>) {
   if (typeof window === 'undefined') return;
-  const playlists = getXXPlaylists();
+  const playlists = getTopXXPlaylists();
   const playlist = playlists.find(p => p.id === playlistId);
   if (playlist) {
     if (playlist.movies.some(m => m.movieCode === movie.movieCode)) return;
@@ -144,9 +144,9 @@ export function addMovieToXXPlaylist(playlistId: string, movie: Omit<XXFavoriteE
   }
 }
 
-export function removeMovieFromXXPlaylist(playlistId: string, movieCode: string) {
+export function removeMovieFromTopXXPlaylist(playlistId: string, movieCode: string) {
   if (typeof window === 'undefined') return;
-  const playlists = getXXPlaylists();
+  const playlists = getTopXXPlaylists();
   const playlist = playlists.find(p => p.id === playlistId);
   if (playlist) {
     playlist.movies = playlist.movies.filter(m => m.movieCode !== movieCode);
@@ -154,9 +154,9 @@ export function removeMovieFromXXPlaylist(playlistId: string, movieCode: string)
   }
 }
 
-export function renameXXPlaylist(id: string, newName: string) {
+export function renameTopXXPlaylist(id: string, newName: string) {
   if (typeof window === 'undefined') return;
-  const playlists = getXXPlaylists();
+  const playlists = getTopXXPlaylists();
   const playlist = playlists.find(p => p.id === id);
   if (playlist) {
     playlist.name = newName;
@@ -164,19 +164,20 @@ export function renameXXPlaylist(id: string, newName: string) {
   }
 }
 
-export function isMovieInPlaylist(playlistId: string, movieCode: string): boolean {
-  const playlists = getXXPlaylists();
+export function isMovieInTopXXPlaylist(playlistId: string, movieCode: string): boolean {
+  const playlists = getTopXXPlaylists();
   const playlist = playlists.find(p => p.id === playlistId);
   return playlist?.movies.some(m => m.movieCode === movieCode) || false;
 }
 
-export function isMovieInAnyXXPlaylist(movieCode: string): boolean {
+export function isMovieInAnyTopXXPlaylist(movieCode: string): boolean {
   if (!movieCode) return false;
-  const playlists = getXXPlaylists();
+  const playlists = getTopXXPlaylists();
   return playlists.some(p => p.movies.some(m => m.movieCode === movieCode));
 }
 
-export function saveXXPlaylists(playlists: XXPlaylist[]) {
+export function saveTopXXPlaylists(playlists: TopXXPlaylist[]) {
   if (typeof window === 'undefined') return;
   localStorage.setItem(PLAYLISTS_KEY, JSON.stringify(playlists));
 }
+

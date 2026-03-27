@@ -2,22 +2,27 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { Play, Trash2, Clock, X } from "lucide-react";
-import { getXXHistory, clearXXHistory, XXHistoryEntry, removeXXHistoryItem } from "@/services/topxxDb";
+import { Play, Trash2, Clock } from "lucide-react";
+import { 
+  getTopXXHistory, 
+  clearTopXXHistory, 
+  TopXXHistoryEntry, 
+  removeTopXXHistoryItem 
+} from "@/services/topxxDb";
 import { useAuth } from "@/contexts/AuthContext";
 import { 
-  getXXFirestoreHistory, 
-  deleteXXFirestoreHistoryItem 
+  getTopXXFirestoreHistory, 
+  deleteTopXXFirestoreHistoryItem 
 } from "@/services/topxxFirestore";
 import { db } from "@/lib/firebase";
 import { doc, deleteDoc, collection, query, where, getDocs } from "firebase/firestore";
 
-import { XXMovieCard } from "@/components/movie/XXMovieCard";
+import { MovieCard } from "@/components/movie/MovieCard";
 import { Button } from "@/components/ui/Button";
 
-export default function XXHistoryPage() {
+export default function TopXXHistoryPage() {
   const { user } = useAuth();
-  const [history, setHistory] = useState<XXHistoryEntry[]>([]);
+  const [history, setHistory] = useState<TopXXHistoryEntry[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -25,13 +30,13 @@ export default function XXHistoryPage() {
       setLoading(true);
       try {
         if (user) {
-          const cloudHistory = await getXXFirestoreHistory(user.uid);
+          const cloudHistory = await getTopXXFirestoreHistory(user.uid);
           setHistory(cloudHistory);
         } else {
-          setHistory(getXXHistory());
+          setHistory(getTopXXHistory());
         }
       } catch (err) {
-        setHistory(getXXHistory());
+        setHistory(getTopXXHistory());
       } finally {
         setLoading(false);
       }
@@ -44,7 +49,7 @@ export default function XXHistoryPage() {
       if (user) {
         try {
           // Clear Firestore (Query and delete each for TopXX)
-          const q = query(collection(db, "xx_history"), where("userId", "==", user.uid));
+          const q = query(collection(db, "topxx_history"), where("userId", "==", user.uid));
           const snap = await getDocs(q);
           const deletePromises = snap.docs.map(d => deleteDoc(d.ref));
           await Promise.all(deletePromises);
@@ -52,7 +57,7 @@ export default function XXHistoryPage() {
           console.error("Firestore clear error:", err);
         }
       }
-      clearXXHistory();
+      clearTopXXHistory();
       setHistory([]);
     }
   };
@@ -62,15 +67,15 @@ export default function XXHistoryPage() {
     e.stopPropagation();
     
     if (user) {
-      await deleteXXFirestoreHistoryItem(user.uid, movieCode).catch(console.error);
+      await deleteTopXXFirestoreHistoryItem(user.uid, movieCode).catch(console.error);
     }
-    removeXXHistoryItem(movieCode);
+    removeTopXXHistoryItem(movieCode);
     
     // Refresh list
     if (user) {
        setHistory(prev => prev.filter(h => h.movieCode !== movieCode));
     } else {
-       setHistory(getXXHistory());
+       setHistory(getTopXXHistory());
     }
   };
 
@@ -117,7 +122,7 @@ export default function XXHistoryPage() {
       ) : (
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 md:gap-6">
           {history.map((item) => (
-            <XXMovieCard 
+            <MovieCard 
               key={item.movieCode}
               title={item.movieTitle}
               slug={item.movieCode}
@@ -125,11 +130,11 @@ export default function XXHistoryPage() {
               progress={item.durationSeconds > 0 ? Math.min(100, Math.round((item.progressSeconds / item.durationSeconds) * 100)) : (item.progressSeconds > 0 ? 50 : 0)}
               progressText={formatProgress(item.progressSeconds, item.durationSeconds)}
               onDelete={(e) => handleRemoveItem(item.movieCode, e)}
+              isXX
             />
           ))}
         </div>
       )}
     </div>
-
   );
 }

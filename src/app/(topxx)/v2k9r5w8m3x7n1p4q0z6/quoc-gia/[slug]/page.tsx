@@ -1,10 +1,10 @@
 import { getTopXXMovies } from "@/services/api/topxx";
-import { XXMovieGrid } from "@/components/movie/XXMovieGrid";
+import { MovieGrid } from "@/components/movie/MovieGrid";
 import { notFound } from "next/navigation";
 
 export const dynamic = "force-dynamic";
 
-export default async function XXCountryPage({ params }: { params: Promise<{ slug: string }> }) {
+export default async function TopXXCountryPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   
   try {
@@ -12,10 +12,11 @@ export default async function XXCountryPage({ params }: { params: Promise<{ slug
 
     return (
       <div className="container mx-auto">
-        <XXMovieGrid 
+        <MovieGrid 
           initialMovies={initialData.items || []} 
           title={`QUỐC GIA: ${slug.toUpperCase()}`} 
           fetchUrl={`/api/topxx?type=quoc-gia&slug=${slug}`}
+          isXX={true}
           initialPage={1}
           totalPages={initialData.pagination?.totalPages || 1}
         />
@@ -25,3 +26,4 @@ export default async function XXCountryPage({ params }: { params: Promise<{ slug
     return notFound();
   }
 }
+

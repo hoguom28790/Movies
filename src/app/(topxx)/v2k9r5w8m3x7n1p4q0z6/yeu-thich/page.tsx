@@ -4,27 +4,27 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Play, Trash2, ListMusic, Plus, Heart, Search, Edit2, Check, X as CloseIcon, X } from "lucide-react";
 import { 
-  getXXPlaylists, deleteXXPlaylist, removeMovieFromXXPlaylist, 
-  createXXPlaylist, XXPlaylist, getXXFavorites, toggleXXFavorite, 
-  renameXXPlaylist, XXFavoriteEntry 
+  getTopXXPlaylists, deleteTopXXPlaylist, removeMovieFromTopXXPlaylist, 
+  createTopXXPlaylist, TopXXPlaylist, getTopXXFavorites, toggleTopXXFavorite, 
+  renameTopXXPlaylist, TopXXFavoriteEntry 
 } from "@/services/topxxDb";
 import { useAuth } from "@/contexts/AuthContext";
 import { 
-  getXXFirestoreFavorites, 
-  getUserXXFirestorePlaylists,
-  saveXXFirestorePlaylist, 
-  deleteXXFirestorePlaylist,
-  toggleXXFirestoreFavorite
+  getTopXXFirestoreFavorites, 
+  getUserTopXXFirestorePlaylists,
+  saveTopXXFirestorePlaylist, 
+  deleteTopXXFirestorePlaylist,
+  toggleTopXXFirestoreFavorite
 } from "@/services/topxxFirestore";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
-import { XXMovieCard } from "@/components/movie/XXMovieCard";
+import { MovieCard } from "@/components/movie/MovieCard";
 
-export default function XXLibraryPage() {
+export default function TopXXLibraryPage() {
   const router = useRouter();
   const { user } = useAuth();
-  const [playlists, setPlaylists] = useState<XXPlaylist[]>([]);
-  const [favorites, setFavorites] = useState<XXFavoriteEntry[]>([]);
+  const [playlists, setPlaylists] = useState<TopXXPlaylist[]>([]);
+  const [favorites, setFavorites] = useState<TopXXFavoriteEntry[]>([]);
   const [favoriteActors, setFavoriteActors] = useState<any[]>([]);
   const [activeTab, setActiveTab] = useState<string>("favorites");
   const [activePlaylistId, setActivePlaylistId] = useState<string | null>(null);
@@ -40,21 +40,21 @@ export default function XXLibraryPage() {
     try {
       if (user) {
         const [cloudPl, cloudFav, actorFav] = await Promise.all([
-          getUserXXFirestorePlaylists(user.uid),
-          getXXFirestoreFavorites(user.uid),
+          getUserTopXXFirestorePlaylists(user.uid),
+          getTopXXFirestoreFavorites(user.uid),
           (await import("@/services/db")).getUserFavoriteActors(user.uid, 'topxx')
         ]);
         setPlaylists(cloudPl);
         setFavorites(cloudFav);
         setFavoriteActors(actorFav);
       } else {
-        setPlaylists(getXXPlaylists());
-        setFavorites(getXXFavorites());
+        setPlaylists(getTopXXPlaylists());
+        setFavorites(getTopXXFavorites());
         setFavoriteActors([]);
       }
     } catch (e) {
-      setPlaylists(getXXPlaylists());
-      setFavorites(getXXFavorites());
+      setPlaylists(getTopXXPlaylists());
+      setFavorites(getTopXXFavorites());
     } finally {
       setLoading(false);
     }
@@ -69,20 +69,20 @@ export default function XXLibraryPage() {
     if (!newName.trim()) return;
     
     // Local first
-    const newId = createXXPlaylist(newName.trim());
+    const newId = createTopXXPlaylist(newName.trim());
     
     // Sync to Cloud
     if (user) {
-      const newPlaylist: XXPlaylist = {
+      const newPlaylist: TopXXPlaylist = {
         id: newId,
         name: newName.trim(),
         createdAt: Date.now(),
         movies: []
       };
-      await saveXXFirestorePlaylist(user.uid, newPlaylist);
+      await saveTopXXFirestorePlaylist(user.uid, newPlaylist);
     }
     
-    setPlaylists(getXXPlaylists());
+    setPlaylists(getTopXXPlaylists());
     setActivePlaylistId(newId);
     setActiveTab("playlist");
     setNewName("");
@@ -94,11 +94,11 @@ export default function XXLibraryPage() {
     e.stopPropagation();
     if (confirm("Bạn có chắc muốn xóa Playlist này?")) {
       if (user) {
-        await deleteXXFirestorePlaylist(user.uid, id);
+        await deleteTopXXFirestorePlaylist(user.uid, id);
       }
-      deleteXXPlaylist(id);
+      deleteTopXXPlaylist(id);
       
-      const remaining = getXXPlaylists();
+      const remaining = getTopXXPlaylists();
       setPlaylists(remaining);
       if (activePlaylistId === id) {
         setActivePlaylistId(null);
@@ -111,48 +111,48 @@ export default function XXLibraryPage() {
     e.preventDefault();
     if (!activePlaylistId || !editNameValue.trim()) return;
     
-    renameXXPlaylist(activePlaylistId, editNameValue.trim());
+    renameTopXXPlaylist(activePlaylistId, editNameValue.trim());
     
     if (user) {
-       const pl = playlists.find((p: XXPlaylist) => p.id === activePlaylistId);
+       const pl = playlists.find((p: TopXXPlaylist) => p.id === activePlaylistId);
        if (pl) {
          pl.name = editNameValue.trim();
-         await saveXXFirestorePlaylist(user.uid, pl);
+         await saveTopXXFirestorePlaylist(user.uid, pl);
        }
     }
     
-    setPlaylists(getXXPlaylists());
+    setPlaylists(getTopXXPlaylists());
     setIsEditingName(false);
   };
 
   const startEditing = () => {
-    const pl = playlists.find((p: XXPlaylist) => p.id === activePlaylistId);
+    const pl = playlists.find((p: TopXXPlaylist) => p.id === activePlaylistId);
     if (pl) {
       setEditNameValue(pl.name);
       setIsEditingName(true);
     }
   };
 
-  const activePlaylist = playlists.find((p: XXPlaylist) => p.id === activePlaylistId);
+  const activePlaylist = playlists.find((p: TopXXPlaylist) => p.id === activePlaylistId);
   const displayMovies = activeTab === "favorites" ? favorites : (activePlaylist?.movies || []);
   
-  const filteredMovies = displayMovies.filter((m: XXFavoriteEntry) => 
+  const filteredMovies = displayMovies.filter((m: TopXXFavoriteEntry) => 
     m.movieTitle.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const handleRemoveMovie = async (movie: XXFavoriteEntry) => {
+  const handleRemoveMovie = async (movie: TopXXFavoriteEntry) => {
     if (activeTab === "favorites") {
-      if (user) await toggleXXFirestoreFavorite(user.uid, movie);
-      toggleXXFavorite(movie);
-      setFavorites(getXXFavorites());
+      if (user) await toggleTopXXFirestoreFavorite(user.uid, movie);
+      toggleTopXXFavorite(movie);
+      setFavorites(getTopXXFavorites());
     } else if (activePlaylistId) {
-      removeMovieFromXXPlaylist(activePlaylistId, movie.movieCode);
+      removeMovieFromTopXXPlaylist(activePlaylistId, movie.movieCode);
       if (user && activePlaylist) {
          const updatedPl = { ...activePlaylist };
          updatedPl.movies = updatedPl.movies.filter(m => m.movieCode !== movie.movieCode);
-         await saveXXFirestorePlaylist(user.uid, updatedPl);
+         await saveTopXXFirestorePlaylist(user.uid, updatedPl);
       }
-      setPlaylists(getXXPlaylists());
+      setPlaylists(getTopXXPlaylists());
     }
   };
 
@@ -228,7 +228,7 @@ export default function XXLibraryPage() {
             )}
 
             <div className="space-y-2">
-              {playlists.map((pl: XXPlaylist) => (
+              {playlists.map((pl: TopXXPlaylist) => (
                 <div 
                   key={pl.id}
                   className={`group flex items-center justify-between p-4 rounded-2xl transition-all cursor-pointer border ${
@@ -341,11 +341,11 @@ export default function XXLibraryPage() {
                         {isEditingName && activeTab === "playlist" ? (
                           <form onSubmit={handleRenamePlaylist} className="flex items-center gap-2">
                              <input 
-                               autoFocus
-                               type="text"
-                               value={editNameValue}
-                               onChange={(e) => setEditNameValue(e.target.value)}
-                               className="bg-foreground/10 border border-foreground/20 rounded-xl px-4 py-2 text-2xl md:text-4xl font-black text-foreground uppercase italic tracking-tighter outline-none focus:border-yellow-500/50"
+                                autoFocus
+                                type="text"
+                                value={editNameValue}
+                                onChange={(e) => setEditNameValue(e.target.value)}
+                                className="bg-foreground/10 border border-foreground/20 rounded-xl px-4 py-2 text-2xl md:text-4xl font-black text-foreground uppercase italic tracking-tighter outline-none focus:border-yellow-500/50"
                              />
                              <button type="submit" className="p-2 bg-yellow-500 rounded-xl text-black hover:bg-foreground transition-colors">
                                 <Check className="w-6 h-6" />
@@ -402,10 +402,11 @@ export default function XXLibraryPage() {
                  <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8">
                     {filteredMovies.map((movie) => (
                       <div key={`${movie.movieCode}-${movie.addedAt}`} className="relative group">
-                         <XXMovieCard 
+                         <MovieCard 
                            title={movie.movieTitle}
                            slug={movie.movieCode}
                            posterUrl={movie.posterUrl}
+                           isXX
                          />
                          
                          <div className="absolute -top-2 -right-2 z-30">
@@ -430,6 +431,5 @@ export default function XXLibraryPage() {
         </main>
       </div>
     </div>
-
   );
 }

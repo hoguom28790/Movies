@@ -7,7 +7,7 @@ import { Search, X, Loader2, Play } from "lucide-react";
 import { Movie } from "@/types/movie";
 import { TOPXX_PATH } from "@/lib/constants";
 
-export function XXInstantSearch() {
+export function TopXXInstantSearch() {
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<Movie[]>([]);
   const [loading, setLoading] = useState(false);

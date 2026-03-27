@@ -7,7 +7,7 @@ import { AlertCircle, LogOut, User, Home, History as HistoryIcon, Heart, Search 
 import { TOPXX_PATH } from "@/lib/constants";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { getLunarAuthPass } from "@/lib/lunar";
-import { XXInstantSearch } from "@/components/layout/XXInstantSearch";
+import { TopXXInstantSearch } from "@/components/layout/TopXXInstantSearch";
 import { useUserTheme } from "@/hooks/useUserTheme";
 
 export default function TopXXLayout({
@@ -84,7 +84,7 @@ export default function TopXXLayout({
             </Link>
             
             <div className="flex items-center gap-2 sm:gap-4 flex-1 justify-end">
-              <XXInstantSearch />
+              <TopXXInstantSearch />
               
               <Link href={`/${TOPXX_PATH}`} className={`p-2 transition-colors ${pathname === `/${TOPXX_PATH}` ? "text-primary" : "text-foreground/60 hover:text-primary"}`}>
                 <Home className="w-5 h-5" />
