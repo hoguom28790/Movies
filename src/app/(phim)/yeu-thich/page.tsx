@@ -4,27 +4,25 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useAuth } from "@/contexts/AuthContext";
 import { 
-  getFavoriteMovies, 
-  getFavoriteActors, 
-  getCustomPlaylists, 
-  deleteCustomPlaylist,
-  removeFromPlaylist
+  getUserWatchlist, 
+  getUserFavoriteActors, 
+  getUserPlaylists, 
+  deletePlaylist,
+  removeMovieFromPlaylist
 } from "@/services/db";
 import { 
   Heart, 
   User, 
   ListMusic, 
   Trash2, 
-  ChevronRight, 
   PlayCircle, 
   Clock, 
-  Star,
   Film,
   AlertCircle,
   Loader2
 } from "lucide-react";
 import { getTMDBImageUrl } from "@/services/tmdb";
-import MovieCard from "@/components/movie/MovieCard";
+import { MovieCard } from "@/components/movie/MovieCard";
 import { cn } from "@/lib/utils";
 
 type Tab = "watchlist" | "actors" | "playlists";
@@ -45,9 +43,9 @@ export default function LibraryPage() {
       }
       try {
         const [w, a, p] = await Promise.all([
-          getFavoriteMovies(user.uid),
-          getFavoriteActors(user.uid),
-          getCustomPlaylists(user.uid)
+          getUserWatchlist(user.uid),
+          getUserFavoriteActors(user.uid),
+          getUserPlaylists(user.uid)
         ]);
         setWatchlist(w || []);
         setActors(a || []);
@@ -64,20 +62,20 @@ export default function LibraryPage() {
   const handleDeletePlaylist = async (id: string) => {
     if (!user || !confirm("Bạn có chắc chắn muốn xóa danh sách phát này?")) return;
     try {
-      await deleteCustomPlaylist(user.uid, id);
+      await deletePlaylist(id);
       setPlaylists(prev => prev.filter(p => p.id !== id));
     } catch (err) {
       alert("Không thể xóa danh sách phát");
     }
   };
 
-  const handleRemoveFromPlaylist = async (playlistId: string, movieId: number) => {
+  const handleRemoveFromPlaylist = async (playlistId: string, movieSlug: string) => {
     if (!user) return;
     try {
-      await removeFromPlaylist(user.uid, playlistId, movieId);
+      await removeMovieFromPlaylist(playlistId, movieSlug);
       setPlaylists(prev => prev.map(p => {
         if (p.id === playlistId) {
-          return { ...p, movies: p.movies.filter((m: any) => m.id !== movieId) };
+          return { ...p, movies: (p.movies || []).filter((m: any) => m.movieSlug !== movieSlug) };
         }
         return p;
       }));
@@ -162,8 +160,10 @@ export default function LibraryPage() {
                   <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-x-6 gap-y-12">
                     {watchlist.map((m, idx) => (
                       <MovieCard 
-                        key={m.id || m.slug} 
-                        {...m} 
+                        key={m.movieSlug} 
+                        slug={m.movieSlug}
+                        title={m.movieTitle}
+                        posterUrl={m.posterUrl}
                         index={idx % 20}
                       />
                     ))}
@@ -240,17 +240,17 @@ export default function LibraryPage() {
                         
                         <div className="grid grid-cols-2 sm:grid-cols-4 gap-6">
                           {p.movies?.slice(0, 4).map((m: any) => (
-                            <div key={m.id} className="relative aspect-[2/3] rounded-[24px] overflow-hidden group/item shadow-apple border border-foreground/5 cursor-pointer active-depth">
+                            <div key={m.movieSlug} className="relative aspect-[2/3] rounded-[24px] overflow-hidden group/item shadow-apple border border-foreground/5 cursor-pointer active-depth">
                                <img 
                                  src={getTMDBImageUrl(m.posterUrl || m.poster_path, 'w185')!} 
                                  className="w-full h-full object-cover transition-transform duration-1000 group-hover/item:scale-110" 
                                />
                                <div className="absolute inset-0 bg-black/60 opacity-0 group-hover/item:opacity-100 transition-opacity flex items-center justify-center gap-2">
-                                  <Link href={`/xem/${m.slug}`} className="p-3 bg-white rounded-full text-black shadow-xl scale-50 group-hover/item:scale-100 transition-transform">
+                                  <Link href={`/xem/${m.movieSlug}`} className="p-3 bg-white rounded-full text-black shadow-xl scale-50 group-hover/item:scale-100 transition-transform">
                                     <PlayCircle className="w-5 h-5" />
                                   </Link>
                                   <button 
-                                    onClick={() => handleRemoveFromPlaylist(p.id, m.id)}
+                                    onClick={() => handleRemoveFromPlaylist(p.id, m.movieSlug)}
                                     className="p-3 bg-red-500 rounded-full text-white shadow-xl scale-50 group-hover/item:scale-100 transition-transform delay-75"
                                   >
                                     <Trash2 className="w-4 h-4" />
