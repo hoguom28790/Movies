@@ -140,7 +140,7 @@ export default async function CatchAllWatchPage({ params, searchParams }: PagePr
          <div className="bg-black/10 backdrop-blur-3xl py-12 relative">
             <div className="container max-w-7xl mx-auto px-4 lg:px-12">
                {/* 2. Main content area: Player + Episode List */}
-                <div className="grid grid-cols-1 lg:grid-cols-[1fr_360px] gap-8 lg:gap-12" style={{ alignItems: 'start' }}>
+                <div className="grid grid-cols-1 md:grid-cols-[1fr_360px] gap-8 lg:gap-12" style={{ alignItems: 'start' }}>
                   <div className="space-y-8 lg:space-y-12">
                      {activeServerGroup.length > 0 ? (
                         <PlayerContainer 
@@ -159,7 +159,7 @@ export default async function CatchAllWatchPage({ params, searchParams }: PagePr
                      )}
                      
                      {/* MOBILE ONLY: Quick Source & Episode Selection */}
-                     <div className="lg:hidden space-y-8 p-4 rounded-3xl bg-white/5 border border-white/10 shadow-inner">
+                     <div className="md:hidden space-y-8 p-4 rounded-3xl bg-white/5 border border-white/10 shadow-inner">
                          {!isTopXX && sources.length > 1 && (
                              <div className="space-y-4">
                                 <h3 className="text-xs font-black text-white uppercase tracking-[0.2em] italic opacity-40">Chọn Nguồn</h3>
@@ -188,7 +188,7 @@ export default async function CatchAllWatchPage({ params, searchParams }: PagePr
                      <MovieTabs slug={movieSlug} source={sourceId} servers={allServers} recommendations={tmdbData?.recommendations?.results || []} collection={tmdbData?.belongs_to_collection} />
                   </div>
 
-                  <div className="hidden lg:block space-y-12">
+                  <div className="hidden md:block space-y-12">
                      {!isTopXX && sources.length > 1 && (
                          <div className="space-y-6">
                             <h3 className="text-xs font-black text-white uppercase tracking-[0.2em] italic opacity-40">Chọn Nguồn</h3>

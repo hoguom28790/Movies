@@ -491,8 +491,8 @@ export function PlayerContainer({ url, isHls, rawEmbedUrl, nextEpisodeUrl, movie
         ? (isPortrait 
             ? `fixed top-0 left-full w-[100vh] h-[100vw] rotate-90 origin-top-left z-[9999] bg-black ${isIOS ? 'p-safe' : ''}` 
             : `fixed inset-0 w-screen h-screen z-[9999] bg-black ${isIOS ? 'p-safe' : ''}`)
-        // FIXED: Enforce strict 16:9 ratio and cap height to avoid giant players on desktop/mobile
-        : "w-full aspect-[16/9] h-auto min-h-[180px] max-h-[600px] self-start relative shadow-cinematic-2xl bg-black overflow-hidden rounded-[32px] border border-white/5"
+        // FIXED: Enforce strict 16:9 ratio and cap height to avoid giant players. Optimized for laptop screens.
+        : "w-full aspect-[16/9] h-auto min-h-[180px] max-h-[480px] self-start relative shadow-cinematic-2xl bg-black overflow-hidden rounded-[32px] border border-white/5"
       } 
       style={!isPseudoFS ? { aspectRatio: '16/9' } : {}}
     >
