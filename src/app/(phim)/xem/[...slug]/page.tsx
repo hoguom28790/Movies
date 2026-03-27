@@ -93,7 +93,7 @@ export default async function CatchAllWatchPage({ params, searchParams }: PagePr
 
     return (
       <div className={`min-h-screen ${isTopXX ? 'bg-[#0f1115]' : 'bg-background'} text-white overflow-x-hidden`}>
-        <div className="relative w-full lg:h-[85vh] min-h-[40vh] flex flex-col justify-end pb-12 lg:pb-20 pt-20 lg:pt-32 overflow-hidden">
+        <div className="relative w-full h-auto flex flex-col justify-end pt-24 lg:pt-32 pb-12 lg:pb-16 overflow-hidden">
            <div className="absolute inset-0 z-0">
               <img src={backdrop} className="w-full h-full object-cover opacity-30 blur-sm scale-105" alt="" />
               <div className={`absolute inset-0 bg-gradient-to-t ${isTopXX ? 'from-[#0f1115]' : 'from-background'} via-transparent to-transparent`} />
@@ -137,11 +137,11 @@ export default async function CatchAllWatchPage({ params, searchParams }: PagePr
            </div>
         </div>
 
-         <div className="bg-black/10 backdrop-blur-3xl py-12 relative">
+         <div className="bg-black/10 backdrop-blur-3xl py-12 lg:py-16 relative">
             <div className="container max-w-7xl mx-auto px-4 lg:px-12">
                {/* 2. Main content area: Player + Episode List */}
-                <div className="grid grid-cols-1 md:grid-cols-[1fr_360px] gap-8 lg:gap-12" style={{ alignItems: 'start' }}>
-                  <div className="space-y-8 lg:space-y-12">
+               <div className="flex flex-col md:flex-row gap-8 lg:gap-12 items-start">
+                  <div className="flex-1 min-w-0 space-y-8 lg:space-y-12">
                      {activeServerGroup.length > 0 ? (
                         <PlayerContainer 
                            url={currentEp.link_m3u8} isHls={!!currentEp.link_m3u8} rawEmbedUrl={currentEp.link_embed}
@@ -188,7 +188,7 @@ export default async function CatchAllWatchPage({ params, searchParams }: PagePr
                      <MovieTabs slug={movieSlug} source={sourceId} servers={allServers} recommendations={tmdbData?.recommendations?.results || []} collection={tmdbData?.belongs_to_collection} />
                   </div>
 
-                  <div className="hidden md:block space-y-12">
+                  <div className="hidden md:block w-full md:w-[360px] flex-shrink-0 space-y-12">
                      {!isTopXX && sources.length > 1 && (
                          <div className="space-y-6">
                             <h3 className="text-xs font-black text-white uppercase tracking-[0.2em] italic opacity-40">Chọn Nguồn</h3>
