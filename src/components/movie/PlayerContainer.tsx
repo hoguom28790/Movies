@@ -205,8 +205,8 @@ export function PlayerContainer({ url, isHls, rawEmbedUrl, nextEpisodeUrl, movie
 
          // LocalStorage Always
          try {
-            const { saveXXHistory } = await import("@/services/topxxDb");
-            saveXXHistory({
+            const { saveTopXXHistory } = await import("@/services/topxxDb");
+            saveTopXXHistory({
               movieCode: movieSlug,
               movieTitle: movieTitle || "",
               posterUrl: absolutePoster,
@@ -344,8 +344,8 @@ export function PlayerContainer({ url, isHls, rawEmbedUrl, nextEpisodeUrl, movie
 
           const isTopXX = detectedSource === 'topxx' || detectedSource === 'avdb';
           if (isTopXX) {
-            const { saveXXHistory } = await import("@/services/topxxDb");
-            saveXXHistory({
+            const { saveTopXXHistory } = await import("@/services/topxxDb");
+            saveTopXXHistory({
               movieCode: movieSlug,
               movieTitle: movieTitle || "",
               posterUrl: absolutePoster,
