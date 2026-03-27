@@ -56,7 +56,7 @@ export default async function XXWatchPage({
 
             <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-2 md:pb-0">
               <span className="text-[10px] font-black text-white/20 uppercase tracking-[0.3em] mr-2">Servers</span>
-              {sources.map((src: any, idx: number) => (
+              {sources.map((_src: any, idx: number) => (
                 <Link key={idx} href={`/${TOPXX_PATH}/watch/${slug}?s=${idx}`} scroll={false} replace>
                   <Button
                     variant={currentIdx === idx ? "primary" : "secondary"}
@@ -76,9 +76,9 @@ export default async function XXWatchPage({
 
           <div className="px-0 sm:px-4 lg:px-8">
              <PlayerContainer 
-                url={resolveTopXXLink(currentSource.link)}
-                isHls={currentSource.link.includes('.m3u8') || currentSource.link.includes('streamxx')}
-                rawEmbedUrl={!currentSource.link.includes('.m3u8') && !currentSource.link.includes('streamxx') ? currentSource.link : ""}
+                url={resolveTopXXLink(currentSource.link || "")}
+                isHls={(currentSource.link || "").includes('.m3u8') || (currentSource.link || "").includes('streamxx')}
+                rawEmbedUrl={!(currentSource.link || "").includes('.m3u8') && !(currentSource.link || "").includes('streamxx') ? currentSource.link : ""}
                 movieTitle={(viTrans as any)?.title || (item as any)?.title || (item as any)?.name}
                 movieSlug={slug}
                 posterUrl={item.posterUrl}
@@ -133,7 +133,7 @@ export default async function XXWatchPage({
               <div className="absolute inset-0 bg-yellow-500 opacity-0 group-hover:opacity-[0.02] transition-opacity blur-3xl -z-10" />
               <div className="bg-surface border border-white/5 rounded-[40px] p-8 md:p-12 transition-all hover:border-yellow-500/20">
                  <h3 className="text-[10px] font-black text-white/20 uppercase tracking-[0.4em] mb-6 flex items-center gap-3">
-                   <span className="w-8 h-px bg-white/10" /> Nội dung phim
+                    <span className="w-8 h-px bg-white/10" /> Nội dung phim
                  </h3>
                  <div 
                    className="text-white/60 text-sm md:text-base leading-relaxed md:leading-loose font-medium italic"
