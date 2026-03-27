@@ -9,6 +9,7 @@ import { StylePresetProvider } from "@/contexts/StylePresetContext";
 import { ThemeProvider } from "@/components/theme-provider";
 import { DeviceProvider } from "@/contexts/DeviceContext";
 import { LgTvDetector } from "@/components/layout/LgTvDetector";
+import { ScrollPerformance } from "@/components/layout/ScrollPerformance";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -47,8 +48,12 @@ export default function RootLayout({
         <link rel="preconnect" href="https://api.themoviedb.org" />
         <link rel="preconnect" href="https://firebase.googleapis.com" />
         <link rel="preconnect" href="https://firebasestorage.googleapis.com" />
+        <link rel="manifest" href="/manifest.json" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
       </head>
       <body className="bg-background text-foreground selection:bg-primary/30 antialiased font-sans cinema-grain">
+        <ScrollPerformance />
         <QueryProvider>
           <DeviceProvider>
             <ThemeProvider 

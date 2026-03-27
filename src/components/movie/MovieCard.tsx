@@ -1,10 +1,9 @@
 "use client";
 
-import React from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Play, X, Star } from 'lucide-react';
-import { motion } from 'framer-motion';
 import { WatchlistBtn } from './WatchlistBtn';
 import { cn } from '@/lib/utils';
 import { TOPXX_PATH } from "@/lib/constants";
@@ -30,16 +29,39 @@ interface MovieCardProps {
 export function MovieCard({ 
   title, slug, posterUrl, year, quality, episodeText, subText, originalTitle, progress, progressText, customHref, score, onDelete, index = 0, isXX = false
 }: MovieCardProps) {
-  const [imgError, setImgError] = React.useState(false);
+  const [imgError, setImgError] = useState(false);
+  const [isVisible, setIsVisible] = useState(false);
+  const cardRef = useRef<HTMLDivElement>(null);
+  
   const linkHref = customHref || (slug.startsWith('/') ? slug : (isXX ? `/${TOPXX_PATH}/xem/${slug}` : `/xem/${slug}`));
   
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsVisible(true);
+          observer.disconnect();
+        }
+      },
+      { threshold: 0.1, rootMargin: '50px' }
+    );
+
+    if (cardRef.current) {
+      observer.observe(cardRef.current);
+    }
+
+    return () => observer.disconnect();
+  }, []);
+
   return (
-    <motion.div 
-      initial={{ opacity: 0, y: 10 }} // Apple: no blur on reveal
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: "-10%" }}
-      transition={{ duration: 0.6, delay: Math.min(index * 0.04, 0.4), ease: "easeOut" }}
-      className={cn("group relative flex flex-col gap-3", isXX ? "hover:z-10" : "")}
+    <div 
+      ref={cardRef}
+      style={{ animationDelay: `${Math.min(index * 0.05, 0.5)}s` }}
+      className={cn(
+        "group relative flex flex-col gap-3 reveal-item will-change-scroll", 
+        isVisible && "is-visible",
+        isXX ? "hover:z-10" : ""
+      )}
     >
       <Link 
         href={linkHref} 
@@ -101,11 +123,9 @@ export function MovieCard({
         {progress !== undefined && (
           <div className="absolute bottom-0 inset-x-0 p-3 z-20">
              <div className="h-1 w-full bg-white/20 rounded-full overflow-hidden">
-                <motion.div 
-                  initial={{ width: 0 }}
-                  animate={{ width: `${Math.max(2, progress)}%` }}
-                  transition={{ duration: 1, ease: "easeOut" }}
-                  className="h-full bg-primary rounded-full shadow-[0_0_8px_rgba(0,122,255,0.5)]" 
+                <div 
+                  className="h-full bg-primary rounded-full shadow-[0_0_8px_rgba(0,122,255,0.5)] transition-all duration-1000 ease-out" 
+                  style={{ width: `${Math.max(2, progress)}%` }}
                 />
              </div>
           </div>
@@ -149,6 +169,6 @@ export function MovieCard({
            </span>
         </div>
       </div>
-    </motion.div>
+    </div>
   );
 }

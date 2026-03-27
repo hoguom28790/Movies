@@ -1,27 +1,18 @@
 import React from "react";
+import { MovieCardSkeleton } from "@/components/movie/MovieSkeleton";
+import { Skeleton } from "@/components/ui/Skeleton";
 
 export default function TopXXSearchLoading() {
   return (
-    <div className="min-h-[70vh] flex flex-col items-center justify-center p-8 space-y-12">
-      <div className="relative">
-        <div className="w-24 h-24 rounded-full border-[8px] border-yellow-500/10 border-t-yellow-500 animate-spin" />
-        <div className="absolute inset-0 flex items-center justify-center">
-          <div className="w-12 h-12 rounded-full border-[4px] border-yellow-500/20 border-b-yellow-500 animate-[spin_1.5s_linear_infinite_reverse]" />
-        </div>
-      </div>
-      
-      <div className="space-y-4 text-center">
-        <h2 className="text-3xl font-black italic uppercase tracking-tighter text-white animate-pulse">
-          Đang truy xuất dữ liệu...
-        </h2>
-        <p className="text-yellow-500/40 font-black uppercase tracking-[0.6em] text-[10px] italic">
-          Elite Archive Streaming
-        </p>
+    <div className="min-h-screen px-6 lg:px-12 py-20 flex flex-col gap-16 animate-in fade-in duration-500">
+      <div className="flex flex-col gap-4 border-l-4 border-yellow-500 pl-8">
+        <Skeleton className="h-10 w-96 rounded-full bg-yellow-500/10" />
+        <Skeleton className="h-4 w-48 rounded-full bg-white/5 opacity-30" />
       </div>
 
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-8 md:gap-12 w-full opacity-10 blur-sm pointer-events-none">
-        {[...Array(10)].map((_, i) => (
-          <div key={i} className="aspect-[2/3] bg-white/10 rounded-[40px] animate-pulse" />
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-8 md:gap-12 w-full">
+        {[...Array(12)].map((_, i) => (
+          <MovieCardSkeleton key={i} isXX={true} />
         ))}
       </div>
     </div>

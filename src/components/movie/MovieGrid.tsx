@@ -95,7 +95,7 @@ export function MovieGrid({
             <p className="text-foreground/20 text-sm font-black uppercase tracking-[0.4em] italic">No content found</p>
           </div>
         ) : (
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-7 gap-x-6 gap-y-12">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-7 gap-x-6 gap-y-12 will-change-scroll">
             {movies.map((movie, idx) => (
               <MovieCard 
                 key={movie.id} 
@@ -149,7 +149,7 @@ export function MovieGrid({
           <p className="text-foreground/30 font-medium">Đang chuẩn bị danh sách phim cho bạn...</p>
         </div>
       ) : (
-        <div className="grid grid-cols-2 xs:grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 sm:gap-6 md:gap-8 lg:gap-10">
+        <div className="grid grid-cols-2 xs:grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 sm:gap-6 md:gap-8 lg:gap-10 will-change-scroll">
           {movies.map((movie, idx) => (
             <MovieCard 
               key={movie.id} 

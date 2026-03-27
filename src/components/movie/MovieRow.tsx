@@ -67,7 +67,7 @@ export function MovieRow({ title, movies, viewAllHref, viewAllLink, isXX = false
       <div className="relative group">
         <div
           ref={rowRef}
-          className="flex overflow-x-auto pb-4 scroll-smooth px-6 lg:px-12 no-scrollbar gap-4 md:gap-6"
+          className="flex overflow-x-auto pb-4 scroll-smooth px-6 lg:px-12 no-scrollbar gap-4 md:gap-6 will-change-scroll"
         >
           {movies.map((movie, idx) => (
             <div 
