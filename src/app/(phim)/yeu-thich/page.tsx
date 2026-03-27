@@ -337,13 +337,6 @@ export default function MovieLibraryPage() {
                              <span className="text-[10px] font-black text-white uppercase tracking-[0.3em] mt-3 italic drop-shadow-md">Xem Kho Phim</span>
                          </div>
                          
-                         {/* Quick Indicators */}
-                         <div className="absolute top-4 left-4 opacity-100 group-hover:opacity-0 transition-opacity">
-                            <div className="px-3 py-1.5 glass-pro rounded-xl flex items-center gap-1.5 border border-white/10 shadow-xl">
-                               <Star className="w-3 h-3 text-primary fill-primary" />
-                               <span className="text-[9px] font-black text-white italic uppercase tracking-widest">Favorite</span>
-                            </div>
-                         </div>
                          
                          {/* Remove Button for Actors */}
                          <button 

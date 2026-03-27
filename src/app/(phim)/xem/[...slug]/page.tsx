@@ -1,7 +1,7 @@
 // src/app/(phim)/xem/[...slug]/page.tsx
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { Play, Star, Calendar, Clock, Tag, User, Users, Info, ChevronRight, Share2, Plus, ArrowLeft } from "lucide-react";
+import { Play, Star, Calendar, Clock, Tag, User, Users, Info, ChevronRight, Plus, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { WatchlistBtn } from "@/components/movie/WatchlistBtn";
 import { FavoriteActorBtn } from "@/components/movie/FavoriteActorBtn";
@@ -134,10 +134,6 @@ export default async function CatchAllWatchPage({ params, searchParams }: PagePr
                         <div className="lg:hidden">
                            <WatchlistBtn movieSlug={movieSlug} movieTitle={safeData.name} posterUrl={poster} />
                         </div>
-                        <button className="flex items-center gap-2 text-white/40 hover:text-white transition-colors group">
-                           <Share2 className="w-5 h-5 group-hover:scale-110" />
-                           <span className="text-[10px] font-black uppercase tracking-widest italic">Chia sẻ</span>
-                        </button>
                      </div>
                     <p className="text-xl text-white/60 leading-relaxed italic line-clamp-2 lg:line-clamp-3 max-w-4xl">{tmdbData?.overview || safeData.description}</p>
                  </div>
