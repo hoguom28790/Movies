@@ -24,7 +24,7 @@ async function fetchFromMirrors(path: string) {
       const url = `${mirror}${path}`;
       const res = await fetch(url, { 
         headers: { ...headers, "Referer": mirror + "/" }, 
-        cache: "no-store" 
+        next: { revalidate: 300 } 
       });
       
       if (res.ok) {

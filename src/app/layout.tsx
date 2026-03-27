@@ -41,7 +41,13 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="vi" className={`${inter.variable}`} suppressHydrationWarning>
-      <head />
+      <head>
+        {/* Preconnect to external domains */}
+        <link rel="preconnect" href="https://image.tmdb.org" />
+        <link rel="preconnect" href="https://api.themoviedb.org" />
+        <link rel="preconnect" href="https://firebase.googleapis.com" />
+        <link rel="preconnect" href="https://firebasestorage.googleapis.com" />
+      </head>
       <body className="bg-background text-foreground selection:bg-primary/30 antialiased font-sans cinema-grain">
         <QueryProvider>
           <DeviceProvider>

@@ -19,35 +19,19 @@ const MANUAL_MAPPING: Record<string, string> = {
   "Cứu": "cuu",
   "Sàn Đấu Sinh Tử": "san-dau-sinh-tu"
 };
+import { unstable_cache } from "next/cache";
 
-// Simple server-side cache to speed up re-renders
-const SLUG_CACHE = new Map<string, string>();
+async function resolveTrendingMoviesInternal(trending: any[]) {
+  const { searchMovies: searchLocal } = await import("@/services/api");
+  const { getTMDBImageUrl } = await import("@/services/tmdb");
 
-async function resolveTrendingMovies(trending: any[]) {
   return await Promise.all(trending.map(async (m) => {
     const title = m.title || m.name;
     const year = m.release_date?.split("-")[0];
-    const cacheKey = `${m.id}-${title}`;
-
-    if (SLUG_CACHE.has(cacheKey)) {
-       return {
-         id: m.id.toString(),
-         title: title,
-         originalTitle: m.original_title || m.original_name || "",
-         slug: SLUG_CACHE.get(cacheKey) || `/search?q=${encodeURIComponent(title)}`,
-         posterUrl: getTMDBImageUrl(m.poster_path) || "",
-         thumbUrl: getTMDBImageUrl(m.backdrop_path) || "",
-         year: year || "2025",
-         quality: "HD",
-         source: 'ophim' as any,
-         tmdbRating: m.vote_average
-       };
-    }
     
     // Check manual mapping first
     if (MANUAL_MAPPING[title]) {
       const slug = MANUAL_MAPPING[title];
-      SLUG_CACHE.set(cacheKey, slug);
       return {
         id: m.id.toString(),
         title: title,
@@ -133,8 +117,6 @@ async function resolveTrendingMovies(trending: any[]) {
          new Promise<string>((resolve) => setTimeout(() => resolve(`/search?q=${encodeURIComponent(title)}`), 2500))
       ]);
 
-      SLUG_CACHE.set(cacheKey, finalSlug);
-
       return {
         id: m.id.toString(),
         title: title,
@@ -163,6 +145,12 @@ async function resolveTrendingMovies(trending: any[]) {
     }
   }));
 }
+
+const resolveTrendingMovies = unstable_cache(
+  async (trending: any[]) => resolveTrendingMoviesInternal(trending),
+  ["trending-movies-slugs"],
+  { revalidate: 3600 }
+);
 
 export default async function Home() {
   const [latestData, phimBoData, phimLeData, hoatHinhData, trendingData] = await Promise.allSettled([

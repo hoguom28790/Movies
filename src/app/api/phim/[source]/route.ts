@@ -30,7 +30,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ sour
   }
 
   try {
-    const res = await fetch(url, { cache: "no-store" });
+    const res = await fetch(url, { next: { revalidate: 300 } });
     if (!res.ok) throw new Error("Source API error");
     
     const data = await res.json();
