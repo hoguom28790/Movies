@@ -195,12 +195,16 @@ export async function getMovieDetails(slug: string): Promise<{ sources: UnifiedM
 
       const movie = data.data?.item || data.movie || data.movie_info;
       const episodes = data.data?.episodes || data.episodes || (movie as any)?.episodes || [];
+      const validEpisodes = episodes.filter((s: any) => {
+        const items = s.server_data || s.items || [];
+        return items.some((item: any) => !!(item.link_m3u8 || item.link_embed || (typeof item.link === 'string' && item.link.trim())));
+      });
       
-      if (movie && (movie.slug || movie.id) && episodes.some((s: any) => (s.server_data || s.items || []).length > 0)) {
+      if (movie && (movie.slug || movie.id) && validEpisodes.length > 0) {
         availableSources.push({ 
             id: sourceId, 
             name: sourceName, 
-            data: { ...movie, episodes } as ProviderMovie
+            data: { ...movie, episodes: validEpisodes } as ProviderMovie
         });
       }
     }

@@ -41,28 +41,52 @@ export default async function CatchAllWatchPage({ params, searchParams }: PagePr
   const currentEpisodeSlug = queryEpisode || ep || "";
 
   try {
-    const movieRes = await getMovieDetails(movieSlug);
-    if (!movieRes || !movieRes.sources || movieRes.sources.length === 0) return notFound();
-    
-    const { sources } = movieRes;
-    const currentSource = sources.find((s: any) => s.id === (querySource || src)) || sources[0];
-    const { data } = currentSource;
-    const sourceId = currentSource.id;
+    let movieRes = await getMovieDetails(movieSlug);
+    let sources = movieRes?.sources || [];
+    let currentSource = sources.find((s: any) => s.id === (querySource || src)) || sources[0];
+    let data = currentSource?.data;
+    let sourceId = currentSource?.id;
 
     const detectedSource = getMovieSource(movieSlug, sourceId);
-    const safeData = normalizeMovieData(data, detectedSource);
+    let safeData = data ? normalizeMovieData(data, detectedSource) : null;
     const isTopXX = detectedSource === 'topxx' || detectedSource === 'avdb';
 
-    const sYear = parseInt(safeData.year.toString());
-    const tmdbSearch = await searchTMDBMovie(safeData.name, isNaN(sYear) ? undefined : sYear).catch(() => null);
-    const tmdbData = tmdbSearch ? await getTMDBMovieDetails(tmdbSearch.id, tmdbSearch.media_type).catch(() => null) : null;
+    // Soft Fallback: If no pirate source found, try to resolve metadata via TMDB
+    let tmdbData: any = null;
+    if (!safeData) {
+       // Search by slug (convert slug to title-like string for broader search)
+       const titleQuery = movieSlug.split('-').join(' ');
+       const tmdbSearch = await searchTMDBMovie(titleQuery).catch(() => null);
+       if (tmdbSearch) {
+          tmdbData = await getTMDBMovieDetails(tmdbSearch.id, tmdbSearch.media_type).catch(() => null);
+          if (tmdbData) {
+             safeData = {
+                name: tmdbData.title || tmdbData.name,
+                originName: tmdbData.original_title || tmdbData.original_name,
+                year: (tmdbData.release_date || tmdbData.first_air_date || "").split('-')[0],
+                posterUrl: getTMDBImageUrl(tmdbData.poster_path, 'w500') || "",
+                description: tmdbData.overview,
+                quality: "TBA",
+                category: tmdbData.genres?.map((g: any) => g.name) || []
+             } as any;
+          }
+       }
+    } else {
+       const sYear = parseInt(safeData.year.toString());
+       const tmdbSearch = await searchTMDBMovie(safeData.name, isNaN(sYear) ? undefined : sYear).catch(() => null);
+       tmdbData = tmdbSearch ? await getTMDBMovieDetails(tmdbSearch.id, tmdbSearch.media_type).catch(() => null) : null;
+    }
+
+    if (!safeData) return notFound();
 
     const poster = (tmdbData?.poster_path ? getTMDBImageUrl(tmdbData.poster_path, 'w780') : safeData.posterUrl) || "";
     const backdrop = (tmdbData?.backdrop_path ? getTMDBImageUrl(tmdbData.backdrop_path, 'original') : poster) || "";
 
-    let rawServers = data.servers && Array.isArray(data.servers) ? data.servers : (isTopXX ? [data] : (data.episodes || data.items || []));
+    let rawServers = (data?.servers && Array.isArray(data.servers)) 
+      ? data.servers 
+      : (isTopXX ? [data] : (data?.episodes || data?.items || []));
 
-    const allServers = rawServers.map((srv: any, idx: number) => {
+    const allServers = rawServers.filter(Boolean).map((srv: any, idx: number) => {
        const serverItems = srv.episodes || srv.server_data || srv.items || (isTopXX ? (srv.sources || []) : []);
        const items = Array.isArray(serverItems) 
          ? serverItems.map((item: any, idxArr: number) => ({
@@ -78,14 +102,10 @@ export default async function CatchAllWatchPage({ params, searchParams }: PagePr
        return { name: srv.server || srv.server_name || srv.name || `Nguồn ${idx + 1}`, items };
     });
 
-    if (allServers.length === 0) return notFound();
-
     const activeServerGroup = allServers[currentServerIdx]?.items || allServers[0]?.items || [];
     const decodedEpSlug = decodeURIComponent(currentEpisodeSlug);
     const currentEpIdx = (currentEpisodeSlug && activeServerGroup.length > 0) ? activeServerGroup.findIndex((e: any) => e.slug === decodedEpSlug || e.name === decodedEpSlug) : 0;
     const currentEp = activeServerGroup[currentEpIdx >= 0 ? currentEpIdx : 0] || activeServerGroup[0];
-
-    if (!currentEp) return notFound();
 
     const nextEp = activeServerGroup[currentEpIdx + 1] || null;
     const nextEpisodeUrl = nextEp ? `/xem/${movieSlug}?sv=${currentServerIdx}&ep=${encodeURIComponent(nextEp.slug)}&src=${sourceId}` : undefined;
