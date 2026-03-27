@@ -77,7 +77,7 @@ export function Footer() {
                 const { TOPXX_PATH } = require("@/lib/constants");
                 const correctPass = getLunarAuthPass();
                 
-                const pass = window.prompt("⚠️ TopXX Restricted Area\nNhập mật mã (Ngày Âm Lịch DDMMYYYY) để tiếp tục:");
+                const pass = window.prompt("⚠️ TopXX Restricted Area\nNhập mật mã để tiếp tục:");
                 if (pass === correctPass) {
                   localStorage.setItem("topxx_authorized", "true");
                   window.open(`/${TOPXX_PATH}`, "_blank");

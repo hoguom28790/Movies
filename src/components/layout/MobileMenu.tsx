@@ -211,7 +211,7 @@ export function MobileMenu({ mode }: MobileMenuProps) {
                         onClick={(e) => {
                           if (g.slug === "phim-18") {
                             const correctPass = getLunarAuthPass();
-                            const pass = window.prompt(`⚠️ TopXX Restricted Area\nNhập mật mã (Ngày Âm Lịch DDMMYYYY) để tiếp tục:`);
+                            const pass = window.prompt(`⚠️ TopXX Restricted Area\nNhập mật mã để tiếp tục:`);
                             if (pass !== correctPass) {
                               e.preventDefault();
                               alert(`Mật khẩu không chính xác! Vui lòng thử lại.`);
