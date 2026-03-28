@@ -139,6 +139,7 @@
         i18n: { speed: 'Tốc độ', quality: 'Chất lượng', loop: 'Lặp lại', start: 'Bắt đầu', end: 'Kết thúc', unmute: 'Bật âm', mute: 'Tắt âm' }
       };
 
+      let networkRetryCount = 0;
       if (isHlsUrl && Hls.isSupported()) {
         hls = new Hls({ 
             capLevelToPlayerSize: true,
@@ -156,8 +157,14 @@
           if (data.fatal) {
             switch(data.type) {
               case Hls.ErrorTypes.NETWORK_ERROR:
-                console.log("[Player] Network error, retrying...");
-                hls.startLoad();
+                if (networkRetryCount < 2) {
+                    networkRetryCount++;
+                    console.log("[Player] Network error, retrying...");
+                    hls.startLoad();
+                } else {
+                    console.log("[Player] Network error limit reached, falling back to embed");
+                    fallbackToEmbed();
+                }
                 break;
               case Hls.ErrorTypes.MEDIA_ERROR:
                 console.log("[Player] Media error, recovering...");
@@ -165,18 +172,27 @@
                 break;
               default:
                 console.log("[Player] Fatal error, falling back to embed");
-                if (source.includes('topxx.vip') || source.includes('avdbapi.com')) {
-                  embedFrame.setAttribute('sandbox', 'allow-scripts allow-same-origin allow-forms allow-presentation');
-                } else {
-                  embedFrame.removeAttribute('sandbox');
-                }
-                embedFrame.src = source;
-                embedFrame.style.display = 'block';
-                video.style.display = 'none';
+                fallbackToEmbed();
                 break;
             }
           }
         });
+
+        function fallbackToEmbed() {
+            if (source.includes('topxx.vip') || source.includes('avdbapi.com')) {
+              embedFrame.setAttribute('sandbox', 'allow-scripts allow-same-origin allow-forms allow-presentation');
+            } else {
+              embedFrame.removeAttribute('sandbox');
+            }
+            embedFrame.src = source;
+            embedFrame.style.display = 'block';
+            video.style.display = 'none';
+            setTimeout(() => {
+                window.parent.postMessage({ type: 'PLAYER_READY' }, '*');
+                loader.style.opacity = '0';
+                loader.style.pointerEvents = 'none';
+            }, 1000);
+        }
         
         hls.on(Hls.Events.MANIFEST_PARSED, () => {
             const hlsQualities = hls.levels.map(l => l.height);
@@ -208,6 +224,24 @@
         video.src = source;
         player = new Plyr(video, plyrOptions);
         setupEvents();
+        
+        // Handle MP4/direct video failure
+        video.addEventListener('error', () => {
+           console.log("[Player] Video element error, falling back to embed");
+           if (source.includes('topxx.vip') || source.includes('avdbapi.com')) {
+              embedFrame.setAttribute('sandbox', 'allow-scripts allow-same-origin allow-forms allow-presentation');
+           } else {
+              embedFrame.removeAttribute('sandbox');
+           }
+           embedFrame.src = source;
+           embedFrame.style.display = 'block';
+           video.style.display = 'none';
+           setTimeout(() => {
+             window.parent.postMessage({ type: 'PLAYER_READY' }, '*');
+             loader.style.opacity = '0';
+             loader.style.pointerEvents = 'none';
+           }, 1000);
+        });
       }
     }
 

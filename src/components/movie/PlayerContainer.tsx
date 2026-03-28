@@ -580,8 +580,17 @@ export function PlayerContainer({ url, isHls, rawEmbedUrl, nextEpisodeUrl, movie
            <div className="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center">
               <X className="w-8 h-8" />
            </div>
-           <p className="text-sm font-black uppercase tracking-widest italic">Nguồn phim không phản hồi</p>
-           <p className="text-[10px] opacity-50 px-12 text-center">Vui lòng chọn server khác hoặc thử lại sau ít phút (ErrorCode: NULL_STREAM)</p>
+           {(!url && !rawEmbedUrl) ? (
+             <>
+                <p className="text-sm font-black uppercase tracking-widest italic">Chưa có bản phát sóng</p>
+                <p className="text-[10px] opacity-50 px-12 text-center">Phim đang chờ cập nhật hoặc chỉ mới có Trailer.</p>
+             </>
+           ) : (
+             <>
+                <p className="text-sm font-black uppercase tracking-widest italic">Nguồn phim không phản hồi</p>
+                <p className="text-[10px] opacity-50 px-12 text-center">Vui lòng chọn server khác hoặc thử lại sau ít phút (ErrorCode: NULL_STREAM)</p>
+             </>
+           )}
         </div>
       )}
 

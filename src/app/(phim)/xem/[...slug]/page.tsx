@@ -42,7 +42,14 @@ export default async function CatchAllWatchPage({ params, searchParams }: PagePr
   const currentEpisodeSlug = queryEpisode || ep || "";
 
   try {
-    let movieRes = await getMovieDetails(movieSlug);
+    const titleQuery = movieSlug.split('-').join(' ');
+    
+    // 🔥 Start parallel fetches for incredible performance
+    const movieResPromise = getMovieDetails(movieSlug);
+    const initialTmdbSearchPromise = searchTMDBMovie(titleQuery).catch(() => null);
+
+    let [movieRes, initialTmdbSearch] = await Promise.all([movieResPromise, initialTmdbSearchPromise]);
+
     let sources = movieRes?.sources || [];
     let currentSource = sources.find((s: any) => s.id === (querySource || src)) || sources[0];
     let data = currentSource?.data;
@@ -52,12 +59,11 @@ export default async function CatchAllWatchPage({ params, searchParams }: PagePr
     let safeData = data ? normalizeMovieData(data, detectedSource) : null;
     const isTopXX = detectedSource === 'topxx' || detectedSource === 'avdb';
 
-    // Soft Fallback: If no pirate source found, try to resolve metadata via TMDB
     let tmdbData: any = null;
+    let tmdbSearch = initialTmdbSearch;
+
+    // Soft Fallback: If no pirate source found, try to resolve metadata via TMDB
     if (!safeData) {
-       // Search by slug (convert slug to title-like string for broader search)
-       const titleQuery = movieSlug.split('-').join(' ');
-       const tmdbSearch = await searchTMDBMovie(titleQuery).catch(() => null);
        if (tmdbSearch) {
           tmdbData = await getTMDBMovieDetails(tmdbSearch.id, tmdbSearch.media_type).catch(() => null);
           if (tmdbData) {
@@ -73,8 +79,15 @@ export default async function CatchAllWatchPage({ params, searchParams }: PagePr
           }
        }
     } else {
+       // Check if the initial query was good enough. Usually TMDB fuzzy search handles `slug-2024` perfectly.
+       // If the initial search failed, OR if we strictly want to refine by year (and we know year from pirate data):
        const sYear = parseInt(safeData.year.toString());
-       const tmdbSearch = await searchTMDBMovie(safeData.name, isNaN(sYear) ? undefined : sYear).catch(() => null);
+       
+       if (!tmdbSearch || (!isNaN(sYear) && (tmdbSearch as any).release_date && !(tmdbSearch as any).release_date.includes(sYear.toString()))) {
+           // We do a secondary strict search with exact title and year, if initial was bad
+           const secondarySearch = await searchTMDBMovie(safeData.name, isNaN(sYear) ? undefined : sYear).catch(() => null);
+           if (secondarySearch) tmdbSearch = secondarySearch;
+       }
        tmdbData = tmdbSearch ? await getTMDBMovieDetails(tmdbSearch.id, tmdbSearch.media_type).catch(() => null) : null;
     }
 

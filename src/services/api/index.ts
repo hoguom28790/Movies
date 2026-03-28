@@ -23,7 +23,7 @@ const OPHIM_MIRRORS = [
 const fetchSafe = async <T = any>(url: string, headers: Record<string, string> = {}, sourceId?: string): Promise<T | null> => {
   const tryFetch = async (targetUrl: string): Promise<T | null> => {
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 8000); 
+    const timeoutId = setTimeout(() => controller.abort(), 3500); 
     try {
       const res = await fetch(targetUrl, { 
         headers: { "Accept": "application/json", ...headers }, 
@@ -205,8 +205,8 @@ export async function getMovieDetails(slug: string): Promise<{ sources: UnifiedM
   }
 
   const [kkRes, ophimRes, ngRes, vsRes] = await Promise.allSettled([
-    fetchSafe(`https://phimapi.com/v1/api/phim/${slug}`, {}, 'kkphim'),
-    fetchSafe(`https://phimapi.com/v1/api/phim/${slug}`, { Referer: "https://ophim1.com/" }, 'ophim'),
+    fetchSafe(`https://phimapi.com/phim/${slug}`, {}, 'kkphim'),
+    fetchSafe(`https://ophim1.com/phim/${slug}`, { Referer: "https://ophim1.com/" }, 'ophim'),
     fetchSafe(`https://phim.nguonc.com/api/film/${slug}`, {}, 'nguonc'),
     fetchSafe(`https://vsmov.com/api/phim/${slug}`, { Referer: "https://vsmov.com/" }, 'vsmov')
   ]);
