@@ -533,15 +533,15 @@ export function PlayerContainer({ url, isHls, rawEmbedUrl, nextEpisodeUrl, movie
   const iframeSrc = `/player.html?url=${encodeURIComponent(finalUrl)}&theme=${stylePreset}&isEmbed=${isUrlEmbed}&time=${Math.floor(initialTime)}&v=4.0`;
 
   const playerClasses = cn(
-      "w-full h-full min-h-[180px] max-h-[40vh] sm:max-h-[50vh] md:max-h-[60vh] lg:max-h-[70vh]",
+      "w-full min-h-[180px] max-h-[45vh] sm:max-h-[55vh] md:max-h-[65vh] lg:max-h-[75vh]",
       "relative shadow-cinematic-2xl bg-black overflow-hidden rounded-[20px] sm:rounded-[32px] border border-white/5",
+      "aspect-video",
       isTV && "max-h-none rounded-none border-none shadow-none"
   );
 
   return (
     <div 
       className={playerClasses} 
-      style={{ aspectRatio: '16/9' }}
     >
       {resolvedUrl ? (
         <iframe
