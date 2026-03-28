@@ -13,6 +13,7 @@ import { getCombinedSkipTimes, SkipTime } from "@/services/skipService";
 import { getUserSettings, saveUserSettings } from "@/services/db";
 import { motion, AnimatePresence } from "framer-motion";
 import { getMovieSource, getPosterUrl } from "@/lib/movie-utils";
+import { cn } from "@/lib/utils";
 
 interface PlayerContainerProps {
   url: string;
@@ -31,7 +32,7 @@ export function PlayerContainer({ url, isHls, rawEmbedUrl, nextEpisodeUrl, movie
   const { preset: stylePreset } = useStylePreset();
   const router = useRouter();
   const { user } = useAuth();
-  const { isIOS } = useDevice();
+  const { isIOS, isTV } = useDevice();
   const queryClient = useQueryClient();
   
   const [isPseudoFS, setIsPseudoFS] = useState(false);
@@ -543,7 +544,10 @@ export function PlayerContainer({ url, isHls, rawEmbedUrl, nextEpisodeUrl, movie
         ? (isPortrait 
             ? `fixed top-0 left-full w-[100vh] h-[100vw] rotate-90 origin-top-left z-[9999] bg-black ${isIOS ? 'p-safe' : ''}` 
             : `fixed inset-0 w-screen h-screen z-[9999] bg-black ${isIOS ? 'p-safe' : ''}`)
-        : "w-full aspect-video h-auto min-h-[180px] max-h-[45vh] sm:max-h-[55vh] md:max-h-[70vh] lg:max-h-[80vh] self-start relative shadow-cinematic-2xl bg-black overflow-hidden rounded-[32px] border border-white/5"
+        : cn(
+            "w-full aspect-video h-auto min-h-[180px] max-h-[45vh] sm:max-h-[55vh] md:max-h-[70vh] lg:max-h-[80vh] self-start relative shadow-cinematic-2xl bg-black overflow-hidden rounded-[32px] border border-white/5",
+            isTV && "max-h-[none] rounded-none border-none shadow-none" /* On TV, player can be larger */
+          )
       } 
       style={!isPseudoFS ? { aspectRatio: '16/9' } : {}}
     >
@@ -578,7 +582,10 @@ export function PlayerContainer({ url, isHls, rawEmbedUrl, nextEpisodeUrl, movie
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="absolute inset-0 z-[150] bg-black/80 backdrop-blur-3xl flex flex-col items-center justify-center gap-6"
+            className={cn(
+              "absolute inset-0 z-[150] bg-black/80 flex flex-col items-center justify-center gap-6",
+              !isTV && "backdrop-blur-3xl"
+            )}
           >
             <div className="relative">
               <Loader2 className="w-16 h-16 text-primary animate-spin" />

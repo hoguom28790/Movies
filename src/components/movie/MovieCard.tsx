@@ -66,7 +66,7 @@ export function MovieCard({
       <Link 
         href={linkHref} 
         className={cn(
-          "relative w-full overflow-hidden rounded-[16px] bg-surface transition-all duration-500 shadow-md group-hover:shadow-xl group-hover:scale-[1.02] active:scale-[0.98]",
+          "movie-card relative w-full overflow-hidden rounded-[16px] bg-surface transition-all duration-500 shadow-md group-hover:shadow-xl group-hover:scale-[1.02] active:scale-[0.98]",
           isXX ? "aspect-[7/10]" : "aspect-[2/3]"
         )}
       >

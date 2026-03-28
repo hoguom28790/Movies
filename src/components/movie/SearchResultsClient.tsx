@@ -7,6 +7,7 @@ import { MovieCard } from "./MovieCard";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { TOPXX_PATH } from "@/lib/constants";
+import { useDevice } from "@/contexts/DeviceContext";
 
 interface SearchResultsClientProps {
   initialQuery: string;
@@ -155,6 +156,7 @@ export function SearchResultsClient({ initialQuery, initialPage, isXX = false }:
     );
   }
 
+  const { isTV } = useDevice();
   const searchPath = isXX ? `/${TOPXX_PATH}/search` : "/search";
 
   return (
@@ -187,7 +189,12 @@ export function SearchResultsClient({ initialQuery, initialPage, isXX = false }:
       </div>
 
       {/* Grid */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 sm:gap-6 md:gap-8 lg:gap-10">
+      <div className={cn(
+        "grid will-change-scroll",
+        isTV 
+          ? "grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-5 gap-12"
+          : "grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 sm:gap-6 md:gap-8 lg:gap-10"
+      )}>
         {results.map((item, idx) => (
           <MovieCard 
             key={`${item.id}-${idx}`} 

@@ -5,6 +5,7 @@ import { MovieCard } from "@/components/movie/MovieCard";
 import type { Movie } from "@/types/movie";
 import { Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useDevice } from "@/contexts/DeviceContext";
 
 interface MovieGridProps {
   movies?: Movie[]; // renamed from initialMovies to movies for compatibility
@@ -80,6 +81,8 @@ export function MovieGrid({
     return () => observer.disconnect();
   }, [loadMore, loading, page, totalPages]);
 
+  const { isTV } = useDevice();
+
   if (isXX) {
     return (
       <div className="py-12 md:py-20 animate-in fade-in duration-1000">
@@ -95,7 +98,12 @@ export function MovieGrid({
             <p className="text-foreground/20 text-sm font-black uppercase tracking-[0.4em] italic">No content found</p>
           </div>
         ) : (
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-7 gap-x-6 gap-y-12 will-change-scroll">
+        <div className={cn(
+          "grid gap-x-6 gap-y-12 will-change-scroll",
+          isTV 
+            ? "grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-12" 
+            : "grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-7"
+        )}>
             {movies.map((movie, idx) => (
               <MovieCard 
                 key={movie.id} 
@@ -149,7 +157,12 @@ export function MovieGrid({
           <p className="text-foreground/30 font-medium">Đang chuẩn bị danh sách phim cho bạn...</p>
         </div>
       ) : (
-        <div className="grid grid-cols-2 xs:grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 sm:gap-6 md:gap-8 lg:gap-10 will-change-scroll">
+        <div className={cn(
+          "grid gap-4 sm:gap-6 md:gap-8 lg:gap-10 will-change-scroll",
+          isTV
+            ? "grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-5 gap-12"
+            : "grid-cols-2 xs:grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6"
+        )}>
           {movies.map((movie, idx) => (
             <MovieCard 
               key={movie.id} 

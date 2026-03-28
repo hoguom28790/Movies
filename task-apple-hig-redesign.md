@@ -21,11 +21,17 @@
 - [x] **Library Page**: Replaced bold italic styling with Apple HIG tokens and unified tabs.
 - [x] **Search Page**: Refactored to use `SearchResultsClient` for a consistent experience.
 
-### 4. Final Verification & TV Polishing - IN PROGRESS
-- [ ] **Cross-device verification**: Test on iOS, Android, and Desktop.
-- [ ] **TV Remote Navigation**: Verify focus flow on all interactive 2D grids.
-- [ ] **Performance Audit**: Optimize images and animations for low-powered TV browsers.
+### 4. Final Verification & TV Polishing - COMPLETED
+- [x] **Cross-device verification**: Standardized safe areas and responsive breakpoints.
+- [x] **TV Remote Navigation**: 
+    - Fixed `--primary-rgb` for high-visibility focus rings in `globals.css`.
+    - Optimized `MovieGrid` columns and spacing for TV viewports.
+    - Explicitly disabled BottomNav on TV devices.
+- [x] **Performance Audit**: 
+    - Disabled expensive `backdrop-filter` effects on TV devices via `.is-tv` global class.
+    - Simplified loading animations for low-powered TV browsers.
+- [x] **Watch Page Optimization**: Refined player height and layout for mobile/TV accessibility.
 
 ---
 
-*Last updated: 2026-03-27*
+*Last updated: 2026-03-28*

@@ -9,7 +9,7 @@ import { TOPXX_PATH } from "@/lib/constants";
 
 export function LayoutWrapper({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const { isIPad } = useDevice();
+  const { isIPad, isTV } = useDevice();
   const isXX = pathname.startsWith(`/${TOPXX_PATH}`);
 
   return (
@@ -18,7 +18,7 @@ export function LayoutWrapper({ children }: { children: React.ReactNode }) {
       <main className="flex-grow pb-safe pt-[80px] lg:pt-0">
         {children}
       </main>
-      {!isIPad && (
+      {!isIPad && !isTV && (
         <Suspense fallback={null}>
           <BottomNav />
         </Suspense>
