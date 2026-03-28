@@ -1,6 +1,6 @@
 # Task: Apple HIG Redesign & TV Optimization
 
-## Status: Phase 3 Completed, Phase 4 In Progress
+## Status: Phase 4 Completed, Phase 5 In Progress
 
 ### 1. TV Optimization & Device Context - COMPLETED
 - [x] **DeviceContext.tsx**: Added `isTV` detection for WebOS, Tizen, AndroidTV.
@@ -31,6 +31,12 @@
     - Disabled expensive `backdrop-filter` effects on TV devices via `.is-tv` global class.
     - Simplified loading animations for low-powered TV browsers.
 - [x] **Watch Page Optimization**: Refined player height and layout for mobile/TV accessibility.
+
+### 5. Final HIG Refinements & User Experience - COMPLETED
+- [x] **Settings Page**: Full redesign using `apple-glass`, `SF Pro` tokens, and theme-aware surfaces.
+- [x] **Watch Page Identity**: Implemented conditional styling (Italic for TopXX, Clean SF Pro Bold for Hồ Phim).
+- [x] **Lint Resolution**: Fixed critical TypeScript errors in `WatchPage` (nullish coalesce for optional props) and improved stability.
+- [x] **Final Review**: Standardized typography and safe-area handling for mobile/TV consistency.
 
 ---
 

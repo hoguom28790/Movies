@@ -140,22 +140,34 @@ export default async function WatchPage({
             <div className="container mx-auto px-4 lg:px-12">
                <div className="flex flex-col md:flex-row gap-8 items-end justify-between">
                   <div className="space-y-4 max-w-4xl">
-                     <div className="flex flex-wrap gap-2 text-[10px] font-black uppercase tracking-widest text-primary italic">
+                     <div className={cn(
+                        "flex flex-wrap gap-2 text-[10px] uppercase tracking-widest italic",
+                        isTopXX ? "font-black text-yellow-500" : "font-bold text-primary"
+                     )}>
                         <span>{Array.isArray(safeData.category) ? safeData.category.map((c: any) => typeof c === 'string' ? c : c.name).join(", ") : safeData.category}</span>
                         <span className="opacity-30">•</span>
                         <span>{Array.isArray(safeData.country) ? safeData.country.map((c: any) => typeof c === 'string' ? c : c.name).join(", ") : safeData.country}</span>
                      </div>
-                     <h1 className="text-3xl md:text-5xl font-black tracking-tighter italic leading-none">
+                     <h1 className={cn(
+                        "text-3xl md:text-5xl tracking-tighter leading-none",
+                        isTopXX ? "font-black italic uppercase text-white drop-shadow-2xl" : "font-bold text-foreground"
+                     )}>
                         {safeData.name}
                      </h1>
-                     <div className="flex flex-wrap items-center gap-4 text-xs font-bold text-foreground/40 italic">
-                        <span className="text-foreground/60">{safeData.originName}</span>
+                     <div className={cn(
+                        "flex flex-wrap items-center gap-4 text-xs italic",
+                        isTopXX ? "font-black text-white/40" : "font-bold text-foreground/40"
+                     )}>
+                        <span className={isTopXX ? "text-white/60" : "text-foreground/60"}>{safeData.originName}</span>
                         <span className="opacity-30">•</span>
                         <span>{safeData.year}</span>
                         {safeData.quality && (
-                          <span className="px-2 py-0.5 bg-primary/10 text-primary rounded text-[9px] font-black uppercase tracking-wider">{safeData.quality}</span>
+                          <span className={cn(
+                            "px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-wider",
+                            isTopXX ? "bg-yellow-500/10 text-yellow-500" : "bg-primary/10 text-primary"
+                          )}>{safeData.quality}</span>
                         )}
-                        <span className="px-2 py-0.5 bg-white/5 rounded text-[9px] font-black uppercase tracking-wider">{safeData.status}</span>
+                        <span className="px-2 py-0.5 bg-foreground/5 rounded text-[9px] font-black uppercase tracking-wider">{safeData.status}</span>
                      </div>
                   </div>
                   <div className="md:mb-4">
@@ -174,9 +186,16 @@ export default async function WatchPage({
                       {activeServerGroup.length > 0 ? (
                          <div className="rounded-[20px] overflow-hidden shadow-2xl bg-surface border border-white/5">
                             <PlayerContainer 
-                                url={currentEp.link_m3u8} isHls={!!currentEp.link_m3u8} rawEmbedUrl={currentEp.link_embed}
-                                movieTitle={safeData.name} movieSlug={movieSlug} episodeName={currentEp.name}
-                                episodeSlug={currentEp.slug} posterUrl={poster as any} source={sourceId} nextEpisodeUrl={nextEpisodeUrl}
+                                url={currentEp.link_m3u8} 
+                                isHls={!!currentEp.link_m3u8} 
+                                rawEmbedUrl={currentEp.link_embed}
+                                movieTitle={safeData.name} 
+                                movieSlug={movieSlug} 
+                                episodeName={currentEp.name}
+                                episodeSlug={currentEp.slug} 
+                                posterUrl={poster || undefined} 
+                                source={sourceId} 
+                                nextEpisodeUrl={nextEpisodeUrl || undefined}
                             />
                          </div>
                       ) : (
