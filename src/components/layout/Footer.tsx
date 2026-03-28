@@ -4,6 +4,7 @@ import React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { TOPXX_PATH } from "@/lib/constants";
+import { getLunarAuthPass } from "@/lib/lunar";
 
 const columns = [
   {
@@ -72,19 +73,16 @@ export function Footer() {
             © {new Date().getFullYear()} Hồ {isComicSection ? "Truyện" : "Phim"} - All Rights 
             <span 
               className="cursor-default select-none ml-1"
-              onClick={() => {
-                const { getLunarAuthPass } = require("@/lib/lunar");
-                const { TOPXX_PATH } = require("@/lib/constants");
-                const correctPass = getLunarAuthPass();
-                
-                const pass = window.prompt("⚠️ TopXX Restricted Area\nNhập mật mã để tiếp tục:");
-                if (pass === correctPass) {
-                  localStorage.setItem("topxx_authorized", "true");
-                  window.location.href = `/${TOPXX_PATH}`;
-                } else if (pass !== null) {
-                  alert("Mật khẩu không chính xác!");
-                }
-              }}
+               onClick={() => {
+                 const correctPass = getLunarAuthPass();
+                 const pass = window.prompt("⚠️ TopXX Restricted Area\nNhập mật mã để tiếp tục:");
+                 if (pass && pass.trim() === correctPass) {
+                   localStorage.setItem("topxx_authorized", "true");
+                   window.location.href = `/${TOPXX_PATH}`;
+                 } else if (pass !== null) {
+                   alert("Mật khẩu không chính xác!");
+                 }
+               }}
             >
               Reserved
             </span>.
