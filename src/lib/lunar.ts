@@ -95,10 +95,17 @@ export function convertSolarToLunar(dd: number, mm: number, yy: number) {
  * Format: DDMMYYYY (Lunar) - CRITICAL: Password must use the current LUNAR date
  */
 export function getLunarAuthPass(): string {
-  const now = new Date();
-  const d = now.getDate();
-  const m = now.getMonth() + 1;
-  const y = now.getFullYear();
+  // Always use Vietnam Time (UTC+7) for password consistency
+  const vnTime = new Intl.DateTimeFormat("en-US", {
+    timeZone: "Asia/Ho_Chi_Minh",
+    year: "numeric",
+    month: "numeric",
+    day: "numeric"
+  }).formatToParts(new Date());
+
+  const d = parseInt(vnTime.find(p => p.type === 'day')?.value || "0");
+  const m = parseInt(vnTime.find(p => p.type === 'month')?.value || "0");
+  const y = parseInt(vnTime.find(p => p.type === 'year')?.value || "0");
 
   const lunar = convertSolarToLunar(d, m, y);
   
