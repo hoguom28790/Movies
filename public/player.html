@@ -165,6 +165,11 @@
                 break;
               default:
                 console.log("[Player] Fatal error, falling back to embed");
+                if (source.includes('topxx.vip') || source.includes('avdbapi.com')) {
+                  embedFrame.setAttribute('sandbox', 'allow-scripts allow-same-origin allow-forms allow-presentation');
+                } else {
+                  embedFrame.removeAttribute('sandbox');
+                }
                 embedFrame.src = source;
                 embedFrame.style.display = 'block';
                 video.style.display = 'none';
@@ -266,6 +271,11 @@
 
     if (source) {
       if (isEmbed) {
+        if (source.includes('topxx.vip') || source.includes('avdbapi.com')) {
+          embedFrame.setAttribute('sandbox', 'allow-scripts allow-same-origin allow-forms allow-presentation');
+        } else {
+          embedFrame.removeAttribute('sandbox');
+        }
         embedFrame.src = source;
         embedFrame.style.display = 'block';
         video.style.display = 'none';

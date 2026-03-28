@@ -502,33 +502,43 @@ export function PlayerContainer({ url, isHls, rawEmbedUrl, nextEpisodeUrl, movie
   const [proxySettings, setProxySettings] = useState<{ url: string; referer: string } | null>(null);
 
   useEffect(() => {
-    if (!resolvedUrl || playerReady) return;
-
-    // Task 4: Proxy Retry after 8 seconds
-    const proxyTimer = setTimeout(() => {
+    if (!resolvedUrl) return;
+    
+    const detectedSource = getMovieSource(movieSlug || '', source);
+    const isTopXX = detectedSource === 'topxx' || detectedSource === 'avdb';
+    
+    // TopXX/AVDB: never proxy, they use embed iframe
+    if (isTopXX) return;
+    
+    // Direct HLS streams from known providers need proxy for CORS
+    const needsProxy = (
+      resolvedUrl.includes('.m3u8') &&
+      !resolvedUrl.includes('googlevideo') &&
+      !resolvedUrl.includes('localhost')
+    );
+    
+    if (needsProxy) {
+      const referer = source === 'ophim' ? 'https://ophim1.com/' 
+                    : source === 'vsmov' ? 'https://vsmov.com/'
+                    : source === 'kkphim' ? 'https://kkphim.com/'
+                    : new URL(resolvedUrl).origin;
+      setProxySettings({ url: resolvedUrl, referer });
+      setUseProxy(true);
+      console.log('[Player] Using proxy for CORS HLS stream');
+      return;
+    }
+    
+    // Embed/unknown: wait 8s then try proxy
+    const timer = setTimeout(() => {
       if (!playerReady) {
-        console.log("[Player] Source taking too long, attempting proxy...");
-        const referer = source === 'ophim' ? 'https://ophim1.com/' : 
-                        source === 'vsmov' ? 'https://vsmov.com/' : 
-                        new URL(resolvedUrl).origin;
+        const referer = new URL(resolvedUrl).origin;
         setProxySettings({ url: resolvedUrl, referer });
         setUseProxy(true);
       }
     }, 8000);
-
-    // Task 5: Auto-fallback notify after 10 seconds
-    const fallbackTimer = setTimeout(() => {
-      if (!playerReady) {
-        setToast("Nguồn này chậm, đang thử nguồn khác...");
-        window.dispatchEvent(new Event('player:source-failed'));
-      }
-    }, 10000);
-
-    return () => {
-      clearTimeout(proxyTimer);
-      clearTimeout(fallbackTimer);
-    };
-  }, [resolvedUrl, playerReady, source]);
+    
+    return () => clearTimeout(timer);
+  }, [resolvedUrl, source, movieSlug]);
 
   const isDirectVideo = url.includes('.m3u8') || url.includes('.mp4') || url.includes('.mkv') || url.includes('.ts') || url.includes('m3u8') || url.includes('mp4') || url.includes('googlevideo') || url.includes('cdn');
   

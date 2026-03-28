@@ -98,12 +98,12 @@ export function MovieCard({
             {(quality || episodeText) && (
               <div className="flex gap-2">
                  {quality && (
-                   <div className="px-2 py-0.5 backdrop-blur-md bg-black/20 text-white rounded-full text-[9px] font-bold uppercase tracking-wider">
+                   <div className="px-2 py-0.5 backdrop-blur-md bg-black/40 text-white rounded-full text-[9px] font-bold uppercase tracking-wider">
                      {quality}
                    </div>
                  )}
                  {year && !isXX && (
-                   <div className="px-2 py-0.5 backdrop-blur-md bg-black/10 text-white/80 rounded-full text-[9px] font-bold">
+                   <div className="px-2 py-0.5 backdrop-blur-md bg-black/30 text-white/90 rounded-full text-[9px] font-bold">
                      {year}
                    </div>
                  )}

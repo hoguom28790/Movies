@@ -12,15 +12,15 @@ export async function GET(req: NextRequest) {
   const decodedUrl = decodeURIComponent(url);
   const decodedReferer = referer ? decodeURIComponent(referer) : new URL(decodedUrl).origin;
 
-  // Domain Whitelist
-  const whitelist = [
-    'phimapi.com', 'ophim1.com', 'ophim8.cc', 'ophim10.com', 'ophim17.com', 'ophim18.cc',
-    'kkphim.com', 'vsmov.com', 'topxx.vip', 'avdbapi.com', 'cdn', 'nguonc.com',
-    'opstream', 'streamxx', 'upload18'
+  // Domain Whitelist using patterns instead of exact domains
+  const allowedPatterns = [
+    'ophim', 'kkphim', 'vsmov', 'nguonc', 'phimapi',
+    'topxx', 'avdbapi', 'streamxx', 'upload18', 'opstream',
+    'googlevideo', 'akamaized', 'cloudfront', 'cdn', 'hls',
+    'javplayer', 'jable', 'dplayer', 'filemoon', 'streamtape'
   ];
-
   const urlObj = new URL(decodedUrl);
-  const isAllowed = whitelist.some(domain => urlObj.hostname.includes(domain));
+  const isAllowed = allowedPatterns.some(p => urlObj.hostname.includes(p) || urlObj.pathname.includes(p));
   
   if (!isAllowed) {
     return new Response("Domain not allowed", { status: 403 });
@@ -39,9 +39,12 @@ export async function GET(req: NextRequest) {
        return new Response(`Remote server error: ${response.status}`, { status: response.status });
     }
 
-    // Proxy the response headers
+    // Proxy the response headers with CORS
     const resHeaders = new Headers();
     resHeaders.set('Access-Control-Allow-Origin', '*');
+    resHeaders.set('Access-Control-Allow-Methods', 'GET, HEAD, OPTIONS');
+    resHeaders.set('Access-Control-Allow-Headers', '*');
+    resHeaders.set('Cache-Control', 'no-cache');
     resHeaders.set('Content-Type', response.headers.get('Content-Type') || 'application/octet-stream');
     
     // Pipe the stream

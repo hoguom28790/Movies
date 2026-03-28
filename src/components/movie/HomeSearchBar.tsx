@@ -33,7 +33,7 @@ export function HomeSearchBar({ isXX = false }: HomeSearchBarProps) {
           <Search className="w-6 h-6 md:w-10 md:h-10 text-yellow-500 animate-pulse" />
           <input 
             name="q"
-            className="bg-transparent border-none text-xl md:text-3xl font-black text-white italic uppercase placeholder-white/10 w-full tracking-tighter focus:ring-0 outline-none" 
+            className="bg-transparent border-none text-xl md:text-3xl font-black text-foreground italic uppercase placeholder-foreground/20 w-full tracking-tighter focus:ring-0 outline-none" 
             placeholder="Tìm phim, mã phim hoặc diễn viên..." 
             type="text"
             autoComplete="off"

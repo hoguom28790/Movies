@@ -80,13 +80,13 @@ export function ActorGrid({ isXX = false, title, actors: propActors }: ActorGrid
           )} />
           <div className="space-y-0.5">
             <h3 className={cn(
-              "font-black text-white uppercase italic tracking-tighter font-headline flex items-center gap-3",
+              "font-black text-foreground uppercase italic tracking-tighter font-headline flex items-center gap-3",
               isXX ? "text-2xl md:text-3xl" : "text-xl md:text-2xl"
             )}>
               {displayTitle}
               <Sparkles className={cn("w-6 h-6 animate-pulse", isXX ? "text-yellow-500" : "text-primary")} />
             </h3>
-            <p className="text-[10px] text-white/20 font-black uppercase tracking-[0.4em] italic pl-1">
+            <p className="text-[10px] text-foreground-secondary font-black uppercase tracking-[0.4em] italic pl-1">
               {isXX ? "Syncing with direct archive protocol" : "Trending personalities worldwide"}
             </p>
           </div>
@@ -94,7 +94,7 @@ export function ActorGrid({ isXX = false, title, actors: propActors }: ActorGrid
         
         <button className={cn(
           "group flex items-center gap-4 text-[11px] font-black uppercase tracking-[0.2em] italic transition-all",
-          isXX ? "text-white/30 hover:text-yellow-500" : "text-white/30 hover:text-primary"
+          isXX ? "text-foreground-secondary hover:text-yellow-500" : "text-foreground-secondary hover:text-primary"
         )}>
            <span>{isXX ? "SHOW ALL RANKINGS" : "VIEW ALL"}</span>
            <div className={cn(
@@ -146,15 +146,15 @@ export function ActorGrid({ isXX = false, title, actors: propActors }: ActorGrid
 
              <div className="px-3 space-y-1.5 text-center">
                 <h4 className={cn(
-                  "text-[15px] font-black text-white transition-colors uppercase italic font-headline truncate leading-tight",
+                  "text-[15px] font-black text-foreground transition-colors uppercase italic font-headline truncate leading-tight",
                   isXX ? "group-hover:text-yellow-500" : "group-hover:text-primary"
                 )}>
                   {actor.name}
                 </h4>
                 {isXX && (
-                  <div className="inline-flex items-center gap-2.5 px-3 py-1 rounded-full bg-white/5 border border-white/5 group-hover:bg-yellow-500/10 group-hover:border-yellow-500/20 transition-all">
+                  <div className="inline-flex items-center gap-2.5 px-3 py-1 rounded-full bg-foreground/5 border border-foreground/5 group-hover:bg-yellow-500/10 group-hover:border-yellow-500/20 transition-all">
                      <div className="w-1.5 h-1.5 rounded-full bg-yellow-500 animate-pulse" />
-                     <span className="text-[9px] font-black text-white/20 uppercase italic tracking-widest group-hover:text-yellow-500 transition-colors">
+                     <span className="text-[9px] font-black text-foreground-secondary uppercase italic tracking-widest group-hover:text-yellow-500 transition-colors">
                        CODE: {actor.featuredCode || "JAV"}
                      </span>
                   </div>

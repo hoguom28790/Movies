@@ -76,7 +76,7 @@ export function ActorProfile({ actorName, slug, isXX = false }: ActorProfileProp
                     </div>
                  </div>
                  
-                 <h1 className="text-5xl md:text-8xl font-black text-white uppercase italic tracking-tighter leading-none select-none drop-shadow-2xl">
+                 <h1 className="text-5xl md:text-8xl font-black text-foreground uppercase italic tracking-tighter leading-none select-none drop-shadow-2xl">
                     {actorName}
                  </h1>
                  
@@ -101,7 +101,7 @@ export function ActorProfile({ actorName, slug, isXX = false }: ActorProfileProp
                  
                  <div className="flex items-center gap-2">
                     {[Twitter, Instagram, Globe].map((Icon, i) => (
-                      <button key={i} className="w-16 h-16 rounded-full glass-pro border border-white/5 flex items-center justify-center text-white/20 hover:text-white hover:bg-white/10 transition-all active-depth">
+                      <button key={i} className="w-16 h-16 rounded-full glass-pro border border-white/5 flex items-center justify-center text-foreground-secondary hover:text-foreground hover:bg-foreground/10 transition-all active-depth">
                         <Icon className="w-6 h-6" />
                       </button>
                     ))}

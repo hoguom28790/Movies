@@ -108,15 +108,15 @@ export function BentoMovieRow({ title, movies, viewAllHref }: BentoMovieRowProps
                 unoptimized={!movie.posterUrl?.match(/amazon\.com|fanart\.tv|unsplash\.com|tmdb\.org/i)}
               />
               <div className="absolute top-4 right-4 z-20">
-                 <div className="px-2 py-1 backdrop-blur-md bg-black/40 rounded-full flex items-center gap-1.5 shadow-sm text-white">
+                 <div className="px-2 py-1 backdrop-blur-md bg-foreground/10 rounded-full flex items-center gap-1.5 shadow-sm text-foreground">
                     <Star size={10} fill="currentColor" className="text-yellow-400" />
                     <span className="text-[10px] font-bold">{movie.tmdbRating ? movie.tmdbRating.toFixed(1) : "8.5"}</span>
                  </div>
               </div>
               <div className="absolute inset-x-3 bottom-3 z-20">
-                <div className="p-3 backdrop-blur-xl bg-black/40 rounded-[18px] border border-white/5">
-                  <p className="text-white font-bold text-sm tracking-tight leading-tight line-clamp-1 mb-1">{movie.title}</p>
-                  <p className="text-white/40 text-[10px] font-medium">{movie.year}</p>
+                <div className="p-3 backdrop-blur-xl bg-foreground/10 rounded-[18px] border border-white/5">
+                  <p className="text-foreground font-bold text-sm tracking-tight leading-tight line-clamp-1 mb-1">{movie.title}</p>
+                  <p className="text-foreground/60 text-[10px] font-medium">{movie.year}</p>
                 </div>
               </div>
               <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-60" />

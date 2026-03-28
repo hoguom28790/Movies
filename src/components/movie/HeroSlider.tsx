@@ -61,7 +61,8 @@ export function HeroSlider({ movies }: HeroSliderProps) {
             className="object-cover"
           />
           {/* Overlays */}
-          <div className="absolute inset-0 bg-gradient-to-t from-background via-background/20 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-t from-background via-background/40 to-black/30" />
+          <div className="absolute inset-0 bg-black/20" />
           <div className="absolute inset-0 bg-gradient-to-r from-background/40 via-transparent to-transparent hidden lg:block" />
         </motion.div>
       </AnimatePresence>
