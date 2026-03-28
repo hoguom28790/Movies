@@ -178,11 +178,11 @@ export default async function WatchPage({
          </div>
 
          {/* Player Section */}
-         <div className="py-8 md:py-16 overflow-x-clip">
-             <div className="container mx-auto px-4 md:px-12">
-                <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-8 md:gap-12 items-start">
+         <div className="py-8 md:py-12 overflow-x-clip">
+             <div className="container mx-auto px-4 lg:px-12">
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start">
                    {/* Left Column: Player and Tabs */}
-                   <div className="w-full space-y-8 lg:space-y-12">
+                   <div className="lg:col-span-8 xl:col-span-9 space-y-8 lg:space-y-12">
                       {activeServerGroup.length > 0 ? (
                          <div className="rounded-[20px] overflow-hidden shadow-2xl bg-surface border border-white/5">
                             <PlayerContainer 
@@ -225,7 +225,7 @@ export default async function WatchPage({
                    </div>
 
                    {/* Right Column: Episodes & Sources (Desktop only) */}
-                   <div className="hidden lg:block w-full">
+                   <div className="hidden lg:block lg:col-span-4 xl:col-span-3 sticky top-32">
                       <RightSidebarContent 
                          sources={sources} sourceId={sourceId} movieSlug={movieSlug} 
                          allServers={allServers} currentServerIdx={currentServerIdx} currentEp={currentEp}
