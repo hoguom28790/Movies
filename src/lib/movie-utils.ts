@@ -100,6 +100,11 @@ export function normalizeMovieData(data: any, source: MovieSource) {
     country: Array.isArray(data.country) ? data.country : (data.countries || []),
     code: data.movie_code || data.code || "",
     source: source,
-    tmdb_id: data.tmdb_id || null
+    tmdb_id: data.tmdb_id || null,
+    episodes: (data.episodes || []).map((s: any) => ({
+       name: s.server_name || s.name || "Default",
+       items: s.server_data || s.items || []
+    })),
+    status: data.status || data.episode_current || "HD"
   };
 }

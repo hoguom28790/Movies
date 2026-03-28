@@ -1,32 +1,82 @@
-// src/app/(phim)/xem/[...slug]/page.tsx
-import { notFound } from "next/navigation";
+import React from "react";
 import Link from "next/link";
-import { Play, Star, Calendar, Clock, Tag, User, Users, Info, ChevronRight, Plus, ArrowLeft } from "lucide-react";
-import { Button } from "@/components/ui/Button";
-import { WatchlistBtn } from "@/components/movie/WatchlistBtn";
-import { PlayerContainer } from "@/components/movie/PlayerContainer";
-import { MovieTabs } from "@/components/movie/MovieTabs";
-import { MovieRatings } from "@/components/movie/MovieRatings";
-import { CastSection } from "@/components/movie/CastSection";
-import { getTMDBImageUrl, getTMDBMovieDetails, searchTMDBMovie } from "@/services/tmdb";
 import { getMovieDetails } from "@/services/api";
-import { getMovieSource, normalizeMovieData } from "@/lib/movie-utils";
+import { searchTMDBMovie, getTMDBMovieDetails } from "@/services/tmdb";
+import { normalizeMovieData, getMovieSource } from "@/lib/movie-utils";
+import { PlayerContainer } from "@/components/movie/PlayerContainer";
+import { CastSection } from "@/components/movie/CastSection";
+import { MovieTabs } from "@/components/movie/MovieTabs";
+import { Calendar } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { SourceSwitcher } from "./SourceSwitcher";
+import { Metadata } from "next";
+import { WatchlistBtn } from "@/components/movie/WatchlistBtn";
 
-export const dynamic = "force-dynamic";
+// Sidebar Content Helper Component
+const RightSidebarContent = ({ sources, sourceId, movieSlug, allServers, currentServerIdx, currentEp, isTopXX }: any) => (
+   <div className="w-full space-y-10 relative z-10 bg-background/50 backdrop-blur-sm lg:backdrop-blur-none rounded-3xl p-4 lg:p-0">
+      {/* Sources - Apple style rounded tabs */}
+      {!isTopXX && sources.length > 1 && (
+         <div className="space-y-4">
+            <h3 className="text-xs font-bold text-foreground-secondary uppercase tracking-widest pl-1">Phát từ nguồn</h3>
+            <div className="flex flex-wrap gap-2">
+               {sources.map((s: any) => (
+                  <Link 
+                    key={s.id} 
+                    href={`/xem/${movieSlug}?src=${s.id}`} 
+                    className={cn(
+                      "flex-1 min-w-[100px] text-center py-2.5 rounded-full text-xs font-bold transition-all",
+                      sourceId === s.id ? 'bg-primary text-white shadow-md' : 'bg-surface text-foreground-secondary hover:bg-foreground/10'
+                    )}
+                  >
+                     {s.name}
+                  </Link>
+               ))}
+            </div>
+         </div>
+      )}
+      
+      {/* Episodes List */}
+      <div className="space-y-4">
+         <h3 className="text-xs font-bold text-foreground-secondary uppercase tracking-widest pl-1">Chọn tập</h3>
+         <div className="max-h-[600px] overflow-y-auto pr-2 space-y-6">
+            {allServers?.map((server: any, sIdx: number) => (
+               <div key={sIdx} className="space-y-3">
+                  <h4 className="text-[11px] font-bold text-primary/80 uppercase tracking-widest px-1">{server?.name || `Server ${sIdx + 1}`}</h4>
+                  <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-4 gap-2">
+                     {(server?.items || server?.server_data || [])?.map((epItem: any, idx: number) => (
+                        <Link key={idx} href={`/xem/${movieSlug}?sv=${sIdx}&ep=${encodeURIComponent(epItem.slug || epItem.name)}&src=${sourceId}`}>
+                           <button className={cn(
+                             "w-full py-2 text-xs font-bold rounded-lg transition-all",
+                             (sIdx === currentServerIdx && (epItem.slug === currentEp.slug || epItem.name === currentEp.name)) 
+                               ? 'bg-primary text-white shadow-sm' 
+                               : 'bg-surface text-foreground-secondary hover:bg-foreground/10'
+                           )}>
+                              {epItem.name}
+                           </button>
+                        </Link>
+                     ))}
+                  </div>
+               </div>
+            ))}
+         </div>
+      </div>
+   </div>
+);
 
-interface PageProps {
+export default async function WatchPage({
+  params,
+  searchParams,
+}: {
   params: Promise<{ slug: string[] }>;
-  searchParams: Promise<{ sv?: string; ep?: string; src?: string }>;
-}
-
-export default async function CatchAllWatchPage({ params, searchParams }: PageProps) {
-  const [{ slug: slugParts }, { sv, ep, src }] = await Promise.all([params, searchParams]);
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+}) {
+  const { slug } = await params;
+  const { sv, ep, src } = await searchParams;
   
+  const slugParts = slug;
   let movieSlug = "";
-  let querySource = src;
-  let queryEpisode = ep;
+  let querySource = "";
+  let queryEpisode = "";
 
   if (slugParts.length === 1) {
     movieSlug = slugParts[0];
@@ -38,13 +88,11 @@ export default async function CatchAllWatchPage({ params, searchParams }: PagePr
     movieSlug = slugParts[slugParts.length - 1] || "";
   }
 
-  const currentServerIdx = sv ? parseInt(sv) : 0;
-  const currentEpisodeSlug = queryEpisode || ep || "";
+  const currentServerIdx = sv ? parseInt(sv as string) : 0;
+  const currentEpisodeSlug = queryEpisode || (ep as string) || "";
 
   try {
     const titleQuery = movieSlug.split('-').join(' ');
-    
-    // 🔥 Start parallel fetches for incredible performance
     const movieResPromise = getMovieDetails(movieSlug);
     const initialTmdbSearchPromise = searchTMDBMovie(titleQuery).catch(() => null);
 
@@ -59,208 +107,119 @@ export default async function CatchAllWatchPage({ params, searchParams }: PagePr
     let safeData = data ? normalizeMovieData(data, detectedSource) : null;
     const isTopXX = detectedSource === 'topxx' || detectedSource === 'avdb';
 
-    let tmdbData: any = null;
-    let tmdbSearch = initialTmdbSearch;
+    if (!safeData) return <div className="p-20 text-center opacity-20">Không tìm thấy thông tin phim</div>;
 
-    // Soft Fallback: If no pirate source found, try to resolve metadata via TMDB
-    if (!safeData) {
-       if (tmdbSearch) {
-          tmdbData = await getTMDBMovieDetails(tmdbSearch.id, tmdbSearch.media_type).catch(() => null);
-          if (tmdbData) {
-             safeData = {
-                name: tmdbData.title || tmdbData.name,
-                originName: tmdbData.original_title || tmdbData.original_name,
-                year: (tmdbData.release_date || tmdbData.first_air_date || "").split('-')[0],
-                posterUrl: getTMDBImageUrl(tmdbData.poster_path, 'w500') || "",
-                description: tmdbData.overview,
-                quality: "TBA",
-                category: tmdbData.genres?.map((g: any) => g.name) || []
-             } as any;
-          }
-       }
-    } else {
-       // Check if the initial query was good enough. Usually TMDB fuzzy search handles `slug-2024` perfectly.
-       // If the initial search failed, OR if we strictly want to refine by year (and we know year from pirate data):
-       const sYear = parseInt(safeData.year.toString());
-       
-       if (!tmdbSearch || (!isNaN(sYear) && (tmdbSearch as any).release_date && !(tmdbSearch as any).release_date.includes(sYear.toString()))) {
-           // We do a secondary strict search with exact title and year, if initial was bad
-           const secondarySearch = await searchTMDBMovie(safeData.name, isNaN(sYear) ? undefined : sYear).catch(() => null);
-           if (secondarySearch) tmdbSearch = secondarySearch;
-       }
-       tmdbData = tmdbSearch ? await getTMDBMovieDetails(tmdbSearch.id, tmdbSearch.media_type).catch(() => null) : null;
+    const tmdbId = safeData.tmdb_id || initialTmdbSearch?.id;
+    const tmdbData = tmdbId ? await getTMDBMovieDetails(tmdbId, initialTmdbSearch?.media_type || "movie") : null;
+    
+    const allServers = safeData.episodes || [];
+    const activeServerGroup = allServers[currentServerIdx]?.items || [];
+    const currentEp = activeServerGroup.find((e: any) => e.slug === currentEpisodeSlug || e.name === currentEpisodeSlug) || activeServerGroup[0] || {};
+    
+    // Find next episode
+    let nextEpisodeUrl = null;
+    const currentEpIdx = activeServerGroup.indexOf(currentEp);
+    if (currentEpIdx !== -1 && currentEpIdx < activeServerGroup.length - 1) {
+       const nextEp = activeServerGroup[currentEpIdx + 1];
+       nextEpisodeUrl = `/xem/${movieSlug}?sv=${currentServerIdx}&ep=${encodeURIComponent(nextEp.slug || nextEp.name)}&src=${sourceId}`;
     }
 
-    if (!safeData) return notFound();
-
-    const poster = (tmdbData?.poster_path ? getTMDBImageUrl(tmdbData.poster_path, 'w780') : safeData.posterUrl) || "";
-    const backdrop = (tmdbData?.backdrop_path ? getTMDBImageUrl(tmdbData.backdrop_path, 'original') : poster) || "";
-
-    let rawServers = (data?.servers && Array.isArray(data.servers)) 
-      ? data.servers 
-      : (isTopXX ? [data] : (data?.episodes || data?.items || []));
-
-    const allServers = rawServers.filter(Boolean).map((srv: any, idx: number) => {
-       const serverItems = srv.episodes || srv.server_data || srv.items || (isTopXX ? (srv.sources || []) : []);
-       const items = Array.isArray(serverItems) 
-         ? serverItems.map((item: any, idxArr: number) => ({
-             name: item.name || (isTopXX ? `Tập ${idxArr + 1}` : (srv.items?.length === 1 ? "Full" : (idxArr + 1).toString())),
-             slug: item.slug || item.name || (idxArr + 1).toString(),
-             link_m3u8: item.link_m3u8 || (typeof item.link === 'string' && item.link.includes('.m3u8') ? item.link : ""),
-             link_embed: item.link_embed || (typeof item.link === 'string' && !item.link.includes('.m3u8') ? item.link : "")
-           }))
-         : Object.entries(serverItems).map(([name, link]: [string, any]) => {
-             const sLink = typeof link === 'object' ? (link.link_m3u8 || link.link_embed || link.link || "") : link;
-             return { name, slug: name, link_m3u8: sLink.includes('.m3u8') ? sLink : "", link_embed: !sLink.includes('.m3u8') ? sLink : "" };
-           });
-       return { name: srv.server || srv.server_name || srv.name || `Nguồn ${idx + 1}`, items };
-    });
-
-    const activeServerGroup = allServers[currentServerIdx]?.items || allServers[0]?.items || [];
-    const decodedEpSlug = decodeURIComponent(currentEpisodeSlug);
-    const currentEpIdx = (currentEpisodeSlug && activeServerGroup.length > 0) ? activeServerGroup.findIndex((e: any) => e.slug === decodedEpSlug || e.name === decodedEpSlug) : 0;
-    const currentEp = activeServerGroup[currentEpIdx >= 0 ? currentEpIdx : 0] || activeServerGroup[0];
-
-    const nextEp = activeServerGroup[currentEpIdx + 1] || null;
-    const nextEpisodeUrl = nextEp ? `/xem/${movieSlug}?sv=${currentServerIdx}&ep=${encodeURIComponent(nextEp.slug)}&src=${sourceId}` : undefined;
+    const poster = tmdbData?.poster_path ? `https://image.tmdb.org/t/p/w500${tmdbData.poster_path}` : safeData.posterUrl;
 
     return (
-      <div className="min-h-screen bg-background text-foreground overflow-x-hidden">
-        {/* Backdrop Hero - Apple HIG style subtle depth */}
-        <div className="relative w-full h-[60vh] flex flex-col justify-end pt-24 pb-12 overflow-hidden shadow-sm">
-           <div className="absolute inset-0 z-0">
-              <img src={backdrop} className="w-full h-full object-cover blur-2xl scale-110 opacity-40 dark:opacity-30" alt="" />
-              <div className="absolute inset-0 bg-gradient-to-t from-background via-background/40 to-transparent" />
-           </div>
-           <div className="container mx-auto px-4 md:px-12 relative z-10">
-              <div className="flex flex-col md:flex-row gap-8 items-end">
-                 {/* Desktop Poster */}
-                 <div className="hidden md:block w-56 flex-shrink-0">
-                    <div className="relative aspect-[2/3] rounded-[16px] overflow-hidden shadow-2xl">
-                       <img src={poster} className="w-full h-full object-cover" alt={safeData.name} />
-                    </div>
-                 </div>
-                 <div className="flex-1 space-y-4">
-                    <div className="space-y-1">
-                       <h1 className="text-4xl md:text-6xl font-bold tracking-tight text-foreground">{safeData.name}</h1>
-                       <div className="flex flex-wrap items-center gap-3 text-foreground-secondary text-sm font-medium">
-                          <p>{safeData.originName}</p>
-                          <span className="w-1 h-1 rounded-full bg-separator" />
-                          <p>{safeData.year}</p>
-                       </div>
-                    </div>
-                    <div className="flex flex-wrap items-center gap-2">
-                       <span className="px-3 py-1 rounded-full backdrop-blur-md bg-primary text-white text-[10px] font-bold uppercase tracking-wider">{safeData.quality}</span>
-                        {safeData.category.slice(0, 3).map((cat: any, i: number) => (
-                           <span key={i} className="px-3 py-1 rounded-full backdrop-blur-md bg-foreground/5 text-foreground-secondary text-[10px] font-bold uppercase tracking-wider">{typeof cat === 'string' ? cat : cat.name}</span>
-                        ))}
-                    </div>
-                    <div className="py-2">
-                       <MovieRatings tmdbRating={tmdbData?.vote_average || 0} />
-                    </div>
-                 </div>
-                 <div className="md:mb-4">
-                    <WatchlistBtn movieSlug={movieSlug} movieTitle={safeData.name} posterUrl={poster} />
-                 </div>
-              </div>
-           </div>
-        </div>
+      <div className="min-h-screen bg-background">
+         {/* Backdrop Background */}
+         <div className="fixed inset-0 -z-10 bg-background">
+            <div className="absolute top-0 left-0 w-full h-[60vh] bg-gradient-to-b from-primary/10 via-transparent to-transparent opacity-50" />
+            <div className="absolute -top-[20%] -left-[10%] w-[60%] h-[80%] bg-primary/20 blur-[150px] rounded-full opacity-30 animate-pulse" />
+            <div className="absolute -top-[10%] -right-[10%] w-[50%] h-[70%] bg-blue-500/10 blur-[130px] rounded-full opacity-20" />
+         </div>
 
-        {/* Player Section */}
-        <div className="py-8 md:py-16">
-            <div className="container mx-auto px-4 md:px-12">
-               <div className="flex flex-col lg:grid lg:grid-cols-[1fr_320px] gap-8 md:gap-12 items-start">
-                  {/* Left Column: Player and Tabs */}
-                  <div className="w-full space-y-8">
-                     {activeServerGroup.length > 0 ? (
-                        <div className="rounded-[20px] overflow-hidden shadow-xl bg-surface">
-                           <PlayerContainer 
-                               url={currentEp.link_m3u8} isHls={!!currentEp.link_m3u8} rawEmbedUrl={currentEp.link_embed}
-                               movieTitle={safeData.name} movieSlug={movieSlug} episodeName={currentEp.name}
-                               episodeSlug={currentEp.slug} posterUrl={poster} source={sourceId} nextEpisodeUrl={nextEpisodeUrl}
-                           />
-                        </div>
-                     ) : (
-                        <div className="aspect-video w-full rounded-[20px] bg-surface flex flex-col items-center justify-center p-8 text-center gap-4">
-                           <Calendar size={48} className="text-primary/50" />
-                           <div className="space-y-1">
-                              <h3 className="text-lg font-bold">Chưa có bản phát sóng</h3>
-                              <p className="text-foreground-secondary text-xs">Phim đang chờ cập nhật. Vui lòng quay lại sau.</p>
-                           </div>
-                        </div>
-                     )}
-                     
-                     <div className="space-y-4">
-                        <CastSection actors={tmdbData?.credits?.cast || []} />
-                        <div className="h-[1px] bg-separator w-full my-8" />
-                        <MovieTabs slug={movieSlug} source={sourceId} servers={allServers} recommendations={tmdbData?.recommendations?.results || []} collection={tmdbData?.belongs_to_collection} />
+         {/* Movie Identity Header */}
+         <div className="pt-24 pb-8 md:pt-32 md:pb-12 border-b border-foreground/[0.03] backdrop-blur-sm bg-background/20">
+            <div className="container mx-auto px-4 lg:px-12">
+               <div className="flex flex-col md:flex-row gap-8 items-end justify-between">
+                  <div className="space-y-4 max-w-4xl">
+                     <div className="flex flex-wrap gap-2 text-[10px] font-black uppercase tracking-widest text-primary italic">
+                        <span>{Array.isArray(safeData.category) ? safeData.category.map((c: any) => typeof c === 'string' ? c : c.name).join(", ") : safeData.category}</span>
+                        <span className="opacity-30">•</span>
+                        <span>{Array.isArray(safeData.country) ? safeData.country.map((c: any) => typeof c === 'string' ? c : c.name).join(", ") : safeData.country}</span>
+                     </div>
+                     <h1 className="text-3xl md:text-5xl font-black tracking-tighter italic leading-none">
+                        {safeData.name}
+                     </h1>
+                     <div className="flex flex-wrap items-center gap-4 text-xs font-bold text-foreground/40 italic">
+                        <span className="text-foreground/60">{safeData.originName}</span>
+                        <span className="opacity-30">•</span>
+                        <span>{safeData.year}</span>
+                        {safeData.quality && (
+                          <span className="px-2 py-0.5 bg-primary/10 text-primary rounded text-[9px] font-black uppercase tracking-wider">{safeData.quality}</span>
+                        )}
+                        <span className="px-2 py-0.5 bg-white/5 rounded text-[9px] font-black uppercase tracking-wider">{safeData.status}</span>
                      </div>
                   </div>
-
-                  {/* Right Column: Episodes & Sources */}
-                  <div className="w-full space-y-10 relative z-10 bg-background/50 backdrop-blur-sm lg:backdrop-blur-none rounded-3xl p-4 lg:p-0">
-                     {/* Sources - Apple style rounded tabs */}
-                     {!isTopXX && sources.length > 1 && (
-                        <div className="space-y-4">
-                           <h3 className="text-xs font-bold text-foreground-secondary uppercase tracking-widest pl-1">Phát từ nguồn</h3>
-                           <div className="flex flex-wrap gap-2">
-                              {sources.map((s: any) => (
-                                 <Link 
-                                   key={s.id} 
-                                   href={`/xem/${movieSlug}?src=${s.id}`} 
-                                   className={cn(
-                                     "flex-1 min-w-[100px] text-center py-2.5 rounded-full text-xs font-bold transition-all",
-                                     sourceId === s.id ? 'bg-primary text-white shadow-md' : 'bg-surface text-foreground-secondary hover:bg-foreground/10'
-                                   )}
-                                 >
-                                    {s.name}
-                                 </Link>
-                              ))}
-                           </div>
-                        </div>
-                     )}
-                     
-                     {/* Episodes List */}
-                     <div className="space-y-4">
-                        <h3 className="text-xs font-bold text-foreground-secondary uppercase tracking-widest pl-1">Chọn tập</h3>
-                        <div className="max-h-[600px] overflow-y-auto pr-2 space-y-6">
-                           {allServers.map((server: any, sIdx: number) => (
-                              <div key={sIdx} className="space-y-3">
-                                 <h4 className="text-[11px] font-bold text-primary/80 uppercase tracking-widest px-1">{server.name}</h4>
-                                 <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-4 gap-2">
-                                    {server.items.map((epItem: any, idx: number) => (
-                                       <Link key={idx} href={`/xem/${movieSlug}?sv=${sIdx}&ep=${encodeURIComponent(epItem.slug || epItem.name)}&src=${sourceId}`}>
-                                          <button className={cn(
-                                            "w-full py-2 text-xs font-bold rounded-lg transition-all",
-                                            (sIdx === currentServerIdx && (epItem.slug === currentEp.slug || epItem.name === currentEp.name)) 
-                                              ? 'bg-primary text-white shadow-sm' 
-                                              : 'bg-surface text-foreground-secondary hover:bg-foreground/10'
-                                          )}>
-                                             {epItem.name}
-                                          </button>
-                                       </Link>
-                                    ))}
-                                 </div>
-                              </div>
-                           ))}
-                        </div>
-                     </div>
-
-                     {/* Sidebar Overview */}
-                     <div className="pt-4 space-y-4">
-                        <h3 className="text-xs font-bold text-foreground-secondary uppercase tracking-widest pl-1">Nội dung</h3>
-                        <p className="text-sm leading-relaxed text-foreground-secondary">{tmdbData?.overview || safeData.description}</p>
-                     </div>
+                  <div className="md:mb-4">
+                     <WatchlistBtn movieSlug={movieSlug} movieTitle={safeData.name} posterUrl={poster || ""} />
                   </div>
                </div>
             </div>
          </div>
-         {/* Auto Switcher Logic */}
-         <SourceSwitcher totalSources={allServers.length} />
+
+         {/* Player Section */}
+         <div className="py-8 md:py-16 overflow-x-clip">
+             <div className="container mx-auto px-4 md:px-12">
+                <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-8 md:gap-12 items-start">
+                   {/* Left Column: Player and Tabs */}
+                   <div className="w-full space-y-8 lg:space-y-12">
+                      {activeServerGroup.length > 0 ? (
+                         <div className="rounded-[20px] overflow-hidden shadow-2xl bg-surface border border-white/5">
+                            <PlayerContainer 
+                                url={currentEp.link_m3u8} isHls={!!currentEp.link_m3u8} rawEmbedUrl={currentEp.link_embed}
+                                movieTitle={safeData.name} movieSlug={movieSlug} episodeName={currentEp.name}
+                                episodeSlug={currentEp.slug} posterUrl={poster as any} source={sourceId} nextEpisodeUrl={nextEpisodeUrl}
+                            />
+                         </div>
+                      ) : (
+                         <div className="aspect-video w-full rounded-[20px] bg-surface flex flex-col items-center justify-center p-8 text-center gap-4">
+                            <Calendar size={48} className="text-primary/50" />
+                            <div className="space-y-1">
+                               <h3 className="text-lg font-bold">Chưa có bản phát sóng</h3>
+                               <p className="text-foreground-secondary text-xs">Phim đang chờ cập nhật. Vui lòng quay lại sau.</p>
+                            </div>
+                         </div>
+                      )}
+                      
+                      {/* Mobile Sidebar: Visible only on small/medium screens */}
+                      <div className="lg:hidden">
+                         <RightSidebarContent 
+                            sources={sources} sourceId={sourceId} movieSlug={movieSlug} 
+                            allServers={allServers} currentServerIdx={currentServerIdx} currentEp={currentEp}
+                            isTopXX={isTopXX}
+                         />
+                      </div>
+
+                      <div className="space-y-4">
+                         <CastSection actors={tmdbData?.credits?.cast || []} />
+                         <div className="h-[1px] bg-separator w-full my-8" />
+                         <MovieTabs slug={movieSlug} source={sourceId} servers={allServers} recommendations={tmdbData?.recommendations?.results || []} collection={tmdbData?.belongs_to_collection} />
+                      </div>
+                   </div>
+
+                   {/* Right Column: Episodes & Sources (Desktop only) */}
+                   <div className="hidden lg:block w-full">
+                      <RightSidebarContent 
+                         sources={sources} sourceId={sourceId} movieSlug={movieSlug} 
+                         allServers={allServers} currentServerIdx={currentServerIdx} currentEp={currentEp}
+                         isTopXX={isTopXX}
+                      />
+                   </div>
+                </div>
+             </div>
+         </div>
       </div>
     );
-  } catch (err: any) {
-    console.error("WATCH PAGE CRITICAL FAILURE:", err);
-    return notFound();
+  } catch (error) {
+    console.error("Watch Page Error:", error);
+    return <div className="p-20 text-center opacity-20">Lỗi nạp trang phim</div>;
   }
 }
