@@ -80,7 +80,7 @@ export function Footer() {
                 const pass = window.prompt("⚠️ TopXX Restricted Area\nNhập mật mã để tiếp tục:");
                 if (pass === correctPass) {
                   localStorage.setItem("topxx_authorized", "true");
-                  window.open(`/${TOPXX_PATH}`, "_blank");
+                  window.location.href = `/${TOPXX_PATH}`;
                 } else if (pass !== null) {
                   alert("Mật khẩu không chính xác!");
                 }

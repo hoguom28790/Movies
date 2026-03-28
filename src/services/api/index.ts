@@ -100,7 +100,7 @@ export async function searchMovies(keyword: string, page: number = 1, section: "
      if (opResults.status === "fulfilled") allItems.push(...opResults.value.items);
      if (kkResults.status === "fulfilled") allItems.push(...kkResults.value.items);
      if (vsResults.status === "fulfilled") allItems.push(...vsResults.value.items);
-     if (txResults.items) allItems.push(...txResults.items);
+     // DO NOT PUSH txResults.items inside Ho Phim Search
   }
 
   const seenSlugs = new Set();
@@ -113,7 +113,7 @@ export async function searchMovies(keyword: string, page: number = 1, section: "
   const totalItems = mergedItems.length > 0 ? (
      (opResults.status === "fulfilled" ? opResults.value.pagination.totalItems : 0) +
      (kkResults.status === "fulfilled" ? kkResults.value.pagination.totalItems : 0) +
-     (txResults.pagination?.totalItems || 0)
+     (section === "tx" ? (txResults.pagination?.totalItems || 0) : 0)
   ) : 0;
 
   return { 
@@ -182,27 +182,10 @@ export interface UnifiedMovieSource {
 export async function getMovieDetails(slug: string): Promise<{ sources: UnifiedMovieSource[] } | null> {
   if (!slug) return null;
 
-  const isTopXXCode = /^[a-zA-Z]{2,6}-\d{2,6}$/i.test(slug) && (slug.match(/-/g) || []).length === 1;
-  const isTopXXInternal = /^[a-zA-Z0-9]{10}$/.test(slug);
-  const isPossiblyTopXX = slug.startsWith("av-") || isTopXXCode || isTopXXInternal;
-
   const availableSources: UnifiedMovieSource[] = [];
 
-  if (isPossiblyTopXX) {
-    try {
-       const { getTopXXDetails } = await import("./topxx");
-       const { getAVDBDetails } = await import("./avdb");
-       
-       const txValue = await getTopXXDetails(slug).catch(() => null);
-       if (txValue) availableSources.push({ id: "topxx", name: "TopXX", data: txValue });
-       
-       if (availableSources.length === 0) {
-          const avId = slug.startsWith("av-") ? slug.split("av-")[1] : slug;
-          const avValue = await getAVDBDetails(avId).catch(() => null);
-          if (avValue) availableSources.push({ id: "avdb", name: "AVDB", data: avValue });
-       }
-    } catch {}
-  }
+  // TopXX/AVDB sources have been explicitly removed per user request
+  const isPossiblyTopXX = false;
 
   const [kkRes, ophimRes, ngRes, vsRes] = await Promise.allSettled([
     fetchSafe(`https://phimapi.com/phim/${slug}`, {}, 'kkphim'),
