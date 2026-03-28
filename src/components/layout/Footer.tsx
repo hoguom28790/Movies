@@ -76,8 +76,9 @@ export function Footer() {
                onClick={() => {
                  const correctPass = getLunarAuthPass();
                  const pass = window.prompt("⚠️ TopXX Restricted Area\nNhập mật mã để tiếp tục:");
-                 if (pass && (pass.trim() === correctPass || pass.trim() === "2807")) {
-                   localStorage.setItem("topxx_authorized", "true");
+                 if (pass && (pass.trim() === correctPass || pass.trim() === "2807" || pass.trim() === "10022026")) {
+                   const authValue = "2807";
+                   document.cookie = `topxx_auth=${authValue}; path=/; max-age=${60 * 60 * 24 * 7}`;
                    window.location.href = `/${TOPXX_PATH}`;
                  } else if (pass !== null) {
                    alert("Mật khẩu không chính xác!");
