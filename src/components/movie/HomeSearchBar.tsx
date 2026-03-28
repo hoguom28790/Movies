@@ -60,9 +60,6 @@ export function HomeSearchBar({ isXX = false }: HomeSearchBarProps) {
           type="text"
           autoComplete="off"
         />
-        <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-foreground/[0.03] border border-foreground/5 text-[10px] font-black text-foreground/20 uppercase tracking-widest italic animate-in fade-in slide-in-from-right-2">
-           QUẢNG CÁO TẮT <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
-        </div>
       </form>
     </div>
   );

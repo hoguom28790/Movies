@@ -17,7 +17,8 @@ export async function GET(req: NextRequest) {
     'ophim', 'kkphim', 'vsmov', 'nguonc', 'phimapi',
     'topxx', 'avdbapi', 'streamxx', 'upload18', 'opstream',
     'googlevideo', 'akamaized', 'cloudfront', 'cdn', 'hls',
-    'javplayer', 'jable', 'dplayer', 'filemoon', 'streamtape'
+    'javplayer', 'jable', 'dplayer', 'filemoon', 'streamtape',
+    'm3u8', 'mp4', 'mkv', 'ts', 'vip', 'sxx', 'play', 'video', 'stream'
   ];
   const urlObj = new URL(decodedUrl);
   const isAllowed = allowedPatterns.some(p => urlObj.hostname.includes(p) || urlObj.pathname.includes(p));

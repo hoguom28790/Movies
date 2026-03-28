@@ -33,7 +33,7 @@ export function SearchResultsClient({ initialQuery, initialPage, isXX = false }:
       try {
         const fetchUrl = isXX 
           ? `/api/topxx/search?keyword=${encodeURIComponent(query)}&page=${initialPage}`
-          : `/api/search?q=${encodeURIComponent(query)}&page=${initialPage}`;
+          : `/api/movies?type=search&keyword=${encodeURIComponent(query)}&page=${initialPage}`;
           
         const res = await fetch(fetchUrl);
         if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
