@@ -245,7 +245,7 @@ export async function getTopXXDetails(slug: string) {
     }
 
     // Rewrite to streamxx.net for STABILITY
-    if (playLink && (playLink.includes('topxx.vip/play/index/') || (movie.code && movie.code.length === 10))) {
+    if (playLink && (playLink.includes('topxx.vip/play/index/') || (movie.code && movie.code?.length === 10))) {
         const id = movie.code || playLink.split('/').pop();
         if (id && id.length === 10) {
             playLink = `https://embed.streamxx.net/player/${id}`;
@@ -258,27 +258,27 @@ export async function getTopXXDetails(slug: string) {
         playLink = `https://topxx.vip${playLink}`;
     }
 
-    const episodes = [{
-       name: "Full (Cloud VIP)",
-       slug: "full",
-       link_embed: playLink,
-       link_m3u8: ""
-    }];
-    
-    const servers = [{
-       server: "Cloud VIP",
-       episodes: episodes
-    }];
+    const servers = [];
 
-    // Also try to find AVDB server as secondary for this movie to ensure it opens!
+    // Server 1: Native TopXX
+    servers.push({
+       server: "Cloud VIP",
+       episodes: [{
+          name: "Full HD",
+          slug: "full",
+          link_embed: playLink,
+          link_m3u8: ""
+       }]
+    });
+
+    // Server 2: AVDB Fallback (Strictly Restricted to requested sources)
     try {
         const avdbFallback = await getAVDBMovies(1, undefined, slug);
         if (avdbFallback.items.length > 0 && avdbFallback.items[0]) {
             const avMovie = await getAVDBDetails(avdbFallback.items[0].id);
             if (avMovie && avMovie.sources && avMovie.sources.length > 0) {
-                // Add AVDB episodes as additional source/server
                 servers.push({
-                   server: "Backup VIP (AVDB)",
+                   server: "Server Premium (AVDB)",
                    episodes: avMovie.sources.map((ep: any) => ({
                       name: ep.name,
                       slug: ep.name.toLowerCase().replace(/\s+/g, '-'),
@@ -288,7 +288,9 @@ export async function getTopXXDetails(slug: string) {
                 });
             }
         }
-    } catch (e) { /* silent backup failure */ }
+    } catch (e) {
+      console.warn("[TopXX] AVDB fallback failed or not found");
+    }
 
     // Final Flattening for XXWatchPage (expects sources: {name, link}[])
     const finalSources = servers.flatMap((s: any) => 
@@ -307,7 +309,8 @@ export async function getTopXXDetails(slug: string) {
         thumb_url: movie.thumbnail,
         content: viTrans?.description || movie.description,
         sources: finalSources,
-        source: 'topxx' as const
+        source: 'topxx' as const,
+        trans: movie.trans || []
     };
   } catch (err) {
     console.error("[TopXX] Fetch Detail Error:", err);
