@@ -291,10 +291,10 @@ export async function getTopXXDetails(slug: string) {
     } catch (e) { /* silent backup failure */ }
 
     // Final Flattening for XXWatchPage (expects sources: {name, link}[])
-    const finalSources = servers.flatMap(s => 
-      s.episodes.map(ep => ({
+    const finalSources = servers.flatMap((s: any) => 
+      s.episodes.map((ep: any) => ({
         name: `${s.server} - ${ep.name}`,
-        link: ep.link_embed || ep.link_m3u8
+        link: ep.link_embed || ep.link_m3u8 || ep.link
       }))
     );
 
