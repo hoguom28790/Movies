@@ -162,8 +162,8 @@
                     console.log("[Player] Network error, retrying...");
                     hls.startLoad();
                 } else {
-                    console.log("[Player] Network error limit reached, falling back to embed");
-                    fallbackToEmbed();
+                    console.log("[Player] Network error limit reached");
+                    triggerError("Network Error Limit Reached");
                 }
                 break;
               case Hls.ErrorTypes.MEDIA_ERROR:
@@ -171,27 +171,31 @@
                 hls.recoverMediaError();
                 break;
               default:
-                console.log("[Player] Fatal error, falling back to embed");
-                fallbackToEmbed();
+                console.log("[Player] Fatal error");
+                triggerError(data.type || "Fatal Error");
                 break;
             }
           }
         });
 
-        function fallbackToEmbed() {
-            if (source.includes('topxx.vip') || source.includes('avdbapi.com')) {
-              embedFrame.setAttribute('sandbox', 'allow-scripts allow-same-origin allow-forms allow-presentation');
-            } else {
-              embedFrame.removeAttribute('sandbox');
-            }
-            embedFrame.src = source;
-            embedFrame.style.display = 'block';
-            video.style.display = 'none';
-            setTimeout(() => {
-                window.parent.postMessage({ type: 'PLAYER_READY' }, '*');
-                loader.style.opacity = '0';
-                loader.style.pointerEvents = 'none';
-            }, 1000);
+        function triggerError(details) {
+            console.log("[Player] Error triggered:", details);
+            window.parent.postMessage({ type: 'PLAYER_ERROR', details: details }, '*');
+            
+            // If it fails completely, show an error UI and remove loader
+            loader.innerHTML = `
+               <div style="text-align:center; padding: 20px;">
+                 <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin: 0 auto 16px; color: #ef4444;">
+                   <circle cx="12" cy="12" r="10"></circle>
+                   <line x1="12" y1="8" x2="12" y2="12"></line>
+                   <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                 </svg>
+                 <span style="color:white; font-weight:bold; display:block; margin-bottom:8px;">Lỗi tải phim</span>
+                 <span style="color:#9ca3af; font-size:12px;">Máy chủ không phản hồi hoặc video bị chặn.<br/>Vui lòng thử server khác.</span>
+               </div>
+            `;
+            loader.style.background = 'rgba(0,0,0,0.9)';
+            loader.style.pointerEvents = 'auto'; // Block clicks
         }
         
         hls.on(Hls.Events.MANIFEST_PARSED, () => {
@@ -227,20 +231,22 @@
         
         // Handle MP4/direct video failure
         video.addEventListener('error', () => {
-           console.log("[Player] Video element error, falling back to embed");
-           if (source.includes('topxx.vip') || source.includes('avdbapi.com')) {
-              embedFrame.setAttribute('sandbox', 'allow-scripts allow-same-origin allow-forms allow-presentation');
-           } else {
-              embedFrame.removeAttribute('sandbox');
-           }
-           embedFrame.src = source;
-           embedFrame.style.display = 'block';
-           video.style.display = 'none';
-           setTimeout(() => {
-             window.parent.postMessage({ type: 'PLAYER_READY' }, '*');
-             loader.style.opacity = '0';
-             loader.style.pointerEvents = 'none';
-           }, 1000);
+           console.log("[Player] Video element error");
+           window.parent.postMessage({ type: 'PLAYER_ERROR', details: 'Video Element Error' }, '*');
+           
+           loader.innerHTML = `
+              <div style="text-align:center; padding: 20px;">
+                 <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin: 0 auto 16px; color: #ef4444;">
+                   <circle cx="12" cy="12" r="10"></circle>
+                   <line x1="12" y1="8" x2="12" y2="12"></line>
+                   <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                 </svg>
+                 <span style="color:white; font-weight:bold; display:block; margin-bottom:8px;">Lỗi tải phim</span>
+                 <span style="color:#9ca3af; font-size:12px;">Định dạng không hỗ trợ hoặc tệp bị hỏng.<br/>Vui lòng thử server khác.</span>
+              </div>
+           `;
+           loader.style.background = 'rgba(0,0,0,0.9)';
+           loader.style.pointerEvents = 'auto'; // Block clicks
         });
       }
     }

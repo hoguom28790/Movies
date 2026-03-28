@@ -277,6 +277,15 @@ export function PlayerContainer({ url, isHls, rawEmbedUrl, nextEpisodeUrl, movie
         setPlayerReady(true);
       }
 
+      if (event.data.type === 'PLAYER_ERROR') {
+        console.error("[PlayerContainer] Caught PLAYER_ERROR from player.html", event.data.details);
+        // Force fallback to stream proxy if we aren't proxying
+        if (url && !url.includes('/api/stream-proxy')) {
+           setProxySettings({ url, referer: url });
+           setUseProxy(true);
+        }
+      }
+
       if (event.data.type === 'ENTER_PSEUDO_FULLSCREEN') setIsPseudoFS(true);
       if (event.data.type === 'EXIT_PSEUDO_FULLSCREEN') setIsPseudoFS(false);
 
@@ -510,35 +519,25 @@ export function PlayerContainer({ url, isHls, rawEmbedUrl, nextEpisodeUrl, movie
     // TopXX/AVDB: never proxy, they use embed iframe
     if (isTopXX) return;
     
-    // Direct HLS streams from known providers need proxy for CORS
-    const needsProxy = (
-      resolvedUrl.includes('.m3u8') &&
-      !resolvedUrl.includes('googlevideo') &&
-      !resolvedUrl.includes('localhost')
-    );
-    
-    if (needsProxy) {
-      const referer = source === 'ophim' ? 'https://ophim1.com/' 
-                    : source === 'vsmov' ? 'https://vsmov.com/'
-                    : source === 'kkphim' ? 'https://kkphim.com/'
-                    : new URL(resolvedUrl).origin;
-      setProxySettings({ url: resolvedUrl, referer });
-      setUseProxy(true);
-      console.log('[Player] Using proxy for CORS HLS stream');
-      return;
-    }
+    // Only certain broken providers need proxy, KKPhim and Ophim have valid CORS
+    const needsProxy = false;
     
     // Embed/unknown: wait 8s then try proxy
     const timer = setTimeout(() => {
-      if (!playerReady) {
-        const referer = new URL(resolvedUrl).origin;
-        setProxySettings({ url: resolvedUrl, referer });
-        setUseProxy(true);
-      }
+      // Avoid crash when parsing targetUrl origin
+      try {
+          if (!playerReady && !useProxy && !(typeof resolvedUrl === 'string' && resolvedUrl.includes('/api/stream-proxy'))) {
+             const refString = (typeof resolvedUrl === 'string' && resolvedUrl.startsWith('http')) ? new URL(resolvedUrl).origin : '';
+             if (refString) {
+                setProxySettings({ url: resolvedUrl, referer: refString });
+                setUseProxy(true);
+             }
+          }
+      } catch(e) {}
     }, 8000);
     
     return () => clearTimeout(timer);
-  }, [resolvedUrl, source, movieSlug]);
+  }, [resolvedUrl, source, movieSlug, playerReady, useProxy]);
 
   const isDirectVideo = url.includes('.m3u8') || url.includes('.mp4') || url.includes('.mkv') || url.includes('.ts') || url.includes('m3u8') || url.includes('mp4') || url.includes('googlevideo') || url.includes('cdn');
   
