@@ -10,6 +10,7 @@ export function middleware(request: NextRequest) {
     // Skip if it's just the root of TopXX (optional, but usually we protect everything)
     // Or if there's a specific logic for the entry page
     
+    /*
     const auth = request.cookies.get('topxx_auth');
     
     // Server-side secret verification
@@ -20,6 +21,7 @@ export function middleware(request: NextRequest) {
       console.log(`[Middleware] Unauthorized access to ${pathname}, redirecting...`);
       return NextResponse.redirect(new URL('/', request.url));
     }
+    */
   }
   
   return NextResponse.next();
