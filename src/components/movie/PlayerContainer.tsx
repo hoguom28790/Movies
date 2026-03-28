@@ -35,12 +35,10 @@ export function PlayerContainer({ url, isHls, rawEmbedUrl, nextEpisodeUrl, movie
   const { isIOS, isTV } = useDevice();
   const queryClient = useQueryClient();
   
-  const [isPseudoFS, setIsPseudoFS] = useState(false);
   const [playerReady, setPlayerReady] = useState(false);
   const [seekAttempted, setSeekAttempted] = useState(false);
   const [resolvedUrl, setResolvedUrl] = useState<string | null>(null);
   const [isUrlEmbed, setIsUrlEmbed] = useState(false);
-  const [isPortrait, setIsPortrait] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [skipShow, setSkipShow] = useState<SkipTime | null>(null);
   const [isAnime, setIsAnime] = useState(false);
@@ -80,12 +78,7 @@ export function PlayerContainer({ url, isHls, rawEmbedUrl, nextEpisodeUrl, movie
     }
   }, [movieTitle]);
 
-  useEffect(() => {
-    const handleResize = () => setIsPortrait(window.innerHeight > window.innerWidth);
-    window.addEventListener('resize', handleResize);
-    handleResize(); // Initial check
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
+
 
   // Trakt.tv Scrobbling State
   const [traktMatch, setTraktMatch] = useState<any>(null);
@@ -286,8 +279,7 @@ export function PlayerContainer({ url, isHls, rawEmbedUrl, nextEpisodeUrl, movie
         }
       }
 
-      if (event.data.type === 'ENTER_PSEUDO_FULLSCREEN') setIsPseudoFS(true);
-      if (event.data.type === 'EXIT_PSEUDO_FULLSCREEN') setIsPseudoFS(false);
+
 
       // Handle Trakt Scrobbling Logic
       const handleTraktScrobble = async (eventType: 'start' | 'pause' | 'stop', progress: number) => {
@@ -498,14 +490,7 @@ export function PlayerContainer({ url, isHls, rawEmbedUrl, nextEpisodeUrl, movie
     return () => window.removeEventListener('keydown', handler);
   }, [skipShow]);
 
-  useEffect(() => {
-    if (isPseudoFS) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "";
-    }
-    return () => { document.body.style.overflow = ""; };
-  }, [isPseudoFS]);
+
 
   const [useProxy, setUseProxy] = useState(false);
   const [proxySettings, setProxySettings] = useState<{ url: string; referer: string } | null>(null);
@@ -547,18 +532,16 @@ export function PlayerContainer({ url, isHls, rawEmbedUrl, nextEpisodeUrl, movie
 
   const iframeSrc = `/player.html?url=${encodeURIComponent(finalUrl)}&theme=${stylePreset}&isEmbed=${isUrlEmbed}&time=${Math.floor(initialTime)}&v=4.0`;
 
+  const playerClasses = cn(
+      "w-full h-full min-h-[180px] max-h-[40vh] sm:max-h-[50vh] md:max-h-[60vh] lg:max-h-[70vh]",
+      "relative shadow-cinematic-2xl bg-black overflow-hidden rounded-[20px] sm:rounded-[32px] border border-white/5",
+      isTV && "max-h-none rounded-none border-none shadow-none"
+  );
+
   return (
     <div 
-      className={isPseudoFS 
-        ? (isPortrait 
-            ? `fixed top-0 left-full w-[100vh] h-[100vw] rotate-90 origin-top-left z-[9999] bg-black ${isIOS ? 'p-safe' : ''}` 
-            : `fixed inset-0 w-screen h-screen z-[9999] bg-black ${isIOS ? 'p-safe' : ''}`)
-        : cn(
-            "w-full aspect-video h-auto min-h-[180px] max-h-[45vh] sm:max-h-[55vh] md:max-h-[70vh] lg:max-h-[80vh] self-start relative shadow-cinematic-2xl bg-black overflow-hidden rounded-[32px] border border-white/5",
-            isTV && "max-h-[none] rounded-none border-none shadow-none" /* On TV, player can be larger */
-          )
-      } 
-      style={!isPseudoFS ? { aspectRatio: '16/9' } : {}}
+      className={playerClasses} 
+      style={{ aspectRatio: '16/9' }}
     >
       {resolvedUrl ? (
         <iframe

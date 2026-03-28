@@ -198,7 +198,7 @@ export default async function CatchAllWatchPage({ params, searchParams }: PagePr
                   </div>
 
                   {/* Right Column: Episodes & Sources */}
-                  <div className="w-full space-y-10">
+                  <div className="w-full space-y-10 relative z-10 bg-background/50 backdrop-blur-sm lg:backdrop-blur-none rounded-3xl p-4 lg:p-0">
                      {/* Sources - Apple style rounded tabs */}
                      {!isTopXX && sources.length > 1 && (
                         <div className="space-y-4">

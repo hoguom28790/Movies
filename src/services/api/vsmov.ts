@@ -13,17 +13,21 @@ export async function getVsmovMovies(page: number = 1): Promise<MovieListRespons
     const data: VsmovListResponse = await res.json();
     
     // Vsmov usually provides full URLs in their API response
-    const items: Movie[] = (data.items || []).map((item) => ({
-      id: String(item.slug),
-      title: item.title || item.name || "",
-      originalTitle: item.origin_title || item.origin_name || "",
-      slug: item.slug,
-      posterUrl: item.poster_url?.startsWith('http') ? item.poster_url : `https://vsmov.com${(item.poster_url || "").startsWith('/') ? '' : '/'}${item.poster_url || ""}`,
-      thumbUrl: item.thumb_url?.startsWith('http') ? item.thumb_url : `https://vsmov.com${(item.thumb_url || "").startsWith('/') ? '' : '/'}${item.thumb_url || ""}`,
-      year: item.year?.toString() || "",
-      status: item.status || item.episode_current || "",
-      source: 'vsmov' as const
-    })).filter((item: Movie) => 
+    const items: Movie[] = (data.items || []).map((item) => {
+      const ps = String(item.poster_url || "");
+      const ts = String(item.thumb_url || "");
+      return {
+        id: String(item.slug),
+        title: item.title || item.name || "",
+        originalTitle: item.origin_title || item.origin_name || "",
+        slug: item.slug,
+        posterUrl: ps.startsWith('http') ? ps : `https://vsmov.com${ps.startsWith('/') ? '' : '/'}${ps}`,
+        thumbUrl: ts.startsWith('http') ? ts : `https://vsmov.com${ts.startsWith('/') ? '' : '/'}${ts}`,
+        year: item.year?.toString() || "",
+        status: item.status || item.episode_current || "",
+        source: 'vsmov' as const
+      };
+    }).filter((item: Movie) => 
       item.status?.toLowerCase() !== "trailer"
     );
 
@@ -52,18 +56,22 @@ export async function searchMovies(keyword: string, page: number = 1): Promise<M
     
     if (data.status !== "success") return { items: [], pagination: { currentPage: 1, totalPages: 1, totalItems: 0 } };
 
-    const items: Movie[] = (data.items || []).map((item) => ({
-      id: String(item.slug),
-      title: item.title || item.name || "",
-      originalTitle: item.origin_title || item.origin_name || "",
-      slug: item.slug,
-      posterUrl: item.poster_url?.startsWith('http') ? item.poster_url : `https://vsmov.com${(item.poster_url || "").startsWith('/') ? '' : '/'}${item.poster_url || ""}`,
-      thumbUrl: item.thumb_url?.startsWith('http') ? item.thumb_url : `https://vsmov.com${(item.thumb_url || "").startsWith('/') ? '' : '/'}${item.thumb_url || ""}`,
-      year: item.year?.toString() || "",
-      quality: item.quality || "",
-      status: item.status || item.episode_current || "",
-      source: 'vsmov' as const
-    })).filter((item: Movie) => 
+    const items: Movie[] = (data.items || []).map((item) => {
+      const ps = String(item.poster_url || "");
+      const ts = String(item.thumb_url || "");
+      return {
+        id: String(item.slug),
+        title: item.title || item.name || "",
+        originalTitle: item.origin_title || item.origin_name || "",
+        slug: item.slug,
+        posterUrl: ps.startsWith('http') ? ps : `https://vsmov.com${ps.startsWith('/') ? '' : '/'}${ps}`,
+        thumbUrl: ts.startsWith('http') ? ts : `https://vsmov.com${ts.startsWith('/') ? '' : '/'}${ts}`,
+        year: item.year?.toString() || "",
+        quality: item.quality || "",
+        status: item.status || item.episode_current || "",
+        source: 'vsmov' as const
+      };
+    }).filter((item: Movie) => 
       item.status?.toLowerCase() !== "trailer"
     );
 

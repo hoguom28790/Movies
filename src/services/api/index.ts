@@ -150,23 +150,31 @@ export async function getLatestMovies(page: number = 1): Promise<MovieListRespon
     if (kkphim.status === "fulfilled") items.push(...kkphim.value.items);
     if (vsmov.status === "fulfilled") items.push(...vsmov.value.items);
 
-    const merged: Movie[] = [];
     const opItems = ophimData.items;
     const kkItems = kkphim.status === "fulfilled" ? kkphim.value.items : [];
     const ngItems = nguonc.status === "fulfilled" ? nguonc.value.items : [];
     const vsItems = vsmov.status === "fulfilled" ? vsmov.value.items : [];
 
+    const merged: Movie[] = [];
+    const seenKeys = new Set<string>();
+
     const max = Math.max(opItems.length, kkItems.length, ngItems.length, vsItems.length);
     for (let i = 0; i < max; i++) {
-       if (opItems[i]) merged.push(opItems[i]);
-       if (kkItems[i]) merged.push(kkItems[i]);
-       if (ngItems[i]) merged.push(ngItems[i]);
-       if (vsItems[i]) merged.push(vsItems[i]);
+        [opItems[i], kkItems[i], ngItems[i], vsItems[i]].forEach(item => {
+           if (item && item.slug) {
+              const titleKey = `${normalizeTitle(item.title)}_${item.year}`;
+              if (!seenKeys.has(titleKey) && !seenKeys.has(item.slug)) {
+                 seenKeys.add(titleKey);
+                 seenKeys.add(item.slug);
+                 merged.push(item);
+              }
+           }
+        });
     }
 
     return {
       items: merged,
-      pagination: { currentPage: page, totalPages: 100, totalItems: merged.length * 100 }
+      pagination: { currentPage: page, totalPages: 100, totalItems: merged.length * 8 }
     };
   } catch (error) {
     return { items: [], pagination: { currentPage: 1, totalPages: 1, totalItems: 0 } };
