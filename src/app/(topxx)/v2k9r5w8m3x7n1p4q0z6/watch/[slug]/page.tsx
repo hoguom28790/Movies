@@ -3,6 +3,7 @@ import Link from "next/link";
 import { ArrowLeft, ChevronLeft, ChevronRight, Play } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { PlayerContainer } from "@/components/movie/PlayerContainer";
+import { WatchlistBtn } from "@/components/movie/WatchlistBtn";
 import { getTopXXDetails } from "@/services/api/topxx";
 import { TOPXX_PATH } from "@/lib/constants";
 
@@ -94,10 +95,19 @@ export default async function XXWatchPage({
                     {(viTrans as any)?.title || (item as any)?.title || (item as any)?.name} 
                     <span className="text-yellow-500 ml-4 block sm:inline">#SV{currentIdx + 1}</span>
                  </h1>
-                 <div className="flex items-center gap-4">
+                <div className="flex items-center gap-4">
                     <span className="px-3 py-1 rounded-lg bg-yellow-500 text-black text-[10px] font-black uppercase italic">{item.quality}</span>
                     <span className="text-white/40 text-xs font-bold uppercase tracking-widest">{(item as any).duration || ""}</span>
                     <span className="text-white/20 text-[10px] font-black uppercase tracking-[0.2em]">{(item as any).views?.toLocaleString() || 0} lượt xem</span>
+                 </div>
+                 <div className="pt-4">
+                    <WatchlistBtn 
+                      isXX
+                      movieCode={slug}
+                      movieTitle={(viTrans as any)?.title || (item as any)?.title || (item as any)?.name}
+                      posterUrl={item.posterUrl || ""}
+                      className="bg-yellow-500/10 border border-yellow-500/20 text-yellow-500 hover:bg-yellow-500 hover:text-black"
+                    />
                  </div>
               </div>
 

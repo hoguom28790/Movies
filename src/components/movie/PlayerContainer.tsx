@@ -526,9 +526,17 @@ export function PlayerContainer({ url, isHls, rawEmbedUrl, nextEpisodeUrl, movie
 
   const isDirectVideo = url.includes('.m3u8') || url.includes('.mp4') || url.includes('.mkv') || url.includes('.ts') || url.includes('m3u8') || url.includes('mp4') || url.includes('googlevideo') || url.includes('cdn');
   
-  const finalUrl = useProxy && proxySettings 
-    ? `/api/stream-proxy?url=${encodeURIComponent(proxySettings.url)}&referer=${encodeURIComponent(proxySettings.referer)}`
-    : (resolvedUrl || "");
+  const detectedSource = getMovieSource(movieSlug || '', source);
+  const isTopXX = detectedSource === 'topxx' || detectedSource === 'avdb';
+
+  let finalUrl = (resolvedUrl || "");
+  
+  // Use specialized TopXX/AVDB Proxy for HLS streams to bypass native CORS
+  if (isTopXX && finalUrl && (finalUrl.includes('.m3u8') || finalUrl.includes('streamxx'))) {
+     finalUrl = `/api/topxx/proxy?url=${encodeURIComponent(finalUrl)}`;
+  } else if (useProxy && proxySettings) {
+     finalUrl = `/api/stream-proxy?url=${encodeURIComponent(proxySettings.url)}&referer=${encodeURIComponent(proxySettings.referer)}`;
+  }
 
   const iframeSrc = `/player.html?url=${encodeURIComponent(finalUrl)}&theme=${stylePreset}&isEmbed=${isUrlEmbed}&time=${Math.floor(initialTime)}&v=4.0`;
 

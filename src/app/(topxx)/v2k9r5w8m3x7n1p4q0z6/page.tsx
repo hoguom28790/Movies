@@ -59,21 +59,21 @@ export default async function XXHomePage() {
           <MovieRow 
             title="PHIM MỚI CẬP NHẬT" 
             movies={latestData?.items?.slice(1, 13) || []} 
-            viewAllLink="/${TOPXX_PATH}/the-loai/phim-moi-cap-nhat"
+            viewAllLink={`/${TOPXX_PATH}/the-loai/phim-moi-cap-nhat`}
             isXX
           />
           
           <BentoGrid 
             title="AVDB PREMIUM EXCLUSIVE" 
             movies={(avdbData?.items?.filter(Boolean) || []) as any[]} 
-            viewAllLink="/${TOPXX_PATH}/nguon/avdb"
+            viewAllLink={`/${TOPXX_PATH}/nguon/avdb`}
             isXX
           />
 
           <MovieRow 
             title="SIÊU PHẨM JAV (NHẬT)" 
             movies={javData?.items || []} 
-            viewAllLink="/${TOPXX_PATH}/the-loai/vQMGvwTw5G"
+            viewAllLink={`/${TOPXX_PATH}/the-loai/vQMGvwTw5G`}
             isXX
           />
 
@@ -82,7 +82,7 @@ export default async function XXHomePage() {
           <MovieRow 
             title="PHIM KHÔNG CHE HOT" 
             movies={uncensoredData?.items || []} 
-            viewAllLink="/${TOPXX_PATH}/the-loai/vdDkXwQsHi"
+            viewAllLink={`/${TOPXX_PATH}/the-loai/vdDkXwQsHi`}
             isXX
           />
 

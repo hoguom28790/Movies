@@ -1,12 +1,12 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { Play, Trash2, ListMusic, Plus, Heart, Search, Edit2, Check, X as CloseIcon, X } from "lucide-react";
 import { 
   getTopXXPlaylists, deleteTopXXPlaylist, removeMovieFromTopXXPlaylist, 
   createTopXXPlaylist, TopXXPlaylist, getTopXXFavorites, toggleTopXXFavorite, 
-  renameTopXXPlaylist, TopXXFavoriteEntry 
+  renameTopXXPlaylist, TopXXFavoriteEntry, saveTopXXPlaylists
 } from "@/services/topxxDb";
 import { useAuth } from "@/contexts/AuthContext";
 import { 
@@ -39,21 +39,45 @@ export default function TopXXLibraryPage() {
   const fetchData = async () => {
     setLoading(true);
     try {
+      // 1. Get local data as baseline for possible sync
+      const localPl = getTopXXPlaylists();
+      const localFav = getTopXXFavorites();
+      
       if (user) {
+        // 2. Fetch cloud data
         const [cloudPl, cloudFav, actorFav] = await Promise.all([
           getUserTopXXFirestorePlaylists(user.uid),
           getTopXXFirestoreFavorites(user.uid),
           (await import("@/services/db")).getUserFavoriteActors(user.uid, 'topxx')
         ]);
-        setPlaylists(cloudPl);
-        setFavorites(cloudFav);
+        
+        // 3. MERGE LOGIC: Push local items to cloud if cloud is currently empty (syncing guest data)
+        if (cloudPl.length === 0 && localPl.length > 0) {
+           const { syncTopXXPlaylistsToFirestore } = await import("@/services/topxxFirestore");
+           await syncTopXXPlaylistsToFirestore(user.uid, localPl);
+           setPlaylists(localPl);
+        } else {
+           setPlaylists(cloudPl);
+           // Also keep local storage updated from cloud for offline parity
+           if (cloudPl.length > 0) saveTopXXPlaylists(cloudPl);
+        }
+        
+        if (cloudFav.length === 0 && localFav.length > 0) {
+           const { syncTopXXLocalToFirestore } = await import("@/services/topxxFirestore");
+           await syncTopXXLocalToFirestore(user.uid, localFav, []); // history is dynamic
+           setFavorites(localFav);
+        } else {
+           setFavorites(cloudFav);
+        }
+        
         setFavoriteActors(actorFav);
       } else {
-        setPlaylists(getTopXXPlaylists());
-        setFavorites(getTopXXFavorites());
+        setPlaylists(localPl);
+        setFavorites(localFav);
         setFavoriteActors([]);
       }
     } catch (e) {
+      console.error("[TopXX Library] Fetch failed, using local fallback", e);
       setPlaylists(getTopXXPlaylists());
       setFavorites(getTopXXFavorites());
     } finally {
