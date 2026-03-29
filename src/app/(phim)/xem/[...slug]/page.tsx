@@ -8,8 +8,11 @@ import { CastSection } from "@/components/movie/CastSection";
 import { MovieTabs } from "@/components/movie/MovieTabs";
 import { Calendar } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { Metadata } from "next";
 import { WatchlistBtn } from "@/components/movie/WatchlistBtn";
+import { notFound } from "next/navigation";
+
+export const dynamic = "force-dynamic";
+export const revalidate = 3600;
 
 // Sidebar Content Helper Component
 const RightSidebarContent = ({ sources, sourceId, movieSlug, allServers, currentServerIdx, currentEp, isTopXX }: any) => (
@@ -107,7 +110,10 @@ export default async function WatchPage({
     let safeData = data ? normalizeMovieData(data, detectedSource) : null;
     const isTopXX = detectedSource === 'topxx' || detectedSource === 'avdb';
 
-    if (!safeData) return <div className="p-20 text-center opacity-20">Không tìm thấy thông tin phim</div>;
+    if (!safeData) {
+       console.log(`[WatchPage] Movie not found: ${movieSlug}`);
+       return notFound();
+    }
 
     const tmdbId = safeData.tmdb_id || initialTmdbSearch?.id;
     let tmdbData = null;

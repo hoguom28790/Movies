@@ -197,7 +197,7 @@ export async function getMovieDetails(slug: string): Promise<{ sources: UnifiedM
 
   const [kkRes, ophimRes, ngRes, vsRes] = await Promise.allSettled([
     fetchSafe(`https://phimapi.com/phim/${slug}`, {}, 'kkphim'),
-    fetchSafe(`https://ophim1.com/phim/${slug}`, { Referer: "https://ophim1.com/" }, 'ophim'),
+    fetchSafe(`https://ophim1.com/api/phim/${slug}`, { Referer: "https://ophim1.com/" }, 'ophim'),
     fetchSafe(`https://phim.nguonc.com/api/film/${slug}`, {}, 'nguonc'),
     fetchSafe(`https://vsmov.com/api/phim/${slug}`, { Referer: "https://vsmov.com/" }, 'vsmov')
   ]);
