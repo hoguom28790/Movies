@@ -23,12 +23,13 @@ const OPHIM_MIRRORS = [
 const fetchSafe = async <T = any>(url: string, headers: Record<string, string> = {}, sourceId?: string): Promise<T | null> => {
   const tryFetch = async (targetUrl: string): Promise<T | null> => {
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 3500); 
+    const timeoutMs = (headers as any)._timeout || 3500;
+    const timeoutId = setTimeout(() => controller.abort(), timeoutMs); 
     try {
       const res = await fetch(targetUrl, { 
         headers: { "Accept": "application/json", ...headers }, 
         signal: controller.signal,
-        next: { revalidate: 300 }
+        next: { revalidate: sourceId === 'topxx' ? 60 : 3600 }
       });
       clearTimeout(timeoutId);
       if (!res.ok) return null;
@@ -214,11 +215,11 @@ export async function getMovieDetails(slug: string): Promise<{ sources: UnifiedM
       const hasContent = episodes.length > 0 || 
                         !!(movie.link_m3u8 || movie.link_embed || (movie.sources && movie.sources.length > 0));
 
-      if (movie && (movie.slug || movie.id) && hasContent) {
+      if (movie && (movie.slug || movie.id)) {
         availableSources.push({ 
             id: sourceId, 
             name: sourceName, 
-            data: { ...movie, episodes: episodes } as ProviderMovie
+            data: { ...movie, episodes: episodes, hasContent } as ProviderMovie
         });
       }
     }
@@ -248,6 +249,7 @@ export async function getMovieDetails(slug: string): Promise<{ sources: UnifiedM
 
         if (bestMatch && bestMatch.slug !== slug) {
           console.log(`[API] Found alternative slug for "${slug}": ${bestMatch.slug}`);
+          // Pass a timeout hint to prevent deep recursion hangs
           const altRes = await getMovieDetails(bestMatch.slug);
           if (altRes) return altRes;
         }

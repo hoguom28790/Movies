@@ -218,10 +218,10 @@ export default async function WatchPage({
                       ) : (
                          <div className="aspect-video w-full rounded-[20px] bg-surface flex flex-col items-center justify-center p-8 text-center gap-4">
                             <Calendar size={48} className="text-primary/50" />
-                            <div className="space-y-1">
-                               <h3 className="text-lg font-bold">Chưa có bản phát sóng</h3>
-                               <p className="text-foreground-secondary text-xs">Phim đang chờ cập nhật. Vui lòng quay lại sau.</p>
-                            </div>
+                             <div className="space-y-1">
+                                <h3 className="text-lg font-bold">Phim chưa phát hành</h3>
+                                <p className="text-foreground-secondary text-xs">Vui lòng quay lại sau.</p>
+                             </div>
                          </div>
                       )}
                       
