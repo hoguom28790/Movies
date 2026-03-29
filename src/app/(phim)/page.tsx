@@ -152,7 +152,19 @@ export default async function Home() {
 
       <MovieContinueWatching />
 
-      <CategoryShortcuts />
+      <MovieContinueWatching />
+
+      <CategoryShortcuts posters={{
+        "phim-moi": heroMovies[0]?.posterUrl,
+        "chieu-rap": phimLe.items.find(m => m.category?.some((c: any) => c.slug === 'chieu-rap'))?.posterUrl || phimLe.items[0]?.posterUrl,
+        "long-tieng": phimBo.items.find(m => m.category?.some((c: any) => c.slug === 'long-tieng'))?.posterUrl || phimBo.items[0]?.posterUrl,
+        "thuyet-minh": phimBo.items.find(m => m.category?.some((c: any) => c.slug === 'thuyet-minh'))?.posterUrl || phimBo.items[1]?.posterUrl,
+        "co-trang": phimBo.items.find(m => m.category?.some((c: any) => c.slug === 'co-trang'))?.posterUrl || heroMovies[5]?.posterUrl,
+        "kinh-di": phimLe.items.find(m => m.category?.some((c: any) => c.slug === 'kinh-di'))?.posterUrl || heroMovies[2]?.posterUrl,
+        "hinh-su": heroEnriched.find(m => m.category?.some((c: any) => c.slug === 'hinh-su'))?.posterUrl || gridEnriched[0]?.posterUrl,
+        "au-my": phimLe.items.find(m => m.country?.some((c: any) => c.slug === 'au-my'))?.posterUrl || gridEnriched[5]?.posterUrl,
+        "hoat-hinh": hoatHinh.items[0]?.posterUrl
+      }} />
 
       {trending.length > 0 && (
         <BentoMovieRow 

@@ -3,7 +3,7 @@
  */
 
 export const TOPXX_CODE_REGEX = /^[A-Z]{2,6}-\d{2,6}$/i;
-export const TOPXX_INTERNAL_REGEX = /^[a-zA-Z0-9]{10}$/;
+export const TOPXX_INTERNAL_REGEX = /^[a-zA-Z0-9]{10,32}$/;
 export const AVDB_ID_REGEX = /^av-\d+$/;
 
 export type MovieSource = 'ophim' | 'kkphim' | 'nguonc' | 'vsmov' | 'topxx' | 'avdb' | 'unknown';

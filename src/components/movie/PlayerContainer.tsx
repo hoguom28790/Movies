@@ -175,40 +175,34 @@ export function PlayerContainer({ url, isHls, rawEmbedUrl, nextEpisodeUrl, movie
 
     if (isTopXX) {
        const timer = setTimeout(async () => {
-         const { getMovieHistory, saveHistory } = await import("@/services/db");
+         const { saveHistory } = await import("@/services/db");
+         const { saveTopXXHistory } = await import("@/services/topxxDb");
          const absolutePoster = getPosterUrl(posterUrl, detectedSource);
-         
-         try {
-           const existing = await getMovieHistory(user.uid, movieSlug, detectedSource);
-           // We only save if no history exists or it was just started (0s)
-           if (!existing || existing.progressSeconds === 0) {
-              await saveHistory(user.uid, {
-                movieSlug,
-                movieTitle: movieTitle || "",
-                episodeName: episodeName || "Full",
-                episodeSlug: episodeSlug || "full",
-                posterUrl: absolutePoster,
-                progressSeconds: 0,
-                durationSeconds: 0,
-                progress: 0,
-                source: detectedSource
-              });
-              console.log(`[TopXX] MOUNT-SYNC to Firebase for: ${movieSlug}`);
-           }
-         } catch(e) {}
 
-         // LocalStorage Always
          try {
-            const { saveTopXXHistory } = await import("@/services/topxxDb");
-            saveTopXXHistory({
-              movieCode: movieSlug,
-              movieTitle: movieTitle || "",
-              posterUrl: absolutePoster,
-              progressSeconds: 0,
-              durationSeconds: 0,
+            await saveHistory(user.uid, {
+               movieSlug,
+               movieTitle: movieTitle || "",
+               episodeName: episodeName || "Full",
+               episodeSlug: episodeSlug || "full",
+               posterUrl: absolutePoster,
+               progressSeconds: 0,
+               durationSeconds: 0,
+               progress: 0,
+               source: detectedSource
             });
-         } catch(e) {}
-
+            
+            await saveTopXXHistory({
+               movieCode: movieSlug,
+               movieTitle: movieTitle || "",
+               posterUrl: absolutePoster,
+               progressSeconds: 0,
+               durationSeconds: 0
+            });
+            console.log(`[Player] TopXX/AVDB History entry initiated/refreshed for: ${movieSlug}`);
+         } catch(e) {
+            console.error("[Player] TopXX History refresh failed:", e);
+         }
        }, MOUNT_SAVE_DELAY);
        return () => clearTimeout(timer);
     }

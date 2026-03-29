@@ -88,12 +88,17 @@ export default function MovieHistoryPage() {
             const pText = item.progressSeconds > 0 ? `${formatTime(item.progressSeconds)}${item.durationSeconds ? ` / ${formatTime(item.durationSeconds)}` : ""} (${progressPercent}%)` : "Mới xem";
             const watchSource = (item as any).source || 'ophim';
             const epParam = item.episodeSlug || (displayEpisode === "1" ? "full" : displayEpisode);
-            const watchHref = `/xem/${watchSource}/${item.movieSlug}/${encodeURIComponent(epParam)}`;
             
-            // Ensure poster is absolute (Fixes "Sàn đấu sinh tử" and others)
-            const absolutePoster = item.posterUrl?.startsWith('http') 
-              ? item.posterUrl 
-              : `https://img.ophim.live/uploads/movies/${item.posterUrl}`;
+            const isXX = watchSource === 'topxx' || watchSource === 'avdb';
+            const watchHref = isXX 
+               ? `/v2k9r5w8m3x7n1p4q0z6/watch/${item.movieSlug}`
+               : `/xem/${watchSource}/${item.movieSlug}/${encodeURIComponent(epParam)}`;
+            
+            // Ensure poster is absolute
+            let absolutePoster = item.posterUrl;
+            if (absolutePoster && !absolutePoster.startsWith('http')) {
+               absolutePoster = `https://img.ophim.live/uploads/movies/${absolutePoster}`;
+            }
 
             return (
               <MovieCard 
