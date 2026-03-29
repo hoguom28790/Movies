@@ -128,7 +128,9 @@ export default async function WatchPage({
                    country: tmdbFull.production_countries?.map((c: any) => c.name) || [],
                    episodes: [],
                    status: "Sắp chiếu",
-                   tmdb_id: tmdbFull.id
+                   tmdb_id: tmdbFull.id,
+                   code: tmdbFull.id.toString(),
+                   source: "unknown" as any
                 };
              }
           } catch (e) { console.error("[WatchPage] TMDB Fallback failed:", e); }
