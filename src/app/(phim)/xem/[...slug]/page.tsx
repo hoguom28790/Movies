@@ -110,18 +110,29 @@ export default async function WatchPage({
     if (!safeData) return <div className="p-20 text-center opacity-20">Không tìm thấy thông tin phim</div>;
 
     const tmdbId = safeData.tmdb_id || initialTmdbSearch?.id;
-    const tmdbData = tmdbId ? await getTMDBMovieDetails(tmdbId, initialTmdbSearch?.media_type || "movie") : null;
+    let tmdbData = null;
+    try {
+       if (tmdbId) {
+          tmdbData = await getTMDBMovieDetails(Number(tmdbId), initialTmdbSearch?.media_type || "movie");
+          // If TMDB returns an error response (like 404), treat as null
+          if (tmdbData?.status_code || !tmdbData?.id) tmdbData = null;
+       }
+    } catch (e) {
+       console.error("[WatchPage] TMDB fetch failed:", e);
+    }
     
     const allServers = safeData.episodes || [];
-    const activeServerGroup = allServers[currentServerIdx]?.items || [];
+    const activeServerGroup = (allServers.length > 0) ? (allServers[currentServerIdx]?.items || []) : [];
     const currentEp = activeServerGroup.find((e: any) => e.slug === currentEpisodeSlug || e.name === currentEpisodeSlug) || activeServerGroup[0] || {};
     
     // Find next episode
     let nextEpisodeUrl = null;
-    const currentEpIdx = activeServerGroup.indexOf(currentEp);
-    if (currentEpIdx !== -1 && currentEpIdx < activeServerGroup.length - 1) {
-       const nextEp = activeServerGroup[currentEpIdx + 1];
-       nextEpisodeUrl = `/xem/${movieSlug}?sv=${currentServerIdx}&ep=${encodeURIComponent(nextEp.slug || nextEp.name)}&src=${sourceId}`;
+    if (activeServerGroup.length > 0) {
+        const currentEpIdx = activeServerGroup.indexOf(currentEp);
+        if (currentEpIdx !== -1 && currentEpIdx < activeServerGroup.length - 1) {
+           const nextEp = activeServerGroup[currentEpIdx + 1];
+           nextEpisodeUrl = `/xem/${movieSlug}?sv=${currentServerIdx}&ep=${encodeURIComponent(nextEp.slug || nextEp.name)}&src=${sourceId}`;
+        }
     }
 
     const poster = tmdbData?.poster_path ? `https://image.tmdb.org/t/p/w500${tmdbData.poster_path}` : safeData.posterUrl;
@@ -186,13 +197,13 @@ export default async function WatchPage({
                       {activeServerGroup.length > 0 ? (
                          <div className="rounded-[20px] overflow-hidden shadow-2xl bg-surface border border-white/5">
                             <PlayerContainer 
-                                url={currentEp.link_m3u8} 
-                                isHls={!!currentEp.link_m3u8} 
-                                rawEmbedUrl={currentEp.link_embed}
+                                url={currentEp?.link_m3u8} 
+                                isHls={!!currentEp?.link_m3u8} 
+                                rawEmbedUrl={currentEp?.link_embed}
                                 movieTitle={safeData.name} 
                                 movieSlug={movieSlug} 
-                                episodeName={currentEp.name}
-                                episodeSlug={currentEp.slug} 
+                                episodeName={currentEp?.name}
+                                episodeSlug={currentEp?.slug} 
                                 posterUrl={poster || undefined} 
                                 source={sourceId} 
                                 nextEpisodeUrl={nextEpisodeUrl || undefined}

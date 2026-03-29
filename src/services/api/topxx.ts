@@ -361,8 +361,8 @@ export async function searchTopXXMovies(keyword: string, page: number = 1, isCat
   try {
     console.log(`[TopXX Search] Initiating parallel search for: "${normalizedQuery}" (CategoryMode: ${isCategorySearch})`);
 
-    // We run 5 main sources in parallel (including Scraper fallback)
-    const [topxxRes, topxxActorRes, topxxScrapedRes, avdbTitleRes, avdbActorRes] = await Promise.allSettled([
+    // We run 3 main sources in parallel (Primary + Scraper + AVDB)
+    const [topxxRes, topxxActorRes, topxxScrapedRes, avdbTitleRes] = await Promise.allSettled([
       fetchWithRetry(topxxUrl, { headers: DEFAULT_HEADERS, next: { revalidate: 300 } }, SEARCH_TIMEOUT, SEARCH_RETRIES, 800)
         .then(async r => {
           if (!r.ok) return null;
@@ -398,14 +398,15 @@ export async function searchTopXXMovies(keyword: string, page: number = 1, isCat
         }),
       scrapeTopXXSearch(normalizedQuery),
       getAVDBMovies(page, undefined, normalizedQuery)
-        .catch(() => ({ items: [], pagination: { totalItems: 0, totalPages: 1, currentPage: 1 } })),
-      getAVDBMovies(page, undefined, undefined, normalizedQuery)
         .catch(() => ({ items: [], pagination: { totalItems: 0, totalPages: 1, currentPage: 1 } }))
     ]);
 
     const movieMap = new Map<string, Movie>();
     let totalItems = 0;
     let totalPages = 1;
+
+    // Process sources and only keep those that belong to the TopXX ecosystem
+    // This removes the risk of regular movies showing up with TopXX watch links
 
     // Helper for strict relevance checking
     const isLikelyRelevant = (m: Movie, q: string): boolean => {
@@ -484,19 +485,6 @@ export async function searchTopXXMovies(keyword: string, page: number = 1, isCat
       if (totalItems === 0) {
         totalItems = avdbTitleRes.value.pagination.totalItems;
         totalPages = avdbTitleRes.value.pagination.totalPages;
-      }
-    }
-
-    // 5. Process AVDB Actor Search
-    if (avdbActorRes.status === "fulfilled" && avdbActorRes.value?.items) {
-      (avdbActorRes.value.items as unknown as Movie[]).forEach((m: Movie) => {
-        if (m && !movieMap.has(m.id) && isLikelyRelevant(m, normalizedQuery)) {
-          movieMap.set(m.id, m);
-        }
-      });
-      if (totalItems === 0) {
-        totalItems = Math.max(totalItems, avdbActorRes.value.pagination.totalItems);
-        totalPages = Math.max(totalPages, avdbActorRes.value.pagination.totalPages);
       }
     }
 

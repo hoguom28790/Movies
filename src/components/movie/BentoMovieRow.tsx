@@ -51,7 +51,7 @@ export function BentoMovieRow({ title, movies, viewAllHref }: BentoMovieRowProps
           className="flex-shrink-0 w-80 md:w-[400px]"
         >
           <Link 
-            href={featured.slug.startsWith('/') ? featured.slug : `/phim/${featured.slug}`}
+            href={featured.slug.startsWith('/') ? featured.slug : `/xem/${featured.slug}`}
             className="relative group rounded-[32px] overflow-hidden aspect-[3/4] bg-surface shadow-lg block transition-all duration-500 hover:shadow-xl"
           >
             <Image 
