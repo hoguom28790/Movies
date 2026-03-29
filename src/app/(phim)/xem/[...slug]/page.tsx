@@ -111,7 +111,31 @@ export default async function WatchPage({
     const isTopXX = detectedSource === 'topxx' || detectedSource === 'avdb';
 
     if (!safeData) {
-       console.log(`[WatchPage] Movie not found: ${movieSlug}`);
+       console.log(`[WatchPage] Movie not found in providers, attempting TMDB metadata fallback for: ${movieSlug}`);
+       // Fallback: If providers fail, use TMDB info to at least show the page
+       if (initialTmdbSearch) {
+          try {
+             const tmdbFull = await getTMDBMovieDetails(initialTmdbSearch.id, initialTmdbSearch.media_type);
+             if (tmdbFull && !tmdbFull.status_code) {
+                safeData = {
+                   name: tmdbFull.title || tmdbFull.name || titleQuery,
+                   originName: tmdbFull.original_title || tmdbFull.original_name || "",
+                   year: (tmdbFull.release_date || tmdbFull.first_air_date || "").substring(0, 4),
+                   description: tmdbFull.overview || "",
+                   posterUrl: tmdbFull.poster_path ? `https://image.tmdb.org/t/p/w500${tmdbFull.poster_path}` : "",
+                   quality: "HD",
+                   category: tmdbFull.genres?.map((g: any) => g.name) || [],
+                   country: tmdbFull.production_countries?.map((c: any) => c.name) || [],
+                   episodes: [],
+                   status: "Sắp chiếu",
+                   tmdb_id: tmdbFull.id
+                };
+             }
+          } catch (e) { console.error("[WatchPage] TMDB Fallback failed:", e); }
+       }
+    }
+
+    if (!safeData) {
        return notFound();
     }
 
