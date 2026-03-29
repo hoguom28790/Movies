@@ -10,10 +10,10 @@ import { OPhimMovie, KKPhimMovie, NguonCMovie, VsmovMovie, ProviderMovie } from 
 export * from "./category";
 
 const OPHIM_MIRRORS = [
+  "https://ophim18.cc",
   "https://phimapi.com",
   "https://ophim17.com",
   "https://ophim17.cc",
-  "https://ophim18.cc",
   "https://ophim10.com",
   "https://ophim8.cc",
   "https://ophim10.cc",
@@ -198,7 +198,7 @@ export async function getMovieDetails(slug: string): Promise<{ sources: UnifiedM
 
   const [kkRes, ophimRes, ngRes, vsRes] = await Promise.allSettled([
     fetchSafe(`https://phimapi.com/phim/${slug}`, {}, 'kkphim'),
-    fetchSafe(`https://ophim1.com/api/phim/${slug}`, { Referer: "https://ophim1.com/" }, 'ophim'),
+    fetchSafe(`https://ophim18.cc/api/phim/${slug}`, { Referer: "https://ophim18.cc/" }, 'ophim'),
     fetchSafe(`https://phim.nguonc.com/api/film/${slug}`, {}, 'nguonc'),
     fetchSafe(`https://vsmov.com/api/phim/${slug}`, { Referer: "https://vsmov.com/" }, 'vsmov')
   ]);
@@ -261,14 +261,11 @@ export async function getMovieDetails(slug: string): Promise<{ sources: UnifiedM
 
   if (availableSources.length === 0) return null;
 
+  const PRIORITY = ["ophim", "kkphim", "nguonc", "vsmov"];
   availableSources.sort((a, b) => {
-     const getLinkCount = (src: UnifiedMovieSource) => {
-        const eps = src.data.episodes || [];
-        return eps.reduce((count: number, server: any) => count + (server.server_data?.length || server.items?.length || 0), 0);
-     };
-     const countA = getLinkCount(a);
-     const countB = getLinkCount(b);
-     return countB - countA;
+    const idxA = PRIORITY.indexOf(a.id);
+    const idxB = PRIORITY.indexOf(b.id);
+    return (idxA === -1 ? 99 : idxA) - (idxB === -1 ? 99 : idxB);
   });
 
   return { sources: availableSources };
