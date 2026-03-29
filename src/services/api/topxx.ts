@@ -256,41 +256,42 @@ export async function getTopXXDetails(slug: string) {
     const movie: TopXXMovie = data.data;
     const viTrans = Array.isArray(movie.trans) ? (movie.trans.find((t) => t.locale === "vi") || movie.trans[0]) : null;
     
-    // Normalize mapping for player
-    // PRIORITY: Use streamxx.net for Cloud VIP as native topxx.vip often 404s in iframe
-    let playLink = movie.video_url || movie.play_url || "";
-    
-    // Construct link if missing
-    if (!playLink && movie.code) {
-        playLink = `https://topxx.vip/play/index/${movie.code}`;
-    }
-
-    // Rewrite to streamxx.net for STABILITY
-    if (playLink && (playLink.includes('topxx.vip/play/index/') || (movie.code && movie.code?.length === 10))) {
-        const id = movie.code || playLink.split('/').pop();
-        if (id && id.length === 10) {
-            playLink = `https://embed.streamxx.net/player/${id}`;
-            console.log(`[TopXX] Rewriting to Stable StreamXX: ${playLink}`);
-        }
-    }
-    
-    // Ensure absolute if still native
-    if (playLink && playLink.startsWith('/')) {
-        playLink = `https://topxx.vip${playLink}`;
-    }
-
     const servers = [];
 
-    // Server 1: Native TopXX
-    servers.push({
-       server: "Cloud VIP",
-       episodes: [{
-          name: "Full HD",
-          slug: "full",
-          link_embed: playLink,
-          link_m3u8: ""
-       }]
-    });
+    // Server 1: Native TopXX Sources (PRIORITY)
+    if (movie.sources && Array.isArray(movie.sources) && movie.sources.length > 0) {
+      const episodes = movie.sources.map((s: any, idx: number) => ({
+        name: `SV ${idx + 1}`,
+        slug: `sv-${idx + 1}`,
+        link_embed: s.link,
+        link_m3u8: s.link?.includes('.m3u8') ? s.link : ""
+      }));
+
+      servers.push({
+        server: "Cloud VIP",
+        episodes: episodes
+      });
+    } else {
+      // Fallback to old logic if sources are missing (unlikely but safe)
+      let playLink = movie.video_url || movie.play_url || "";
+      if (!playLink && movie.code) {
+          playLink = `https://topxx.vip/play/index/${movie.code}`;
+      }
+      if (playLink && playLink.startsWith('/')) {
+          playLink = `https://topxx.vip${playLink}`;
+      }
+      if (playLink) {
+        servers.push({
+           server: "Cloud VIP",
+           episodes: [{
+              name: "Full HD",
+              slug: "full",
+              link_embed: playLink,
+              link_m3u8: ""
+           }]
+        });
+      }
+    }
 
     // Server 2: AVDB Fallback (Strictly Restricted to requested sources)
     try {
