@@ -532,7 +532,7 @@ export function PlayerContainer({ url, isHls, rawEmbedUrl, nextEpisodeUrl, movie
   let finalUrl = (resolvedUrl || "");
   
   // Use specialized TopXX/AVDB Proxy for HLS streams to bypass native CORS
-  if (isTopXX && finalUrl && (finalUrl.includes('.m3u8') || finalUrl.includes('streamxx'))) {
+  if (isTopXX && finalUrl && finalUrl.includes('.m3u8')) {
      finalUrl = `/api/topxx/proxy?url=${encodeURIComponent(finalUrl)}`;
   } else if (useProxy && proxySettings) {
      finalUrl = `/api/stream-proxy?url=${encodeURIComponent(proxySettings.url)}&referer=${encodeURIComponent(proxySettings.referer)}`;

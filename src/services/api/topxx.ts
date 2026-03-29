@@ -163,11 +163,29 @@ export async function getTopXXMovies(
     return { items: [], pagination: { currentPage: 1, totalPages: 1, totalItems: 0 } };
   }
 }
-
 export async function getTopXXDetails(slug: string) {
   let finalId = slug;
 
-  // 1. If it's a code (STARS-420), find the internal ID (px7m0yKvZj)
+  // 1. Handle AVDB-Direct Slugs from search results
+  if (slug.startsWith('av-')) {
+     const avId = slug.replace('av-', '');
+     console.log(`[TopXX] AVDB Direct ID detected: ${avId}`);
+     const avDetail = await getAVDBDetails(avId);
+     if (avDetail) {
+        return {
+          ...avDetail,
+          id: slug,
+          trans: [{
+            locale: "vi",
+            title: avDetail.name,
+            description: avDetail.content,
+            slug: slug
+          }]
+        };
+     }
+  }
+
+  // 2. If it's a code (STARS-420), find the internal ID (px7m0yKvZj)
   if (/^[a-zA-Z]{2,5}-\d{2,6}$/.test(slug)) {
     console.log(`[TopXX] Code detected: ${slug}. Searching for internal ID...`);
     const results = await scrapeTopXXSearch(slug);
@@ -190,19 +208,22 @@ export async function getTopXXDetails(slug: string) {
     // 3. IF NATIVE API FAILS, FALLBACK TO AVDB (AVDB is more resilient for codes)
     if (!res.ok || res.status === 404) {
        console.log(`[TopXX] Detail not found on native API for ${finalId}. Falling back to AVDB search...`);
-       const avdbResults = await searchTopXXMovies(slug, 1, false); // searchTopXXMovies uses AVDB by default or fallback
+       // Search by keyword which could be the code
+       const cleanSlug = slug.includes('-') ? slug : finalId;
+       const avdbResults = await searchTopXXMovies(cleanSlug, 1, false); 
        if (avdbResults.items.length > 0) {
-           // If we find it on AVDB, try to get full AVDB details instead of native
-           const avdbDetail = await getAVDBDetails(avdbResults.items[0].id);
+           const avdbItem = avdbResults.items.find(i => i.source === 'avdb') || avdbResults.items[0];
+           const avdbDetail = await getAVDBDetails(avdbItem.id.replace('av-', ''));
            if (avdbDetail) {
               console.log(`[TopXX] Native 404 resolved via AVDB: ${avdbDetail.name}`);
               return {
                 ...avdbDetail,
+                id: slug,
                 trans: [{
                   locale: "vi",
                   title: avdbDetail.name,
                   description: avdbDetail.content,
-                  slug: avdbDetail.id
+                  slug: slug
                 }]
               };
            }
