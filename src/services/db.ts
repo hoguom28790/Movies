@@ -12,8 +12,8 @@ export async function deleteFromHistory(userId: string, movieSlug: string) {
                   /^[A-Z]{2,6}-\d{2,6}$/i.test(movieSlug) || 
                   /^[a-zA-Z0-9]{10}$/.test(movieSlug);
   
-  const docId = isTopXX ? `xx_hist_${userId}_${movieSlug}` : `${userId}_${movieSlug}`;
-  const collectionName = isTopXX ? "xx_history" : "reading_history_phim";
+  const docId = isTopXX ? `topxx_hist_${userId}_${movieSlug}` : `${userId}_${movieSlug}`;
+  const collectionName = isTopXX ? "topxx_history" : "reading_history_phim";
   
   await deleteDoc(doc(db, collectionName, docId));
 }
@@ -55,8 +55,8 @@ export async function saveHistory(userId: string, entry: Omit<HistoryEntry, 'use
                   entry.movieSlug.startsWith('av-') || 
                   /^[A-Z]{2,6}-\d{2,6}$/i.test(entry.movieSlug) ||
                   /^[a-zA-Z0-9]{10}$/.test(entry.movieSlug); // TopXX hash format
-  const collectionName = isTopXX ? "xx_history" : "reading_history_phim";
-  const docId = isTopXX ? `xx_hist_${userId}_${entry.movieSlug}` : `${userId}_${entry.movieSlug}`;
+  const collectionName = isTopXX ? "topxx_history" : "reading_history_phim";
+  const docId = isTopXX ? `topxx_hist_${userId}_${entry.movieSlug}` : `${userId}_${entry.movieSlug}`;
   const docRef = doc(db, collectionName, docId);
   
   const progress = entry.durationSeconds && entry.durationSeconds > 0 
@@ -82,16 +82,16 @@ export async function getUserHistory(userId: string): Promise<HistoryEntry[]> {
 }
 
 export async function getUserXXHistory(userId: string): Promise<HistoryEntry[]> {
-  const q = query(collection(db, "xx_history"), where("userId", "==", userId));
+  const q = query(collection(db, "topxx_history"), where("userId", "==", userId));
   const snap = await getDocs(q);
   const list = snap.docs.map(d => ({ id: d.id, ...d.data() } as HistoryEntry));
   return list.sort((a,b) => (b.updatedAt || 0) - (a.updatedAt || 0));
 }
 
 export async function getMovieHistory(userId: string, movieSlug: string, source?: string): Promise<HistoryEntry | null> {
-  const isTopXX = source === 'topxx' || source === 'avdb' || movieSlug.startsWith('av-') || /^[A-Z]{2,5}-\d{2,6}$/i.test(movieSlug);
-  const collectionName = isTopXX ? "xx_history" : "reading_history_phim";
-  const docId = isTopXX ? `xx_hist_${userId}_${movieSlug}` : `${userId}_${movieSlug}`;
+  const isTopXX = source === 'topxx' || source === 'avdb' || movieSlug.startsWith('av-') || /^[A-Z]{2,6}-\d{2,6}$/i.test(movieSlug) || /^[a-zA-Z0-9]{10,32}$/.test(movieSlug);
+  const collectionName = isTopXX ? "topxx_history" : "reading_history_phim";
+  const docId = isTopXX ? `topxx_hist_${userId}_${movieSlug}` : `${userId}_${movieSlug}`;
   
   const snap = await getDoc(doc(db, collectionName, docId));
   if (snap.exists()) {
@@ -100,8 +100,8 @@ export async function getMovieHistory(userId: string, movieSlug: string, source?
   }
   
   // If not found in primary collection, fallback to the other one just in case
-  const fallbackCollection = isTopXX ? "reading_history_phim" : "xx_history";
-  const fallbackDocId = isTopXX ? `${userId}_${movieSlug}` : `xx_hist_${userId}_${movieSlug}`;
+  const fallbackCollection = isTopXX ? "reading_history_phim" : "topxx_history";
+  const fallbackDocId = isTopXX ? `${userId}_${movieSlug}` : `topxx_hist_${userId}_${movieSlug}`;
   const fallbackSnap = await getDoc(doc(db, fallbackCollection, fallbackDocId));
   
   if (fallbackSnap.exists()) {

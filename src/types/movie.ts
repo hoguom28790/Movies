@@ -17,6 +17,8 @@ export interface Movie {
   imdbId?: string;
   actor?: string;
   content?: string;
+  category?: { name: string; slug: string }[];
+  country?: { name: string; slug: string }[];
   source: 'nguonc' | 'kkphim' | 'ophim' | 'topxx' | 'avdb' | 'vsmov';
 }
 

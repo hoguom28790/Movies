@@ -152,8 +152,6 @@ export default async function Home() {
 
       <MovieContinueWatching />
 
-      <MovieContinueWatching />
-
       <CategoryShortcuts posters={{
         "phim-moi": heroMovies[0]?.posterUrl,
         "chieu-rap": phimLe.items.find(m => m.category?.some((c: any) => c.slug === 'chieu-rap'))?.posterUrl || phimLe.items[0]?.posterUrl,
