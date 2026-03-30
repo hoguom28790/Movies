@@ -1,15 +1,14 @@
 "use client";
 
 import React, { useState } from "react";
-import { ChevronDown, ChevronUp, Globe } from "lucide-react";
+import { ChevronDown, ChevronUp } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface ActorBiographyProps {
   biography: string;
-  isFallback?: boolean;
 }
 
-export function ActorBiography({ biography, isFallback }: ActorBiographyProps) {
+export function ActorBiography({ biography }: ActorBiographyProps) {
   const [isExpanded, setIsExpanded] = useState(false);
   const lineLimit = 3;
   
@@ -41,18 +40,6 @@ export function ActorBiography({ biography, isFallback }: ActorBiographyProps) {
               <>ĐỌC THÊM <ChevronDown className="w-4 h-4" /></>
             )}
           </button>
-        )}
-
-        {isFallback && (
-          <a 
-            href={`https://translate.google.com/?sl=en&tl=vi&text=${encodeURIComponent(biography)}&op=translate`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center gap-2 text-xs font-black text-foreground/40 hover:text-primary transition-all bg-foreground/5 px-6 py-3 rounded-2xl border border-foreground/5"
-          >
-            <Globe className="w-4 h-4" />
-            DỊCH SANG TIẾNG VIỆT
-          </a>
         )}
       </div>
     </div>

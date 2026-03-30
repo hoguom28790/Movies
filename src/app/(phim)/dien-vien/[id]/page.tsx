@@ -146,7 +146,6 @@ export default async function ActorPage({ params }: { params: Promise<{ id: stri
               {actor.biography ? (
                 <ActorBiography 
                   biography={actor.biography} 
-                  isFallback={actor.is_translated_fallback} 
                 />
               ) : (
                 <p className="text-foreground/20 italic text-xl font-medium tracking-tight">Chưa cập nhật tiểu sử nghệ sĩ.</p>

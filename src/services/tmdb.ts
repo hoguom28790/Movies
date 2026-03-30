@@ -103,6 +103,27 @@ export async function getTMDBMovieDetails(tmdbId: number, type: "movie" | "tv" =
   }
 }
 
+async function translateToVietnamese(text: string): Promise<string> {
+  if (!text) return "";
+  try {
+    // Truncate to avoid URL length issues if necessary, though most bios fit
+    const cleanText = text.length > 5000 ? text.substring(0, 5000) : text;
+    
+    const response = await fetch(
+      `https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=vi&dt=t&q=${encodeURIComponent(cleanText)}`
+    );
+    
+    if (!response.ok) return text;
+    
+    const result = await response.json();
+    // Reconstruct the translated text from the result segments
+    return result[0].map((segment: any) => segment[0]).join("");
+  } catch (error) {
+    console.error("Translation Error:", error);
+    return text;
+  }
+}
+
 export async function getTMDBActorDetails(actorId: number) {
   try {
     const response = await fetch(
@@ -111,12 +132,13 @@ export async function getTMDBActorDetails(actorId: number) {
     );
     const data = await response.json();
     
-    // Fallback biography logic: if vi-VN is empty, look for English in translations
+    // Fallback biography logic: if vi-VN is empty, look for English and translate it
     if (!data.biography && data.translations?.translations) {
       const enTranslation = data.translations.translations.find((t: any) => t.iso_639_1 === 'en');
       if (enTranslation?.data?.biography) {
-        data.biography = enTranslation.data.biography;
-        data.is_translated_fallback = true; // Flag for UI if needed
+        // Automatically translate the English bio to Vietnamese
+        data.biography = await translateToVietnamese(enTranslation.data.biography);
+        data.is_auto_translated = true;
       }
     }
     
