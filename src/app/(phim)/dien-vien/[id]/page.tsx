@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Film, User, Star, MapPin, CalendarDays, TrendingUp, ExternalLink, Venus, Mars, Instagram, Twitter, Facebook, Globe } from "lucide-react";
 import { getTMDBActorDetails, getTMDBImageUrl } from "@/services/tmdb";
 import { FavoriteActorBtn } from "@/components/movie/FavoriteActorBtn";
+import { ActorBiography } from "@/components/movie/ActorBiography";
 import { BackButton } from "@/components/ui/BackButton";
 import { cn } from "@/lib/utils";
 
@@ -143,22 +144,10 @@ export default async function ActorPage({ params }: { params: Promise<{ id: stri
               </div>
               
               {actor.biography ? (
-                <div className="space-y-4">
-                  <div className="text-foreground/60 leading-relaxed text-lg sm:text-xl font-medium max-w-4xl opacity-90 whitespace-pre-line">
-                    {actor.biography}
-                  </div>
-                  {actor.is_translated_fallback && (
-                    <a 
-                      href={`https://translate.google.com/?sl=en&tl=vi&text=${encodeURIComponent(actor.biography)}&op=translate`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-2 text-xs font-bold text-primary/60 hover:text-primary transition-colors bg-primary/5 px-4 py-2 rounded-xl"
-                    >
-                      <Globe className="w-3.5 h-3.5" />
-                      DỊCH SANG TIẾNG VIỆT
-                    </a>
-                  )}
-                </div>
+                <ActorBiography 
+                  biography={actor.biography} 
+                  isFallback={actor.is_translated_fallback} 
+                />
               ) : (
                 <p className="text-foreground/20 italic text-xl font-medium tracking-tight">Chưa cập nhật tiểu sử nghệ sĩ.</p>
               )}
