@@ -106,10 +106,21 @@ export async function getTMDBMovieDetails(tmdbId: number, type: "movie" | "tv" =
 export async function getTMDBActorDetails(actorId: number) {
   try {
     const response = await fetch(
-      `${BASE_URL}/person/${actorId}?api_key=${TMDB_API_KEY}&language=vi-VN&append_to_response=combined_credits,external_ids`,
+      `${BASE_URL}/person/${actorId}?api_key=${TMDB_API_KEY}&language=vi-VN&append_to_response=combined_credits,external_ids,translations`,
       { next: { revalidate: 3600 } }
     );
-    return await response.json();
+    const data = await response.json();
+    
+    // Fallback biography logic: if vi-VN is empty, look for English in translations
+    if (!data.biography && data.translations?.translations) {
+      const enTranslation = data.translations.translations.find((t: any) => t.iso_639_1 === 'en');
+      if (enTranslation?.data?.biography) {
+        data.biography = enTranslation.data.biography;
+        data.is_translated_fallback = true; // Flag for UI if needed
+      }
+    }
+    
+    return data;
   } catch (error) {
     console.error("TMDB Actor Error:", error);
     return null;
