@@ -106,7 +106,7 @@ export async function getTMDBMovieDetails(tmdbId: number, type: "movie" | "tv" =
 export async function getTMDBActorDetails(actorId: number) {
   try {
     const response = await fetch(
-      `${BASE_URL}/person/${actorId}?api_key=${TMDB_API_KEY}&language=vi-VN&append_to_response=combined_credits`,
+      `${BASE_URL}/person/${actorId}?api_key=${TMDB_API_KEY}&language=vi-VN&append_to_response=combined_credits,external_ids`,
       { next: { revalidate: 3600 } }
     );
     return await response.json();

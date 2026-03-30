@@ -239,8 +239,16 @@ export function ActorModal({ isOpen, onClose, actor, isXX = false }: ActorModalP
                             <div className="space-y-4 text-center sm:text-left pb-4">
                                <h3 className="text-4xl sm:text-6xl font-black italic tracking-tighter text-white uppercase leading-none font-headline">{actor?.name}</h3>
                                <div className="flex gap-4 items-center justify-center sm:justify-start">
-                                  <span className="px-5 py-2 rounded-2xl bg-primary text-white text-[11px] font-black uppercase tracking-widest italic shadow-lg">DIỄN VIÊN</span>
-                                  <button onClick={handleToggleFav} className={`p-3 rounded-2xl border transition-all active-depth ${isFav ? 'bg-[#ef4444] border-[#ef4444] text-white shadow-lg' : 'bg-white/5 border-white/10 text-white/40 hover:text-white'}`}><Heart className={`w-6 h-6 ${isFav ? 'fill-current' : ''}`} /></button>
+                                   <button 
+                                     onClick={() => { 
+                                       onClose(); 
+                                       router.push(`/dien-vien/${actor?.id}`); 
+                                     }} 
+                                     className="flex items-center gap-2 px-5 py-2 rounded-2xl bg-white/5 border border-white/10 text-white/60 hover:text-primary hover:bg-white/10 transition-all font-black uppercase italic tracking-widest text-[11px]"
+                                   >
+                                     <User className="w-4 h-4" /> XEM HỒ SƠ
+                                   </button>
+                                   <button onClick={handleToggleFav} className={`p-3 rounded-2xl border transition-all active-depth ${isFav ? 'bg-[#ef4444] border-[#ef4444] text-white shadow-lg' : 'bg-white/5 border-white/10 text-white/40 hover:text-white'}`}><Heart className={`w-6 h-6 ${isFav ? 'fill-current' : ''}`} /></button>
                                </div>
                             </div>
                         </div>

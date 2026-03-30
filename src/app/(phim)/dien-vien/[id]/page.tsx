@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { Film, User, Star, MapPin, CalendarDays, TrendingUp } from "lucide-react";
+import { Film, User, Star, MapPin, CalendarDays, TrendingUp, ExternalLink, Venus, Mars, Instagram, Twitter, Facebook } from "lucide-react";
 import { getTMDBActorDetails, getTMDBImageUrl } from "@/services/tmdb";
 import { FavoriteActorBtn } from "@/components/movie/FavoriteActorBtn";
 import { BackButton } from "@/components/ui/BackButton";
@@ -13,7 +13,7 @@ export default async function ActorPage({ params }: { params: Promise<{ id: stri
   if (!actor || actor.success === false) return notFound();
 
   const profileImg = getTMDBImageUrl(actor.profile_path, 'w500');
-  const movies = (actor.movie_credits?.cast || [])
+  const movies = (actor.combined_credits?.cast || [])
     .sort((a: any, b: any) => (b.vote_count || 0) - (a.vote_count || 0))
     .slice(0, 30);
 
@@ -49,18 +49,45 @@ export default async function ActorPage({ params }: { params: Promise<{ id: stri
               )}
             </div>
             
-            <div className="flex justify-center lg:justify-start">
+            <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
                <FavoriteActorBtn 
                  actorId={actor.id} 
                  actorName={actor.name} 
                  profilePath={actor.profile_path} 
-                 className="w-full sm:w-auto px-10 py-5 rounded-[24px] shadow-apple-lg active-depth"
+                 className="flex-1 sm:flex-none px-10 py-5 rounded-[24px] shadow-apple-lg active-depth"
                />
+               <a 
+                 href={`https://www.themoviedb.org/person/${actor.id}`}
+                 target="_blank"
+                 rel="noopener noreferrer"
+                 className="flex-1 sm:flex-none px-8 py-5 rounded-[24px] apple-glass border-foreground/5 shadow-apple-lg flex items-center justify-center gap-2 text-foreground/40 hover:text-primary transition-all active-depth"
+               >
+                 <ExternalLink className="w-4 h-4" />
+                 <span className="text-xs font-bold uppercase tracking-widest">TMDB</span>
+               </a>
             </div>
 
             <div className="space-y-8 apple-glass border-foreground/5 p-10 rounded-[40px] shadow-apple">
               <h3 className="text-[11px] font-bold uppercase tracking-[0.3em] text-foreground/20 italic">Hồ sơ cá nhân</h3>
               <div className="space-y-6">
+                <div className="flex flex-col gap-1.5">
+                  <span className="text-[10px] uppercase tracking-widest text-foreground/30 font-bold">Giới tính</span>
+                  <span className="text-foreground font-bold text-lg flex items-center gap-3">
+                    {actor.gender === 1 ? (
+                      <>
+                        <Venus className="w-4 h-4 text-pink-500/40" /> Nữ
+                      </>
+                    ) : actor.gender === 2 ? (
+                      <>
+                        <Mars className="w-4 h-4 text-blue-500/40" /> Nam
+                      </>
+                    ) : (
+                      <>
+                        <User className="w-4 h-4 text-foreground/20" /> Khác
+                      </>
+                    )}
+                  </span>
+                </div>
                 {actor.birthday && (
                   <div className="flex flex-col gap-1.5">
                     <span className="text-[10px] uppercase tracking-widest text-foreground/30 font-bold">Ngày sinh</span>
@@ -83,6 +110,26 @@ export default async function ActorPage({ params }: { params: Promise<{ id: stri
                     <TrendingUp className="w-6 h-6" /> {actor.popularity.toFixed(1)}
                   </span>
                 </div>
+
+                {actor.external_ids && (
+                  <div className="pt-6 border-t border-foreground/5 flex gap-4">
+                    {actor.external_ids.instagram_id && (
+                      <a href={`https://instagram.com/${actor.external_ids.instagram_id}`} target="_blank" rel="noopener" className="p-3 rounded-xl glass-pro border border-foreground/5 text-foreground/40 hover:text-pink-500 transition-all">
+                        <Instagram className="w-5 h-5" />
+                      </a>
+                    )}
+                    {actor.external_ids.twitter_id && (
+                      <a href={`https://twitter.com/${actor.external_ids.twitter_id}`} target="_blank" rel="noopener" className="p-3 rounded-xl glass-pro border border-foreground/5 text-foreground/40 hover:text-blue-400 transition-all">
+                        <Twitter className="w-5 h-5" />
+                      </a>
+                    )}
+                    {actor.external_ids.facebook_id && (
+                      <a href={`https://facebook.com/${actor.external_ids.facebook_id}`} target="_blank" rel="noopener" className="p-3 rounded-xl glass-pro border border-foreground/5 text-foreground/40 hover:text-blue-600 transition-all">
+                        <Facebook className="w-5 h-5" />
+                      </a>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -96,9 +143,8 @@ export default async function ActorPage({ params }: { params: Promise<{ id: stri
               </div>
               
               {actor.biography ? (
-                <div className="text-foreground/60 leading-relaxed text-lg sm:text-xl font-medium max-w-4xl opacity-80 decoration-primary/10 decoration-wavy underline underline-offset-8">
-                  {actor.biography.split('\n').filter((line: string) => line.trim()).slice(0, 3).join('\n\n')}
-                  {actor.biography.split('\n').length > 3 && " ..."}
+                <div className="text-foreground/60 leading-relaxed text-lg sm:text-xl font-medium max-w-4xl opacity-90 whitespace-pre-line">
+                  {actor.biography}
                 </div>
               ) : (
                 <p className="text-foreground/20 italic text-xl font-medium tracking-tight">Chưa cập nhật tiểu sử nghệ sĩ.</p>

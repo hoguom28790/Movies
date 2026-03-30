@@ -14,7 +14,7 @@ export default async function TopXXActorPage({ params }: { params: Promise<{ slu
   if (!actor || actor.success === false) return notFound();
 
   const profileImg = getTMDBImageUrl(actor.profile_path, 'w500');
-  const movies = (actor.movie_credits?.cast || [])
+  const movies = (actor.combined_credits?.cast || [])
     .sort((a: any, b: any) => (b.vote_count || 0) - (a.vote_count || 0))
     .slice(0, 30);
 
