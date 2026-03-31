@@ -19,7 +19,7 @@ export const revalidate = 3600;
 // Sidebar Content Helper Component
 const RightSidebarContent = ({ 
   sources, sourceId, movieSlug, allServers, currentServerIdx, currentEp, isTopXX, 
-  tmdbId, mediaType, tmdbData, rtData 
+  tmdbId, mediaType, tmdbData, rtData, omdbData 
 }: any) => {
   // Helper to format runtime
   const formatRuntime = (tmdb: any) => {
@@ -49,16 +49,17 @@ const RightSidebarContent = ({
       {tmdbData && (
         <div className="space-y-8">
            {/* Scores */}
-           <div className="space-y-4">
-              <h3 className="text-[10px] font-black text-foreground/20 uppercase tracking-[0.2em] pl-1">Điểm số đánh giá</h3>
-              <MovieRatings 
-                tmdbRating={tmdbData.vote_average} 
-                imdbId={tmdbData.external_ids?.imdb_id}
-                rottenRating={rtData?.criticScore}
-                audienceScore={rtData?.audienceScore}
-                className="gap-4 md:gap-6 bg-surface/30 p-4 rounded-2xl border border-white/5 shadow-apple-sm"
-              />
-           </div>
+            <div className="space-y-4">
+               <h3 className="text-[10px] font-black text-foreground/20 uppercase tracking-[0.2em] pl-1">Điểm số đánh giá</h3>
+               <MovieRatings 
+                 tmdbRating={tmdbData.vote_average} 
+                 imdbId={tmdbData.external_ids?.imdb_id}
+                 imdbRating={omdbData?.vote_average}
+                 rottenRating={rtData?.criticScore}
+                 audienceScore={rtData?.audienceScore}
+                 className="gap-4 md:gap-6 bg-surface p-4 rounded-2xl border border-foreground/5 shadow-apple-sm"
+               />
+            </div>
 
            {/* Metadata Grid */}
            <div className="grid grid-cols-2 gap-3">
@@ -173,19 +174,30 @@ export default async function WatchPage({
     const tmdbId = safeData.tmdb_id || initialTmdbSearch?.id;
     let tmdbData = null;
     let rtData = null;
+    let omdbData = null;
+
     try {
        if (tmdbId) {
           tmdbData = await getTMDBMovieDetails(Number(tmdbId), initialTmdbSearch?.media_type || "movie");
-          // If TMDB returns an error response (like 404), treat as null
+          
           if (tmdbData?.status_code || !tmdbData?.id) {
              tmdbData = null;
-          } else if (tmdbData.external_ids?.imdb_id) {
-             // Fetch Rotten Tomatoes/Other ratings if possible
-             rtData = await getRTRating(tmdbData.external_ids.imdb_id).catch(() => null);
+          } else {
+             // Parallel fetch external ratings
+             const promises = [];
+             
+             if (tmdbData.external_ids?.imdb_id) {
+                promises.push(getRTRating(tmdbData.external_ids.imdb_id).then(res => rtData = res).catch(() => null));
+             }
+             
+             const { searchOMDbMovie } = await import("@/services/omdb");
+             promises.push(searchOMDbMovie(safeData.name, parseInt(safeData.year)).then(res => omdbData = res).catch(() => null));
+             
+             await Promise.all(promises);
           }
        }
     } catch (e) {
-       console.error("[WatchPage] TMDB fetch failed:", e);
+       console.error("[WatchPage] External metadata fetch failed:", e);
     }
     
     const allServers = safeData.episodes || [];
@@ -288,15 +300,16 @@ export default async function WatchPage({
                       
                       {/* Mobile Sidebar: Visible only on small/medium screens */}
                        <div className="lg:hidden">
-                          <RightSidebarContent 
-                             sources={sources} sourceId={sourceId} movieSlug={movieSlug} 
-                             allServers={allServers} currentServerIdx={currentServerIdx} currentEp={currentEp}
-                             isTopXX={isTopXX}
-                             tmdbId={tmdbId}
-                             mediaType={initialTmdbSearch?.media_type || "movie"}
-                             tmdbData={tmdbData}
-                             rtData={rtData}
-                          />
+                           <RightSidebarContent 
+                              sources={sources} sourceId={sourceId} movieSlug={movieSlug} 
+                              allServers={allServers} currentServerIdx={currentServerIdx} currentEp={currentEp}
+                              isTopXX={isTopXX}
+                              tmdbId={tmdbId}
+                              mediaType={initialTmdbSearch?.media_type || "movie"}
+                              tmdbData={tmdbData}
+                              rtData={rtData}
+                              omdbData={omdbData}
+                           />
                        </div>
 
                        <div className="space-y-8">
@@ -331,15 +344,16 @@ export default async function WatchPage({
 
                    {/* Right Column: Episodes & Sources (Desktop only) */}
                     <div className="hidden lg:block lg:col-span-4 xl:col-span-3 sticky top-32">
-                       <RightSidebarContent 
-                          sources={sources} sourceId={sourceId} movieSlug={movieSlug} 
-                          allServers={allServers} currentServerIdx={currentServerIdx} currentEp={currentEp}
-                          isTopXX={isTopXX}
-                          tmdbId={tmdbId}
-                          mediaType={initialTmdbSearch?.media_type || "movie"}
-                          tmdbData={tmdbData}
-                          rtData={rtData}
-                       />
+                        <RightSidebarContent 
+                           sources={sources} sourceId={sourceId} movieSlug={movieSlug} 
+                           allServers={allServers} currentServerIdx={currentServerIdx} currentEp={currentEp}
+                           isTopXX={isTopXX}
+                           tmdbId={tmdbId}
+                           mediaType={initialTmdbSearch?.media_type || "movie"}
+                           tmdbData={tmdbData}
+                           rtData={rtData}
+                           omdbData={omdbData}
+                        />
                     </div>
                 </div>
              </div>

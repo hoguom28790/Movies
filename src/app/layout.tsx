@@ -60,7 +60,7 @@ export default function RootLayout({
               attribute="class" 
               defaultTheme="system" 
               enableSystem={true} 
-              disableTransitionOnChange={true} 
+              disableTransitionOnChange={false} 
               storageKey="hophim-theme"
             >
               <StylePresetProvider>

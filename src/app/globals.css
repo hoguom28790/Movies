@@ -70,6 +70,11 @@ body {
   letter-spacing: -0.01em; /* Body letter-spacing */
   line-height: 1.5;
   overflow-x: hidden;
+  transition: background-color 0.5s cubic-bezier(0.4, 0, 0.2, 1), color 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+html {
+  transition: background-color 0.5s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* Apple HIG Typography Rules */

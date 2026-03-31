@@ -17,10 +17,11 @@ interface MovieRatingsProps {
 export function MovieRatings({ tmdbRating, imdbId, imdbRating, rottenRating, audienceScore, traktRating, traktVotes, imdbVotes, className = "" }: MovieRatingsProps) {
   if (!tmdbRating && !imdbRating && !traktRating) return null;
 
-  const tmdbScore = tmdbRating ? Math.round(tmdbRating * 10) : "N/A";
-  const imdbScore = imdbRating ? imdbRating.toFixed(1) : (tmdbRating ? tmdbRating.toFixed(1) : "N/A");
-  const criticScore = rottenRating || (tmdbRating ? Math.round(tmdbRating * 10) : 0);
-  const finalAudienceScore = audienceScore || (tmdbRating ? Math.round(tmdbRating * 10) - 2 : 0);
+  const tmdbScore = tmdbRating ? Math.round(tmdbRating * 10) : null;
+  const imdbScore = imdbRating ? imdbRating.toFixed(1) : null;
+  const criticScore = rottenRating || null;
+  const finalTraktScore = traktRating ? Math.round(traktRating * 10) : null;
+  const finalAudienceScore = audienceScore || null;
 
   const formatVotes = (v: number | string | null | undefined) => {
     if (!v) return "";
@@ -41,7 +42,7 @@ export function MovieRatings({ tmdbRating, imdbId, imdbRating, rottenRating, aud
            </svg>
         </div>
         <div className="flex flex-col">
-           <span className="text-[14px] font-black leading-none">{tmdbScore}%</span>
+           <span className="text-[14px] font-black leading-none">{tmdbScore ? `${tmdbScore}%` : "N/A"}</span>
            <span className="text-[8px] text-foreground/40 font-black uppercase tracking-widest mt-0.5">TMDB</span>
         </div>
       </div>
@@ -52,7 +53,7 @@ export function MovieRatings({ tmdbRating, imdbId, imdbRating, rottenRating, aud
            IMDb
         </div>
         <div className="flex flex-col">
-           <span className="text-[14px] font-black leading-none">{imdbScore}</span>
+           <span className="text-[14px] font-black leading-none">{imdbScore || "N/A"}</span>
            <span className="text-[8px] text-foreground/40 font-black uppercase tracking-widest mt-0.5">IMDb</span>
         </div>
       </div>
@@ -65,7 +66,7 @@ export function MovieRatings({ tmdbRating, imdbId, imdbRating, rottenRating, aud
            </svg>
         </div>
         <div className="flex flex-col">
-           <span className="text-[14px] font-black leading-none">{criticScore}%</span>
+           <span className="text-[14px] font-black leading-none">{criticScore ? `${criticScore}%` : "N/A"}</span>
            <span className="text-[8px] text-foreground/40 font-black uppercase tracking-widest mt-0.5">Rotten</span>
         </div>
       </div>
@@ -76,7 +77,7 @@ export function MovieRatings({ tmdbRating, imdbId, imdbRating, rottenRating, aud
            <div className="font-black text-[12px]">T</div>
         </div>
         <div className="flex flex-col">
-           <span className="text-[14px] font-black leading-none">{traktRating ? Math.round(traktRating * 10) : tmdbScore}%</span>
+           <span className="text-[14px] font-black leading-none">{finalTraktScore ? `${finalTraktScore}%` : "N/A"}</span>
            <span className="text-[8px] text-foreground/40 font-black uppercase tracking-widest mt-0.5">Trakt</span>
         </div>
       </div>
