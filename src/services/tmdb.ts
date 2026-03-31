@@ -92,11 +92,23 @@ export async function searchTMDBPerson(name: string): Promise<{ profile_path: st
 
 export async function getTMDBMovieDetails(tmdbId: number, type: "movie" | "tv" = "movie") {
   try {
+    const appendToResponse = "credits,images,external_ids,recommendations,translations," + (type === "movie" ? "release_dates" : "content_ratings");
     const response = await fetch(
-      `${BASE_URL}/${type}/${tmdbId}?api_key=${TMDB_API_KEY}&language=vi-VN&append_to_response=credits,images,external_ids,recommendations&include_image_language=vi,en,null`,
+      `${BASE_URL}/${type}/${tmdbId}?api_key=${TMDB_API_KEY}&language=vi-VN&append_to_response=${appendToResponse}&include_image_language=vi,en,null`,
       { next: { revalidate: 3600 } }
     );
-    return await response.json();
+    const data = await response.json();
+    
+    // Auto-translate overview if missing in Vietnamese
+    if (!data.overview && data.translations?.translations) {
+      const enTranslation = data.translations.translations.find((t: any) => t.iso_639_1 === 'en');
+      if (enTranslation?.data?.overview) {
+        data.overview = await translateToVietnamese(enTranslation.data.overview);
+        data.is_auto_translated = true;
+      }
+    }
+    
+    return data;
   } catch (error) {
     console.error("TMDB Details Error:", error);
     return null;
