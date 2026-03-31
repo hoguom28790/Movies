@@ -39,10 +39,10 @@ export default async function XXWatchPage({
     const nextSourceIdx = currentIdx < sources.length - 1 ? currentIdx + 1 : null;
 
     // Fetch ratings based on title
-    let tmdbData = null;
-    let rtData = null;
-    let omdbData = null;
-    let traktData = null;
+    let tmdbData: any = null;
+    let rtData: any = null;
+    let omdbData: any = null;
+    let traktData: any = null;
 
     try {
        const title = (viTrans as any)?.title || (item as any)?.title || (item as any)?.name;
@@ -138,6 +138,7 @@ export default async function XXWatchPage({
                         imdbId={tmdbData?.external_ids?.imdb_id}
                         imdbRating={omdbData?.vote_average}
                         rottenRating={rtData?.criticScore}
+                        audienceScore={rtData?.audienceScore}
                         traktRating={traktData?.rating}
                         className="bg-surface p-4 rounded-2xl border border-foreground/5 shadow-apple-sm scale-90 origin-left"
                       />
