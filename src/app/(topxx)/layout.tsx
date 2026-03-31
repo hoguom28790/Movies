@@ -69,7 +69,7 @@ export default function TopXXLayout({
   }
 
   return (
-    <div className={`theme-xx min-h-screen bg-background text-foreground ${!mounted ? "opacity-0" : "animate-in fade-in duration-500"} transition-none`}>
+    <div className={`theme-xx min-h-screen bg-background text-foreground ${!mounted ? "opacity-0" : "animate-in fade-in duration-500"}`}>
       {/* 18+ Warning Banner */}
       <div className="bg-amber-500 text-black py-2 px-4 flex items-center justify-center gap-2 text-[12px] font-black uppercase tracking-widest z-[1100] relative">
         <AlertCircle className="w-4 h-4" />
