@@ -77,8 +77,6 @@ export default async function XXHomePage() {
             isXX
           />
 
-          <ActorGrid isXX />
-
           <MovieRow 
             title="PHIM KHÔNG CHE HOT" 
             movies={uncensoredData?.items || []} 
