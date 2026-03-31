@@ -31,6 +31,7 @@ const RightSidebarContent = ({
 
   // Helper to get certification
   const getCertification = (tmdb: any) => {
+    if (!tmdb) return null;
     if (mediaType === "movie") {
       const release = tmdb?.release_dates?.results?.find((r: any) => r.iso_3166_1 === 'US' || r.iso_3166_1 === 'VN');
       return release?.release_dates?.[0]?.certification;
