@@ -45,6 +45,8 @@ async function resolveTrendingMoviesInternal(trending: any[]) {
     }
 
     try {
+      const candidateSlug = `${title.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[đĐ]/g, "d").replace(/[^a-z0-9\s]/g, "").replace(/\s+/g, '-')}-${year || '2025'}`;
+      
       const resolutionPromise = (async () => {
         let res = await searchLocal(title);
         
@@ -75,7 +77,6 @@ async function resolveTrendingMoviesInternal(trending: any[]) {
         });
 
         if (!match) {
-           const candidateSlug = `${title.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[đĐ]/g, "d").replace(/[^a-z0-9\s]/g, "").replace(/\s+/g, '-')}-${year || '2025'}`;
            match = { slug: candidateSlug } as any; // default fallback slug
         }
 
