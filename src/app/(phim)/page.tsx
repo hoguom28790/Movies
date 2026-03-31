@@ -79,12 +79,12 @@ async function resolveTrendingMoviesInternal(trending: any[]) {
            match = { slug: candidateSlug } as any; // default fallback slug
         }
 
-        return match ? match.slug : `/search?q=${encodeURIComponent(title)}`;
+        return match ? match.slug : candidateSlug;
       })();
 
       const finalSlug = await Promise.race([
          resolutionPromise,
-         new Promise<string>((resolve) => setTimeout(() => resolve(`/search?q=${encodeURIComponent(title)}`), 2000))
+         new Promise<string>((resolve) => setTimeout(() => resolve(candidateSlug), 500))
       ]);
 
       return {
@@ -100,11 +100,12 @@ async function resolveTrendingMoviesInternal(trending: any[]) {
         tmdbRating: m.vote_average
       };
     } catch (e) {
+      const candidateSlug = `${title.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[đĐ]/g, "d").replace(/[^a-z0-9\s]/g, "").replace(/\s+/g, '-')}-${year || '2025'}`;
       return {
         id: m.id.toString(),
         title: title,
         originalTitle: m.original_title || m.original_name || "",
-        slug: `/search?q=${encodeURIComponent(title)}`,
+        slug: candidateSlug,
         posterUrl: getTMDBImageUrl(m.poster_path) || "",
         thumbUrl: getTMDBImageUrl(m.backdrop_path) || "",
         year: year || "2025",
