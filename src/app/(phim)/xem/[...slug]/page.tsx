@@ -6,7 +6,7 @@ import { normalizeMovieData, getMovieSource } from "@/lib/movie-utils";
 import { PlayerContainer } from "@/components/movie/PlayerContainer";
 import { CastSection } from "@/components/movie/CastSection";
 import { MovieTabs } from "@/components/movie/MovieTabs";
-import { Calendar } from "lucide-react";
+import { Calendar, ExternalLink, Languages } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { WatchlistBtn } from "@/components/movie/WatchlistBtn";
 import { notFound } from "next/navigation";
@@ -15,7 +15,7 @@ export const dynamic = "force-dynamic";
 export const revalidate = 3600;
 
 // Sidebar Content Helper Component
-const RightSidebarContent = ({ sources, sourceId, movieSlug, allServers, currentServerIdx, currentEp, isTopXX }: any) => (
+const RightSidebarContent = ({ sources, sourceId, movieSlug, allServers, currentServerIdx, currentEp, isTopXX, tmdbId, mediaType }: any) => (
    <div className="w-full space-y-10 relative z-10 bg-background/50 backdrop-blur-sm lg:backdrop-blur-none rounded-3xl p-4 lg:p-0">
       {/* Sources - Apple style rounded tabs */}
       {!isTopXX && sources.length > 1 && (
@@ -63,6 +63,30 @@ const RightSidebarContent = ({ sources, sourceId, movieSlug, allServers, current
             ))}
          </div>
       </div>
+
+      {/* TMDB Link for Vietnamese content */}
+      {tmdbId && (
+        <div className="pt-6 border-t border-foreground/5 space-y-3">
+           <h3 className="text-[10px] font-black text-foreground/20 uppercase tracking-[0.2em] pl-1">Thông tin bổ sung</h3>
+           <a 
+              href={`https://www.themoviedb.org/${mediaType || 'movie'}/${tmdbId}?language=vi`} 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="flex items-center justify-between w-full px-5 py-4 rounded-2xl bg-surface/50 border border-white/5 hover:border-primary/30 transition-all group"
+           >
+              <div className="flex items-center gap-4">
+                 <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-white transition-all">
+                    <Languages className="w-5 h-5" />
+                 </div>
+                 <div className="text-left">
+                    <div className="text-[11px] font-black text-primary/60 uppercase tracking-widest">Tiếng Việt</div>
+                    <div className="text-xs font-bold text-foreground">Xem nội dung trên TMDB</div>
+                 </div>
+              </div>
+              <ExternalLink className="w-4 h-4 text-foreground/20 group-hover:text-primary transition-all" />
+           </a>
+        </div>
+      )}
    </div>
 );
 
@@ -257,6 +281,8 @@ export default async function WatchPage({
                             sources={sources} sourceId={sourceId} movieSlug={movieSlug} 
                             allServers={allServers} currentServerIdx={currentServerIdx} currentEp={currentEp}
                             isTopXX={isTopXX}
+                            tmdbId={tmdbId}
+                            mediaType={initialTmdbSearch?.media_type || "movie"}
                          />
                       </div>
 
@@ -273,6 +299,8 @@ export default async function WatchPage({
                          sources={sources} sourceId={sourceId} movieSlug={movieSlug} 
                          allServers={allServers} currentServerIdx={currentServerIdx} currentEp={currentEp}
                          isTopXX={isTopXX}
+                         tmdbId={tmdbId}
+                         mediaType={initialTmdbSearch?.media_type || "movie"}
                       />
                    </div>
                 </div>
