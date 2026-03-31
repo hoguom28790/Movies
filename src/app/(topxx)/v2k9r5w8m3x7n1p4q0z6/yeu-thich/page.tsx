@@ -328,7 +328,7 @@ export default function TopXXLibraryPage() {
                                  >
                                     <Search className="w-3 h-3" /> Tìm Phim
                                  </button>
-                                 <span className="px-2 py-1 rounded bg-white/10 text-white text-[8px] font-black uppercase tracking-widest border border-white/10">Yêu Thích</span>
+                                 <span className="px-2 py-1 rounded bg-foreground/10 text-foreground text-[8px] font-black uppercase tracking-widest border border-foreground/10">Yêu Thích</span>
                               </div>
                           </div>
                           
@@ -341,7 +341,7 @@ export default function TopXXLibraryPage() {
                               await toggleFavoriteActor(user!.uid, { ...actor, type: 'topxx' });
                               fetchData();
                             }}
-                            className="absolute top-3 right-3 w-10 h-10 rounded-2xl bg-black/60 backdrop-blur-xl border border-white/10 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all scale-75 group-hover:scale-100 hover:bg-red-500 hover:border-red-400 shadow-2xl z-20"
+                            className="absolute top-3 right-3 w-10 h-10 rounded-2xl bg-background/60 backdrop-blur-xl border border-foreground/10 text-foreground flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all scale-75 group-hover:scale-100 hover:bg-red-500 hover:text-white hover:border-red-400 shadow-2xl z-20"
                           >
                              <X className="w-4 h-4" />
                           </button>

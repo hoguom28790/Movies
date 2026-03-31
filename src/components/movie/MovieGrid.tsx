@@ -124,17 +124,17 @@ export function MovieGrid({
             {loading && (
               <div className="flex flex-col items-center gap-4">
                 <Loader2 className="w-10 h-10 animate-spin text-yellow-500/50" />
-                <span className="text-[10px] font-black text-white/10 uppercase tracking-[0.5em] animate-pulse">Loading more</span>
+                <span className="text-[10px] font-black text-foreground/10 uppercase tracking-[0.5em] animate-pulse">Loading more</span>
               </div>
             )}
           </div>
         )}
         
         {page >= totalPages && movies.length > 0 && (
-           <div className="w-full py-24 flex items-center justify-center border-t border-white/5 mt-20">
-            <p className="text-white/10 text-[10px] font-black uppercase tracking-[0.5em] italic">End of the collection</p>
-          </div>
-        )}
+            <div className="w-full py-24 flex items-center justify-center border-t border-foreground/5 mt-20">
+             <p className="text-foreground/10 text-[10px] font-black uppercase tracking-[0.5em] italic">End of the collection</p>
+           </div>
+         )}
       </div>
     );
   }

@@ -94,8 +94,8 @@ export default function TopXXHistoryPage() {
             <Clock className="w-8 h-8 text-yellow-500 shadow-yellow-500/50" />
           </div>
           <div className="space-y-1">
-            <h1 className="text-4xl md:text-6xl font-black text-white uppercase italic tracking-tighter leading-none select-none">Lịch sử xem</h1>
-            <p className="text-white/30 text-xs font-bold uppercase tracking-[0.2em] italic">Dấu chân điện ảnh của bạn trên TopXX</p>
+            <h1 className="text-4xl md:text-6xl font-black text-foreground uppercase italic tracking-tighter leading-none select-none">Lịch sử xem</h1>
+            <p className="text-foreground/30 text-xs font-bold uppercase tracking-[0.2em] italic">Dấu chân điện ảnh của bạn trên TopXX</p>
           </div>
         </div>
         
@@ -103,7 +103,7 @@ export default function TopXXHistoryPage() {
           <Button 
             variant="secondary" 
             onClick={handleClear}
-            className="rounded-[20px] border-white/5 h-14 px-8 font-black uppercase tracking-widest text-[11px] bg-white/[0.03] hover:bg-red-500 hover:text-white transition-all shadow-2xl"
+            className="rounded-[20px] border-foreground/10 h-14 px-8 font-black uppercase tracking-widest text-[11px] bg-foreground/5 text-foreground hover:bg-red-500 hover:text-white transition-all shadow-2xl"
           >
             <Trash2 className="w-4 h-4 mr-2" /> Xóa tất cả
           </Button>
@@ -111,11 +111,11 @@ export default function TopXXHistoryPage() {
       </div>
 
       {history.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-40 text-center bg-white/[0.01] rounded-[40px] border border-dashed border-white/5 animate-in fade-in duration-1000">
-          <div className="w-24 h-24 rounded-full bg-white/5 flex items-center justify-center mb-8">
-             <Play className="w-10 h-10 text-white/10" />
+        <div className="flex flex-col items-center justify-center py-40 text-center bg-foreground/[0.01] rounded-[40px] border border-dashed border-foreground/5 animate-in fade-in duration-1000">
+          <div className="w-24 h-24 rounded-full bg-foreground/5 flex items-center justify-center mb-8">
+             <Play className="w-10 h-10 text-foreground/10" />
           </div>
-          <p className="text-white/20 font-black uppercase tracking-[0.3em] italic">Ký ức điện ảnh đang chờ bạn...</p>
+          <p className="text-foreground/20 font-black uppercase tracking-[0.3em] italic">Ký ức điện ảnh đang chờ bạn...</p>
           <Link href={`/${TOPXX_PATH}`} className="mt-10">
             <Button className="rounded-[20px] px-10 h-14 font-black uppercase tracking-widest text-xs shadow-2xl shadow-yellow-500/20">Khám phá ngay</Button>
           </Link>

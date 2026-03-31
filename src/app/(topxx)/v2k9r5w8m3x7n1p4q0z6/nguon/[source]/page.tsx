@@ -39,13 +39,13 @@ export default async function TopXXSourcePage({
 
             <div className="container mx-auto px-4 lg:px-12 pb-20 space-y-20">
                 <div className="space-y-4">
-                    <h1 className="text-5xl md:text-8xl font-black text-white italic tracking-tighter uppercase leading-[0.8] select-none">
+                    <h1 className="text-5xl md:text-8xl font-black text-foreground italic tracking-tighter uppercase leading-[0.8] select-none">
                         Nguồn: {sourceName}
                     </h1>
                     <div className="flex items-center gap-3">
                         <span className="px-2 py-0.5 rounded bg-yellow-500 text-black text-[9px] font-black uppercase tracking-widest">SERVER DIRECT</span>
-                        <div className="w-1 h-1 rounded-full bg-white/10" />
-                        <span className="text-[10px] text-white/40 font-bold uppercase tracking-widest italic">{data.pagination.totalItems} MOVIES AVAILABLE</span>
+                        <div className="w-1 h-1 rounded-full bg-foreground/10" />
+                        <span className="text-[10px] text-foreground/40 font-bold uppercase tracking-widest italic">{data.pagination.totalItems} MOVIES AVAILABLE</span>
                     </div>
                 </div>
 
@@ -69,16 +69,16 @@ export default async function TopXXSourcePage({
                     {currentPage > 1 && (
                         <a 
                            href={`/${TOPXX_PATH}/nguon/${source}?page=${currentPage - 1}`}
-                           className="px-6 py-3 rounded-2xl bg-white/5 border border-white/10 text-white font-black uppercase text-[10px] tracking-widest hover:bg-yellow-500 hover:text-black transition-all"
+                           className="px-6 py-3 rounded-2xl bg-foreground/5 border border-foreground/10 text-foreground font-black uppercase text-[10px] tracking-widest hover:bg-yellow-500 hover:text-black transition-all"
                         >
                            Trang trước
                         </a>
                     )}
-                    <span className="text-white font-black text-sm uppercase italic tracking-tighter">Trang {currentPage} / {data.pagination.totalPages}</span>
+                    <span className="text-foreground font-black text-sm uppercase italic tracking-tighter">Trang {currentPage} / {data.pagination.totalPages}</span>
                     {currentPage < data.pagination.totalPages && (
                          <a 
                             href={`/${TOPXX_PATH}/nguon/${source}?page=${currentPage + 1}`}
-                            className="px-6 py-3 rounded-2xl bg-white/5 border border-white/10 text-white font-black uppercase text-[10px] tracking-widest hover:bg-yellow-500 hover:text-black transition-all"
+                            className="px-6 py-3 rounded-2xl bg-foreground/5 border border-foreground/10 text-foreground font-black uppercase text-[10px] tracking-widest hover:bg-yellow-500 hover:text-black transition-all"
                          >
                             Trang sau
                          </a>

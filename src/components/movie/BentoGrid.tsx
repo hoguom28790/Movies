@@ -29,7 +29,7 @@ export function BentoGrid({ title, movies, viewAllLink, isXX = false }: BentoGri
     <section className="space-y-8 mb-20 px-6 lg:px-20 overflow-hidden">
       <div className="flex items-center justify-between px-2">
         <h2 className={cn(
-          "font-black text-white uppercase italic tracking-tighter",
+          "font-black text-foreground uppercase italic tracking-tighter",
           isXX ? "text-2xl md:text-3xl" : "text-xl md:text-2xl"
         )}>
           {title}
@@ -39,7 +39,7 @@ export function BentoGrid({ title, movies, viewAllLink, isXX = false }: BentoGri
             href={viewAllLink} 
             className={cn(
               "text-sm font-bold transition-all uppercase tracking-[0.2em] italic",
-              isXX ? "text-white/40 hover:text-yellow-500" : "text-white/40 hover:text-primary"
+              isXX ? "text-foreground/40 hover:text-yellow-500" : "text-foreground/40 hover:text-primary"
             )}
           >
             Discovery
@@ -91,7 +91,6 @@ export function BentoGrid({ title, movies, viewAllLink, isXX = false }: BentoGri
 
 function BentoItem({ movie, className, large = false, isXX = false }: { movie: Movie, className: string, large?: boolean, isXX?: boolean }) {
   const primaryColor = isXX ? "group-hover:text-yellow-500" : "group-hover:text-primary";
-  const primaryBg = isXX ? "bg-yellow-500" : "bg-primary";
   const primaryBorder = isXX ? "hover:border-yellow-500/50" : "hover:border-primary/50";
   const primaryShadow = isXX ? "hover:shadow-[0_0_40px_rgba(234,179,8,0.1)]" : "hover:shadow-[0_0_40px_rgba(var(--primary-rgb),0.1)]";
 
@@ -101,7 +100,7 @@ function BentoItem({ movie, className, large = false, isXX = false }: { movie: M
     <Link 
       href={linkHref}
       className={cn(
-        "relative group overflow-hidden rounded-[32px] border border-white/5 bg-surface transition-all duration-700 active-depth",
+        "relative group overflow-hidden rounded-[32px] border border-foreground/5 bg-surface transition-all duration-700 active-depth",
         primaryBorder,
         primaryShadow,
         className
@@ -118,21 +117,21 @@ function BentoItem({ movie, className, large = false, isXX = false }: { movie: M
         <div className="flex items-center gap-2 mb-2">
           {movie.quality && (
             <span className={cn(
-              "px-2.5 py-1 text-black font-black text-[10px] rounded-xl uppercase italic shadow-xl",
+              "px-2.5 py-1 text-background font-black text-[10px] rounded-xl uppercase italic shadow-xl",
               isXX ? "bg-yellow-500 shadow-yellow-500/20" : "bg-primary shadow-primary/20"
             )}>
               {movie.quality}
             </span>
           )}
           {movie.year && (
-            <span className="text-[10px] font-bold text-white/50 uppercase tracking-widest italic ml-1">
+            <span className="text-[10px] font-bold text-foreground/50 uppercase tracking-widest italic ml-1">
               • {movie.year}
             </span>
           )}
         </div>
         
         <h3 className={cn(
-          "font-black text-white leading-tight uppercase italic transition-colors line-clamp-2",
+          "font-black text-foreground leading-tight uppercase italic transition-colors line-clamp-2 drop-shadow-sm",
           primaryColor,
           large ? "text-2xl md:text-3xl" : "text-lg"
         )}>
@@ -140,7 +139,7 @@ function BentoItem({ movie, className, large = false, isXX = false }: { movie: M
         </h3>
         
         {large && movie.overview && (
-          <p className="mt-3 text-[13px] text-white/40 line-clamp-2 hidden md:block font-medium italic">
+          <p className="mt-3 text-[13px] text-white/70 line-clamp-2 hidden md:block font-medium italic">
              {movie.overview}
           </p>
         )}

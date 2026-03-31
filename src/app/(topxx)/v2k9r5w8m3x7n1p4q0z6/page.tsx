@@ -44,8 +44,8 @@ export default async function XXHomePage() {
         {heroMovie ? (
           <HeroSection movie={heroMovie} isXX />
         ) : (
-          <div className="h-[70vh] w-full bg-surface rounded-[40px] animate-pulse flex items-center justify-center border border-white/5 mx-4">
-             <span className="text-white/10 text-xl font-black uppercase tracking-[1em]">TopXX Premium</span>
+          <div className="h-[70vh] w-full bg-background rounded-[40px] animate-pulse flex items-center justify-center border border-foreground/5 mx-4">
+             <span className="text-foreground/10 text-xl font-black uppercase tracking-[1em]">TopXX Premium</span>
           </div>
         )}
         
@@ -101,7 +101,7 @@ export default async function XXHomePage() {
   } catch (error) {
     console.error("[TopXX] Fatal Page Error:", error);
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center p-8 text-center text-white/40 font-black uppercase tracking-[0.4em] italic leading-loose">
+      <div className="min-h-screen flex flex-col items-center justify-center p-8 text-center text-foreground/40 font-black uppercase tracking-[0.4em] italic leading-loose">
         Hệ thống đang bảo trì <br />
         Vui lòng quay lại sau !
       </div>

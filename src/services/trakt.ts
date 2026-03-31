@@ -52,3 +52,39 @@ export async function pushSingleMovieToTrakt(accessToken: string, movieTitle: st
     return false;
   }
 }
+
+export async function getTraktRating(title: string, year?: number) {
+  try {
+    const query = year ? `${title} ${year}` : title;
+    const searchRes = await fetch(`${TRAKT_API_URL}/search/movie?query=${encodeURIComponent(query)}`, {
+      headers: {
+        "Content-Type": "application/json",
+        "trakt-api-version": "2",
+        "trakt-api-key": CLIENT_ID
+      }
+    });
+
+    if (!searchRes.ok) return null;
+    const searchData = await searchRes.json();
+    const movie = searchData[0]?.movie;
+    if (!movie?.ids?.trakt) return null;
+
+    const ratingRes = await fetch(`${TRAKT_API_URL}/movies/${movie.ids.trakt}/ratings`, {
+      headers: {
+        "Content-Type": "application/json",
+        "trakt-api-version": "2",
+        "trakt-api-key": CLIENT_ID
+      }
+    });
+
+    if (!ratingRes.ok) return null;
+    const ratingData = await ratingRes.json();
+    return {
+      rating: ratingData.rating,
+      votes: ratingData.votes
+    };
+  } catch (error) {
+    console.error("Trakt Rating Error:", error);
+    return null;
+  }
+}

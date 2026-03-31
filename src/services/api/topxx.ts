@@ -1,5 +1,4 @@
 import { Movie, MovieListResponse } from "@/types/movie";
-import { getAVDBMovies, getAVDBDetails } from "./avdb";
 import { TopXXMovie, TopXXResponse } from "@/types/api-providers";
 import * as cheerio from "cheerio";
 
@@ -23,7 +22,7 @@ interface ScrapedTopXX {
 async function scrapeTopXXSearch(keyword: string): Promise<ScrapedTopXX[]> {
   const url = `https://topxx.vip/search?keyword=${encodeURIComponent(keyword)}`;
   try {
-    const res = await fetchWithRetry(url, { headers: DEFAULT_HEADERS, next: { revalidate: 300 } }, 10000, 1, 500);
+    const res = await fetchWithRetry(url, { headers: DEFAULT_HEADERS, next: { revalidate: 300 } as any }, 10000, 1, 500);
     if (!res.ok) return [];
 
     const html = await res.text();
@@ -93,19 +92,20 @@ async function fetchWithRetry(url: string, options: RequestInit = {}, timeout = 
   return fetchWithTimeout(url, options, timeout);
 }
 
-function mapTopXXToMovie(item: TopXXMovie): Movie {
-  const viTrans = Array.isArray(item.trans) ? (item.trans.find((t) => t.locale === "vi") || item.trans[0]) : null;
-  const enTrans = Array.isArray(item.trans) ? (item.trans.find((t: any) => t.locale === "en") || {}) : {};
+function mapTopXXToMovie(item: TopXXMovie | ScrapedTopXX): Movie {
+  const movieItem = item as any;
+  const viTrans = Array.isArray(movieItem.trans) ? (movieItem.trans.find((t: any) => t.locale === "vi") || movieItem.trans[0]) : null;
+  const enTrans = Array.isArray(movieItem.trans) ? (movieItem.trans.find((t: any) => t.locale === "en") || {}) : {};
 
   return {
-    id: item.code || `tx-${Math.random().toString(36).substr(2, 9)}`,
-    title: viTrans?.title || item.title || "No Title",
+    id: movieItem.code || `tx-${Math.random().toString(36).substr(2, 9)}`,
+    title: viTrans?.title || movieItem.title || "No Title",
     originalTitle: (enTrans as any)?.title || "",
-    slug: item.code || "",
-    posterUrl: item.thumbnail || "",
-    thumbUrl: item.thumbnail || "",
-    year: item.publish_at ? new Date(item.publish_at).getFullYear().toString() : "",
-    quality: item.quality || "HD",
+    slug: movieItem.code || "",
+    posterUrl: movieItem.thumbnail || "",
+    thumbUrl: movieItem.thumbnail || "",
+    year: movieItem.publish_at ? new Date(movieItem.publish_at).getFullYear().toString() : "",
+    quality: movieItem.quality || "HD",
     source: "topxx" as const
   };
 }
@@ -130,9 +130,8 @@ export async function getTopXXMovies(
   }
 
   try {
-    const res = await fetchWithRetry(url, { headers: DEFAULT_HEADERS, next: { revalidate: 300 } }, 10000, 2, 800);
+    const res = await fetchWithRetry(url, { headers: DEFAULT_HEADERS, next: { revalidate: 300 } as any }, 10000, 2, 800);
     
-    // 2. FALLBACK: Use search with isCategorySearch=true to bypass strict title checks
     if (!res.ok) {
        console.log(`[TopXX] API failed for ${type}/${slug}, falling back to category search.`);
        return searchTopXXMovies(slug, page, true);
@@ -140,7 +139,6 @@ export async function getTopXXMovies(
 
     const data: TopXXResponse = await res.json();
     if (data.status !== "success" || !data.data || (Array.isArray(data.data) && data.data.length === 0)) {
-       // Also fallback if successfully called but empty (could be wrong code)
        if (type === "the-loai" || type === "quoc-gia") {
          return searchTopXXMovies(slug, page, true);
        }
@@ -148,7 +146,7 @@ export async function getTopXXMovies(
     }
 
     return {
-      items: (data.data as TopXXMovie[]).map(mapTopXXToMovie),
+      items: (data.data as TopXXMovie[]).map(item => mapTopXXToMovie(item)),
       pagination: {
         currentPage: data.meta?.current_page || page,
         totalPages: data.meta?.last_page || 1,
@@ -163,29 +161,11 @@ export async function getTopXXMovies(
     return { items: [], pagination: { currentPage: 1, totalPages: 1, totalItems: 0 } };
   }
 }
+
 export async function getTopXXDetails(slug: string) {
   let finalId = slug;
 
-  // 1. Handle AVDB-Direct Slugs from search results
-  if (slug.startsWith('av-')) {
-     const avId = slug.replace('av-', '');
-     console.log(`[TopXX] AVDB Direct ID detected: ${avId}`);
-     const avDetail = await getAVDBDetails(avId);
-     if (avDetail) {
-        return {
-          ...avDetail,
-          id: slug,
-          trans: [{
-            locale: "vi",
-            title: avDetail.name,
-            description: avDetail.content,
-            slug: slug
-          }]
-        };
-     }
-  }
-
-  // 2. If it's a code (STARS-420), find the internal ID (px7m0yKvZj)
+  // 1. Handle code (STARS-420), find the internal ID (px7m0yKvZj)
   if (/^[a-zA-Z]{2,5}-\d{2,6}$/.test(slug)) {
     console.log(`[TopXX] Code detected: ${slug}. Searching for internal ID...`);
     const results = await scrapeTopXXSearch(slug);
@@ -193,7 +173,6 @@ export async function getTopXXDetails(slug: string) {
       finalId = results[0].code;
       console.log(`[TopXX] Found internal ID: ${finalId} for code: ${slug}`);
     } else {
-       // Also try API search as secondary fallback for codes
        const apiRes = await searchTopXXMovies(slug, 1);
        if (apiRes.items.length > 0) {
          finalId = apiRes.items[0].id;
@@ -203,53 +182,15 @@ export async function getTopXXDetails(slug: string) {
 
   const url = `${BASE_URL}/movies/${finalId}`;
   try {
-    const res = await fetchWithRetry(url, { headers: DEFAULT_HEADERS, next: { revalidate: 300 } }, 10000, 2, 800);
+    const res = await fetchWithRetry(url, { headers: DEFAULT_HEADERS, next: { revalidate: 300 } as any }, 10000, 2, 800);
     
-    // 3. IF NATIVE API FAILS, FALLBACK TO AVDB (AVDB is more resilient for codes)
     if (!res.ok || res.status === 404) {
-       console.log(`[TopXX] Detail not found on native API for ${finalId}. Falling back to AVDB search...`);
-       // Search by keyword which could be the code
-       const cleanSlug = slug.includes('-') ? slug : finalId;
-       const avdbResults = await searchTopXXMovies(cleanSlug, 1, false); 
-       if (avdbResults.items.length > 0) {
-           const avdbItem = avdbResults.items.find(i => i.source === 'avdb') || avdbResults.items[0];
-           const avdbDetail = await getAVDBDetails(avdbItem.id.replace('av-', ''));
-           if (avdbDetail) {
-              console.log(`[TopXX] Native 404 resolved via AVDB: ${avdbDetail.name}`);
-              return {
-                ...avdbDetail,
-                id: slug,
-                trans: [{
-                  locale: "vi",
-                  title: avdbDetail.name,
-                  description: avdbDetail.content,
-                  slug: slug
-                }]
-              };
-           }
-       }
+       console.log(`[TopXX] Detail not found on native API for ${finalId}.`);
        return null;
     }
 
     const data: TopXXResponse = await res.json();
     if (data.status !== "success" || !data.data || Array.isArray(data.data)) {
-       // Also fallback if status is not success
-       const avdbResults = await searchTopXXMovies(slug, 1, false);
-       if (avdbResults.items.length > 0) {
-          const avdbDetail = await getAVDBDetails(avdbResults.items[0].id);
-          if (avdbDetail) {
-             console.log(`[TopXX] Native fail resolved via AVDB: ${avdbDetail.name}`);
-             return {
-                ...avdbDetail,
-                trans: [{
-                  locale: "vi",
-                  title: avdbDetail.name,
-                  description: avdbDetail.content,
-                  slug: avdbDetail.id
-                }]
-             };
-          }
-       }
        return null;
     }
 
@@ -258,7 +199,7 @@ export async function getTopXXDetails(slug: string) {
     
     const servers = [];
 
-    // Server 1: Native TopXX Sources (PRIORITY)
+    // Native TopXX Sources
     if (movie.sources && Array.isArray(movie.sources) && movie.sources.length > 0) {
       const episodes = movie.sources.map((s: any, idx: number) => ({
         name: `SV ${idx + 1}`,
@@ -272,7 +213,6 @@ export async function getTopXXDetails(slug: string) {
         episodes: episodes
       });
     } else {
-      // Fallback to old logic if sources are missing (unlikely but safe)
       let playLink = movie.video_url || movie.play_url || "";
       if (!playLink && movie.code) {
           playLink = `https://topxx.vip/play/index/${movie.code}`;
@@ -293,28 +233,8 @@ export async function getTopXXDetails(slug: string) {
       }
     }
 
-    // Server 2: AVDB Fallback (Strictly Restricted to requested sources)
-    try {
-        const avdbFallback = await getAVDBMovies(1, undefined, slug);
-        if (avdbFallback.items.length > 0 && avdbFallback.items[0]) {
-            const avMovie = await getAVDBDetails(avdbFallback.items[0].id);
-            if (avMovie && avMovie.sources && avMovie.sources.length > 0) {
-                servers.push({
-                   server: "Server Premium (AVDB)",
-                   episodes: avMovie.sources.map((ep: any) => ({
-                      name: ep.name,
-                      slug: ep.name.toLowerCase().replace(/\s+/g, '-'),
-                      link_embed: ep.link,
-                      link_m3u8: ep.link?.includes('.m3u8') ? ep.link : ""
-                   }))
-                });
-            }
-        }
-    } catch (e) {
-      console.warn("[TopXX] AVDB fallback failed or not found");
-    }
-
-    // Final Flattening for XXWatchPage (expects sources: {name, link}[])
+    // Server 2 removal (JAVDB ELITES REMOVED)
+    
     const finalSources = servers.flatMap((s: any) => 
       s.episodes.map((ep: any) => ({
         name: `${s.server} - ${ep.name}`,
@@ -340,10 +260,6 @@ export async function getTopXXDetails(slug: string) {
   }
 }
 
-/**
- * TOPXX MEGA SEARCH: Combines API, Scraper, and AVDB
- * @param isCategorySearch If true, skips strict relevance filtering (useful for genre/tag matching)
- */
 export async function searchTopXXMovies(keyword: string, page: number = 1, isCategorySearch: boolean = false): Promise<MovieListResponse> {
   const normalizedQuery = (keyword || "").trim().toLowerCase();
 
@@ -351,7 +267,6 @@ export async function searchTopXXMovies(keyword: string, page: number = 1, isCat
     return { items: [], pagination: { currentPage: 1, totalPages: 1, totalItems: 0 } };
   }
 
-  // OPTIMIZED: Use safer timeouts for search accuracy
   const SEARCH_TIMEOUT = 8000;
   const SEARCH_RETRIES = 1;
 
@@ -361,27 +276,25 @@ export async function searchTopXXMovies(keyword: string, page: number = 1, isCat
   try {
     console.log(`[TopXX Search] Initiating parallel search for: "${normalizedQuery}" (CategoryMode: ${isCategorySearch})`);
 
-    // We run 3 main sources in parallel (Primary + Scraper + AVDB)
-    const [topxxRes, topxxActorRes, topxxScrapedRes, avdbTitleRes] = await Promise.allSettled([
-      fetchWithRetry(topxxUrl, { headers: DEFAULT_HEADERS, next: { revalidate: 300 } }, SEARCH_TIMEOUT, SEARCH_RETRIES, 800)
+    const [topxxRes, topxxActorRes, topxxScrapedRes] = await Promise.allSettled([
+      fetchWithRetry(topxxUrl, { headers: DEFAULT_HEADERS, next: { revalidate: 300 } as any }, SEARCH_TIMEOUT, SEARCH_RETRIES, 800)
         .then(async r => {
           if (!r.ok) return null;
           const json: TopXXResponse = await r.json();
           return json?.status === "success" ? json : null;
         }),
-      fetchWithRetry(topxxActorUrl, { headers: DEFAULT_HEADERS, next: { revalidate: 300 } }, SEARCH_TIMEOUT, SEARCH_RETRIES, 500)
+      fetchWithRetry(topxxActorUrl, { headers: DEFAULT_HEADERS, next: { revalidate: 300 } as any }, SEARCH_TIMEOUT, SEARCH_RETRIES, 500)
         .then(async r => {
           if (!r.ok) return null;
           const json: TopXXResponse = await r.json();
           if (json?.status === "success" && Array.isArray(json.data) && json.data.length > 0) {
-            // OPTIMIZATION: Start fetching filmography for the top 2 actors IMMEDIATELY
             const topActors = json.data.slice(0, 2);
             const actorMovies = await Promise.allSettled(
               topActors.map(async (actor) => {
                 const actorSlug = actor.trans?.find((t: any) => t.locale === "vi")?.slug || actor.trans?.[0]?.slug;
                 if (!actorSlug) return [];
                 const url = `${BASE_URL}/actors/${actorSlug}/movies?page=1`;
-                const res = await fetchWithRetry(url, { headers: DEFAULT_HEADERS, next: { revalidate: 300 } }, SEARCH_TIMEOUT, 0);
+                const res = await fetchWithRetry(url, { headers: DEFAULT_HEADERS, next: { revalidate: 300 } as any }, SEARCH_TIMEOUT, 0);
                 if (res.ok) {
                   const data = await res.json();
                   return data.data || [];
@@ -390,35 +303,25 @@ export async function searchTopXXMovies(keyword: string, page: number = 1, isCat
               })
             );
 
-            // Flatten found movies
             const extraMovies = actorMovies.flatMap(r => r.status === "fulfilled" ? r.value : []);
             return { ...json, extraMovies };
           }
           return json;
         }),
-      scrapeTopXXSearch(normalizedQuery),
-      getAVDBMovies(page, undefined, normalizedQuery)
-        .catch(() => ({ items: [], pagination: { totalItems: 0, totalPages: 1, currentPage: 1 } }))
+      scrapeTopXXSearch(normalizedQuery)
     ]);
 
     const movieMap = new Map<string, Movie>();
     let totalItems = 0;
     let totalPages = 1;
 
-    // Process sources and only keep those that belong to the TopXX ecosystem
-    // This removes the risk of regular movies showing up with TopXX watch links
-
-    // Helper for strict relevance checking
     const isLikelyRelevant = (m: Movie, q: string): boolean => {
-      if (isCategorySearch) return true; // Skip filtering for category fallbacks
-      
+      if (isCategorySearch) return true;
       const normQ = q.toLowerCase().trim();
       if (!normQ) return true;
-      
       const searchSpace = `${m.title} ${m.slug} ${m.id}`.toLowerCase();
       const cleanSearchSpace = searchSpace.replace(/[^a-z0-9]/g, "");
 
-      // 1. Check for specific movie codes (e.g., DASS-534)
       const codeMatch = normQ.match(/[a-z]{2,5}\s?\d{2,6}/i);
       if (codeMatch) {
         const fullCode = codeMatch[0].replace(/\s/g, "");
@@ -427,7 +330,6 @@ export async function searchTopXXMovies(keyword: string, page: number = 1, isCat
         if (cleanSearchSpace.includes(alpha) && cleanSearchSpace.includes(numeric)) return true;
       }
 
-      // 2. Keyword permutation match (e.g., "Yua Mikami" matches "Mikami Yua")
       const words = normQ.split(/\s+/).filter(w => w.length > 0);
       return words.every(word => {
         if (searchSpace.includes(word)) return true;
@@ -435,13 +337,12 @@ export async function searchTopXXMovies(keyword: string, page: number = 1, isCat
         return cleanWord && cleanSearchSpace.includes(cleanWord);
       });
     };
-    // 1. Process TopXX Movie Search results (Primary Source)
+
     if (topxxRes.status === "fulfilled" && topxxRes.value) {
       const data = topxxRes.value;
       if (Array.isArray(data.data)) {
         data.data.forEach((item: TopXXMovie) => {
           const m = mapTopXXToMovie(item);
-          // Only add if it's broadly relevant to avoid "latest movies" noise
           if (isLikelyRelevant(m, normalizedQuery)) {
             movieMap.set(m.id, m);
           }
@@ -451,7 +352,6 @@ export async function searchTopXXMovies(keyword: string, page: number = 1, isCat
       totalPages = data.meta?.last_page || 1;
     }
 
-    // 2. Process TopXX Actor filmographies (Parallel cached result)
     if (topxxActorRes.status === "fulfilled" && topxxActorRes.value) {
       const extraMovies = (topxxActorRes.value as any).extraMovies || [];
       extraMovies.forEach((m: TopXXMovie) => {
@@ -462,11 +362,10 @@ export async function searchTopXXMovies(keyword: string, page: number = 1, isCat
       });
     }
 
-    // 3. Process TopXX Scraped results (ELITE Fallback for broken API)
     if (topxxScrapedRes.status === "fulfilled" && Array.isArray(topxxScrapedRes.value)) {
       topxxScrapedRes.value.forEach((item: ScrapedTopXX) => {
-        const m = mapTopXXToMovie(item as any); // ScrapedTopXX matches TopXXMovie closely enough for mapper
-        if (!movieMap.has(m.id)) { // Scraped results are usually very specific, no need for extra relevance check
+        const m = mapTopXXToMovie(item);
+        if (!movieMap.has(m.id)) {
           movieMap.set(m.id, m);
         }
       });
@@ -475,22 +374,7 @@ export async function searchTopXXMovies(keyword: string, page: number = 1, isCat
       }
     }
 
-    // 4. Process AVDB Title Search
-    if (avdbTitleRes.status === "fulfilled" && avdbTitleRes.value?.items) {
-      (avdbTitleRes.value.items as unknown as Movie[]).forEach((m: Movie) => {
-        if (m && !movieMap.has(m.id) && isLikelyRelevant(m, normalizedQuery)) {
-          movieMap.set(m.id, m);
-        }
-      });
-      if (totalItems === 0) {
-        totalItems = avdbTitleRes.value.pagination.totalItems;
-        totalPages = avdbTitleRes.value.pagination.totalPages;
-      }
-    }
-
     const finalItems = Array.from(movieMap.values());
-    console.log(`[TopXX Search] Completed for "${normalizedQuery}". Found ${finalItems.length} unique items.`);
-
     return {
       items: finalItems,
       pagination: {
@@ -508,7 +392,7 @@ export async function searchTopXXMovies(keyword: string, page: number = 1, isCat
 export async function getTopXXCategories() {
   const url = `${BASE_URL}/genres`;
   try {
-    const res = await fetchWithRetry(url, { headers: DEFAULT_HEADERS, next: { revalidate: 300 } });
+    const res = await fetchWithRetry(url, { headers: DEFAULT_HEADERS, next: { revalidate: 300 } as any });
     if (!res.ok) return [];
     const data: TopXXResponse = await res.json();
     return data.data || [];
@@ -520,7 +404,7 @@ export async function getTopXXCategories() {
 export async function getTopXXCountries() {
   const url = `${BASE_URL}/countries`;
   try {
-    const res = await fetchWithRetry(url, { headers: DEFAULT_HEADERS, next: { revalidate: 300 } });
+    const res = await fetchWithRetry(url, { headers: DEFAULT_HEADERS, next: { revalidate: 300 } as any });
     if (!res.ok) return [];
     const data: TopXXResponse = await res.json();
     return data.data || [];

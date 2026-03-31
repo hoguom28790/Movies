@@ -1,86 +1,68 @@
 "use client";
 
 import React from "react";
+import { Star, Heart, TrendingUp } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface MovieRatingsProps {
-  tmdbRating?: number | null;
-  imdbId?: string | null;
-  imdbRating?: number | null;
-  rottenRating?: number | null;
-  audienceScore?: number | null;
-  traktRating?: number | null;
-  traktVotes?: number | null;
-  imdbVotes?: number | string | null;
+  tmdbRating?: number;
+  imdbId?: string;
+  imdbRating?: number;
+  rottenRating?: number;
+  traktRating?: number;
   className?: string;
 }
 
-export function MovieRatings({ tmdbRating, imdbId, imdbRating, rottenRating, audienceScore, traktRating, traktVotes, imdbVotes, className = "" }: MovieRatingsProps) {
-  if (!tmdbRating && !imdbRating && !traktRating) return null;
-
-  const tmdbScore = tmdbRating ? Math.round(tmdbRating * 10) : null;
-  const imdbScore = imdbRating ? imdbRating.toFixed(1) : null;
-  const criticScore = rottenRating || null;
-  const finalTraktScore = traktRating ? Math.round(traktRating * 10) : null;
-  const finalAudienceScore = audienceScore || null;
-
-  const formatVotes = (v: number | string | null | undefined) => {
-    if (!v) return "";
-    const n = typeof v === 'string' ? parseFloat(v.replace(/,/g, '')) : v;
-    if (isNaN(n)) return v.toString();
-    if (n >= 1000000) return (n / 1000000).toFixed(1) + "M";
-    if (n >= 1000) return (n / 1000).toFixed(1) + "K";
-    return n.toString();
-  };
+export function MovieRatings({ 
+  tmdbRating, 
+  imdbRating, 
+  rottenRating, 
+  traktRating,
+  className 
+}: MovieRatingsProps) {
+  if (!tmdbRating && !imdbRating && !rottenRating && !traktRating) return null;
 
   return (
-    <div className={`grid grid-cols-2 gap-4 ${className}`}>
-      {/* TMDB */}
-      <div className="flex items-center gap-2.5">
-        <div className="w-7 h-7 bg-[#01B4E4] rounded-lg flex items-center justify-center text-white shrink-0 shadow-apple-sm">
-           <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
-              <path d="M2.5 12c0-4.4 3.6-8 8-8s8 3.6 8 8-3.6 8-8 8-8-3.6-8-8zm9.5-6c-3.3 0-6 2.7-6 6s2.7 6 6 6 6-2.7 6-6-2.7-6-6-6z"/>
-           </svg>
+    <div className={cn("flex flex-wrap items-center gap-4", className)}>
+      {tmdbRating && tmdbRating > 0 && (
+        <div className="flex flex-col gap-0.5">
+          <span className="text-[9px] font-black text-foreground/20 uppercase tracking-widest text-center">TMDB</span>
+          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-blue-500/10 border border-blue-500/20 shadow-sm">
+            <Star className="w-3.5 h-3.5 text-blue-500 fill-current" />
+            <span className="text-xs font-black text-blue-600 dark:text-blue-400">{(tmdbRating).toFixed(1)}</span>
+          </div>
         </div>
-        <div className="flex flex-col">
-           <span className="text-[14px] font-black leading-none">{tmdbScore ? `${tmdbScore}%` : "N/A"}</span>
-           <span className="text-[8px] text-foreground/40 font-black uppercase tracking-widest mt-0.5">TMDB</span>
-        </div>
-      </div>
+      )}
 
-      {/* IMDb */}
-      <div className="flex items-center gap-2.5">
-        <div className="w-7 h-7 bg-[#F5C518] rounded-lg flex items-center justify-center text-black shrink-0 shadow-apple-sm font-black text-[9px]">
-           IMDb
+      {imdbRating && imdbRating > 0 && (
+        <div className="flex flex-col gap-0.5">
+          <span className="text-[9px] font-black text-foreground/20 uppercase tracking-widest text-center">IMDB</span>
+          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-yellow-500/10 border border-yellow-500/20 shadow-sm">
+            <Star className="w-3.5 h-3.5 text-yellow-500 fill-current" />
+            <span className="text-xs font-black text-yellow-600 dark:text-yellow-500">{(imdbRating).toFixed(1)}</span>
+          </div>
         </div>
-        <div className="flex flex-col">
-           <span className="text-[14px] font-black leading-none">{imdbScore || "N/A"}</span>
-           <span className="text-[8px] text-foreground/40 font-black uppercase tracking-widest mt-0.5">IMDb</span>
-        </div>
-      </div>
+      )}
 
-      {/* Rotten Tomatoes */}
-      <div className="flex items-center gap-2.5">
-        <div className="w-7 h-7 bg-[#FA320A] rounded-lg flex items-center justify-center text-white shrink-0 shadow-apple-sm">
-           <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
-              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/>
-           </svg>
+      {rottenRating && rottenRating > 0 && (
+        <div className="flex flex-col gap-0.5">
+          <span className="text-[9px] font-black text-foreground/20 uppercase tracking-widest text-center">TOMATO</span>
+          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-red-500/10 border border-red-500/20 shadow-sm">
+            <TrendingUp className="w-3.5 h-3.5 text-red-500" />
+            <span className="text-xs font-black text-red-600 dark:text-red-400">{rottenRating}%</span>
+          </div>
         </div>
-        <div className="flex flex-col">
-           <span className="text-[14px] font-black leading-none">{criticScore ? `${criticScore}%` : "N/A"}</span>
-           <span className="text-[8px] text-foreground/40 font-black uppercase tracking-widest mt-0.5">Rotten</span>
-        </div>
-      </div>
+      )}
 
-      {/* Trakt */}
-      <div className="flex items-center gap-2.5">
-        <div className="w-7 h-7 bg-[#ED1C24] rounded-lg flex items-center justify-center text-white shrink-0 shadow-apple-sm">
-           <div className="font-black text-[12px]">T</div>
+      {traktRating && traktRating > 0 && (
+        <div className="flex flex-col gap-0.5">
+          <span className="text-[9px] font-black text-foreground/20 uppercase tracking-widest text-center">TRAKT</span>
+          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-pink-500/10 border border-pink-500/20 shadow-sm">
+            <Heart className="w-3.5 h-3.5 text-pink-500 fill-current" />
+            <span className="text-xs font-black text-pink-600 dark:text-pink-400">{(traktRating).toFixed(1)}</span>
+          </div>
         </div>
-        <div className="flex flex-col">
-           <span className="text-[14px] font-black leading-none">{finalTraktScore ? `${finalTraktScore}%` : "N/A"}</span>
-           <span className="text-[8px] text-foreground/40 font-black uppercase tracking-widest mt-0.5">Trakt</span>
-        </div>
-      </div>
+      )}
     </div>
   );
 }

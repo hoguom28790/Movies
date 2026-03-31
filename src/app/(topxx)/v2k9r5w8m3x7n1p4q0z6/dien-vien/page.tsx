@@ -47,22 +47,22 @@ export default function XXActorsPage() {
         <div className="container mx-auto px-4 py-16 space-y-12 animate-in fade-in duration-1000">
             <div className="flex flex-col md:flex-row md:items-end justify-between gap-8">
                 <div className="space-y-4">
-                    <h1 className="text-5xl md:text-8xl font-black text-white italic tracking-tighter uppercase leading-[0.8] select-none">Diễn Viên</h1>
+                    <h1 className="text-5xl md:text-8xl font-black text-foreground italic tracking-tighter uppercase leading-[0.8] select-none">Diễn Viên</h1>
                     <div className="flex items-center gap-3">
                         <span className="px-2 py-0.5 rounded bg-yellow-500 text-black text-[9px] font-black uppercase tracking-widest">STAR DIRECTORY</span>
-                        <div className="w-1 h-1 rounded-full bg-white/10" />
-                        <span className="text-[10px] text-white/40 font-bold uppercase tracking-widest italic">{filteredActors.length} STARS AVAILABLE</span>
+                        <div className="w-1 h-1 rounded-full bg-foreground/10" />
+                        <span className="text-[10px] text-foreground/40 font-bold uppercase tracking-widest italic">{filteredActors.length} STARS AVAILABLE</span>
                     </div>
                 </div>
 
                 <div className="relative group max-w-sm w-full">
-                    <Search className="absolute left-6 top-1/2 -translate-y-1/2 w-4 h-4 text-white/20 group-focus-within:text-yellow-500 transition-colors" />
+                    <Search className="absolute left-6 top-1/2 -translate-y-1/2 w-4 h-4 text-foreground/20 group-focus-within:text-yellow-500 transition-colors" />
                     <input 
                         type="text" 
                         placeholder="Tìm kiếm diễn viên..." 
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        className="w-full bg-white/[0.03] border border-white/5 rounded-[30px] pl-14 pr-8 py-5 text-sm text-white focus:outline-none focus:border-yellow-500/50 focus:bg-white/[0.06] transition-all font-bold tracking-tight shadow-inner"
+                        className="w-full bg-foreground/5 border border-foreground/10 rounded-[30px] pl-14 pr-8 py-5 text-sm text-foreground focus:outline-none focus:border-yellow-500/50 focus:bg-foreground/10 transition-all font-bold tracking-tight shadow-inner"
                     />
                 </div>
             </div>
@@ -74,7 +74,7 @@ export default function XXActorsPage() {
                         onClick={() => handleActorClick(actor)}
                         className="group flex flex-col items-center gap-5 text-center active-depth"
                     >
-                        <div className="relative w-full aspect-square rounded-[50px] overflow-hidden border-2 border-white/5 shadow-2xl transition-all duration-700 group-hover:border-yellow-500/30 group-hover:-translate-y-4 group-hover:rotate-3">
+                        <div className="relative w-full aspect-square rounded-[50px] overflow-hidden border-2 border-foreground/10 shadow-2xl transition-all duration-700 group-hover:border-yellow-500/30 group-hover:-translate-y-4 group-hover:rotate-3">
                            {actor.avatar ? (
                                <img 
                                  src={actor.avatar} 
@@ -82,17 +82,17 @@ export default function XXActorsPage() {
                                  className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700 scale-105 group-hover:scale-110"
                                />
                            ) : (
-                               <div className="w-full h-full bg-white/5 flex items-center justify-center">
-                                  <User2 className="w-12 h-12 text-white/10" />
+                               <div className="w-full h-full bg-foreground/5 flex items-center justify-center">
+                                  <User2 className="w-12 h-12 text-foreground/10" />
                                 </div>
                            )}
                            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
                            <div className="absolute bottom-4 left-0 right-0 opacity-0 group-hover:opacity-100 translate-y-2 group-hover:translate-y-0 transition-all duration-500">
-                              <span className="text-[9px] font-black text-white/60 uppercase tracking-widest">View Profile</span>
+                              <span className="text-[9px] font-black text-white/60 uppercase tracking-widest text-shadow-lg">View Profile</span>
                            </div>
                         </div>
                         <div className="space-y-1">
-                           <h3 className="text-sm md:text-base font-black text-white/80 group-hover:text-yellow-500 transition-colors uppercase italic tracking-tighter leading-tight">{actor.name}</h3>
+                           <h3 className="text-sm md:text-base font-black text-foreground group-hover:text-yellow-500 transition-colors uppercase italic tracking-tighter leading-tight">{actor.name}</h3>
                         </div>
                     </button>
                 ))}

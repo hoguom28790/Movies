@@ -12,6 +12,7 @@ import { WatchlistBtn } from "@/components/movie/WatchlistBtn";
 import { notFound } from "next/navigation";
 import { MovieRatings } from "@/components/movie/MovieRatings";
 import { getRTRating } from "@/services/rottenTomatoes";
+import { getTraktRating } from "@/services/trakt";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 3600;
@@ -19,7 +20,7 @@ export const revalidate = 3600;
 // Sidebar Content Helper Component
 const RightSidebarContent = ({ 
   sources, sourceId, movieSlug, allServers, currentServerIdx, currentEp, isTopXX, 
-  tmdbId, mediaType, tmdbData, rtData, omdbData 
+  tmdbId, mediaType, tmdbData, rtData, omdbData, traktData 
 }: any) => {
   // Helper to format runtime
   const formatRuntime = (tmdb: any) => {
@@ -51,14 +52,15 @@ const RightSidebarContent = ({
            {/* Scores */}
             <div className="space-y-4">
                <h3 className="text-[10px] font-black text-foreground/20 uppercase tracking-[0.2em] pl-1">Điểm số đánh giá</h3>
-               <MovieRatings 
-                 tmdbRating={tmdbData.vote_average} 
-                 imdbId={tmdbData.external_ids?.imdb_id}
-                 imdbRating={omdbData?.vote_average}
-                 rottenRating={rtData?.criticScore}
-                 audienceScore={rtData?.audienceScore}
-                 className="gap-4 md:gap-6 bg-surface p-4 rounded-2xl border border-foreground/5 shadow-apple-sm"
-               />
+                <MovieRatings 
+                  tmdbRating={tmdbData.vote_average} 
+                  imdbId={tmdbData.external_ids?.imdb_id}
+                  imdbRating={omdbData?.vote_average}
+                  rottenRating={rtData?.criticScore}
+                  audienceScore={rtData?.audienceScore}
+                  traktRating={traktData?.rating}
+                  className="gap-4 md:gap-6 bg-surface p-4 rounded-2xl border border-foreground/5 shadow-apple-sm"
+                />
             </div>
 
            {/* Metadata Grid */}
@@ -175,6 +177,7 @@ export default async function WatchPage({
     let tmdbData = null;
     let rtData = null;
     let omdbData = null;
+    let traktData = null;
 
     try {
        if (tmdbId) {
@@ -191,9 +194,11 @@ export default async function WatchPage({
                 promises.push(getRTRating(imdbId).then(res => rtData = res).catch(() => null));
                 const { getOMDbRatingById } = await import("@/services/omdb");
                 promises.push(getOMDbRatingById(imdbId).then(res => omdbData = res).catch(() => null));
+                promises.push(getTraktRating(safeData.name, parseInt(safeData.year) || undefined).then(res => traktData = res).catch(() => null));
              } else {
                 const { searchOMDbMovie } = await import("@/services/omdb");
                 promises.push(searchOMDbMovie(safeData.name, parseInt(safeData.year) || undefined).then(res => omdbData = res).catch(() => null));
+                promises.push(getTraktRating(safeData.name, parseInt(safeData.year) || undefined).then(res => traktData = res).catch(() => null));
              }
              
              await Promise.all(promises);
@@ -243,15 +248,15 @@ export default async function WatchPage({
                      </div>
                      <h1 className={cn(
                         "text-3xl md:text-5xl tracking-tighter leading-none",
-                        isTopXX ? "font-black italic uppercase text-white drop-shadow-2xl" : "font-bold text-foreground"
+                        isTopXX ? "font-black italic uppercase text-foreground drop-shadow-2xl" : "font-bold text-foreground"
                      )}>
                         {safeData.name}
                      </h1>
                      <div className={cn(
                         "flex flex-wrap items-center gap-4 text-xs italic",
-                        isTopXX ? "font-black text-white/40" : "font-bold text-foreground/40"
+                        isTopXX ? "font-black text-foreground/40" : "font-bold text-foreground/40"
                      )}>
-                        <span className={isTopXX ? "text-white/60" : "text-foreground/60"}>{safeData.originName}</span>
+                        <span className={isTopXX ? "text-foreground/60" : "text-foreground/60"}>{safeData.originName}</span>
                         <span className="opacity-30">•</span>
                         <span>{safeData.year}</span>
                         {safeData.quality && (
@@ -312,6 +317,7 @@ export default async function WatchPage({
                               tmdbData={tmdbData}
                               rtData={rtData}
                               omdbData={omdbData}
+                              traktData={traktData}
                            />
                        </div>
 
@@ -356,6 +362,7 @@ export default async function WatchPage({
                            tmdbData={tmdbData}
                            rtData={rtData}
                            omdbData={omdbData}
+                           traktData={traktData}
                         />
                     </div>
                 </div>

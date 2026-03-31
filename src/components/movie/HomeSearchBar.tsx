@@ -28,7 +28,7 @@ export function HomeSearchBar({ isXX = false }: HomeSearchBarProps) {
       <div className="px-4 lg:px-8 mb-20 -mt-10 relative z-20 max-w-7xl mx-auto w-full">
         <form 
           onSubmit={handleSearch}
-          className="w-full h-20 md:h-24 bg-white/[0.03] backdrop-blur-3xl border border-white/5 rounded-[32px] md:rounded-[48px] flex items-center px-8 md:px-12 gap-5 md:gap-8 shadow-cinematic-xl group hover:border-yellow-500/20 transition-all duration-700 active-depth"
+          className="w-full h-20 md:h-24 bg-foreground/[0.03] backdrop-blur-3xl border border-foreground/5 rounded-[32px] md:rounded-[48px] flex items-center px-8 md:px-12 gap-5 md:gap-8 shadow-cinematic-xl group hover:border-yellow-500/20 transition-all duration-700 active-depth"
         >
           <Search className="w-6 h-6 md:w-10 md:h-10 text-yellow-500 animate-pulse" />
           <input 
@@ -48,7 +48,7 @@ export function HomeSearchBar({ isXX = false }: HomeSearchBarProps) {
       <form 
         onSubmit={handleSearch}
         className={cn(
-          "w-full h-18 sm:h-20 apple-glass border-foreground/5 rounded-[28px] md:rounded-[36px] flex items-center px-8 gap-6 shadow-apple group transition-all duration-500 hover:shadow-apple-lg hover:border-foreground/10 ring-1 ring-white/5",
+          "w-full h-18 sm:h-20 apple-glass border-foreground/5 rounded-[28px] md:rounded-[36px] flex items-center px-8 gap-6 shadow-apple group transition-all duration-500 hover:shadow-apple-lg hover:border-foreground/10 ring-1 ring-foreground/5",
         )}
       >
         <Search className="w-6 h-6 text-foreground/20 group-hover:text-primary transition-colors duration-500" />

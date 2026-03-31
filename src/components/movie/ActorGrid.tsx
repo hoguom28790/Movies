@@ -49,7 +49,7 @@ export function ActorGrid({ isXX = false, title, actors: propActors }: ActorGrid
     setIsModalOpen(true);
   };
 
-  const displayTitle = title || (isXX ? "JAVDB ELITES" : "DIỄN VIÊN NỔI BẬT");
+  const displayTitle = title || (isXX ? "DIỄN VIÊN ĐƯỢC ƯA THÍCH" : "DIỄN VIÊN NỔI BẬT");
   const displayActors = propActors || data?.items || [];
 
   if (isLoading && !propActors) {
@@ -57,11 +57,11 @@ export function ActorGrid({ isXX = false, title, actors: propActors }: ActorGrid
       <div className="space-y-12 py-10">
         <div className="flex items-center gap-4 px-4 overflow-hidden">
            <div className={cn("w-1.5 h-6 rounded-full", isXX ? "bg-yellow-500" : "bg-primary")} />
-           <div className="w-48 h-6 bg-white/5 animate-pulse rounded-full" />
+           <div className="w-48 h-6 bg-foreground/5 animate-pulse rounded-full" />
         </div>
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-8 px-4">
            {[1,2,3,4,5,6].map(i => (
-             <div key={i} className="aspect-[3/4] rounded-[40px] bg-white/5 animate-pulse" />
+             <div key={i} className="aspect-[3/4] rounded-[40px] bg-foreground/5 animate-pulse" />
            ))}
         </div>
       </div>
@@ -98,7 +98,7 @@ export function ActorGrid({ isXX = false, title, actors: propActors }: ActorGrid
         )}>
            <span>{isXX ? "SHOW ALL RANKINGS" : "VIEW ALL"}</span>
            <div className={cn(
-             "p-2 rounded-xl bg-white/5 group-hover:text-black transition-colors",
+             "p-2 rounded-xl bg-foreground/5 group-hover:text-background transition-colors",
              isXX ? "group-hover:bg-yellow-500" : "group-hover:bg-primary"
            )}>
               <ChevronRight className="w-4 h-4" />
@@ -118,7 +118,7 @@ export function ActorGrid({ isXX = false, title, actors: propActors }: ActorGrid
             className="group relative flex flex-col gap-5 cursor-pointer select-none"
           >
              <div className={cn(
-               "relative aspect-[3/4] rounded-[48px] overflow-hidden border border-white/5 shadow-2xl bg-surface transition-all duration-700",
+               "relative aspect-[3/4] rounded-[48px] overflow-hidden border border-foreground/10 shadow-2xl bg-surface transition-all duration-700",
                isXX ? "group-hover:shadow-yellow-500/10" : "group-hover:shadow-primary/10"
              )}>
                 <img 
@@ -129,16 +129,16 @@ export function ActorGrid({ isXX = false, title, actors: propActors }: ActorGrid
                 
                 <div className="absolute inset-0 flex flex-col justify-end p-6 opacity-0 group-hover:opacity-100 transition-all duration-500 translate-y-6 group-hover:translate-y-0 backdrop-blur-[2px]">
                    <div className={cn(
-                     "w-full py-4 text-[10px] font-black text-black uppercase italic rounded-2xl flex items-center justify-center gap-3 group-active:scale-90 transition-transform",
+                     "w-full py-4 text-[10px] font-black text-background uppercase italic rounded-2xl flex items-center justify-center gap-3 group-active:scale-90 transition-transform",
                      isXX ? "bg-yellow-500 shadow-[0_10px_30px_rgba(234,179,8,0.3)]" : "bg-primary shadow-primary/30"
                    )}>
                       <Search className="w-4 h-4" /> PROFILE DATA
                    </div>
                 </div>
 
-                <div className="absolute top-5 left-5 glass-pro px-4 py-1.5 rounded-2xl shadow-xl flex items-center gap-2 border border-white/10">
+                <div className="absolute top-5 left-5 glass-pro px-4 py-1.5 rounded-2xl shadow-xl flex items-center gap-2 border border-foreground/10">
                    <Star className={cn("w-3.5 h-3.5 fill-current", isXX ? "text-yellow-500" : "text-primary")} />
-                   <span className="text-[10px] font-black text-white italic">
+                   <span className="text-[10px] font-black text-foreground italic">
                      {isXX ? `Rank #${idx + 1}` : (actor.popularity ? Math.round(actor.popularity) : "Famous")}
                    </span>
                 </div>
