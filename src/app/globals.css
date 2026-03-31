@@ -70,11 +70,24 @@ body {
   letter-spacing: -0.01em; /* Body letter-spacing */
   line-height: 1.5;
   overflow-x: hidden;
-  transition: background-color 0.5s cubic-bezier(0.4, 0, 0.2, 1), color 0.5s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+/* Smooth Theme Transitions for all themed elements */
+body, 
+body *,
 html {
-  transition: background-color 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: background-color 0.5s cubic-bezier(0.4, 0, 0.2, 1), 
+              color 0.5s cubic-bezier(0.4, 0, 0.2, 1),
+              border-color 0.5s cubic-bezier(0.4, 0, 0.2, 1),
+              text-decoration-color 0.5s cubic-bezier(0.4, 0, 0.2, 1),
+              fill 0.5s cubic-bezier(0.4, 0, 0.2, 1),
+              stroke 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Optimization: Stop transitions on specific elements that shouldn't fade */
+.no-theme-transition, 
+.no-theme-transition * {
+  transition: none !important;
 }
 
 /* Apple HIG Typography Rules */

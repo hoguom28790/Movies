@@ -185,13 +185,16 @@ export default async function WatchPage({
           } else {
              // Parallel fetch external ratings
              const promises = [];
+             const imdbId = tmdbData.external_ids?.imdb_id;
              
-             if (tmdbData.external_ids?.imdb_id) {
-                promises.push(getRTRating(tmdbData.external_ids.imdb_id).then(res => rtData = res).catch(() => null));
+             if (imdbId) {
+                promises.push(getRTRating(imdbId).then(res => rtData = res).catch(() => null));
+                const { getOMDbRatingById } = await import("@/services/omdb");
+                promises.push(getOMDbRatingById(imdbId).then(res => omdbData = res).catch(() => null));
+             } else {
+                const { searchOMDbMovie } = await import("@/services/omdb");
+                promises.push(searchOMDbMovie(safeData.name, parseInt(safeData.year) || undefined).then(res => omdbData = res).catch(() => null));
              }
-             
-             const { searchOMDbMovie } = await import("@/services/omdb");
-             promises.push(searchOMDbMovie(safeData.name, parseInt(safeData.year)).then(res => omdbData = res).catch(() => null));
              
              await Promise.all(promises);
           }

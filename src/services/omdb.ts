@@ -60,6 +60,31 @@ export async function searchOMDbMovie(title: string, year?: number, type: "movie
 }
 
 /**
+ * Fetches OMDb specific details (like ratings) using IMDb ID
+ */
+export async function getOMDbRatingById(imdbId: string): Promise<OMDbSearchResult | null> {
+  if (!imdbId) return null;
+  try {
+    const url = `https://www.omdbapi.com/?apikey=${OMDB_API_KEY}&i=${imdbId}`;
+    const res = await fetch(url, { next: { revalidate: 86400 } });
+    if (!res.ok) return null;
+    
+    const data = await res.json();
+    if (data.Response === "False") return null;
+
+    return {
+      imdbID: data.imdbID,
+      poster_path: data.Poster !== "N/A" ? data.Poster : null,
+      backdrop_path: null,
+      vote_average: data.imdbRating && data.imdbRating !== "N/A" ? parseFloat(data.imdbRating) : undefined,
+    };
+  } catch (error) {
+    console.error("OMDb ID Fetch Error:", error);
+    return null;
+  }
+}
+
+/**
  * Fallback to Unsplash if everything fails to ensure beautiful cards
  */
 export function getFallbackPlaceholder(title: string) {
