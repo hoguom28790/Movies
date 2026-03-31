@@ -19,17 +19,20 @@ export default async function ActorPage({ params }: { params: Promise<{ id: stri
     .slice(0, 30);
 
   return (
-    <div className="min-h-screen pb-32 bg-background transition-colors duration-500">
+    <div className="min-h-screen pb-32 bg-background transition-colors duration-500 relative">
+      {/* ── Background Layer ── */}
+      <div className="fixed inset-0 -z-20 bg-background" />
+
       {/* ── Header Backdrop ── */}
       <div className="relative w-full h-[35vh] sm:h-[45vh] lg:h-[55vh] overflow-hidden">
         {movies[0]?.backdrop_path && (
           <img 
             src={getTMDBImageUrl(movies[0].backdrop_path, 'original')!} 
-            className="w-full h-full object-cover opacity-20 dark:opacity-30 blur-2xl scale-110"
+            className="w-full h-full object-cover opacity-10 dark:opacity-25 blur-3xl scale-110"
             alt="backdrop"
           />
         )}
-        <div className="absolute inset-0 bg-gradient-to-t from-background via-background/80 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-transparent" />
       </div>
 
       <div className="container mx-auto px-4 sm:px-8 lg:px-16 relative z-10 -mt-32 sm:-mt-48">

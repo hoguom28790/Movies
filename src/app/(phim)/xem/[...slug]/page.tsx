@@ -44,66 +44,19 @@ const RightSidebarContent = ({
   const releaseDate = tmdbData?.release_date || tmdbData?.first_air_date;
 
   return (
-   <div className="w-full space-y-10 relative z-10 bg-background/50 backdrop-blur-sm lg:backdrop-blur-none rounded-3xl p-4 lg:p-0">
-      {/* Sources - Apple style rounded tabs */}
-      {!isTopXX && sources.length > 1 && (
-         <div className="space-y-4">
-            <h3 className="text-xs font-bold text-foreground-secondary uppercase tracking-widest pl-1">Phát từ nguồn</h3>
-            <div className="flex flex-wrap gap-2">
-               {sources.map((s: any) => (
-                  <Link 
-                    key={s.id} 
-                    href={`/xem/${movieSlug}?src=${s.id}`} 
-                    className={cn(
-                      "flex-1 min-w-[100px] text-center py-2.5 rounded-full text-xs font-bold transition-all",
-                      sourceId === s.id ? 'bg-primary text-white shadow-md' : 'bg-surface text-foreground-secondary hover:bg-foreground/10'
-                    )}
-                  >
-                     {s.name}
-                  </Link>
-               ))}
-            </div>
-         </div>
-      )}
-      
-      {/* Episodes List */}
-      <div className="space-y-4">
-         <h3 className="text-xs font-bold text-foreground-secondary uppercase tracking-widest pl-1">Chọn tập</h3>
-         <div className="max-h-[600px] overflow-y-auto pr-2 space-y-6">
-            {allServers?.map((server: any, sIdx: number) => (
-               <div key={sIdx} className="space-y-3">
-                  <h4 className="text-[11px] font-bold text-primary/80 uppercase tracking-widest px-1">{server?.name || `Server ${sIdx + 1}`}</h4>
-                  <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-4 gap-2">
-                     {(server?.items || server?.server_data || [])?.map((epItem: any, idx: number) => (
-                        <Link key={idx} href={`/xem/${movieSlug}?sv=${sIdx}&ep=${encodeURIComponent(epItem.slug || epItem.name)}&src=${sourceId}`}>
-                           <button className={cn(
-                             "w-full py-2 text-xs font-bold rounded-lg transition-all",
-                             (sIdx === currentServerIdx && (epItem.slug === currentEp.slug || epItem.name === currentEp.name)) 
-                               ? 'bg-primary text-white shadow-sm' 
-                               : 'bg-surface text-foreground-secondary hover:bg-foreground/10'
-                           )}>
-                              {epItem.name}
-                           </button>
-                        </Link>
-                     ))}
-                  </div>
-               </div>
-            ))}
-         </div>
-      </div>
-
+   <div className="w-full space-y-8 relative z-10 bg-background/50 backdrop-blur-sm lg:backdrop-blur-none rounded-3xl p-4 lg:p-0">
       {/* Detailed Movie Info */}
       {tmdbData && (
-        <div className="space-y-6 pt-6 border-t border-foreground/5">
+        <div className="space-y-8">
            {/* Scores */}
-           <div className="space-y-3">
+           <div className="space-y-4">
               <h3 className="text-[10px] font-black text-foreground/20 uppercase tracking-[0.2em] pl-1">Điểm số đánh giá</h3>
               <MovieRatings 
                 tmdbRating={tmdbData.vote_average} 
                 imdbId={tmdbData.external_ids?.imdb_id}
                 rottenRating={rtData?.criticScore}
                 audienceScore={rtData?.audienceScore}
-                className="gap-4 md:gap-6 bg-surface/30 p-4 rounded-2xl border border-white/5"
+                className="gap-4 md:gap-6 bg-surface/30 p-4 rounded-2xl border border-white/5 shadow-apple-sm"
               />
            </div>
 
@@ -130,9 +83,9 @@ const RightSidebarContent = ({
            </div>
 
            {/* Overview */}
-           <div className="space-y-2">
+           <div className="space-y-3">
               <h3 className="text-[10px] font-black text-foreground/20 uppercase tracking-[0.2em] pl-1">Nội dung</h3>
-              <p className="text-[13px] leading-relaxed text-foreground/60 italic font-medium line-clamp-6">
+              <p className="text-[14px] leading-relaxed text-foreground/50 italic font-medium">
                  {tmdbData.overview || "Đang cập nhật nội dung..."}
               </p>
            </div>
@@ -346,11 +299,34 @@ export default async function WatchPage({
                           />
                        </div>
 
-                      <div className="space-y-4">
-                         <CastSection actors={tmdbData?.credits?.cast || []} />
-                         <div className="h-[1px] bg-separator w-full my-8" />
-                         <MovieTabs slug={movieSlug} source={sourceId} servers={allServers} recommendations={tmdbData?.recommendations?.results || []} collection={tmdbData?.belongs_to_collection} />
-                      </div>
+                       <div className="space-y-8">
+                          {/* Sources Selection relocated here */}
+                          {!isTopXX && sources.length > 1 && (
+                             <div className="space-y-4">
+                                <h3 className="text-[10px] font-black text-foreground/20 uppercase tracking-[0.2em] pl-1">Thay đổi nguồn phát</h3>
+                                <div className="flex flex-wrap gap-2">
+                                   {sources.map((s: any) => (
+                                      <Link 
+                                        key={s.id} 
+                                        href={`/xem/${movieSlug}?src=${s.id}`} 
+                                        className={cn(
+                                          "px-8 py-3 rounded-2xl text-[11px] font-black uppercase tracking-widest transition-all",
+                                          sourceId === s.id 
+                                            ? 'bg-primary text-white shadow-apple-lg ring-1 ring-white/20' 
+                                            : 'bg-surface/50 text-foreground/40 hover:bg-foreground/5 hover:text-foreground'
+                                        )}
+                                      >
+                                         {s.name}
+                                      </Link>
+                                   ))}
+                                </div>
+                             </div>
+                          )}
+
+                          <CastSection actors={tmdbData?.credits?.cast || []} />
+                          <div className="h-[1px] bg-separator w-full my-8" />
+                          <MovieTabs slug={movieSlug} source={sourceId} servers={allServers} recommendations={tmdbData?.recommendations?.results || []} collection={tmdbData?.belongs_to_collection} />
+                       </div>
                    </div>
 
                    {/* Right Column: Episodes & Sources (Desktop only) */}

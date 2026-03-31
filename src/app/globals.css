@@ -48,6 +48,19 @@
   --primary: #0A84FF;
   --primary-rgb: 10, 132, 255;
   --separator: rgba(235, 235, 245, 0.2);
+  
+  --apple-glass: blur(20px) saturate(180%);
+  --background-apple: rgba(28, 28, 30, 0.7);
+  --apple-shadow: 0 4px 24px rgba(0, 0, 0, 0.4);
+  --apple-shadow-lg: 0 10px 40px rgba(0, 0, 0, 0.6);
+}
+
+:root {
+  /* Added Glass variables for default/light mode */
+  --apple-glass: blur(20px) saturate(180%);
+  --background-apple: rgba(255, 255, 255, 0.7);
+  --apple-shadow: 0 4px 24px rgba(0, 0, 0, 0.1);
+  --apple-shadow-lg: 0 10px 40px rgba(0, 0, 0, 0.15);
 }
 
 body {
