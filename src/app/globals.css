@@ -26,16 +26,21 @@
 
 :root {
   /* Apple Light Mode Palette - Softened for readability */
-  --background: #FBFBFD; /* Softer background */
-  --surface: #F5F5F7;    /* Subtle surface */
+  --background: #FBFBFD;
+  --surface: #F5F5F7;
   --surface-elevated: #FFFFFF;
-  --foreground: #1D1D1F; /* Softer black */
-  --foreground-secondary: #6E6E73; /* HIG secondary color */
+  --foreground: #1D1D1F;
+  --foreground-secondary: #6E6E73;
   --primary: #007AFF;
   --primary-rgb: 0, 122, 255;
   --separator: rgba(0, 0, 0, 0.1);
-  
   --radius: 16px;
+
+  /* Glass variables for Light Mode */
+  --apple-glass: blur(20px) saturate(180%);
+  --background-apple: rgba(255, 255, 255, 0.7);
+  --apple-shadow: 0 4px 24px rgba(0, 0, 0, 0.1);
+  --apple-shadow-lg: 0 10px 40px rgba(0, 0, 0, 0.15);
 }
 
 .dark {
@@ -48,19 +53,12 @@
   --primary: #0A84FF;
   --primary-rgb: 10, 132, 255;
   --separator: rgba(235, 235, 245, 0.2);
-  
-  --apple-glass: blur(20px) saturate(180%);
+
+  /* Glass variables for Dark Mode */
+  --apple-glass: blur(20px) saturate(140%);
   --background-apple: rgba(28, 28, 30, 0.7);
   --apple-shadow: 0 4px 24px rgba(0, 0, 0, 0.4);
   --apple-shadow-lg: 0 10px 40px rgba(0, 0, 0, 0.6);
-}
-
-:root {
-  /* Added Glass variables for default/light mode */
-  --apple-glass: blur(20px) saturate(180%);
-  --background-apple: rgba(255, 255, 255, 0.7);
-  --apple-shadow: 0 4px 24px rgba(0, 0, 0, 0.1);
-  --apple-shadow-lg: 0 10px 40px rgba(0, 0, 0, 0.15);
 }
 
 body {

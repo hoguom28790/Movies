@@ -28,11 +28,11 @@ export default async function ActorPage({ params }: { params: Promise<{ id: stri
         {movies[0]?.backdrop_path && (
           <img 
             src={getTMDBImageUrl(movies[0].backdrop_path, 'original')!} 
-            className="w-full h-full object-cover opacity-10 dark:opacity-25 blur-3xl scale-110"
+            className="w-full h-full object-cover opacity-[0.05] dark:opacity-20 blur-3xl scale-110"
             alt="backdrop"
           />
         )}
-        <div className="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-background via-background/40 to-transparent" />
       </div>
 
       <div className="container mx-auto px-4 sm:px-8 lg:px-16 relative z-10 -mt-32 sm:-mt-48">
