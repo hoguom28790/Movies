@@ -10,6 +10,65 @@ import { MovieRatings } from "@/components/movie/MovieRatings";
 import { getRTRating } from "@/services/rottenTomatoes";
 import { getTraktRating } from "@/services/trakt";
 import { searchTMDBMovie } from "@/services/tmdb";
+import { Suspense } from "react";
+
+async function RatingsSection({ title, year }: { title: string; year?: number }) {
+  let tmdbData: any = null;
+  let rtData: any = null;
+  let omdbData: any = null;
+  let traktData: any = null;
+
+  try {
+     const tmdbSearch = await searchTMDBMovie(title).catch(() => null);
+     if (tmdbSearch) {
+        const { getTMDBMovieDetails } = await import("@/services/tmdb");
+        tmdbData = await getTMDBMovieDetails(tmdbSearch.id, tmdbSearch.media_type).catch(() => null);
+        const imdbId = tmdbData?.external_ids?.imdb_id;
+        
+        const promises = [];
+        if (imdbId) {
+           promises.push(getRTRating(imdbId).then((res: any) => rtData = res).catch(() => null));
+           const { getOMDbRatingById } = await import("@/services/omdb");
+           promises.push(getOMDbRatingById(imdbId).then((res: any) => omdbData = res).catch(() => null));
+        } else {
+           const { searchOMDbMovie } = await import("@/services/omdb");
+           promises.push(searchOMDbMovie(title, year?.toString()).then((res: any) => omdbData = res).catch(() => null));
+        }
+        promises.push(getTraktRating(title, year?.toString()).then((res: any) => traktData = res).catch(() => null));
+        await Promise.all(promises);
+     }
+  } catch (e) {
+     console.error("TopXX Ratings Fetch Error:", e);
+  }
+
+  if (!tmdbData && !omdbData && !traktData && !rtData) return null;
+
+  return (
+    <div className="pt-2 max-w-sm">
+      <MovieRatings
+        tmdbRating={tmdbData?.vote_average}
+        imdbId={tmdbData?.external_ids?.imdb_id}
+        imdbRating={omdbData?.vote_average}
+        rottenRating={rtData?.criticScore}
+        audienceScore={rtData?.audienceScore}
+        traktRating={traktData?.rating}
+        className="bg-surface p-4 rounded-2xl border border-foreground/5 shadow-apple-sm scale-90 origin-left animate-in fade-in zoom-in duration-500"
+      />
+    </div>
+  );
+}
+
+function RatingsSkeleton() {
+  return (
+    <div className="pt-2 max-w-sm">
+       <div className="bg-surface p-4 rounded-2xl border border-foreground/5 shadow-apple-sm scale-90 origin-left h-[88px] animate-pulse flex items-center justify-between px-6">
+          <div className="w-12 h-12 bg-foreground/10 rounded-full" />
+          <div className="w-12 h-12 bg-foreground/5 rounded-full" />
+          <div className="w-12 h-12 bg-foreground/5 rounded-full" />
+       </div>
+    </div>
+  );
+}
 
 export const dynamic = "force-dynamic";
 
@@ -65,39 +124,8 @@ export default async function XXWatchPage({
     const currentSource = sources[currentIdx] || sources[0];
 
     const prevSourceIdx = currentIdx > 0 ? currentIdx - 1 : null;
-    const nextSourceIdx = currentIdx < sources.length - 1 ? currentIdx + 1 : null;
-
-    // Fetch ratings based on title
-    let tmdbData: any = null;
-    let rtData: any = null;
-    let omdbData: any = null;
-    let traktData: any = null;
-
-    try {
-       const title = (viTrans as any)?.title || (item as any)?.title || (item as any)?.name;
-       const year = item.publish_at ? new Date(item.publish_at).getFullYear() : undefined;
-       
-       const tmdbSearch = await searchTMDBMovie(title).catch(() => null);
-       if (tmdbSearch) {
-          const { getTMDBMovieDetails } = await import("@/services/tmdb");
-          tmdbData = await getTMDBMovieDetails(tmdbSearch.id, tmdbSearch.media_type).catch(() => null);
-          const imdbId = tmdbData?.external_ids?.imdb_id;
-          
-          const promises = [];
-          if (imdbId) {
-             promises.push(getRTRating(imdbId).then(res => rtData = res).catch(() => null));
-             const { getOMDbRatingById } = await import("@/services/omdb");
-             promises.push(getOMDbRatingById(imdbId).then(res => omdbData = res).catch(() => null));
-          } else {
-             const { searchOMDbMovie } = await import("@/services/omdb");
-             promises.push(searchOMDbMovie(title, year).then(res => omdbData = res).catch(() => null));
-          }
-          promises.push(getTraktRating(title, year).then(res => traktData = res).catch(() => null));
-          await Promise.all(promises);
-       }
-    } catch (e) {
-       console.error("TopXX Ratings Fetch Error:", e);
-    }
+    const reqTitle = (viTrans as any)?.title || (item as any)?.title || (item as any)?.name;
+    const reqYear = item.publish_at ? new Date(item.publish_at).getFullYear() : undefined;
 
     return (
       <div className="min-h-screen bg-background pt-14 pb-safe max-w-7xl mx-auto">
@@ -201,19 +229,9 @@ export default async function XXWatchPage({
                   )}
 
                   {/* Ratings for TopXX */}
-                  {(tmdbData || omdbData || traktData || rtData) && (
-                    <div className="pt-2 max-w-sm">
-                      <MovieRatings
-                        tmdbRating={tmdbData?.vote_average}
-                        imdbId={tmdbData?.external_ids?.imdb_id}
-                        imdbRating={omdbData?.vote_average}
-                        rottenRating={rtData?.criticScore}
-                        audienceScore={rtData?.audienceScore}
-                        traktRating={traktData?.rating}
-                        className="bg-surface p-4 rounded-2xl border border-foreground/5 shadow-apple-sm scale-90 origin-left"
-                      />
-                    </div>
-                  )}
+                  <Suspense fallback={<RatingsSkeleton />}>
+                     <RatingsSection title={reqTitle} year={reqYear} />
+                  </Suspense>
 
                  <div className="pt-4">
                     <WatchlistBtn

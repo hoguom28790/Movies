@@ -8,6 +8,8 @@ import { BentoGrid } from "@/components/movie/BentoGrid";
 import { HomeSearchBar } from "@/components/movie/HomeSearchBar";
 import { TOPXX_PATH } from "@/lib/constants";
 
+import { Suspense } from "react";
+
 export const dynamic = "force-dynamic";
 
 export const metadata = {
@@ -25,18 +27,53 @@ function interleave<T>(arr1: T[], arr2: T[]): T[] {
   return result;
 }
 
+function RowSkeleton() {
+  return (
+    <div className="flex flex-col gap-5 py-4 overflow-hidden">
+      <div className="flex items-center justify-between">
+        <div className="h-6 w-48 bg-foreground/10 animate-pulse rounded-md" />
+        <div className="h-4 w-16 bg-foreground/5 animate-pulse rounded-sm" />
+      </div>
+      <div className="flex gap-4 overflow-x-hidden relative">
+        <div className="absolute inset-y-0 right-0 w-24 bg-gradient-to-l from-background to-transparent z-10" />
+        {[1,2,3,4,5,6,7].map(i => (
+          <div key={i} className="min-w-[140px] md:min-w-[180px] lg:min-w-[200px] xl:min-w-[220px] aspect-[7/10] bg-foreground/5 animate-pulse rounded-[16px] border border-foreground/5" />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+async function JAVSection() {
+  const data = await getTopXXMovies("the-loai", "vQMGvwTw5G", 1).catch(() => null);
+  if (!data?.items?.length) return null;
+  return (
+    <MovieRow
+      title="SIÊU PHẨM JAV (NHẬT)"
+      movies={data.items}
+      viewAllLink={`/${TOPXX_PATH}/the-loai/vQMGvwTw5G`}
+      isXX
+    />
+  );
+}
+
+async function UncensoredSection() {
+  const data = await getTopXXMovies("the-loai", "vdDkXwQsHi", 1).catch(() => null);
+  if (!data?.items?.length) return null;
+  return (
+    <MovieRow
+      title="PHIM KHÔNG CHE HOT"
+      movies={data.items}
+      viewAllLink={`/${TOPXX_PATH}/the-loai/vdDkXwQsHi`}
+      isXX
+    />
+  );
+}
+
 export default async function XXHomePage() {
   try {
-    const [latestData, javData, uncensoredData, avdbData] = await Promise.all([
+    const [latestData, avdbData] = await Promise.all([
       getTopXXMovies("phim-moi", "", 1).catch(() => ({
-        items: [],
-        pagination: { totalItems: 0, totalPages: 1, currentPage: 1 },
-      })),
-      getTopXXMovies("the-loai", "vQMGvwTw5G", 1).catch(() => ({
-        items: [],
-        pagination: { totalItems: 0, totalPages: 1, currentPage: 1 },
-      })),
-      getTopXXMovies("the-loai", "vdDkXwQsHi", 1).catch(() => ({
         items: [],
         pagination: { totalItems: 0, totalPages: 1, currentPage: 1 },
       })),
@@ -111,25 +148,15 @@ export default async function XXHomePage() {
             />
           )}
 
-          {/* JAV section */}
-          {javData?.items?.length > 0 && (
-            <MovieRow
-              title="SIÊU PHẨM JAV (NHẬT)"
-              movies={javData.items}
-              viewAllLink={`/${TOPXX_PATH}/the-loai/vQMGvwTw5G`}
-              isXX
-            />
-          )}
+          {/* JAV section (Streaming via Suspense) */}
+          <Suspense fallback={<RowSkeleton />}>
+            <JAVSection />
+          </Suspense>
 
-          {/* Không che section */}
-          {uncensoredData?.items?.length > 0 && (
-            <MovieRow
-              title="PHIM KHÔNG CHE HOT"
-              movies={uncensoredData.items}
-              viewAllLink={`/${TOPXX_PATH}/the-loai/vdDkXwQsHi`}
-              isXX
-            />
-          )}
+          {/* Không che section (Streaming via Suspense) */}
+          <Suspense fallback={<RowSkeleton />}>
+            <UncensoredSection />
+          </Suspense>
 
           {/* Explore more */}
           <MovieGrid

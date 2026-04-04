@@ -110,7 +110,19 @@ export default function TopXXHistoryPage() {
         )}
       </div>
 
-      {history.length === 0 ? (
+      {loading ? (
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 md:gap-6 opacity-50 blur-[2px] transition-all duration-1000">
+           {[1,2,3,4,5,6].map(i => (
+             <div key={i} className="flex flex-col gap-2">
+                <div className="aspect-[7/10] w-full rounded-[16px] bg-foreground/5 relative overflow-hidden">
+                  <div className="absolute inset-0 -translate-x-full animate-[shimmer_1.5s_infinite] bg-gradient-to-r from-transparent via-foreground/5 to-transparent" />
+                </div>
+                <div className="h-4 w-3/4 bg-foreground/10 rounded animate-pulse" />
+                <div className="h-3 w-1/2 bg-foreground/5 rounded animate-pulse" />
+             </div>
+           ))}
+        </div>
+      ) : history.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-40 text-center bg-foreground/[0.01] rounded-[40px] border border-dashed border-foreground/5 animate-in fade-in duration-1000">
           <div className="w-24 h-24 rounded-full bg-foreground/5 flex items-center justify-center mb-8">
              <Play className="w-10 h-10 text-foreground/10" />
@@ -121,7 +133,7 @@ export default function TopXXHistoryPage() {
           </Link>
         </div>
       ) : (
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 md:gap-6">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 md:gap-6 animate-in fade-in zoom-in-95 duration-500">
           {history.map((item) => (
             <MovieCard 
               key={item.movieCode}

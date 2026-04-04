@@ -61,12 +61,26 @@ export function ActorProfile({ actorName, slug, isXX = false }: ActorProfileProp
 
   if (isLoading && isXX) {
     return (
-      <div className="w-full h-96 flex items-center justify-center">
-        <div className="flex flex-col items-center gap-4">
-          <Loader2 className="w-10 h-10 animate-spin text-yellow-500" />
-          <p className="text-foreground/20 text-[10px] font-black uppercase tracking-widest italic animate-pulse">
-            Đang tải hồ sơ diễn viên...
-          </p>
+      <div className="relative mb-20 space-y-12 animate-in fade-in duration-500">
+        <div className="relative rounded-[48px] overflow-hidden border border-white/5 bg-foreground/[0.02] h-auto lg:h-[450px]">
+          <div className="absolute inset-0 -translate-x-full animate-[shimmer_1.5s_infinite] bg-gradient-to-r from-transparent via-foreground/5 to-transparent z-10" />
+          <div className="relative p-8 md:p-16 flex flex-col lg:flex-row items-center lg:items-end gap-10 md:gap-16 h-full">
+            <div className="w-48 h-48 md:w-72 md:h-72 rounded-[56px] bg-foreground/10 flex-shrink-0 border-4 border-foreground/5 shadow-2xl" />
+            <div className="flex-1 space-y-8 w-full">
+              <div className="space-y-4 flex flex-col items-center lg:items-start">
+                <div className="h-6 w-32 bg-yellow-500/20 rounded-2xl" />
+                <div className="h-16 md:h-24 w-64 md:w-96 bg-foreground/5 rounded-2xl" />
+              </div>
+              <div className="flex flex-wrap items-center justify-center lg:justify-start gap-4">
+                <div className="h-12 w-24 bg-foreground/5 rounded-2xl" />
+                <div className="h-12 w-24 bg-foreground/5 rounded-2xl" />
+                <div className="h-12 w-24 bg-foreground/5 rounded-2xl" />
+              </div>
+              <div className="flex justify-center lg:justify-start">
+                 <div className="h-14 w-48 bg-foreground/10 rounded-[32px]" />
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     );
@@ -111,7 +125,10 @@ export function ActorProfile({ actorName, slug, isXX = false }: ActorProfileProp
                 alt={actorName}
               />
             ) : (
-              <User className={cn("w-24 h-24 m-auto mt-12 md:mt-24", isXX ? "text-yellow-500/20" : "text-primary/20")} />
+              <div className={cn("w-full h-full flex flex-col items-center justify-center font-black transition-all", isXX ? "bg-yellow-500/10 text-yellow-500/50" : "bg-primary/10 text-primary/50")}>
+                <span className="text-[100px] md:text-[140px] leading-none select-none tracking-tighter drop-shadow-xl">{actorName.charAt(0).toUpperCase()}</span>
+                <span className="text-[10px] uppercase tracking-widest opacity-50 absolute bottom-6 md:bottom-10">Avatar Pending</span>
+              </div>
             )}
             <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/5 to-transparent" />
           </motion.div>

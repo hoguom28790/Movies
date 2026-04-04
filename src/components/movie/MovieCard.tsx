@@ -136,9 +136,10 @@ export function MovieCard({
         {onDelete && (
            <button 
              onClick={(e) => { e.preventDefault(); e.stopPropagation(); onDelete(e); }}
-             className="absolute top-3 right-3 z-40 w-10 h-10 flex items-center justify-center rounded-full backdrop-blur-xl bg-black/40 text-white transition-all hover:bg-red-500 opacity-100 lg:opacity-0 lg:group-hover:opacity-100"
+             className="absolute top-2 right-2 md:top-3 md:right-3 z-40 w-11 h-11 md:w-10 md:h-10 flex items-center justify-center rounded-full backdrop-blur-xl bg-black/60 md:bg-black/40 text-white transition-all active:scale-90 hover:bg-red-500 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 touch-manipulation shadow-2xl"
+             aria-label="Xóa khỏi lịch sử"
            >
-              <X size={18} strokeWidth={3} />
+              <X size={20} strokeWidth={2.5} />
            </button>
         )}
 
