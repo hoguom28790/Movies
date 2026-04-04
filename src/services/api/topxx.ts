@@ -98,9 +98,12 @@ function mapTopXXToMovie(item: TopXXMovie | ScrapedTopXX | any): Movie {
     return {
       id: "na",
       title: "Phim chưa xác định",
+      originalTitle: "",
       slug: "",
       posterUrl: "",
+      thumbUrl: "",
       quality: "HD",
+      source: "topxx",
     };
   }
 
