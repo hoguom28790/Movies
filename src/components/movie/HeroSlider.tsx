@@ -53,14 +53,11 @@ export function HeroSlider({ movies, isXX = false }: HeroSliderProps) {
           transition={{ duration: 1, ease: "easeInOut" }}
           className="absolute inset-0 z-0 overflow-hidden"
         >
-          <Image
+          <img
             src={currentMovie.thumbUrl || currentMovie.posterUrl}
             alt={currentMovie.title}
-            fill
-            sizes="100vw"
-            quality={90}
-            priority
-            className="object-cover"
+            className="absolute inset-0 w-full h-full object-cover"
+            loading="eager"
           />
           {/* Overlays */}
           <div className="absolute inset-0 bg-gradient-to-t from-background via-background/40 to-black/30" />

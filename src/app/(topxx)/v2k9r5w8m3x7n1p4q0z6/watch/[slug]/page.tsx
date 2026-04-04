@@ -24,8 +24,37 @@ export default async function XXWatchPage({
   const { s } = await searchParams; // s can be 'hls' or 'embed' or index
   
   try {
-    const item = await getTopXXDetails(slug);
+    const isAVDB = slug.startsWith('av-');
+    let item: any = null;
+
+    if (isAVDB) {
+      const { getAVDBDetails } = await import("@/services/api/avdb");
+      item = await getAVDBDetails(slug.replace('av-', ''));
+    } else {
+      item = await getTopXXDetails(slug);
+    }
+
     if (!item) return notFound();
+
+    // Normalize AVDB data to match TopXX structure
+    if (isAVDB) {
+      item.trans = [{ locale: "vi", title: item.name, content: item.content }];
+      item.quality = item.quality || "HD";
+      item.views = item.views || 0;
+      item.posterUrl = item.poster_url || item.posterUrl;
+      // Handle actors string to array
+      if (typeof item.actor === 'string' && item.actor) {
+        item.actors = item.actor.split(',').map((name: string) => ({
+          name: name.trim(),
+          slug: name.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-')
+        }));
+      }
+      // Handle genres
+      if (item.class_name) {
+        item.genres = [{ name: item.class_name, slug: 'avdb' }];
+      }
+      item.code = item.movie_code || item.id;
+    }
 
     const viTrans = item.trans?.find((t: any) => t.locale === "vi") || item.trans?.[0];
     const sources = item.sources || [];
@@ -122,18 +151,37 @@ export default async function XXWatchPage({
             <div className="flex flex-col md:flex-row md:items-start justify-between gap-8">
                <div className="space-y-4 flex-1">
                   <div className="flex flex-wrap items-center gap-3">
-                    {(item as any).code && (
-                      <span className="px-3 py-1.5 rounded-xl bg-yellow-500/10 border border-yellow-500/20 text-yellow-500 text-[11px] font-black uppercase tracking-widest">
-                        {(item as any).code}
-                      </span>
-                    )}
-                    <span className="px-3 py-1 rounded-lg bg-yellow-500 text-black text-[10px] font-black uppercase italic">{item.quality}</span>
-                    {(item as any).publish_at && (
-                      <span className="text-foreground/40 text-[10px] font-black uppercase tracking-widest border border-foreground/10 px-3 py-1 rounded-lg">
-                        {new Date((item as any).publish_at).getFullYear()}
-                      </span>
-                    )}
-                    <span className="text-foreground/20 text-[10px] font-black uppercase tracking-[0.2em]">{(item as any).views?.toLocaleString() || 0} lượt xem</span>
+                      {/* Metadata Badges */}
+                      <div className="flex flex-wrap gap-2">
+                        {item.year && (
+                          <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/5 border border-white/10">
+                            <span className="text-[10px] font-black text-foreground/40 uppercase tracking-widest italic">Year</span>
+                            <span className="text-[10px] font-black text-foreground/80">{item.year}</span>
+                          </div>
+                        )}
+                        {(item as any).code && (
+                          <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/10 border border-primary/20">
+                            <span className="text-[10px] font-black text-primary/60 uppercase tracking-widest italic">Code</span>
+                            <span className="text-[10px] font-black text-primary uppercase">{(item as any).code}</span>
+                          </div>
+                        )}
+                        {(item as any).quality && (
+                          <div className="px-3 py-1 rounded-full bg-yellow-500/10 border border-yellow-500/20 text-[10px] font-black text-yellow-500 uppercase italic">
+                            {(item as any).quality}
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Genres */}
+                      {((item as any).genres?.length > 0 || (item as any).category?.length > 0) && (
+                        <div className="flex flex-wrap gap-2">
+                          {((item as any).genres || (item as any).category || []).map((g: any, i: number) => (
+                            <span key={i} className="text-[10px] font-black text-foreground/30 uppercase italic tracking-wider hover:text-yellow-500 transition-colors cursor-default">
+                              #{g.name || g}
+                            </span>
+                          ))}
+                        </div>
+                      )}
                   </div>
 
                   <h1 className="text-3xl md:text-5xl font-black text-foreground uppercase italic tracking-tighter leading-tight">
@@ -190,15 +238,19 @@ export default async function XXWatchPage({
             </div>
 
             {/* ─── ACTORS PANEL ──────────────────────────────────── */}
-            {(item as any).actors?.length > 0 && (
+            {((item as any).actors?.length > 0 || (item as any).actor) && (
               <div className="space-y-6">
                 <div className="flex items-center gap-4">
                   <div className="w-1 h-6 bg-yellow-500 rounded-full" />
                   <h3 className="text-[11px] font-black text-foreground/20 uppercase tracking-[0.4em]">Diễn viên</h3>
                 </div>
                 <div className="flex flex-wrap gap-4">
-                  {(item as any).actors.map((actor: any, idx: number) => {
-                    const actorSlug = actor.slug || actor.name?.toLowerCase().replace(/[^a-z0-9]+/g, "-");
+                  {(Array.isArray((item as any).actors) ? (item as any).actors : 
+                    (typeof (item as any).actor === 'string' ? (item as any).actor.split(',').map((n: string) => ({ name: n.trim() })) : [])
+                   ).map((actor: any, idx: number) => {
+                    const name = actor.name || (typeof actor === 'string' ? actor : "N/A");
+                    const actorSlug = actor.slug || name.toLowerCase().replace(/[^a-z0-9]+/g, "-");
+                    
                     return (
                       <Link
                         key={idx}
@@ -207,7 +259,7 @@ export default async function XXWatchPage({
                       >
                         <div className="w-16 h-16 rounded-[20px] overflow-hidden bg-yellow-500/5 border border-yellow-500/10 group-hover:border-yellow-500/40 transition-all shadow-lg">
                           {actor.thumbnail || actor.avatar ? (
-                            <img src={actor.thumbnail || actor.avatar} alt={actor.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+                            <img src={actor.thumbnail || actor.avatar} alt={name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
                           ) : (
                             <div className="w-full h-full flex items-center justify-center text-yellow-500/20">
                               <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/></svg>
@@ -215,7 +267,7 @@ export default async function XXWatchPage({
                           )}
                         </div>
                         <span className="text-[10px] font-black text-foreground/40 group-hover:text-yellow-500 transition-colors uppercase italic tracking-tight leading-tight line-clamp-2">
-                          {actor.name}
+                          {name}
                         </span>
                       </Link>
                     );

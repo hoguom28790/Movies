@@ -91,8 +91,10 @@ export async function getAVDBDetails(id: string) {
   const url = `${BASE_URL}&ids=${id}`;
   try {
     const res = await fetchWithTimeout(url, { next: { revalidate: 300 } }, 10000);
+    if (!res.ok) return null;
+    
     const data: AVDBResponse = await res.json();
-    if (!data.list || !data.list.length) return null;
+    if (!data || !data.list || !data.list.length) return null;
     const movie = data.list[0];
 
     // Handle episode format
@@ -101,7 +103,7 @@ export async function getAVDBDetails(id: string) {
       server: movie.episodes?.server_name || "Server Premium",
       episodes: Object.entries(episodesData).map(([name, data]) => ({
         name: name,
-        link: typeof data === 'string' ? data : data.link_embed
+        link: typeof data === 'string' ? data : (data as any)?.link_embed || (data as any)?.link
       }))
     }];
 

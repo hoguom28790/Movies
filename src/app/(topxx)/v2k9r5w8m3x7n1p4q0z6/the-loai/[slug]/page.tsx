@@ -9,7 +9,9 @@ export default async function XXCategoryPage({ params }: { params: Promise<{ slu
   
   try {
     const initialData = await getTopXXMovies("the-loai", slug, 1);
-    const title = slug.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+    const title = slug === "phim-moi-cap-nhat" 
+      ? "PHIM MỚI CẬP NHẬT" 
+      : slug.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
 
     return (
       <div className="container mx-auto">

@@ -87,21 +87,42 @@ export async function searchMovies(keyword: string, page: number = 1, section: "
   ]);
 
   let txResults: MovieListResponse = { items: [], pagination: { currentPage: 1, totalPages: 1, totalItems: 0 } };
-  try {
-     const { searchTopXXMovies } = await import("./topxx");
-     txResults = await searchTopXXMovies(keyword, page).catch(() => ({ items: [], pagination: { currentPage: 1, totalPages: 1, totalItems: 0 } }));
-  } catch (e) {}
+  let avdbResults: MovieListResponse = { items: [], pagination: { currentPage: 1, totalPages: 1, totalItems: 0 } };
+
+  if (section === "tx") {
+    try {
+      const { searchTopXXMovies } = await import("./topxx");
+      const { getAVDBMovies } = await import("./avdb");
+      
+      const [tx, av] = await Promise.allSettled([
+        searchTopXXMovies(keyword, page),
+        getAVDBMovies(page, undefined, keyword)
+      ]);
+      
+      if (tx.status === "fulfilled") txResults = tx.value;
+      if (av.status === "fulfilled") avdbResults = av.value;
+    } catch (e) {}
+  }
 
   const allItems: Movie[] = [];
   
   if (section === "tx") {
-     if (txResults.items) allItems.push(...txResults.items);
-     if (kkResults.status === "fulfilled") allItems.push(...kkResults.value.items.filter((i: Movie) => i.title.toLowerCase().includes(keyword.toLowerCase())));
+    // Interleave for variety
+    const txItems = txResults.items || [];
+    const avItems = avdbResults.items || [];
+    const max = Math.max(txItems.length, avItems.length);
+    for (let i = 0; i < max; i++) {
+      if (txItems[i]) allItems.push(txItems[i]);
+      if (avItems[i]) allItems.push(avItems[i]);
+    }
+    
+    if (kkResults.status === "fulfilled") {
+      allItems.push(...kkResults.value.items.filter((i: Movie) => i.title.toLowerCase().includes(keyword.toLowerCase())));
+    }
   } else {
-     if (opResults.status === "fulfilled") allItems.push(...opResults.value.items);
-     if (kkResults.status === "fulfilled") allItems.push(...kkResults.value.items);
-     if (vsResults.status === "fulfilled") allItems.push(...vsResults.value.items);
-     // DO NOT PUSH txResults.items inside Ho Phim Search
+    if (opResults.status === "fulfilled") allItems.push(...opResults.value.items);
+    if (kkResults.status === "fulfilled") allItems.push(...kkResults.value.items);
+    if (vsResults.status === "fulfilled") allItems.push(...vsResults.value.items);
   }
 
   const seenSlugs = new Set();
@@ -111,11 +132,10 @@ export async function searchMovies(keyword: string, page: number = 1, section: "
     return true;
   });
 
-  const totalItems = mergedItems.length > 0 ? (
-     (opResults.status === "fulfilled" ? opResults.value.pagination.totalItems : 0) +
-     (kkResults.status === "fulfilled" ? kkResults.value.pagination.totalItems : 0) +
-     (section === "tx" ? (txResults.pagination?.totalItems || 0) : 0)
-  ) : 0;
+  const totalItems = section === "tx" 
+    ? (txResults.pagination?.totalItems || 0) + (avdbResults.pagination?.totalItems || 0)
+    : (opResults.status === "fulfilled" ? opResults.value.pagination.totalItems : 0) +
+      (kkResults.status === "fulfilled" ? kkResults.value.pagination.totalItems : 0);
 
   return { 
     items: mergedItems, 

@@ -124,7 +124,7 @@ export async function getTopXXMovies(
   if (type === "phim-hot") {
     url = `${BASE_URL}/movies/today?page=${page}`;
   } else if (type === "the-loai") {
-    if (slug === "phim-moi-cap-nhat") {
+    if (slug === "phim-moi-cap-nhat" || !slug) {
        url = `${BASE_URL}/movies/latest?page=${page}`;
     } else {
        url = `${BASE_URL}/genres/${slug}/movies?page=${page}`;
@@ -137,28 +137,43 @@ export async function getTopXXMovies(
     const res = await fetchWithRetry(url, { headers: DEFAULT_HEADERS, next: { revalidate: 300 } as any }, 10000, 2, 800);
     
     if (!res.ok) {
-       console.log(`[TopXX] API failed for ${type}/${slug}, falling back to category search.`);
+       console.log(`[TopXX] API failed for ${type}/${slug}, status: ${res.status}`);
        return searchTopXXMovies(slug, page, true);
     }
 
-    const data: TopXXResponse = await res.json();
-    if (data.status !== "success" || !data.data || (Array.isArray(data.data) && data.data.length === 0)) {
-       if (type === "the-loai" || type === "quoc-gia") {
-         return searchTopXXMovies(slug, page, true);
-       }
-       return { items: [], pagination: { currentPage: 1, totalPages: 1, totalItems: 0 } };
+    const jsonBody: TopXXResponse = await res.json();
+    if (jsonBody.status !== "success" || !jsonBody.data) {
+       return searchTopXXMovies(slug, page, true);
+    }
+
+    // Handle both cases: { data: [...] } and { data: { data: [...], meta: ... } }
+    let rawItems: any[] = [];
+    let meta = jsonBody.meta || (jsonBody.data as any).meta;
+
+    if (Array.isArray(jsonBody.data)) {
+        rawItems = jsonBody.data;
+    } else if (jsonBody.data && typeof jsonBody.data === 'object' && Array.isArray((jsonBody.data as any).data)) {
+        rawItems = (jsonBody.data as any).data;
+        if (!meta) meta = (jsonBody.data as any);
+    }
+
+    if (rawItems.length === 0) {
+        if (type === "the-loai" || type === "quoc-gia") {
+          return searchTopXXMovies(slug, page, true);
+        }
+        return { items: [], pagination: { currentPage: 1, totalPages: 1, totalItems: 0 } };
     }
 
     return {
-      items: (data.data as TopXXMovie[]).map(item => mapTopXXToMovie(item)),
+      items: rawItems.map(item => mapTopXXToMovie(item)),
       pagination: {
-        currentPage: data.meta?.current_page || page,
-        totalPages: data.meta?.last_page || 1,
-        totalItems: data.meta?.total || 0
+        currentPage: meta?.current_page || page,
+        totalPages: meta?.last_page || 1,
+        totalItems: meta?.total || 0
       }
     };
   } catch (err) {
-    console.warn(`[TopXX] Detail fetch error for ${type}/${slug}, trying category search.`, err);
+    console.warn(`[TopXX] Detail fetch fatal error for ${type}/${slug}:`, err);
     if (type === "the-loai" || type === "quoc-gia") {
       return searchTopXXMovies(slug, page, true);
     }
