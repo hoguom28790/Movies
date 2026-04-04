@@ -17,6 +17,8 @@ import { collection, query, where, onSnapshot } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { cn } from "@/lib/utils";
 
+import { TOPXX_PATH } from "@/lib/constants";
+
 interface MovieContinueWatchingProps {
   isXX?: boolean;
 }
@@ -122,7 +124,7 @@ export function MovieContinueWatching({ isXX = false }: MovieContinueWatchingPro
         </div>
         
         <Link 
-          href={isXX ? "/topxx/lich-su" : "/lich-su"} 
+          href={isXX ? `/${TOPXX_PATH}/lich-su` : "/lich-su"} 
           className="text-sm font-bold text-primary hover:opacity-80 transition-all flex items-center gap-1"
         >
           Xem tất cả <ChevronRight size={14} />
@@ -145,11 +147,11 @@ export function MovieContinueWatching({ isXX = false }: MovieContinueWatchingPro
             const progressText = timeLeft > 1 
               ? `Còn ${timeLeft} phút` 
               : `Đã xem ${item.progress || 0}%`;
-
+ 
             const watchSource = (item as any).source || 'ophim';
             const epParam = item.episodeSlug || (item.episodeName?.toLowerCase() === "full" ? "full" : (item.episodeName || '1'));
             const watchHref = isXX 
-              ? `/topxx/xem/${item.movieCode}` 
+              ? `/${TOPXX_PATH}/watch/${item.movieCode}` 
               : `/xem/${watchSource}/${item.movieSlug}/${encodeURIComponent(epParam)}`;
 
             return (

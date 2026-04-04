@@ -122,7 +122,7 @@ export function ActorModal({ isOpen, onClose, actor, isXX = false }: ActorModalP
 
         if (topxxMatch) {
           onClose();
-          router.push(`/${TOPXX_PATH}/xem/${topxxMatch.slug}`);
+          router.push(`/${TOPXX_PATH}/watch/${topxxMatch.slug}`);
         } else {
           setToast({ message: `Phim ${code || title} chưa có trên site.`, submessage: "Vui lòng xem trên JAVDB hoặc quay lại sau.", type: "error" });
           window.open(`https://javdb.com/search?q=${code || title}`, "_blank");
