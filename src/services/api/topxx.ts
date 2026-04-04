@@ -125,10 +125,12 @@ async function scrapeTopXXDetails(slugOrId: string) {
 
     return {
       id: slugOrId,
+      slug: slugOrId,
       code: "",
       trans: [{ locale: "vi", title, content }],
       poster_url: poster,
-      sources: sources
+      sources: sources,
+      source: "topxx_scraper"
     };
   } catch (err: any) {
     console.error(`[TopXX Detail Scraper] Error: ${err.message}`);
@@ -316,11 +318,20 @@ export async function getTopXXDetails(slug: string) {
 
     let resData: any = null;
     if (res.ok) {
-       resData = await res.json();
+       const contentType = res.headers.get("content-type") || "";
+       if (contentType.includes("application/json")) {
+          try {
+             resData = await res.json();
+          } catch (e) {
+             console.error("[TopXX] JSON parse failed", e);
+          }
+       } else {
+          console.warn(`[TopXX] API returned unexpected content-type: ${contentType}`);
+       }
     }
 
     if (!resData || resData.status !== "success" || !resData.data || Array.isArray(resData.data)) {
-       console.log(`[TopXX] API failed, falling back to SCRAPER for: ${finalId}`);
+       console.log(`[TopXX] API unavailable or blocked, falling back to SCRAPER for: ${finalId}`);
        const scraped = await scrapeTopXXDetails(finalId);
        if (scraped) return scraped;
 
