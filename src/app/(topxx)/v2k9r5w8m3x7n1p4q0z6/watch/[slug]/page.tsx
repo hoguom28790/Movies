@@ -118,22 +118,44 @@ export default async function XXWatchPage({
         </div>
 
         <div className="px-4 lg:px-8 py-12 flex flex-col gap-12">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-8">
-               <div className="space-y-4">
-                  <h1 className="text-3xl md:text-5xl font-black text-foreground uppercase italic tracking-tighter leading-tight">
-                     {(viTrans as any)?.title || (item as any)?.title || (item as any)?.name} 
-                     <span className="text-yellow-500 ml-4 block sm:inline">#SV{currentIdx + 1}</span>
-                  </h1>
-                  <div className="flex items-center gap-4">
-                     <span className="px-3 py-1 rounded-lg bg-yellow-500 text-black text-[10px] font-black uppercase italic">{item.quality}</span>
-                     <span className="text-foreground/40 text-xs font-bold uppercase tracking-widest">{(item as any).duration || ""}</span>
-                     <span className="text-foreground/20 text-[10px] font-black uppercase tracking-[0.2em]">{(item as any).views?.toLocaleString() || 0} lượt xem</span>
+            {/* ─── TITLE + ACTIONS ─────────────────────────────── */}
+            <div className="flex flex-col md:flex-row md:items-start justify-between gap-8">
+               <div className="space-y-4 flex-1">
+                  <div className="flex flex-wrap items-center gap-3">
+                    {(item as any).code && (
+                      <span className="px-3 py-1.5 rounded-xl bg-yellow-500/10 border border-yellow-500/20 text-yellow-500 text-[11px] font-black uppercase tracking-widest">
+                        {(item as any).code}
+                      </span>
+                    )}
+                    <span className="px-3 py-1 rounded-lg bg-yellow-500 text-black text-[10px] font-black uppercase italic">{item.quality}</span>
+                    {(item as any).publish_at && (
+                      <span className="text-foreground/40 text-[10px] font-black uppercase tracking-widest border border-foreground/10 px-3 py-1 rounded-lg">
+                        {new Date((item as any).publish_at).getFullYear()}
+                      </span>
+                    )}
+                    <span className="text-foreground/20 text-[10px] font-black uppercase tracking-[0.2em]">{(item as any).views?.toLocaleString() || 0} lượt xem</span>
                   </div>
+
+                  <h1 className="text-3xl md:text-5xl font-black text-foreground uppercase italic tracking-tighter leading-tight">
+                     {(viTrans as any)?.title || (item as any)?.title || (item as any)?.name}
+                     <span className="text-yellow-500 ml-4 block sm:inline text-2xl md:text-3xl">#SV{currentIdx + 1}</span>
+                  </h1>
+
+                  {/* Genres */}
+                  {(item as any).genres?.length > 0 && (
+                    <div className="flex flex-wrap gap-2">
+                      {(item as any).genres.map((g: any) => (
+                        <span key={g.slug || g.name} className="px-3 py-1 rounded-full bg-foreground/5 border border-foreground/10 text-foreground/40 text-[10px] font-black uppercase tracking-widest italic hover:bg-yellow-500/10 hover:border-yellow-500/20 hover:text-yellow-500 transition-all cursor-default">
+                          {g.name}
+                        </span>
+                      ))}
+                    </div>
+                  )}
 
                   {/* Ratings for TopXX */}
                   {(tmdbData || omdbData || traktData || rtData) && (
                     <div className="pt-2 max-w-sm">
-                      <MovieRatings 
+                      <MovieRatings
                         tmdbRating={tmdbData?.vote_average}
                         imdbId={tmdbData?.external_ids?.imdb_id}
                         imdbRating={omdbData?.vote_average}
@@ -144,8 +166,9 @@ export default async function XXWatchPage({
                       />
                     </div>
                   )}
+
                  <div className="pt-4">
-                    <WatchlistBtn 
+                    <WatchlistBtn
                       isXX
                       movieCode={slug}
                       movieTitle={(viTrans as any)?.title || (item as any)?.title || (item as any)?.name}
@@ -153,55 +176,101 @@ export default async function XXWatchPage({
                       className="bg-yellow-500/10 border border-yellow-500/20 text-yellow-500 hover:bg-yellow-500 hover:text-black"
                     />
                  </div>
-              </div>
-
-               <div className="flex items-center gap-3">
-                  {prevSourceIdx !== null ? (
-                    <Link href={`/${TOPXX_PATH}/watch/${slug}?s=${prevSourceIdx}`}>
-                      <Button variant="secondary" className="h-12 gap-3 font-black uppercase italic text-[11px] tracking-widest px-6 rounded-2xl border-foreground/10 bg-surface text-foreground hover:bg-foreground/10">
-                        <ChevronLeft className="w-5 h-5" /> Prev
-                      </Button>
-                    </Link>
-                  ) : (
-                    <Link href="#" className="pointer-events-none">
-                      <Button variant="secondary" className="h-12 gap-3 font-black uppercase italic text-[11px] tracking-widest px-6 rounded-2xl opacity-20 border-foreground/10 bg-surface/5 text-foreground" disabled>
-                        <ChevronLeft className="w-5 h-5" /> Prev
-                      </Button>
-                    </Link>
-                  )}
-                  
-                  {nextSourceIdx !== null ? (
-                    <Link href={`/${TOPXX_PATH}/watch/${slug}?s=${nextSourceIdx}`}>
-                      <Button variant="primary" className="h-12 gap-3 font-black uppercase italic text-[11px] tracking-widest px-6 rounded-2xl bg-yellow-500 text-black">
-                        Next <ChevronRight className="w-5 h-5" />
-                      </Button>
-                    </Link>
-                  ) : (
-                    <Link href="#" className="pointer-events-none">
-                      <Button variant="secondary" className="h-12 gap-3 font-black uppercase italic text-[11px] tracking-widest px-6 rounded-2xl opacity-20 border-foreground/10 bg-surface/5 text-foreground" disabled>
-                        Next <ChevronRight className="w-5 h-5" />
-                      </Button>
-                    </Link>
-                  )}
                </div>
-           </div>
 
-           {/* Description Section */}
-           <div className="relative group">
-              <div className="absolute inset-0 bg-yellow-500 opacity-0 group-hover:opacity-[0.02] transition-opacity blur-3xl -z-10" />
-               <div className="bg-surface border border-foreground/5 rounded-[40px] p-8 md:p-12 transition-all hover:border-yellow-500/20">
-                  <h3 className="text-[10px] font-black text-foreground/20 uppercase tracking-[0.4em] mb-6 flex items-center gap-3">
-                     <span className="w-8 h-px bg-foreground/10" /> Nội dung phim
-                  </h3>
-                  <div 
-                    className="text-foreground/60 text-sm md:text-base leading-relaxed md:leading-loose font-medium italic"
-                    dangerouslySetInnerHTML={{ __html: (viTrans as any)?.description || (viTrans as any)?.content || (item as any)?.content || (item as any)?.description || "Khám phá câu chuyện hấp dẫn trong tác phẩm điện ảnh đặc sắc này..." }}
-                  />
+               {/* Cover Image */}
+               {item.posterUrl && (
+                 <div className="w-full md:w-48 lg:w-64 flex-shrink-0">
+                   <div className="relative aspect-[2/3] rounded-[32px] overflow-hidden border border-yellow-500/10 shadow-2xl">
+                     <img src={item.posterUrl} alt={(viTrans as any)?.title || ""} className="w-full h-full object-cover" />
+                     <div className="absolute inset-0 bg-gradient-to-t from-background/60 via-transparent to-transparent" />
+                   </div>
+                 </div>
+               )}
+            </div>
+
+            {/* ─── ACTORS PANEL ──────────────────────────────────── */}
+            {(item as any).actors?.length > 0 && (
+              <div className="space-y-6">
+                <div className="flex items-center gap-4">
+                  <div className="w-1 h-6 bg-yellow-500 rounded-full" />
+                  <h3 className="text-[11px] font-black text-foreground/20 uppercase tracking-[0.4em]">Diễn viên</h3>
+                </div>
+                <div className="flex flex-wrap gap-4">
+                  {(item as any).actors.map((actor: any, idx: number) => {
+                    const actorSlug = actor.slug || actor.name?.toLowerCase().replace(/[^a-z0-9]+/g, "-");
+                    return (
+                      <Link
+                        key={idx}
+                        href={`/${TOPXX_PATH}/dien-vien/${actorSlug}`}
+                        className="group flex flex-col items-center gap-2 w-20 text-center"
+                      >
+                        <div className="w-16 h-16 rounded-[20px] overflow-hidden bg-yellow-500/5 border border-yellow-500/10 group-hover:border-yellow-500/40 transition-all shadow-lg">
+                          {actor.thumbnail || actor.avatar ? (
+                            <img src={actor.thumbnail || actor.avatar} alt={actor.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center text-yellow-500/20">
+                              <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/></svg>
+                            </div>
+                          )}
+                        </div>
+                        <span className="text-[10px] font-black text-foreground/40 group-hover:text-yellow-500 transition-colors uppercase italic tracking-tight leading-tight line-clamp-2">
+                          {actor.name}
+                        </span>
+                      </Link>
+                    );
+                  })}
+                </div>
               </div>
-           </div>
-        </div>
-      </div>
-    );
+            )}
+
+            {/* Server Navigation */}
+            <div className="flex items-center gap-3">
+               {prevSourceIdx !== null ? (
+                 <Link href={`/${TOPXX_PATH}/watch/${slug}?s=${prevSourceIdx}`}>
+                   <Button variant="secondary" className="h-12 gap-3 font-black uppercase italic text-[11px] tracking-widest px-6 rounded-2xl border-foreground/10 bg-surface text-foreground hover:bg-foreground/10">
+                     <ChevronLeft className="w-5 h-5" /> Prev
+                   </Button>
+                 </Link>
+               ) : (
+                 <Link href="#" className="pointer-events-none">
+                   <Button variant="secondary" className="h-12 gap-3 font-black uppercase italic text-[11px] tracking-widest px-6 rounded-2xl opacity-20 border-foreground/10 bg-surface/5 text-foreground" disabled>
+                     <ChevronLeft className="w-5 h-5" /> Prev
+                   </Button>
+                 </Link>
+               )}
+
+               {nextSourceIdx !== null ? (
+                 <Link href={`/${TOPXX_PATH}/watch/${slug}?s=${nextSourceIdx}`}>
+                   <Button variant="primary" className="h-12 gap-3 font-black uppercase italic text-[11px] tracking-widest px-6 rounded-2xl bg-yellow-500 text-black">
+                     Next <ChevronRight className="w-5 h-5" />
+                   </Button>
+                 </Link>
+               ) : (
+                 <Link href="#" className="pointer-events-none">
+                   <Button variant="secondary" className="h-12 gap-3 font-black uppercase italic text-[11px] tracking-widest px-6 rounded-2xl opacity-20 border-foreground/10 bg-surface/5 text-foreground" disabled>
+                     Next <ChevronRight className="w-5 h-5" />
+                   </Button>
+                 </Link>
+               )}
+            </div>
+
+            {/* Description Section */}
+            <div className="relative group">
+               <div className="absolute inset-0 bg-yellow-500 opacity-0 group-hover:opacity-[0.02] transition-opacity blur-3xl -z-10" />
+                <div className="bg-surface border border-foreground/5 rounded-[40px] p-8 md:p-12 transition-all hover:border-yellow-500/20">
+                   <h3 className="text-[10px] font-black text-foreground/20 uppercase tracking-[0.4em] mb-6 flex items-center gap-3">
+                      <span className="w-8 h-px bg-foreground/10" /> Nội dung phim
+                   </h3>
+                   <div
+                     className="text-foreground/60 text-sm md:text-base leading-relaxed md:leading-loose font-medium italic"
+                     dangerouslySetInnerHTML={{ __html: (viTrans as any)?.description || (viTrans as any)?.content || (item as any)?.content || (item as any)?.description || "Khám phá câu chuyện hấp dẫn trong tác phẩm điện ảnh đặc sắc này..." }}
+                   />
+               </div>
+             </div>
+          </div>
+       </div>
+     );
   } catch (error) {
     console.error("XXWatchPage Error:", error);
     return (

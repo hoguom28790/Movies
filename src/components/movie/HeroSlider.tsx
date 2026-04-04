@@ -9,12 +9,14 @@ import { Button } from "@/components/ui/Button";
 import { PlaylistModal } from "@/components/movie/PlaylistModal";
 import type { Movie } from "@/types/movie";
 import { cn } from "@/lib/utils";
+import { TOPXX_PATH } from "@/lib/constants";
 
 interface HeroSliderProps {
   movies: Movie[];
+  isXX?: boolean;
 }
 
-export function HeroSlider({ movies }: HeroSliderProps) {
+export function HeroSlider({ movies, isXX = false }: HeroSliderProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isPlaylistModalOpen, setIsPlaylistModalOpen] = useState(false);
   const [direction, setDirection] = useState(0);
@@ -79,8 +81,8 @@ export function HeroSlider({ movies }: HeroSliderProps) {
             className="flex flex-col items-start gap-4 max-w-4xl"
           >
             <div className="flex items-center gap-2 px-3 py-1 backdrop-blur-xl bg-white/20 rounded-full shadow-sm">
-               <Sparkles size={12} className="text-primary" />
-               <span className="text-[10px] font-bold uppercase tracking-wider text-white">Nổi bật</span>
+               <Sparkles size={12} className={isXX ? "text-yellow-500" : "text-primary"} />
+               <span className="text-[10px] font-bold uppercase tracking-wider text-white">{isXX ? "TOPXX PREMIUM" : "Nổi bật"}</span>
             </div>
 
             <div className="space-y-2">
@@ -101,10 +103,13 @@ export function HeroSlider({ movies }: HeroSliderProps) {
             </p>
 
             <div className="flex items-center gap-4 mt-6">
-              <Link href={`/xem/${currentMovie.slug}`}>
+              <Link href={isXX ? `/${TOPXX_PATH}/watch/${currentMovie.slug}` : `/xem/${currentMovie.slug}`}>
                 <Button
                   size="lg"
-                  className="h-12 px-8 rounded-full gap-2 bg-primary text-white shadow-lg hover:scale-105 transition-transform"
+                  className={cn(
+                    "h-12 px-8 rounded-full gap-2 shadow-lg hover:scale-105 transition-transform",
+                    isXX ? "bg-yellow-500 text-black" : "bg-primary text-white"
+                  )}
                 >
                   <Play size={20} fill="currentColor" strokeWidth={0} />
                   Xem Ngay

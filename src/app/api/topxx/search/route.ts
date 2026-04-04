@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { searchTopXXMovies } from "@/services/api/topxx";
+import { getAVDBMovies } from "@/services/api/avdb";
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
@@ -11,8 +12,46 @@ export async function GET(request: Request) {
   }
 
   try {
-    const results = await searchTopXXMovies(keyword, page);
-    return NextResponse.json(results);
+    // Search from both sources in parallel
+    const [topxxResults, avdbResults] = await Promise.allSettled([
+      searchTopXXMovies(keyword, page),
+      getAVDBMovies(page, undefined, keyword),
+    ]);
+
+    const topxxItems = topxxResults.status === "fulfilled" ? topxxResults.value.items : [];
+    const avdbItems = avdbResults.status === "fulfilled" ? avdbResults.value.items : [];
+    const topxxPagination = topxxResults.status === "fulfilled" ? topxxResults.value.pagination : null;
+    const avdbPagination = avdbResults.status === "fulfilled" ? avdbResults.value.pagination : null;
+
+    // Merge and deduplicate by title similarity
+    const mergedMap = new Map<string, any>();
+
+    // Add topxx results first (priority)
+    topxxItems.forEach((item) => {
+      const key = item.title.toLowerCase().replace(/[^a-z0-9]/g, "").slice(0, 20);
+      mergedMap.set(key, item);
+    });
+
+    // Add avdb results that aren't duplicates
+    avdbItems.forEach((item) => {
+      const key = item.title.toLowerCase().replace(/[^a-z0-9]/g, "").slice(0, 20);
+      if (!mergedMap.has(key)) {
+        mergedMap.set(key, item);
+      }
+    });
+
+    const mergedItems = Array.from(mergedMap.values());
+    const totalItems = (topxxPagination?.totalItems || 0) + (avdbPagination?.totalItems || 0);
+    const totalPages = Math.max(topxxPagination?.totalPages || 1, avdbPagination?.totalPages || 1);
+
+    return NextResponse.json({
+      items: mergedItems,
+      pagination: {
+        totalItems,
+        totalPages,
+        currentPage: page,
+      },
+    });
   } catch (error) {
     console.error("TopXX Search API Error:", error);
     return NextResponse.json({ error: "Search failed" }, { status: 500 });
