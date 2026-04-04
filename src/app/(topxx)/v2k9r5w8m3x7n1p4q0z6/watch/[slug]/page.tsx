@@ -32,9 +32,9 @@ async function RatingsSection({ title, year }: { title: string; year?: number })
            promises.push(getOMDbRatingById(imdbId).then((res: any) => omdbData = res).catch(() => null));
         } else {
            const { searchOMDbMovie } = await import("@/services/omdb");
-           promises.push(searchOMDbMovie(title, year?.toString()).then((res: any) => omdbData = res).catch(() => null));
+           promises.push(searchOMDbMovie(title, year).then((res: any) => omdbData = res).catch(() => null));
         }
-        promises.push(getTraktRating(title, year?.toString()).then((res: any) => traktData = res).catch(() => null));
+        promises.push(getTraktRating(title, year).then((res: any) => traktData = res).catch(() => null));
         await Promise.all(promises);
      }
   } catch (e) {
