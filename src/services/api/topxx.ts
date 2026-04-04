@@ -23,26 +23,42 @@ interface ScrapedTopXX {
 async function scrapeTopXXSearch(keyword: string): Promise<ScrapedTopXX[]> {
   const url = `https://topxx.vip/search?keyword=${encodeURIComponent(keyword)}`;
   try {
-    const res = await fetchWithRetry(url, { headers: DEFAULT_HEADERS, next: { revalidate: 300 } as any }, 10000, 1, 500);
+    const res = await fetchWithRetry(url, { headers: DEFAULT_HEADERS, next: { revalidate: 300 } } as any, 10000, 1, 500);
     if (!res.ok) return [];
 
     const html = await res.text();
     const $ = cheerio.load(html);
     const results: ScrapedTopXX[] = [];
 
-    $("tr.tpx-row").each((_, row) => {
+    $("tr.tpx-row").each((_: any, row: any) => {
       const $row = $(row);
       const title = $row.find(".tpx-title").text().trim();
       const poster = $row.find(".tpx-poster img").attr("src");
 
-      // Extract internal code (e.g. px7m0yKvZj) from potentially multiple .tpx-sub
+      // Extract internal code (e.g. px7m0yKvZj)
       let internalCode = "";
-      $row.find(".tpx-sub").each((_, el) => {
+      $row.find(".tpx-sub").each((_: any, el: any) => {
         const text = $(el).text().trim();
-        // Look for typical internal code format (10 alphanumeric chars inside parens)
-        const match = text.match(/\(([a-zA-Z0-9]{10})\)/);
-        if (match) internalCode = match[1];
+        // 1. Look for typical internal code format (10 alphanumeric chars inside parens)
+        const matchParen = text.match(/\(([a-zA-Z0-9]{10,})\)/);
+        if (matchParen) internalCode = matchParen[1];
+        
+        // 2. Look for "ID: [ID]"
+        const matchID = text.match(/ID:\s*([a-zA-Z0-9]{10,})/i);
+        if (matchID) internalCode = matchID[1];
+
+        // 3. Look for direct 10-char alphanumeric if it looks like an ID
+        if (!internalCode && /^[a-zA-Z0-9]{10}$/.test(text)) {
+           internalCode = text;
+        }
       });
+      
+      // Fallback: If still no ID but there's a link to /video/ or /movie/ with ID
+      if (!internalCode) {
+         const link = $row.find("a").attr("href") || "";
+         const idMatch = link.match(/\/(video|movie)\/([a-zA-Z0-9]{10,})/);
+         if (idMatch) internalCode = idMatch[2];
+      }
 
       if (internalCode && title) {
         results.push({
@@ -151,7 +167,7 @@ export async function getTopXXMovies(
   }
 
   try {
-    const res = await fetchWithRetry(url, { headers: DEFAULT_HEADERS, next: { revalidate: 300 } as any }, 10000, 2, 800);
+    const res = await fetchWithRetry(url, { headers: DEFAULT_HEADERS, next: { revalidate: 300 } } as any, 10000, 2, 800);
     
     if (!res.ok) {
        console.log(`[TopXX] API failed for ${type}/${slug}, status: ${res.status}`);
@@ -229,12 +245,17 @@ export async function getTopXXDetails(slug: string) {
 
   const url = `${BASE_URL}/movies/${finalId}`;
   try {
-    const res = await fetchWithRetry(url, { headers: DEFAULT_HEADERS, next: { revalidate: 300 } as any }, 10000, 2, 800);
+    const res = await fetchWithRetry(url, { headers: DEFAULT_HEADERS, next: { revalidate: 300 } } as any, 10000, 2, 800);
     
     if (!res.ok || res.status === 404) {
-       console.log(`[TopXX] Detail not found on native API for ${finalId}.`);
-       return null;
+       console.log(`[TopXX] Detail not found for ${finalId}. Attempting search fallback...`);
+       const sRes = await scrapeTopXXSearch(slug);
+       if (sRes.length > 0 && sRes[0].code !== finalId) {
+          return getTopXXDetails(sRes[0].code);
+       }
     }
+
+    if (!res.ok) return null;
 
     const data: TopXXResponse = await res.json();
     if (data.status !== "success" || !data.data || Array.isArray(data.data)) {
@@ -335,13 +356,13 @@ export async function searchTopXXMovies(keyword: string, page: number = 1, isCat
     console.log(`[TopXX Search] Initiating parallel search for: "${normalizedQuery}" (CategoryMode: ${isCategorySearch})`);
 
     const [topxxRes, topxxActorRes, topxxScrapedRes] = await Promise.allSettled([
-      fetchWithRetry(topxxUrl, { headers: DEFAULT_HEADERS, next: { revalidate: 300 } as any }, SEARCH_TIMEOUT, SEARCH_RETRIES, 800)
+      fetchWithRetry(`${BASE_URL}/movies/latest?page=${page}`, { headers: DEFAULT_HEADERS, next: { revalidate: 300 } } as any, SEARCH_TIMEOUT, 0)
         .then(async r => {
           if (!r.ok) return null;
           const json: TopXXResponse = await r.json();
           return json?.status === "success" ? json : null;
         }),
-      fetchWithRetry(topxxActorUrl, { headers: DEFAULT_HEADERS, next: { revalidate: 300 } as any }, SEARCH_TIMEOUT, SEARCH_RETRIES, 500)
+      fetchWithRetry(topxxActorUrl, { headers: DEFAULT_HEADERS, next: { revalidate: 300 } } as any, SEARCH_TIMEOUT, 0, 500)
         .then(async r => {
           if (!r.ok) return null;
           const json: TopXXResponse = await r.json();
@@ -352,7 +373,7 @@ export async function searchTopXXMovies(keyword: string, page: number = 1, isCat
                 const actorSlug = actor.trans?.find((t: any) => t.locale === "vi")?.slug || actor.trans?.[0]?.slug;
                 if (!actorSlug) return [];
                 const url = `${BASE_URL}/actors/${actorSlug}/movies?page=1`;
-                const res = await fetchWithRetry(url, { headers: DEFAULT_HEADERS, next: { revalidate: 300 } as any }, SEARCH_TIMEOUT, 0);
+                const res = await fetchWithRetry(url, { headers: DEFAULT_HEADERS, next: { revalidate: 300 } } as any, SEARCH_TIMEOUT, 0);
                 if (res.ok) {
                   const data = await res.json();
                   return data.data || [];
@@ -450,7 +471,7 @@ export async function searchTopXXMovies(keyword: string, page: number = 1, isCat
 export async function getTopXXCategories() {
   const url = `${BASE_URL}/genres`;
   try {
-    const res = await fetchWithRetry(url, { headers: DEFAULT_HEADERS, next: { revalidate: 300 } as any });
+    const res = await fetchWithRetry(url, { headers: DEFAULT_HEADERS, next: { revalidate: 300 } } as any);
     if (!res.ok) return [];
     const data: TopXXResponse = await res.json();
     return data.data || [];
@@ -462,7 +483,7 @@ export async function getTopXXCategories() {
 export async function getTopXXCountries() {
   const url = `${BASE_URL}/countries`;
   try {
-    const res = await fetchWithRetry(url, { headers: DEFAULT_HEADERS, next: { revalidate: 300 } as any });
+    const res = await fetchWithRetry(url, { headers: DEFAULT_HEADERS, next: { revalidate: 300 } } as any);
     if (!res.ok) return [];
     const data: TopXXResponse = await res.json();
     return data.data || [];

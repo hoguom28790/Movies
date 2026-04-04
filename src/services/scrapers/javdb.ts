@@ -48,7 +48,7 @@ export async function getJavDBActressProfile(name: string) {
         slug = searchRes.url.split("/").pop()?.split("?")[0] || "";
       } else {
         const $search = cheerio.load(searchRes.html);
-        const href = $search("a.item, .actress-item a, .actor-box a").filter((_, el) => {
+        const href = $search("a.item, .actress-item a, .actor-box a").filter((_: any, el: any) => {
           const h = $search(el).attr("href");
           return typeof h === "string" && h.startsWith("/a/");
         }).first().attr("href");
@@ -78,30 +78,41 @@ export async function getJavDBActressProfile(name: string) {
       filmography: []
     };
 
-    $(".panel-block, .p-size-7, .column.is-multiline .column").each((_, el) => {
-      const $el = $(el);
-      const text = $el.text().trim();
-      const label = $el.find("strong, span:first-child").text().trim();
-      const val = text.replace(label, "").replace(":", "").trim();
-      
-      if (text.includes("Real Name") || text.includes("本名")) parsedData.realName = val;
-      if (text.includes("Birthday") || text.includes("生年月日")) parsedData.birthDate = val;
-      if (text.includes("Measurements") || text.includes("スリーサイズ")) parsedData.measurements = val;
-      if (text.includes("Height") || text.includes("身長")) parsedData.height = val;
-      if (text.includes("Birthplace") || text.includes("出身地")) parsedData.birthPlace = val;
-      if (text.includes("Debut") || text.includes("デビュー")) parsedData.debutYear = val;
-      if (text.includes("Studio") || text.includes("メーカー")) parsedData.studio = val;
-      if (text.includes("Status") || text.includes("ステータス")) parsedData.status = val;
-    });
+    // Comprehensive biography extraction
+    const detailPanel = $(".panel-block, .p-size-7, .column.is-multiline .column, .actor-details .detail-item");
+    
+    if (detailPanel.length > 0) {
+      detailPanel.each((_: any, el: any) => {
+        const $el = $(el);
+        const text = $el.text().trim();
+        const label = $el.find("strong, span:first-child").first().text().trim();
+        const val = text.replace(label, "").replace(":", "").trim();
+        
+        if (text.includes("Real Name") || text.includes("本名")) parsedData.realName = val;
+        if (text.includes("Birthday") || text.includes("生年月日")) parsedData.birthDate = val;
+        if (text.includes("Measurements") || text.includes("スリーサイズ")) parsedData.measurements = val;
+        if (text.includes("Height") || text.includes("身長")) parsedData.height = val;
+        if (text.includes("Birthplace") || text.includes("出身地")) parsedData.birthPlace = val;
+        if (text.includes("Debut") || text.includes("デビュー")) parsedData.debutYear = val;
+        if (text.includes("Studio") || text.includes("メーカー")) parsedData.studio = val;
+        if (text.includes("Status") || text.includes("ステータス")) parsedData.status = val;
+      });
+    } else {
+       // Fallback for some mirrors/locales where data is just in text nodes
+       const bioText = $(".actor-section").text();
+       if (bioText.includes("Birthday:")) parsedData.birthDate = bioText.split("Birthday:")[1]?.split("\n")[0].trim();
+       if (bioText.includes("Measurements:")) parsedData.measurements = bioText.split("Measurements:")[1]?.split("\n")[0].trim();
+       if (bioText.includes("Height:")) parsedData.height = bioText.split("Height:")[1]?.split("\n")[0].trim();
+    }
 
-    $(".preview-images img, .gallery img, .sample-images img").each((_, el) => {
+    $(".preview-images img, .gallery img, .sample-images img").each((_: any, el: any) => {
       const src = $(el).attr("src") || $(el).attr("data-src");
       if (src && !src.includes("avatar")) {
         parsedData.gallery.push(src.startsWith("//") ? "https:" + src : src);
       }
     });
 
-    $(".movie-list .item, .grid-item, .video-list .item").each((_, el) => {
+    $(".movie-list .item, .grid-item, .video-list .item").each((_: any, el: any) => {
       const $el = $(el);
       const code = $el.find(".uid, strong, .video-title strong").first().text().trim();
       const title = $el.find(".video-title, .title, .video-name").first().text().trim();
