@@ -77,6 +77,65 @@ async function scrapeTopXXSearch(keyword: string): Promise<ScrapedTopXX[]> {
   }
 }
 
+/**
+ * SCRAPER FALLBACK FOR DETAILS: Extracts metadata and sources from the movie page.
+ */
+async function scrapeTopXXDetails(slugOrId: string) {
+  const url = `https://topxx.vip/video/${slugOrId}`;
+  try {
+    const res = await fetchWithRetry(url, { headers: DEFAULT_HEADERS, next: { revalidate: 300 } } as any, 10000, 2, 800);
+    if (!res.ok) return null;
+
+    const html = await res.text();
+    const $ = cheerio.load(html);
+
+    const title = $("h1.movie-title, .movie-info__title").text().trim() || $("title").text().split("|")[0].trim();
+    const content = $(".movie-panel--description .panel-body, .movie-info__description").text().trim();
+    const poster = $(".movie-poster img").attr("src");
+    
+    const sources: any[] = [];
+    
+    // Extract sources from the source-row structure
+    $(".source-row").each((_: any, el: any) => {
+       const $el = $(el);
+       const embedUrl = $el.find("a[data-url], a.btn-primary").attr("data-url") || $el.find("a[target='_blank']").attr("href");
+       const name = $el.find(".source-row__text").text().trim().split("|")[0].trim() || `SV ${sources.length + 1}`;
+       
+       if (embedUrl && embedUrl.includes('streamxx.net')) {
+          sources.push({
+             link: embedUrl,
+             type: "embed",
+             name: name
+          });
+       }
+    });
+
+    if (sources.length === 0) {
+       // Secondary check for embedded iframes or links in scripts
+       const scripts = $("script").text();
+       const embedMatch = scripts.match(/https?:\/\/embed\.streamxx\.net\/player\/[a-zA-Z0-9]+/g);
+       if (embedMatch) {
+          [...new Set(embedMatch)].forEach((link, idx) => {
+             sources.push({ link, type: "embed", name: `SV ${idx + 1}` });
+          });
+       }
+    }
+
+    if (!title && sources.length === 0) return null;
+
+    return {
+      id: slugOrId,
+      code: "",
+      trans: [{ locale: "vi", title, content }],
+      poster_url: poster,
+      sources: sources
+    };
+  } catch (err: any) {
+    console.error(`[TopXX Detail Scraper] Error: ${err.message}`);
+    return null;
+  }
+}
+
 // Helper for timeout-safe fetch
 async function fetchWithTimeout(url: string, options: RequestInit = {}, timeout = 10000) {
   const controller = new AbortController();
@@ -255,25 +314,31 @@ export async function getTopXXDetails(slug: string) {
        }
     }
 
-    if (!res.ok) return null;
+    let resData: any = null;
+    if (res.ok) {
+       resData = await res.json();
+    }
 
-    const data: TopXXResponse = await res.json();
-    if (data.status !== "success" || !data.data || Array.isArray(data.data)) {
-       // FALLBACK: If status is error, try searching via AVDB (vốn bền bỉ hơn)
+    if (!resData || resData.status !== "success" || !resData.data || Array.isArray(resData.data)) {
+       console.log(`[TopXX] API failed, falling back to SCRAPER for: ${finalId}`);
+       const scraped = await scrapeTopXXDetails(finalId);
+       if (scraped) return scraped;
+
+       // If scraper fails, try searching via AVDB
        if (/^[a-zA-Z]{2,5}-\d{2,6}$/.test(slug)) {
-          console.log(`[TopXX Fallback] Native API error for ${slug}. Attempting AVDB lookup...`);
+          console.log(`[TopXX Fallback] All TopXX sources failed for ${slug}. Attempting AVDB lookup...`);
           const { getAVDBMovies, getAVDBDetails } = await import("./avdb");
           const searchRes = await getAVDBMovies(1, undefined, slug);
           if (searchRes.items.length > 0) {
              const avid = searchRes.items[0].id;
-             console.log(`[TopXX Fallback] Found in AVDB: ${avid}. Fetching details...`);
+             console.log(`[TopXX Fallback] Found in AVDB: ${avid}.`);
              return await getAVDBDetails(avid);
           }
        }
        return null;
     }
 
-    const movie: TopXXMovie = data.data;
+    const movie: TopXXMovie = resData.data;
     const viTrans = Array.isArray(movie.trans) ? (movie.trans.find((t) => t.locale === "vi") || movie.trans[0]) : null;
     
     const servers = [];
