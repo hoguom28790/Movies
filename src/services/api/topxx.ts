@@ -124,7 +124,11 @@ export async function getTopXXMovies(
   if (type === "phim-hot") {
     url = `${BASE_URL}/movies/today?page=${page}`;
   } else if (type === "the-loai") {
-    url = `${BASE_URL}/genres/${slug}/movies?page=${page}`;
+    if (slug === "phim-moi-cap-nhat") {
+       url = `${BASE_URL}/movies/latest?page=${page}`;
+    } else {
+       url = `${BASE_URL}/genres/${slug}/movies?page=${page}`;
+    }
   } else if (type === "quoc-gia") {
     url = `${BASE_URL}/countries/${slug}/movies?page=${page}`;
   }

@@ -135,9 +135,9 @@ export function MovieCard({
         {onDelete && (
            <button 
              onClick={(e) => { e.preventDefault(); e.stopPropagation(); onDelete(e); }}
-             className="absolute top-3 right-3 z-40 w-8 h-8 rounded-full backdrop-blur-xl bg-black/20 text-white opacity-0 group-hover:opacity-100 transition-all hover:bg-red-500"
+             className="absolute top-3 right-3 z-40 w-10 h-10 flex items-center justify-center rounded-full backdrop-blur-xl bg-black/40 text-white transition-all hover:bg-red-500 opacity-100 lg:opacity-0 lg:group-hover:opacity-100"
            >
-              <X size={16} strokeWidth={2.5} />
+              <X size={18} strokeWidth={3} />
            </button>
         )}
 
