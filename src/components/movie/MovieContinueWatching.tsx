@@ -140,6 +140,8 @@ export function MovieContinueWatching({ isXX = false }: MovieContinueWatchingPro
           className="!overflow-visible"
         >
           {items.map((item, idx) => {
+            if (!item) return null;
+            
             const timeLeft = item.durationSeconds 
               ? Math.max(0, Math.floor((item.durationSeconds - item.progressSeconds) / 60))
               : 0;
@@ -150,14 +152,19 @@ export function MovieContinueWatching({ isXX = false }: MovieContinueWatchingPro
  
             const watchSource = (item as any).source || 'ophim';
             const epParam = item.episodeSlug || (item.episodeName?.toLowerCase() === "full" ? "full" : (item.episodeName || '1'));
+            
+            // Critical survival check for watchHref
+            const movieId = item.movieCode || item.movieSlug || item.id;
+            if (!movieId) return null;
+
             const watchHref = isXX 
-              ? `/${TOPXX_PATH}/watch/${item.movieCode}` 
+              ? `/${TOPXX_PATH}/watch/${movieId}` 
               : `/xem/${watchSource}/${item.movieSlug}/${encodeURIComponent(epParam)}`;
 
             return (
-              <SwiperSlide key={(item.movieSlug || item.movieCode) + idx} className="!w-[200px] sm:!w-[280px]">
+              <SwiperSlide key={(item.movieSlug || item.movieCode || item.id || "") + idx} className="!w-[200px] sm:!w-[280px]">
                 <MovieCard 
-                  title={item.movieTitle}
+                  title={item.movieTitle || "Untitled Phim"}
                   slug={isXX ? item.movieCode : item.movieSlug}
                   posterUrl={item.posterUrl}
                   episodeText={item.episodeName ? `Tập ${item.episodeName}` : undefined}

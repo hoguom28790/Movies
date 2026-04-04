@@ -46,7 +46,13 @@ export function saveTopXXHistory(entry: Omit<TopXXHistoryEntry, 'updatedAt'>) {
 export function getTopXXHistory(): TopXXHistoryEntry[] {
   if (typeof window === 'undefined') return [];
   const stored = localStorage.getItem(HISTORY_KEY);
-  return stored ? JSON.parse(stored) : [];
+  if (!stored) return [];
+  try {
+    return JSON.parse(stored);
+  } catch (e) {
+    console.error("TopXX History Parse Error:", e);
+    return [];
+  }
 }
 
 export function getMovieTopXXHistory(movieCode: string): TopXXHistoryEntry | null {
@@ -89,7 +95,13 @@ export function toggleTopXXFavorite(movie: { movieCode: string; movieTitle: stri
 export function getTopXXFavorites(): TopXXFavoriteEntry[] {
   if (typeof window === 'undefined') return [];
   const stored = localStorage.getItem(FAVORITES_KEY);
-  return stored ? JSON.parse(stored) : [];
+  if (!stored) return [];
+  try {
+    return JSON.parse(stored);
+  } catch (e) {
+    console.error("TopXX Favorites Parse Error:", e);
+    return [];
+  }
 }
 
 export function isTopXXFavorite(movieCode: string): boolean {

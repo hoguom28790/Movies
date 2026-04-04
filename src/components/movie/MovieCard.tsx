@@ -33,7 +33,8 @@ export function MovieCard({
   const [isVisible, setIsVisible] = useState(false);
   const cardRef = useRef<HTMLDivElement>(null);
   
-  const linkHref = customHref || (slug.startsWith('/') ? slug : (isXX ? `/${TOPXX_PATH}/movie/${slug}` : `/xem/${slug}`));
+  const safeSlug = slug || "";
+  const linkHref = customHref || (safeSlug.startsWith('/') ? safeSlug : (isXX ? `/${TOPXX_PATH}/movie/${safeSlug}` : `/xem/${safeSlug}`));
   
   useEffect(() => {
     const observer = new IntersectionObserver(
