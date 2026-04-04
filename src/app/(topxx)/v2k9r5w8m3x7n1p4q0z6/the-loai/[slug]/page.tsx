@@ -8,9 +8,11 @@ export default async function XXCategoryPage({ params }: { params: Promise<{ slu
   const { slug } = await params;
   
   try {
-    const isSpecialType = slug === "phim-moi-cap-nhat" || slug === "phim-le";
+    const isSpecialType = slug === "phim-moi-cap-nhat" || slug === "phim-le" || slug === "phim-bo";
+    const requestType = slug === "phim-moi-cap-nhat" ? "phim-moi" : (slug === "phim-le" ? "phim-le" : (slug === "phim-bo" ? "phim-bo" : "the-loai"));
+    
     const initialData = isSpecialType 
-      ? await getTopXXMovies(slug === "phim-le" ? "phim-le" : "phim-moi", "", 1)
+      ? await getTopXXMovies(requestType as any, "", 1)
       : await getTopXXMovies("the-loai", slug, 1);
       
     const title = slug === "phim-moi-cap-nhat" 

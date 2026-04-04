@@ -123,7 +123,7 @@ function mapTopXXToMovie(item: TopXXMovie | ScrapedTopXX | any): Movie {
 }
 
 export async function getTopXXMovies(
-  type: "phim-moi" | "phim-hot" | "the-loai" | "quoc-gia" | "dien-vien",
+  type: "phim-moi" | "phim-hot" | "the-loai" | "quoc-gia" | "dien-vien" | "phim-le" | "phim-bo",
   slug: string = "",
   page: number = 1
 ): Promise<MovieListResponse> {
@@ -136,11 +136,13 @@ export async function getTopXXMovies(
   if (type === "phim-hot") {
     url = `${BASE_URL}/movies/today?page=${page}`;
   } else if (type === "the-loai") {
-    if (slug === "phim-moi-cap-nhat" || !slug) {
-       url = `${BASE_URL}/movies/latest?page=${page}`;
-    } else {
-       url = `${BASE_URL}/genres/${slug}/movies?page=${page}`;
-    }
+     if (slug === "phim-moi-cap-nhat") {
+        url = `${BASE_URL}/movies/latest?page=${page}`;
+     } else if (slug === "phim-le") {
+        url = `${BASE_URL}/movies/latest?page=${page}`; // Fallback or specific le endpoint if known
+     } else {
+        url = `${BASE_URL}/genres/${slug}/movies?page=${page}`;
+     }
   } else if (type === "quoc-gia") {
     url = `${BASE_URL}/countries/${slug}/movies?page=${page}`;
   }
@@ -178,7 +180,8 @@ export async function getTopXXMovies(
     }
 
     if (rawItems.length === 0) {
-        if (type === "the-loai" || type === "quoc-gia") {
+        const isSpecialType = slug === "phim-moi-cap-nhat" || slug === "phim-le" || slug === "phim-bo";
+        if (type === "the-loai" || type === "quoc-gia" || isSpecialType) {
           return searchTopXXMovies(slug, page, true);
         }
         return { items: [], pagination: { currentPage: 1, totalPages: 1, totalItems: 0 } };
