@@ -6,14 +6,38 @@ export async function GET(req: NextRequest) {
   const url = req.nextUrl.searchParams.get("url");
   if (!url) return NextResponse.json({ error: "No URL" }, { status: 400 });
 
+  const origin = req.nextUrl.origin;
+  const isTikTok = url.includes("tiktokcdn.com");
+  const isStreamXX = url.includes("streamxx.net");
+    
+  let referer = isTikTok ? "https://www.tiktok.com/" : (origin + "/");
+    
+  // StreamXX requires the player URL as referer for the stream to work
+  if (isStreamXX && url.includes("/stream/")) {
+     const id = url.split("/stream/")[1]?.split("/")[0];
+     if (id) referer = `https://embed.streamxx.net/player/${id}`;
+  }
+
   const headers = {
     "Access-Control-Allow-Origin": "*",
     "Cache-Control": "public, max-age=60",
+    "Referer": referer
   };
 
   const decodedUrl = decodeURIComponent(url);
 
-  // 1. Check for specific patterns
+  // 1. StreamXX Auto-Resolution (Bypass unreliable embed player)
+  if (decodedUrl.includes('embed.streamxx.net/player/')) {
+     const id = decodedUrl.split('/player/')[1]?.split('?')[0];
+     if (id) {
+        return NextResponse.json({ 
+           url: `https://embed.streamxx.net/stream/${id}/main.m3u8`, 
+           type: 'hls' 
+        }, { headers });
+     }
+  }
+
+  // 2. Check for specific patterns
   if (decodedUrl.includes('.m3u8')) {
     return NextResponse.json({ url: decodedUrl, type: 'hls' }, { headers });
   }

@@ -10,7 +10,15 @@ export async function GET(req: NextRequest) {
     const urlObj = new URL(url);
     const origin = urlObj.origin;
     const isTikTok = url.includes("tiktokcdn.com");
-    const referer = isTikTok ? "https://www.tiktok.com/" : (origin + "/");
+    const isStreamXX = url.includes("streamxx.net");
+    
+    let referer = isTikTok ? "https://www.tiktok.com/" : (origin + "/");
+    
+    // StreamXX requires the specific player URL as referer for the stream (.m3u8/.ts) to work
+    if (isStreamXX && url.includes("/stream/")) {
+       const id = url.split("/stream/")[1]?.split("/")[0];
+       if (id) referer = `https://embed.streamxx.net/player/${id}`;
+    }
 
     const res = await fetch(url, {
       headers: {
