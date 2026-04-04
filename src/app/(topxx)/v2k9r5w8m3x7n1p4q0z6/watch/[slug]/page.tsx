@@ -124,6 +124,7 @@ export default async function XXWatchPage({
     const currentSource = sources[currentIdx] || sources[0];
 
     const prevSourceIdx = currentIdx > 0 ? currentIdx - 1 : null;
+    const nextSourceIdx = currentIdx < sources.length - 1 ? currentIdx + 1 : null;
     const reqTitle = (viTrans as any)?.title || (item as any)?.title || (item as any)?.name;
     const reqYear = item.publish_at ? new Date(item.publish_at).getFullYear() : undefined;
 
