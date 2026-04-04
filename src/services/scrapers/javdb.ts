@@ -78,9 +78,11 @@ export async function getJavDBActressProfile(name: string) {
       filmography: []
     };
 
-    $(".panel-block, p.is-size-7").each((_, el) => {
-      const text = $(el).text();
-      const val = text.includes(":") ? text.split(":")[1].trim() : "";
+    $(".panel-block, .p-size-7, .column.is-multiline .column").each((_, el) => {
+      const $el = $(el);
+      const text = $el.text().trim();
+      const label = $el.find("strong, span:first-child").text().trim();
+      const val = text.replace(label, "").replace(":", "").trim();
       
       if (text.includes("Real Name") || text.includes("本名")) parsedData.realName = val;
       if (text.includes("Birthday") || text.includes("生年月日")) parsedData.birthDate = val;
@@ -92,20 +94,20 @@ export async function getJavDBActressProfile(name: string) {
       if (text.includes("Status") || text.includes("ステータス")) parsedData.status = val;
     });
 
-    $(".preview-images img, .gallery img").each((_, el) => {
-      const src = $(el).attr("src");
+    $(".preview-images img, .gallery img, .sample-images img").each((_, el) => {
+      const src = $(el).attr("src") || $(el).attr("data-src");
       if (src && !src.includes("avatar")) {
         parsedData.gallery.push(src.startsWith("//") ? "https:" + src : src);
       }
     });
 
-    $(".movie-list .item, .grid-item").each((_, el) => {
+    $(".movie-list .item, .grid-item, .video-list .item").each((_, el) => {
       const $el = $(el);
-      const code = $el.find(".uid, strong").first().text().trim();
-      const title = $el.find(".video-title, .title").first().text().trim();
-      const poster = $el.find("img").first().attr("src");
-      const year = $el.find(".meta").first().text().split("-")[0].trim();
-      const rating = $el.find(".value").first().text().trim();
+      const code = $el.find(".uid, strong, .video-title strong").first().text().trim();
+      const title = $el.find(".video-title, .title, .video-name").first().text().trim();
+      const poster = $el.find("img").first().attr("src") || $el.find("img").first().attr("data-src");
+      const year = $el.find(".meta, .date").first().text().split("-")[0].trim();
+      const rating = $el.find(".value, .rating").first().text().trim();
 
       if (code && code !== parsedData.stageName) {
         parsedData.filmography.push({

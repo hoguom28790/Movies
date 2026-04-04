@@ -174,16 +174,16 @@ export function ActorProfile({ actorName, slug, isXX = false }: ActorProfileProp
                   <span className="text-xs font-black text-foreground italic">{details.birthDate}</span>
                 </div>
               )}
-              {details?.height && details.height !== "N/A" && (
-                <div className="flex flex-col items-center px-4 py-2 rounded-2xl bg-foreground/5 border border-foreground/10">
-                  <span className="text-[8px] font-black uppercase text-foreground/20 italic tracking-widest">Height</span>
-                  <span className="text-xs font-black text-foreground italic">{details.height}</span>
-                </div>
-              )}
               {details?.measurements && details.measurements !== "N/A" && (
                 <div className="flex flex-col items-center px-4 py-2 rounded-2xl bg-foreground/5 border border-foreground/10">
-                  <span className="text-[8px] font-black uppercase text-foreground/20 italic tracking-widest">Measurements</span>
+                  <span className="text-[8px] font-black uppercase text-foreground/20 italic tracking-widest">Stats</span>
                   <span className="text-xs font-black text-foreground italic">{details.measurements}</span>
+                </div>
+              )}
+              {details?.debutYear && details.debutYear !== "N/A" && (
+                <div className="flex flex-col items-center px-4 py-2 rounded-2xl bg-foreground/5 border border-foreground/10">
+                  <span className="text-[8px] font-black uppercase text-foreground/20 italic tracking-widest">Debut</span>
+                  <span className="text-xs font-black text-foreground italic">{details.debutYear}</span>
                 </div>
               )}
               {filmography.length > 0 && (
@@ -302,10 +302,14 @@ export function ActorProfile({ actorName, slug, isXX = false }: ActorProfileProp
 
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 md:gap-6">
             {filmography.map((film: any, idx: number) => {
-              // Determine watch route based on source
-              const watchHref = film.source === "avdb"
-                ? `/${TOPXX_PATH}/watch/av-${film.slug?.replace("av-", "") || idx}`
-                : `/${TOPXX_PATH}/watch/${film.code?.toLowerCase().replace(/\s+/g, "-") || idx}`;
+              // Determine watch route - prioritize standard code routing for JAV
+              let watchHref = "#";
+              if (film.source === "avdb" || film.slug?.startsWith("av-")) {
+                 watchHref = `/${TOPXX_PATH}/watch/av-${(film.slug || film.id)?.replace("av-", "") || idx}`;
+              } else if (film.code) {
+                 // Standard JAV codes (ABC-123) route through topxx with our new AVDB fallback
+                 watchHref = `/${TOPXX_PATH}/watch/${film.code.toLowerCase().replace(/\s+/g, "-")}`;
+              }
 
               return (
                 <motion.div

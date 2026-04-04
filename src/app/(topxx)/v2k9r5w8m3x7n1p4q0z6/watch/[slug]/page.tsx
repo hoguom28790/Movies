@@ -96,7 +96,7 @@ export default async function XXWatchPage({
     if (!item) return notFound();
 
     // Normalize AVDB data to match TopXX structure
-    if (isAVDB) {
+    if (isAVDB || item.source === 'avdb') {
       item.trans = [{ locale: "vi", title: item.name, content: item.content }];
       item.quality = item.quality || "HD";
       item.views = item.views || 0;

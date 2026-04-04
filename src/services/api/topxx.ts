@@ -238,6 +238,17 @@ export async function getTopXXDetails(slug: string) {
 
     const data: TopXXResponse = await res.json();
     if (data.status !== "success" || !data.data || Array.isArray(data.data)) {
+       // FALLBACK: If status is error, try searching via AVDB (vốn bền bỉ hơn)
+       if (/^[a-zA-Z]{2,5}-\d{2,6}$/.test(slug)) {
+          console.log(`[TopXX Fallback] Native API error for ${slug}. Attempting AVDB lookup...`);
+          const { getAVDBMovies, getAVDBDetails } = await import("./avdb");
+          const searchRes = await getAVDBMovies(1, undefined, slug);
+          if (searchRes.items.length > 0) {
+             const avid = searchRes.items[0].id;
+             console.log(`[TopXX Fallback] Found in AVDB: ${avid}. Fetching details...`);
+             return await getAVDBDetails(avid);
+          }
+       }
        return null;
     }
 
