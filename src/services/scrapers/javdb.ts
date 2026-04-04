@@ -87,6 +87,9 @@ export async function getJavDBActressProfile(name: string) {
       if (text.includes("Measurements") || text.includes("スリーサイズ")) parsedData.measurements = val;
       if (text.includes("Height") || text.includes("身長")) parsedData.height = val;
       if (text.includes("Birthplace") || text.includes("出身地")) parsedData.birthPlace = val;
+      if (text.includes("Debut") || text.includes("デビュー")) parsedData.debutYear = val;
+      if (text.includes("Studio") || text.includes("メーカー")) parsedData.studio = val;
+      if (text.includes("Status") || text.includes("ステータス")) parsedData.status = val;
     });
 
     $(".preview-images img, .gallery img").each((_, el) => {

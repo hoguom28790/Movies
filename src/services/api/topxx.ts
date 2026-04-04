@@ -1,6 +1,7 @@
 import { Movie, MovieListResponse } from "@/types/movie";
 import { TopXXMovie, TopXXResponse } from "@/types/api-providers";
 import * as cheerio from "cheerio";
+import { getPosterUrl } from "@/lib/movie-utils";
 
 const BASE_URL = "https://topxx.vip/api/v1";
 
@@ -92,20 +93,31 @@ async function fetchWithRetry(url: string, options: RequestInit = {}, timeout = 
   return fetchWithTimeout(url, options, timeout);
 }
 
-function mapTopXXToMovie(item: TopXXMovie | ScrapedTopXX): Movie {
-  const movieItem = item as any;
-  const viTrans = Array.isArray(movieItem.trans) ? (movieItem.trans.find((t: any) => t.locale === "vi") || movieItem.trans[0]) : null;
-  const enTrans = Array.isArray(movieItem.trans) ? (movieItem.trans.find((t: any) => t.locale === "en") || {}) : {};
+function mapTopXXToMovie(item: TopXXMovie | ScrapedTopXX | any): Movie {
+  if (!item) {
+    return {
+      id: "na",
+      title: "Phim chưa xác định",
+      slug: "",
+      posterUrl: "",
+      quality: "HD",
+    };
+  }
 
+  const movieItem = item as any;
+  const trans = Array.isArray(movieItem.trans) ? movieItem.trans : [];
+  const viTrans = trans.find((t: any) => t && t.locale === "vi") || trans[0] || null;
+  
   return {
-    id: movieItem.code || `tx-${Math.random().toString(36).substr(2, 9)}`,
-    title: viTrans?.title || movieItem.title || "No Title",
-    originalTitle: (enTrans as any)?.title || "",
-    slug: movieItem.code || "",
-    posterUrl: movieItem.thumbnail || "",
-    thumbUrl: movieItem.thumbnail || "",
-    year: movieItem.publish_at ? new Date(movieItem.publish_at).getFullYear().toString() : "",
-    quality: movieItem.quality || "HD",
+    id: movieItem.id?.toString() || movieItem.code || movieItem.slug || Math.random().toString(),
+    title: viTrans?.title || movieItem.title || movieItem.name || "Untitled Cinema",
+    originalTitle: movieItem.origin_name || movieItem.original_name || "",
+    slug: (movieItem.code || movieItem.slug || "").toString(),
+    posterUrl: getPosterUrl(movieItem.poster_url || movieItem.thumbnail || movieItem.posterUrl || movieItem.thumb_path, 'topxx'),
+    thumbUrl: getPosterUrl(movieItem.thumbnail || movieItem.poster_url || movieItem.thumb_path, 'topxx'),
+    year: movieItem.publish_at ? new Date(movieItem.publish_at).getFullYear().toString() : (movieItem.year?.toString() || ""),
+    quality: movieItem.quality || "Full HD",
+    tmdbRating: movieItem.rating || 9.5,
     source: "topxx" as const
   };
 }
@@ -141,8 +153,16 @@ export async function getTopXXMovies(
        return searchTopXXMovies(slug, page, true);
     }
 
-    const jsonBody: TopXXResponse = await res.json();
+    let jsonBody: TopXXResponse;
+    try {
+        jsonBody = await res.json();
+    } catch (e) {
+        console.error(`[TopXX] Failed to parse JSON for ${type}/${slug}`);
+        return searchTopXXMovies(slug, page, true);
+    }
+
     if (jsonBody.status !== "success" || !jsonBody.data) {
+       console.log(`[TopXX] API returned status: ${jsonBody.status} for ${type}/${slug}`);
        return searchTopXXMovies(slug, page, true);
     }
 
@@ -165,11 +185,13 @@ export async function getTopXXMovies(
     }
 
     return {
-      items: rawItems.map(item => mapTopXXToMovie(item)),
+      items: rawItems
+        .filter(item => item && (item.code || item.slug))
+        .map(item => mapTopXXToMovie(item)),
       pagination: {
-        currentPage: meta?.current_page || page,
-        totalPages: meta?.last_page || 1,
-        totalItems: meta?.total || 0
+        currentPage: Number(meta?.current_page || page),
+        totalPages: Number(meta?.last_page || 1),
+        totalItems: Number(meta?.total || 0)
       }
     };
   } catch (err) {

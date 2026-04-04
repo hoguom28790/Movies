@@ -113,15 +113,15 @@ export function TopXXInstantSearch() {
               ) : (
                 results.map((item) => (
                   <Link
-                    key={item.slug}
-                    href={`/xem/${item.slug}`}
+                    key={item.slug || Math.random().toString()}
+                    href={`/${TOPXX_PATH}/watch/${item.slug}`}
                     onClick={() => setIsOpen(false)}
                     className="flex items-center gap-4 px-4 py-2.5 hover:bg-foreground/[0.03] transition-colors group"
                   >
                     <div className="relative h-14 w-10 flex-shrink-0 rounded-lg overflow-hidden bg-foreground/5">
                       <Image
                         src={item.posterUrl || "https://fakeimg.pl/200x300?text=No+Poster"}
-                        alt={item.title}
+                        alt={item.title || "No Title"}
                         fill
                         unoptimized
                         className="object-cover group-hover:scale-110 transition-transform duration-700"
@@ -135,7 +135,7 @@ export function TopXXInstantSearch() {
                         {item.title}
                       </h4>
                       <p className="text-[10px] text-foreground/40 font-black truncate italic opacity-80 uppercase tracking-tight">
-                        {item.originalTitle || item.title}
+                        {item.originalTitle || item.title || ""}
                       </p>
                       <div className="flex items-center gap-2 mt-0.5">
                          <span className="text-[9px] font-black text-yellow-500/40 uppercase tracking-tighter">{item.year || "2024"}</span>
@@ -143,8 +143,8 @@ export function TopXXInstantSearch() {
                       </div>
                     </div>
                   </Link>
-                )
-              ))}
+                ))
+              )}
             </div>
 
             {!loading && results.length > 0 && (
