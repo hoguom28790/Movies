@@ -256,10 +256,8 @@ export async function getTopXXMovies(
        console.log(`[TopXX] API failed for ${type}/${slug}, status: ${res.status}`);
        if (type === "the-loai" && slug) {
          try {
-           const { getAVDBMovies } = await import("./avdb");
-           // For AVDB categories, transform slug (english-subtitle -> English subtitle)
-           const query = slug.replace(/-/g, ' ');
-           const avdbRes = await getAVDBMovies(page, undefined, query);
+           const { getAVDBMoviesByCategory } = await import("./avdb");
+           const avdbRes = await getAVDBMoviesByCategory(slug, page);
            if (avdbRes && avdbRes.items && avdbRes.items.length > 0) {
              return avdbRes;
            }

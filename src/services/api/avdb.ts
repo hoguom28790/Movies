@@ -38,6 +38,26 @@ async function fetchWithRetry(url: string, options: RequestInit = {}, timeout = 
   throw lastError || new Error("All fetch attempts failed");
 }
 
+export async function getAVDBMoviesByCategory(slug: string, page = 1) {
+  const AVDB_CLASSES: Record<string, number> = {
+    "censored": 1,
+    "uncensored": 2,
+    "uncensored-leaked": 3,
+    "amateur": 4,
+    "chinese-av": 5,
+    "hentai": 6,
+    "english-subtitle": 7
+  };
+
+  const typeId = AVDB_CLASSES[slug.toLowerCase()];
+  if (typeId) {
+    return getAVDBMovies(page, typeId);
+  }
+
+  // Fallback to keyword if not an explicit class
+  return getAVDBMovies(page, undefined, slug.replace(/-/g, ' '));
+}
+
 export async function getAVDBMovies(page = 1, typeId?: number, keyword?: string, actor?: string) {
   let url = `${BASE_URL}&pg=${page}`;
   if (typeId) url += `&t=${typeId}`;
@@ -45,7 +65,7 @@ export async function getAVDBMovies(page = 1, typeId?: number, keyword?: string,
   if (actor) url += `&vod_actor=${encodeURIComponent(actor)}`; // Help says vod_actor
 
   try {
-    const res = await fetchWithRetry(url, { next: { revalidate: 300 } }, 10000, 2, 800);
+    const res = await fetchWithRetry(url, { next: { revalidate: 300 } } as any, 10000, 2, 800);
     if (!res.ok) return { items: [], pagination: { totalItems: 0, totalPages: 1, currentPage: 1 } };
     
     let data: AVDBResponse;
