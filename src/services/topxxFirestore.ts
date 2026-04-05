@@ -44,7 +44,14 @@ export async function toggleTopXXFirestoreFavorite(userId: string, movie: { movi
 export async function getTopXXFirestoreFavorites(userId: string): Promise<TopXXFavoriteEntry[]> {
   const q = query(collection(db, "topxx_favorites"), where("userId", "==", userId));
   const snap = await getDocs(q);
-  return snap.docs.map(doc => ({ ...doc.data() } as TopXXFavoriteEntry)).sort((a, b) => b.addedAt - a.addedAt);
+  return snap.docs.map(doc => {
+    const data = doc.data();
+    return { 
+      ...data, 
+      movieCode: data.movieCode || doc.id.split('_').pop(),
+      addedAt: data.addedAt || 0
+    } as TopXXFavoriteEntry;
+  }).sort((a: any, b: any) => (b.addedAt || 0) - (a.addedAt || 0));
 }
 
 export async function isTopXXFirestoreFavorite(userId: string, movieCode: string): Promise<boolean> {
@@ -66,7 +73,14 @@ export async function saveTopXXFirestoreHistory(userId: string, entry: Omit<TopX
 export async function getTopXXFirestoreHistory(userId: string): Promise<TopXXHistoryEntry[]> {
   const q = query(collection(db, "topxx_history"), where("userId", "==", userId));
   const snap = await getDocs(q);
-  return snap.docs.map(doc => ({ ...doc.data() } as TopXXHistoryEntry)).sort((a, b) => b.updatedAt - a.updatedAt);
+  return snap.docs.map(doc => {
+    const data = doc.data();
+    return {
+      ...data,
+      movieCode: data.movieCode || doc.id.split('_').pop(),
+      updatedAt: data.updatedAt || 0
+    } as TopXXHistoryEntry;
+  }).sort((a: any, b: any) => (b.updatedAt || 0) - (a.updatedAt || 0));
 }
 
 export async function deleteTopXXFirestoreHistoryItem(userId: string, movieCode: string) {
@@ -86,8 +100,16 @@ export async function syncTopXXPlaylistsToFirestore(userId: string, playlists: T
 export async function getUserTopXXFirestorePlaylists(userId: string): Promise<TopXXPlaylist[]> {
   const q = query(collection(db, "topxx_playlists"), where("userId", "==", userId));
   const snap = await getDocs(q);
-  return snap.docs.map(doc => ({ ...doc.data() } as TopXXPlaylist)).sort((a, b) => b.createdAt - a.createdAt);
+  return snap.docs.map(doc => {
+    const data = doc.data();
+    return { 
+      ...data, 
+      id: data.id || doc.id.split('_').pop(),
+      createdAt: data.createdAt || 0
+    } as TopXXPlaylist;
+  }).sort((a: any, b: any) => (b.createdAt || 0) - (a.createdAt || 0));
 }
+
 
 export async function saveTopXXFirestorePlaylist(userId: string, playlist: TopXXPlaylist) {
   const docId = `topxx_pl_${userId}_${playlist.id}`;
