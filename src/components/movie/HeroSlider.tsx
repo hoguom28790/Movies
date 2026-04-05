@@ -121,7 +121,7 @@ export function HeroSlider({ movies, isXX = false }: HeroSliderProps) {
 
       {/* Navigation Thumbnails for TopXX */}
       {isXX && (
-        <div className="absolute right-6 md:right-12 bottom-12 z-30 flex flex-nowrap md:flex-wrap items-end justify-end gap-3 max-w-[80vw] md:max-w-md overflow-x-auto no-scrollbar pb-4 md:pb-0">
+        <div className="absolute right-6 md:right-12 bottom-12 z-30 flex flex-nowrap items-center justify-end gap-3 max-w-[90vw] overflow-x-auto no-scrollbar pb-4 md:pb-0">
           {movies.slice(0, 10).map((movie, idx) => (
             <button
               key={movie.slug}
@@ -130,19 +130,19 @@ export function HeroSlider({ movies, isXX = false }: HeroSliderProps) {
                 setCurrentIndex(idx);
               }}
               className={cn(
-                "relative flex-shrink-0 w-12 md:w-16 aspect-[2/3] rounded-lg md:rounded-xl overflow-hidden transition-all duration-500 border-2 shadow-2xl group/thumb",
+                "relative flex-shrink-0 w-12 h-12 md:w-14 md:h-14 aspect-square rounded-full overflow-hidden transition-all duration-500 border-2 shadow-2xl group/thumb",
                 currentIndex === idx 
-                  ? "border-yellow-500 scale-110 z-10 shadow-yellow-500/20" 
-                  : "border-white/10 opacity-40 hover:opacity-100 hover:border-white/30"
+                  ? "border-yellow-500 scale-110 z-10 shadow-yellow-500/40" 
+                  : "border-white/20 opacity-40 hover:opacity-100 hover:border-white/40"
               )}
             >
               <img 
                 src={movie.posterUrl} 
                 alt={movie.title} 
-                className="w-full h-full object-cover"
+                className="w-full h-full object-cover scale-110 group-hover/thumb:scale-125 transition-transform duration-500"
               />
               <div className={cn(
-                "absolute inset-0 bg-yellow-500/10 transition-opacity duration-500",
+                "absolute inset-0 bg-yellow-500/20 transition-opacity duration-500",
                 currentIndex === idx ? "opacity-100" : "opacity-0"
               )} />
             </button>
