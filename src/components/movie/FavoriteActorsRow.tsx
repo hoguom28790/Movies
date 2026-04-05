@@ -84,42 +84,45 @@ export function FavoriteActorsRow({ isXX = false }: FavoriteActorsRowProps) {
               </div>
             ))
           ) : (
-            actors.map((actor: any) => (
-              <button 
-                key={actor.id}
-                onClick={() => setSelectedActor(actor)}
-                className="flex-shrink-0 flex flex-col items-center gap-4 group/actor focus:outline-none transition-transform hover:scale-105 active:scale-95"
-              >
-                <div className="relative w-24 h-24 md:w-32 md:h-32 rounded-full overflow-hidden border-4 border-foreground/5 p-1 group-hover/actor:border-yellow-500/30 transition-all shadow-xl bg-surface">
-                   <img 
-                      src={
-                        (actor.profilePath || actor.profile_path || actor.profileImageUrl || actor.profileImage || actor.avatar || actor.thumbnail)?.startsWith('http') 
-                          ? (actor.profilePath || actor.profile_path || actor.profileImageUrl || actor.profileImage || actor.avatar || actor.thumbnail)
-                          : (actor.profilePath || actor.profile_path 
-                              ? `https://image.tmdb.org/t/p/w500${actor.profilePath || actor.profile_path}` 
-                              : `https://javmodel.com/javdata/uploads/${String(actor.id).replace(/-/g, '_')}150.jpg`)
-                      } 
-                      alt={actor.name}
-                      className="w-full h-full object-cover rounded-full group-hover/actor:scale-110 transition-transform duration-700"
-                      referrerPolicy="no-referrer"
-                      onError={(e) => { 
-                        const target = e.currentTarget;
-                        const parts = String(actor.id).split('-');
-                        if (parts.length === 2 && !target.src.includes(`${parts[1]}_${parts[0]}`)) {
-                          target.src = `https://javmodel.com/javdata/uploads/${parts[1]}_${parts[0]}150.jpg`;
-                          return;
-                        }
-                        if (!target.src.includes('placehold.co')) {
-                          target.src = `https://placehold.co/500x500/0f1115/efb11d?text=${encodeURIComponent(actor.name)}`;
-                        }
-                      }}
-                    />
-                </div>
-                <span className="text-[11px] md:text-sm font-black uppercase italic tracking-tight text-foreground/60 group-hover/actor:text-yellow-500 transition-colors text-center w-24 md:w-32 line-clamp-1">
-                  {actor.name}
-                </span>
-              </button>
-            ))
+            actors.map((actor: any) => {
+              const actorSlug = actor.id || actor.name.toLowerCase().replace(/\s+/g, '-');
+              return (
+                <Link 
+                  key={actor.id}
+                  href={`/${TOPXX_PATH}/dien-vien/${actorSlug}`}
+                  className="flex-shrink-0 flex flex-col items-center gap-4 group/actor transition-transform hover:scale-105 active:scale-95"
+                >
+                  <div className="relative w-24 h-24 md:w-32 md:h-32 rounded-full overflow-hidden border-4 border-foreground/5 p-1 group-hover/actor:border-yellow-500/30 transition-all shadow-xl bg-surface">
+                     <img 
+                        src={
+                          (actor.profilePath || actor.profile_path || actor.profileImageUrl || actor.profileImage || actor.avatar || actor.thumbnail)?.startsWith('http') 
+                            ? (actor.profilePath || actor.profile_path || actor.profileImageUrl || actor.profileImage || actor.avatar || actor.thumbnail)
+                            : (actor.profilePath || actor.profile_path 
+                                ? `https://image.tmdb.org/t/p/w500${actor.profilePath || actor.profile_path}` 
+                                : `https://javmodel.com/javdata/uploads/${String(actor.id).replace(/-/g, '_')}150.jpg`)
+                        } 
+                        alt={actor.name}
+                        className="w-full h-full object-cover rounded-full group-hover/actor:scale-110 transition-transform duration-700"
+                        referrerPolicy="no-referrer"
+                        onError={(e) => { 
+                          const target = e.currentTarget;
+                          const parts = String(actor.id).split('-');
+                          if (parts.length === 2 && !target.src.includes(`${parts[1]}_${parts[0]}`)) {
+                            target.src = `https://javmodel.com/javdata/uploads/${parts[1]}_${parts[0]}150.jpg`;
+                            return;
+                          }
+                          if (!target.src.includes('placehold.co')) {
+                            target.src = `https://placehold.co/500x500/0f1115/efb11d?text=${encodeURIComponent(actor.name)}`;
+                          }
+                        }}
+                      />
+                  </div>
+                  <span className="text-[11px] md:text-sm font-black uppercase italic tracking-tight text-foreground/60 group-hover/actor:text-yellow-500 transition-colors text-center w-24 md:w-32 line-clamp-1">
+                    {actor.name}
+                  </span>
+                </Link>
+              );
+            })
           )}
         </div>
       </div>
