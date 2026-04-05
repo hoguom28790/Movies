@@ -165,7 +165,7 @@ export default async function XXWatchPage({
           <div className="px-0 sm:px-4 lg:px-8">
              <PlayerContainer 
                 url={currentSource.link || ""}
-                isHls={(currentSource.link || "").includes('.m3u8')}
+                isHls={currentSource.isHls || (currentSource.link || "").includes('.m3u8')}
                 rawEmbedUrl={currentSource.link || ""}
                 movieTitle={(viTrans as any)?.title || (item as any)?.title || (item as any)?.name}
                 movieSlug={slug}

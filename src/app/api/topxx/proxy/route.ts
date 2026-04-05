@@ -10,6 +10,8 @@ export async function GET(req: NextRequest) {
     const urlObj = new URL(url);
     const origin = urlObj.origin;
     const isTikTok = url.includes("tiktokcdn.com");
+    if (isTikTok) return NextResponse.redirect(url, 301);
+
     const isStreamXX = url.includes("streamxx.net");
     
     let referer = isTikTok ? "https://www.tiktok.com/" : (origin + "/");

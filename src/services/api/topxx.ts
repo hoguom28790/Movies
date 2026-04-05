@@ -101,11 +101,23 @@ async function scrapeTopXXDetails(slugOrId: string) {
        const embedUrl = $el.find("a[data-url], a.btn-primary").attr("data-url") || $el.find("a[target='_blank']").attr("href");
        const name = $el.find(".source-row__text").text().trim().split("|")[0].trim() || `SV ${sources.length + 1}`;
        
-       if (embedUrl && embedUrl.includes('streamxx.net')) {
+       if (embedUrl) {
+          let finalLink = embedUrl;
+          let isHls = false;
+          
+          if (embedUrl.includes('embed.streamxx.net/player/')) {
+             const id = embedUrl.split('/player/')[1]?.split('?')[0];
+             if (id) {
+                finalLink = `https://embed.streamxx.net/stream/${id}/main.m3u8`;
+                isHls = true;
+             }
+          }
+
           sources.push({
-             link: embedUrl,
-             type: "embed",
-             name: name
+             link: finalLink,
+             type: isHls ? "hls" : "embed",
+             name: name,
+             isHls: isHls
           });
        }
     });
@@ -116,7 +128,17 @@ async function scrapeTopXXDetails(slugOrId: string) {
        const embedMatch = scripts.match(/https?:\/\/embed\.streamxx\.net\/player\/[a-zA-Z0-9]+/g);
        if (embedMatch) {
           [...new Set(embedMatch)].forEach((link, idx) => {
-             sources.push({ link, type: "embed", name: `SV ${idx + 1}` });
+             const id = link.split('/player/')[1]?.split('?')[0];
+             if (id) {
+                sources.push({ 
+                   link: `https://embed.streamxx.net/stream/${id}/main.m3u8`, 
+                   type: "hls", 
+                   name: `SV ${idx + 1}`,
+                   isHls: true
+                });
+             } else {
+                sources.push({ link, type: "embed", name: `SV ${idx + 1}`, isHls: false });
+             }
           });
        }
     }
@@ -356,12 +378,28 @@ export async function getTopXXDetails(slug: string) {
 
     // Native TopXX Sources
     if (movie.sources && Array.isArray(movie.sources) && movie.sources.length > 0) {
-      const episodes = movie.sources.map((s: any, idx: number) => ({
-        name: `SV ${idx + 1}`,
-        slug: `sv-${idx + 1}`,
-        link_embed: s.link,
-        link_m3u8: s.link?.includes('.m3u8') ? s.link : ""
-      }));
+      const episodes = movie.sources.map((s: any, idx: number) => {
+        let link = s.link;
+        let isHls = false;
+        
+        // Auto-resolve StreamXX embed → direct HLS
+        if (link?.includes('embed.streamxx.net/player/')) {
+          const id = link.split('/player/')[1]?.split('?')[0];
+          if (id) {
+            link = `https://embed.streamxx.net/stream/${id}/main.m3u8`;
+            isHls = true;
+          }
+        }
+        
+        return {
+          name: `SV ${idx + 1}`,
+          slug: `sv-${idx + 1}`,
+          link_embed: isHls ? '' : link,
+          link_m3u8: isHls ? link : '',
+          link: link,
+          isHls: isHls
+        };
+      });
 
       servers.push({
         server: "Cloud VIP",
@@ -393,7 +431,8 @@ export async function getTopXXDetails(slug: string) {
     const finalSources = servers.flatMap((s: any) => 
       s.episodes.map((ep: any) => ({
         name: `${s.server} - ${ep.name}`,
-        link: ep.link_embed || ep.link_m3u8 || ep.link
+        link: ep.link_embed || ep.link_m3u8 || ep.link,
+        isHls: ep.isHls || (ep.link_m3u8?.length > 0)
       }))
     );
 
@@ -404,7 +443,7 @@ export async function getTopXXDetails(slug: string) {
         title: viTrans?.title || movie.title || "No Title",
         posterUrl: movie.thumbnail,
         thumb_url: movie.thumbnail,
-        content: viTrans?.description || movie.description,
+        content: viTrans?.description || movie.description || viTrans?.content || movie.content,
         sources: finalSources,
         source: 'topxx' as const,
         trans: movie.trans || []

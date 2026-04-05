@@ -143,6 +143,13 @@ export function PlayerContainer({ url, isHls, rawEmbedUrl, nextEpisodeUrl, movie
       const targetUrl = url || rawEmbedUrl || "";
       const isTopXX = getMovieSource(movieSlug || "", source) === 'topxx' || getMovieSource(movieSlug || "", source) === 'avdb';
       
+      // If we already know it's HLS (passed from page.tsx), skip resolution
+      if (isHls && targetUrl) {
+         setResolvedUrl(targetUrl);
+         setIsUrlEmbed(false);
+         return;
+      }
+
       if (isTopXX && targetUrl && !targetUrl.includes('.m3u8')) {
         console.log(`[TopXX] Resolving stream for: ${targetUrl}`);
         try {
@@ -163,7 +170,7 @@ export function PlayerContainer({ url, isHls, rawEmbedUrl, nextEpisodeUrl, movie
       }
     };
     resolve();
-  }, [url, rawEmbedUrl, source]);
+  }, [url, rawEmbedUrl, source, isHls]);
 
   // Sync with Firebase History  // EXCLUSIVE MOUNT-SYNC FOR TOPXX/AVDB (Embeds don't send handshake)
   useEffect(() => {
