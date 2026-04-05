@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getBoobpediaProfile } from "@/services/scrapers/boobpedia";
-import { getJavCubeProfile } from "@/services/scrapers/javcube";
+import { getJavModelProfile } from "@/services/scrapers/javmodel";
 
 export async function GET(
   req: NextRequest,
@@ -11,49 +10,29 @@ export async function GET(
 
   const rawName = decodeURIComponent(name).trim();
   const decodedName = rawName.replace(/[-_]+/g, " ");
-  const lowerName = decodedName.toLowerCase();
   console.log(`[TOPXX-ACTRESS] Aggregating data for: ${decodedName} (Original: ${rawName})`);
 
   // Fetch from multiple sources for maximum data coverage
   const avdbUrl = `https://avdbapi.com/api.php/provide/vod?ac=detail&at=json&wd=${encodeURIComponent(decodedName)}&pg=1`;
   
   try {
-    const [avdbRes, boobpediaBio, javCubeBio] = await Promise.all([
+    const [avdbRes, javModelBio] = await Promise.all([
       fetch(avdbUrl, { cache: "force-cache" }).then(r => r.ok ? r.json() : null).catch(() => null),
-      getBoobpediaProfile(decodedName).catch(() => null),
-      getJavCubeProfile(decodedName).catch(() => null)
+      getJavModelProfile(decodedName).catch(() => null)
     ]);
 
-    // Merge strategy: Boobpedia (best descriptive info) + JavCube (best coverage for missing stars)
-    let bioData = boobpediaBio;
-    if (!bioData || !bioData.measurements) {
-        if (javCubeBio) {
-            bioData = {
-                ...(bioData || {}),
-                ...(javCubeBio as any),
-                // Keep Boobpedia image if it exists (usually better quality)
-                profileImage: bioData?.profileImage || javCubeBio.profileImage || "",
-                // Keep Boobpedia gallery if it exists
-                gallery: bioData?.gallery || (javCubeBio.profileImage ? [javCubeBio.profileImage] : [])
-            };
-        }
-    }
-
+    // Merge strategy: JavModel (Primary source for bio and identity)
+    const bioData = javModelBio;
     const allAvdbMovies = avdbRes?.list || [];
     
-    // Exact filter on the frontend since wd= search can be fuzzy
+    // Filter movies for the actress
     const avdbMovies = allAvdbMovies.filter((m: any) => {
       const actorStr = Array.isArray(m.actor) ? m.actor.join(", ") : String(m.actor || "");
       const act = actorStr.toLowerCase();
       const n = decodedName.toLowerCase();
-      // Handle "Yua Mikami" OR reverse "Mikami Yua" OR just parts if it matches
       return act.includes(n) || act.includes(n.split(" ").reverse().join(" ")) || m.name?.toLowerCase().includes(n);
     });
     
-    if (avdbMovies.length === 0 && !bioData) {
-        throw new Error("No data found from any source");
-    }
-
     const firstMovie = avdbMovies[0] || {};
     const filmMap = new Map<string, any>();
 
@@ -76,14 +55,14 @@ export async function GET(
     const responseData = {
       source: [
         avdbMovies.length > 0 ? "AVDB" : "",
-        bioData ? "Boobpedia" : ""
+        javModelBio ? "JavModel" : ""
       ].filter(Boolean).join(" + "),
       
       // Name info
       stageName: bioData?.stageName || decodedName,
       realName: bioData?.realName || firstMovie.vod_actor || decodedName,
       
-      // Bio from Boobpedia
+      // Bio from JavModel
       birthDate: bioData?.birthDate || "N/A",
       measurements: bioData?.measurements || "N/A",
       bust: bioData?.bust || "N/A",
