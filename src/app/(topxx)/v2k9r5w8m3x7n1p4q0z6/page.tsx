@@ -131,19 +131,19 @@ export default async function XXHomePage() {
           {/* Diễn viên yêu thích */}
           <FavoriteActorsRow isXX />
 
-          {/* Phim mới cập nhật (10 merged phim) */}
+          {/* Phim mới cập nhật từ TopXX.vip */}
           <MovieRow
-            title="PHIM MỚI CẬP NHẬT"
-            movies={latestRow.slice(0, 12) as any[]}
+            title="PHIM MỚI CẬP NHẬT TỪ TOPXX.VIP"
+            movies={topxxLatest.slice(0, 12) as any[]}
             viewAllLink={`/${TOPXX_PATH}/the-loai/phim-moi-cap-nhat`}
             isXX
           />
 
-          {/* AVDB exclusive bento */}
+          {/* Phim mới cập nhật từ AVDBAPI.com */}
           {avdbLatest.length > 0 && (
-            <BentoGrid
-              title="AVDB PREMIUM EXCLUSIVE"
-              movies={avdbLatest.slice(12, 20) as any[]}
+            <MovieRow
+              title="PHIM MỚI CẬP NHẬT TỪ AVDBAPI.COM"
+              movies={avdbLatest.slice(0, 12) as any[]}
               viewAllLink={`/${TOPXX_PATH}/nguon/avdb`}
               isXX
             />
@@ -159,9 +159,9 @@ export default async function XXHomePage() {
             <UncensoredSection />
           </Suspense>
 
-          {/* Explore more */}
+          {/* Khám phá thêm */}
           <MovieGrid
-            initialMovies={topxxLatest.slice(16) as any[]}
+            initialMovies={interleave(topxxLatest.slice(12), avdbLatest.slice(12)) as any[]}
             title="KHÁM PHÁ THÊM"
             fetchUrl="/api/topxx?slug=phim-moi-cap-nhat"
             initialPage={1}
