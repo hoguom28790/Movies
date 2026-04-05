@@ -81,7 +81,7 @@ export default async function XXWatchPage({
   searchParams: Promise<{ s?: string }>;
 }) {
   const { slug } = await params;
-  const { s } = await searchParams; // s can be 'hls' or 'embed' or index
+  const { s } = await searchParams;
   
   try {
     const isAVDB = slug.startsWith('av-');
@@ -96,7 +96,7 @@ export default async function XXWatchPage({
 
     if (!item) return notFound();
 
-    // Normalize AVDB data to match TopXX structure
+    // Normalize AVDB data
     if (isAVDB || item.source === 'avdb') {
       item.trans = [{ locale: "vi", title: item.name, content: item.content || item.description }];
       item.quality = item.quality || "HD";
@@ -106,7 +106,6 @@ export default async function XXWatchPage({
       item.publish_at = item.created_at || item.release || item.year;
       item.year = item.year || (item.created_at ? item.created_at.split('-')[0] : undefined);
       
-      // Handle actors array or string to array
       if (Array.isArray(item.actor)) {
          item.actors = item.actor.map((name: string) => ({ name: name.trim(), slug: name.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-') }));
       } else if (typeof item.actor === 'string' && item.actor) {
@@ -116,19 +115,16 @@ export default async function XXWatchPage({
         }));
       }
 
-      // Handle genres/category
       if (Array.isArray(item.category)) {
          item.genres = item.category.map((c: string) => ({ name: c, slug: c.toLowerCase().replace(/[^a-z0-9]+/g, '-') }));
       } else if (item.class_name) {
         item.genres = [{ name: item.class_name, slug: 'avdb' }];
       }
 
-      // Handle country
       if (Array.isArray(item.country)) {
          item.countries = item.country.map((c: string) => ({ name: c, slug: c.toLowerCase().replace(/[^a-z0-9]+/g, '-') }));
       }
 
-      // Handle director/writer
       if (Array.isArray(item.director)) {
          item.directors = item.director.map((c: string) => ({ name: c, slug: c.toLowerCase().replace(/[^a-z0-9]+/g, '-') }));
       }
@@ -156,15 +152,16 @@ export default async function XXWatchPage({
     return (
       <div className="min-h-screen bg-background pt-14 pb-safe max-w-7xl mx-auto">
         <div className="w-full bg-background pt-safe">
-          <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
+          {/* Header Navigation: Back + Servers */}
+          <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-white/5">
             <Link
               href={`/${TOPXX_PATH}/movie/${slug}`}
               className="flex items-center gap-3 text-sm font-bold text-foreground/40 hover:text-foreground transition-all group"
             >
               <div className="p-2 rounded-full bg-foreground/5 group-hover:bg-yellow-500 group-hover:text-black transition-colors">
-                <ArrowLeft className="w-4 h-4" />
+                <ArrowLeft className="w-3 h-3" />
               </div>
-              <span className="truncate uppercase italic tracking-widest text-[11px] text-foreground">{(viTrans as any)?.title || (item as any)?.title || (item as any)?.name}</span>
+              <span className="truncate uppercase italic tracking-widest text-[10px] text-foreground font-black opacity-60">Back to Details</span>
             </Link>
 
             <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-2 md:pb-0">
@@ -174,7 +171,7 @@ export default async function XXWatchPage({
                   <Button
                     variant={currentIdx === idx ? "primary" : "secondary"}
                     size="sm"
-                    className={`h-9 text-[11px] px-5 rounded-xl font-black uppercase italic tracking-tighter transition-all ${
+                    className={`h-8 text-[10px] px-4 rounded-xl font-black uppercase italic tracking-tighter transition-all ${
                       currentIdx === idx 
                         ? "bg-yellow-500 text-black shadow-[0_0_20px_rgba(234,179,8,0.3)]" 
                         : "bg-surface border-foreground/5 hover:bg-foreground/10 text-foreground"
@@ -187,232 +184,188 @@ export default async function XXWatchPage({
             </div>
           </div>
 
-          <div className="px-0 sm:px-4 lg:px-8">
-             <PlayerContainer 
-                url={currentSource.link || ""}
-                isHls={currentSource.isHls || (currentSource.link || "").includes('.m3u8')}
-                rawEmbedUrl={currentSource.link || ""}
-                movieTitle={(viTrans as any)?.title || (item as any)?.title || (item as any)?.name}
-                movieSlug={slug}
-                posterUrl={item.posterUrl}
-                source="topxx"
-             />
+          {/* ─── TITLE + CATEGORY SECTION ─────────────────────── */}
+          <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-4">
+            <h1 className="text-3xl md:text-5xl lg:text-6xl font-black text-foreground uppercase italic tracking-tighter leading-[0.9] md:leading-[0.85]">
+              {(viTrans as any)?.title || (item as any)?.title || (item as any)?.name}
+              <span className="text-yellow-500 ml-4 block sm:inline text-2xl md:text-3xl font-black tracking-widest opacity-30 italic">#S{currentIdx + 1}</span>
+            </h1>
+
+            {/* Categories / Genres */}
+            {((item as any).genres?.length > 0 || (item as any).category?.length > 0) && (
+              <div className="flex flex-wrap gap-2">
+                {((item as any).genres || (item as any).category || []).map((g: any, i: number) => {
+                  const genreName = typeof g === 'string' ? g :
+                    (g.name || g.trans?.find((t: any) => t.locale === 'vi')?.name || g.trans?.[0]?.name || '');
+                  if (!genreName) return null;
+                  const genreSlug = typeof g === 'string' ? g.toLowerCase().replace(/[^a-z0-9]+/g, '-') :
+                    (g.slug || g.code || g.trans?.find((t: any) => t.locale === 'vi')?.slug || g.trans?.[0]?.slug || genreName.toLowerCase().replace(/[^a-z0-9]+/g, '-'));
+                  return (
+                    <Link key={`${genreSlug}-${i}`} href={`/${TOPXX_PATH}/the-loai/${genreSlug}`} className="px-3 py-1 rounded-full bg-foreground/5 border border-foreground/10 text-foreground/50 text-[10px] font-black uppercase tracking-widest italic hover:bg-yellow-500/10 hover:border-yellow-500/20 hover:text-yellow-500 transition-all shadow-sm group">
+                      <span className="text-yellow-500/40 group-hover:text-yellow-500 mr-1.5 transition-colors">#</span>
+                      {genreName}
+                    </Link>
+                  );
+                })}
+              </div>
+            )}
           </div>
-        </div>
 
-        <div className="px-4 lg:px-8 py-12 flex flex-col gap-12">
-            {/* ─── TITLE + ACTIONS ─────────────────────────────── */}
-            <div className="flex flex-col md:flex-row md:items-start justify-between gap-8">
-               <div className="space-y-4 flex-1">
-                  <div className="flex flex-wrap items-center gap-3">
-                      {/* Metadata Badges */}
-                      <div className="flex flex-wrap gap-2">
-                        {item.year && (
-                          <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/5 border border-white/10">
-                            <span className="text-[10px] font-black text-foreground/40 uppercase tracking-widest italic">Year</span>
-                            <span className="text-[10px] font-black text-foreground/80">{item.year}</span>
-                          </div>
-                        )}
-                        {(item as any).countries?.length > 0 && (
-                          <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/5 border border-white/10">
-                            <span className="text-[10px] font-black text-foreground/40 uppercase tracking-widest italic">Country</span>
-                            <span className="text-[10px] font-black text-foreground/80">
-                              {(item as any).countries.map((c: any) => c.name).join(', ')}
-                            </span>
-                          </div>
-                        )}
-                        {(item as any).duration && (item as any).duration !== 'N/A' && (
-                          <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/5 border border-white/10">
-                            <span className="text-[10px] font-black text-foreground/40 uppercase tracking-widest italic">Length</span>
-                            <span className="text-[10px] font-black text-foreground/80">{(item as any).duration}</span>
-                          </div>
-                        )}
-                        {item.publish_at && (
-                          <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/5 border border-white/10">
-                            <span className="text-[10px] font-black text-foreground/40 uppercase tracking-widest italic">Release</span>
-                            <span className="text-[10px] font-black text-foreground/80">{String(item.publish_at).split(' ')[0]}</span>
-                          </div>
-                        )}
-                        {(item as any).code && (
-                          <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/10 border border-primary/20">
-                            <span className="text-[10px] font-black text-primary/60 uppercase tracking-widest italic">Code</span>
-                            <span className="text-[10px] font-black text-primary uppercase">{(item as any).code}</span>
-                          </div>
-                        )}
-                        {/* Director / Writer injected to badges for full visibility */}
-                        {(item as any).directors?.length > 0 && (
-                          <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/5 border border-white/10 hidden sm:flex">
-                            <span className="text-[10px] font-black text-foreground/40 uppercase tracking-widest italic">Director</span>
-                            <span className="text-[10px] font-black text-foreground/80 truncate max-w-[150px]">
-                              {(item as any).directors.map((d: any) => d.name).join(', ')}
-                            </span>
-                          </div>
-                        )}
-                        {(item as any).writers?.length > 0 && (
-                          <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/5 border border-white/10 hidden sm:flex">
-                            <span className="text-[10px] font-black text-foreground/40 uppercase tracking-widest italic">Writer</span>
-                            <span className="text-[10px] font-black text-foreground/80 truncate max-w-[150px]">
-                              {(item as any).writers.map((d: any) => d.name).join(', ')}
-                            </span>
-                          </div>
-                        )}
-                        {(item as any).quality && (
-                          <div className="px-3 py-1 rounded-full bg-yellow-500/10 border border-yellow-500/20 text-[10px] font-black text-yellow-500 uppercase italic">
-                            {(item as any).quality}
-                          </div>
-                        )}
-                      </div>
+          <div className="px-4 lg:px-8 pb-20">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12">
+              {/* ─── LEFT: PLAYER SECTION ───────────────────────── */}
+              <div className="lg:col-span-8 space-y-8">
+                <div className="rounded-[40px] overflow-hidden border border-white/5 shadow-cinematic-2xl bg-black relative">
+                  <PlayerContainer 
+                    url={currentSource.link || ""}
+                    isHls={currentSource.isHls || (currentSource.link || "").includes('.m3u8')}
+                    rawEmbedUrl={currentSource.link || ""}
+                    movieTitle={(viTrans as any)?.title || (item as any)?.title || (item as any)?.name}
+                    movieSlug={slug}
+                    posterUrl={item.posterUrl}
+                    source="topxx"
+                  />
+                </div>
 
-                      {/* Genres have been moved beneath the title */}
+                {/* Server Navigation + Actions Row */}
+                <div className="flex flex-wrap items-center justify-between gap-4 p-6 bg-surface/50 border border-foreground/5 rounded-[32px]">
+                  <div className="flex items-center gap-3">
+                    {prevSourceIdx !== null ? (
+                      <Link href={`/${TOPXX_PATH}/watch/${slug}?s=${prevSourceIdx}`}>
+                        <Button variant="secondary" className="h-11 gap-2 font-black uppercase italic text-[10px] tracking-widest px-5 rounded-xl border-foreground/10 bg-surface text-foreground hover:bg-foreground/10">
+                          <ChevronLeft className="w-4 h-4" /> Prev
+                        </Button>
+                      </Link>
+                    ) : (
+                      <Button variant="secondary" className="h-11 gap-2 font-black uppercase italic text-[10px] tracking-widest px-5 rounded-xl opacity-20 border-foreground/10 bg-surface/5 text-foreground cursor-not-allowed" disabled>
+                        <ChevronLeft className="w-4 h-4" /> Prev
+                      </Button>
+                    )}
+
+                    {nextSourceIdx !== null ? (
+                      <Link href={`/${TOPXX_PATH}/watch/${slug}?s=${nextSourceIdx}`}>
+                        <Button variant="primary" className="h-11 gap-2 font-black uppercase italic text-[10px] tracking-widest px-5 rounded-xl bg-yellow-500 text-black shadow-lg shadow-yellow-500/20">
+                          Next <ChevronRight className="w-4 h-4" />
+                        </Button>
+                      </Link>
+                    ) : (
+                      <Button variant="secondary" className="h-11 gap-2 font-black uppercase italic text-[10px] tracking-widest px-5 rounded-xl opacity-20 border-foreground/10 bg-surface/5 text-foreground cursor-not-allowed" disabled>
+                        <ChevronRight className="w-4 h-4" /> Next
+                      </Button>
+                    )}
                   </div>
-
-                  <h1 className="text-3xl md:text-5xl font-black text-foreground uppercase italic tracking-tighter leading-tight">
-                     {(viTrans as any)?.title || (item as any)?.title || (item as any)?.name}
-                     <span className="text-yellow-500 ml-4 block sm:inline text-2xl md:text-3xl">#SV{currentIdx + 1}</span>
-                  </h1>
-
-                  {/* Categories / Genres (Consolidated) */}
-                  {((item as any).genres?.length > 0 || (item as any).category?.length > 0) && (
-                    <div className="flex flex-wrap gap-2">
-                      {((item as any).genres || (item as any).category || []).map((g: any, i: number) => {
-                        const genreName = typeof g === 'string' ? g :
-                          (g.name || g.trans?.find((t: any) => t.locale === 'vi')?.name || g.trans?.[0]?.name || '');
-                        if (!genreName) return null;
-                        const genreSlug = typeof g === 'string' ? g.toLowerCase().replace(/[^a-z0-9]+/g, '-') :
-                          (g.slug || g.code || g.trans?.find((t: any) => t.locale === 'vi')?.slug || g.trans?.[0]?.slug || genreName.toLowerCase().replace(/[^a-z0-9]+/g, '-'));
-                        return (
-                          <Link key={`${genreSlug}-${i}`} href={`/${TOPXX_PATH}/the-loai/${genreSlug}`} className="px-3 py-1 rounded-full bg-foreground/5 border border-foreground/10 text-foreground/50 text-[11px] font-black uppercase tracking-widest italic hover:bg-yellow-500/10 hover:border-yellow-500/20 hover:text-yellow-500 transition-all shadow-sm group">
-                            <span className="text-yellow-500/40 group-hover:text-yellow-500 mr-1.5 transition-colors">#</span>
-                            {genreName}
-                          </Link>
-                        );
-                      })}
-                    </div>
-                  )}
-
-                  {/* Ratings for TopXX */}
-                  <Suspense fallback={<RatingsSkeleton />}>
-                     <RatingsSection title={reqTitle} year={reqYear} />
-                  </Suspense>
-
-                 <div className="pt-4">
+                  
+                  <div className="flex items-center gap-3">
                     <WatchlistBtn
                       isXX
                       movieCode={slug}
                       movieTitle={(viTrans as any)?.title || (item as any)?.title || (item as any)?.name}
                       posterUrl={item.posterUrl || ""}
-                      className="bg-yellow-500/10 border border-yellow-500/20 text-yellow-500 hover:bg-yellow-500 hover:text-black"
+                      className="h-11 rounded-xl bg-foreground/5 border-foreground/10 text-foreground/40 hover:bg-yellow-500 hover:text-black hover:border-yellow-500"
                     />
-                 </div>
-               </div>
-
-               {/* Cover Image */}
-               {item.posterUrl && (
-                 <div className="w-full md:w-48 lg:w-64 flex-shrink-0">
-                   <div className="relative aspect-[2/3] rounded-[32px] overflow-hidden border border-yellow-500/10 shadow-2xl">
-                     <img src={item.posterUrl} alt={(viTrans as any)?.title || ""} className="w-full h-full object-cover" />
-                     <div className="absolute inset-0 bg-gradient-to-t from-background/60 via-transparent to-transparent" />
-                   </div>
-                 </div>
-               )}
-            </div>
-
-            {/* ─── ACTORS PANEL ──────────────────────────────────── */}
-            {((item as any).actors?.length > 0 || (item as any).actor) && (
-              <div className="space-y-6">
-                <div className="flex items-center gap-4">
-                  <div className="w-1 h-6 bg-yellow-500 rounded-full" />
-                  <h3 className="text-[11px] font-black text-foreground/20 uppercase tracking-[0.4em]">Diễn viên</h3>
+                  </div>
                 </div>
-                <div className="flex flex-wrap gap-4">
-                  {(Array.isArray((item as any).actors) ? (item as any).actors : 
-                    (typeof (item as any).actor === 'string' ? (item as any).actor.split(',').map((n: string) => ({ name: n.trim() })) : [])
-                   ).map((actor: any, idx: number) => {
-                    const name = typeof actor === 'string' ? actor : (actor.name || actor.trans?.find((t: any) => t.locale === 'vi')?.name || actor.trans?.[0]?.name || "N/A");
-                    const actorSlug = actor.slug || actor.trans?.find((t: any) => t.locale === 'vi')?.slug || actor.trans?.[0]?.slug || name.toLowerCase().replace(/[^a-z0-9]+/g, "-");
-                    
-                    return (
-                      <Link
-                        key={idx}
-                        href={`/${TOPXX_PATH}/dien-vien/${actorSlug}`}
-                        className="group flex flex-col items-center gap-2 w-20 text-center"
-                      >
-                        <div className="w-16 h-16 rounded-[20px] overflow-hidden bg-yellow-500/5 border border-yellow-500/10 group-hover:border-yellow-500/40 transition-all shadow-lg">
-                          <ActorAvatar 
-                            name={name} 
-                            initialThumbnail={actor.thumbnail || actor.avatar} 
-                            className="group-hover:scale-110" 
-                          />
-                        </div>
-                        <span className="text-[10px] font-black text-foreground/40 group-hover:text-yellow-500 transition-colors uppercase italic tracking-tight leading-tight line-clamp-2">
-                          {name}
-                        </span>
-                      </Link>
-                    );
-                  })}
+                
+                {/* Ratings Section */}
+                <div className="bg-surface/30 border border-foreground/5 rounded-[40px] p-8 md:p-12">
+                  <Suspense fallback={<RatingsSkeleton />}>
+                    <RatingsSection title={reqTitle} year={reqYear} />
+                  </Suspense>
                 </div>
               </div>
-            )}
 
-            {/* Server Navigation */}
-            <div className="flex items-center gap-3">
-               {prevSourceIdx !== null ? (
-                 <Link href={`/${TOPXX_PATH}/watch/${slug}?s=${prevSourceIdx}`}>
-                   <Button variant="secondary" className="h-12 gap-3 font-black uppercase italic text-[11px] tracking-widest px-6 rounded-2xl border-foreground/10 bg-surface text-foreground hover:bg-foreground/10">
-                     <ChevronLeft className="w-5 h-5" /> Prev
-                   </Button>
-                 </Link>
-               ) : (
-                 <Link href="#" className="pointer-events-none">
-                   <Button variant="secondary" className="h-12 gap-3 font-black uppercase italic text-[11px] tracking-widest px-6 rounded-2xl opacity-20 border-foreground/10 bg-surface/5 text-foreground" disabled>
-                     <ChevronLeft className="w-5 h-5" /> Prev
-                   </Button>
-                 </Link>
-               )}
+              {/* ─── RIGHT: INFORMATION SIDEBAR ────────────────── */}
+              <div className="lg:col-span-4 space-y-8">
+                {/* Overview / Storyline */}
+                <div className="bg-surface/50 border border-foreground/5 rounded-[40px] p-8 md:p-10 space-y-6">
+                  <h3 className="text-[10px] font-black text-foreground/20 uppercase tracking-[0.4em] flex items-center gap-3">
+                    <span className="w-6 h-px bg-yellow-500/30" /> Nội dung phim
+                  </h3>
+                  <div
+                    className="text-foreground/70 text-sm md:text-base leading-relaxed font-medium italic"
+                    dangerouslySetInnerHTML={{ __html: (viTrans as any)?.description || (viTrans as any)?.content || (item as any)?.content || (item as any)?.description || "Khám phá câu chuyện hấp dẫn trong tác phẩm điện ảnh đặc sắc này..." }}
+                  />
+                </div>
 
-               {nextSourceIdx !== null ? (
-                 <Link href={`/${TOPXX_PATH}/watch/${slug}?s=${nextSourceIdx}`}>
-                   <Button variant="primary" className="h-12 gap-3 font-black uppercase italic text-[11px] tracking-widest px-6 rounded-2xl bg-yellow-500 text-black">
-                     Next <ChevronRight className="w-5 h-5" />
-                   </Button>
-                 </Link>
-               ) : (
-                 <Link href="#" className="pointer-events-none">
-                   <Button variant="secondary" className="h-12 gap-3 font-black uppercase italic text-[11px] tracking-widest px-6 rounded-2xl opacity-20 border-foreground/10 bg-surface/5 text-foreground" disabled>
-                     Next <ChevronRight className="w-5 h-5" />
-                   </Button>
-                 </Link>
-               )}
-            </div>
-
-            {/* Description Section */}
-            <div className="relative group">
-               <div className="absolute inset-0 bg-yellow-500 opacity-0 group-hover:opacity-[0.02] transition-opacity blur-3xl -z-10" />
-                <div className="bg-surface border border-foreground/5 rounded-[40px] p-8 md:p-12 transition-all hover:border-yellow-500/20">
-                   {((item as any).directors?.length > 0 || (item as any).writers?.length > 0) && (
-                      <div className="mb-6 flex flex-col sm:flex-row flex-wrap gap-6 text-[11px] font-medium text-foreground/60 italic pb-6 border-b border-foreground/5">
-                         {(item as any).directors?.length > 0 && (
-                            <div><span className="text-foreground/20 uppercase tracking-widest font-black mr-2">Director:</span> 
-                                 {(item as any).directors.map((d: any) => d.name).join(', ')}</div>
-                         )}
-                         {(item as any).writers?.length > 0 && (
-                            <div><span className="text-foreground/20 uppercase tracking-widest font-black mr-2">Writer:</span> 
-                                 {(item as any).writers.map((w: any) => w.name).join(', ')}</div>
-                         )}
+                {/* Technical Details Sidebar */}
+                <div className="bg-surface/50 border border-foreground/5 rounded-[40px] p-8 md:p-10 space-y-8">
+                  <h3 className="text-[10px] font-black text-foreground/20 uppercase tracking-[0.4em] flex items-center gap-3">
+                    <span className="w-6 h-px bg-yellow-500/30" /> Thông tin chi tiết
+                  </h3>
+                  <div className="space-y-5">
+                    {(item as any).duration && (item as any).duration !== 'N/A' && (
+                      <div className="flex items-center justify-between pb-4 border-b border-white/5">
+                        <span className="text-[10px] font-black text-foreground/20 uppercase tracking-widest italic">Thời lượng</span>
+                        <span className="text-[12px] font-black text-foreground/90 font-mono tracking-tighter">{(item as any).duration}</span>
                       </div>
-                   )}
-                   <h3 className="text-[10px] font-black text-foreground/20 uppercase tracking-[0.4em] mb-6 flex items-center gap-3">
-                      <span className="w-8 h-px bg-foreground/10" /> Nội dung phim
-                   </h3>
-                   <div
-                     className="text-foreground/60 text-sm md:text-base leading-relaxed md:leading-loose font-medium italic"
-                     dangerouslySetInnerHTML={{ __html: (viTrans as any)?.description || (viTrans as any)?.content || (item as any)?.content || (item as any)?.description || "Khám phá câu chuyện hấp dẫn trong tác phẩm điện ảnh đặc sắc này..." }}
-                   />
-               </div>
-             </div>
+                    )}
+                    {item.publish_at && (
+                      <div className="flex items-center justify-between pb-4 border-b border-white/5">
+                        <span className="text-[10px] font-black text-foreground/20 uppercase tracking-widest italic">Ngày ra mắt</span>
+                        <span className="text-[12px] font-black text-foreground/90">{String(item.publish_at).split(' ')[0]}</span>
+                      </div>
+                    )}
+                    {(item as any).code && (
+                      <div className="flex items-center justify-between pb-4 border-b border-white/5">
+                        <span className="text-[10px] font-black text-foreground/20 uppercase tracking-widest italic">Mã phim</span>
+                        <span className="text-[12px] font-black text-yellow-500 uppercase tracking-wider">{(item as any).code}</span>
+                      </div>
+                    )}
+                    {(item as any).directors?.length > 0 && (
+                      <div className="flex items-center justify-between pb-4 border-b border-white/5">
+                        <span className="text-[10px] font-black text-foreground/20 uppercase tracking-widest italic">Đạo diễn</span>
+                        <span className="text-[12px] font-black text-foreground/70 truncate max-w-[200px]">{(item as any).directors.map((d: any) => d.name).join(', ')}</span>
+                      </div>
+                    )}
+                    {(item as any).countries?.length > 0 && (
+                      <div className="flex items-center justify-between">
+                        <span className="text-[10px] font-black text-foreground/20 uppercase tracking-widest italic">Quốc gia</span>
+                        <span className="text-[12px] font-black text-foreground/70">{(item as any).countries.map((c: any) => c.name).join(', ')}</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Actors sidebar list */}
+                {((item as any).actors?.length > 0 || (item as any).actor) && (
+                  <div className="bg-surface/50 border border-foreground/5 rounded-[40px] p-8 md:p-10 space-y-8">
+                    <h3 className="text-[10px] font-black text-foreground/20 uppercase tracking-[0.4em] flex items-center gap-3">
+                      <span className="w-6 h-px bg-yellow-500/30" /> Diễn viên
+                    </h3>
+                    <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-3 gap-6">
+                      {(Array.isArray((item as any).actors) ? (item as any).actors : 
+                        (typeof (item as any).actor === 'string' ? (item as any).actor.split(',').map((n: string) => ({ name: n.trim() })) : [])
+                      ).slice(0, 9).map((actor: any, idx: number) => {
+                        const name = typeof actor === 'string' ? actor : (actor.name || actor.trans?.find((t: any) => t.locale === 'vi')?.name || actor.trans?.[0]?.name || "N/A");
+                        const actorSlug = actor.slug || actor.trans?.find((t: any) => t.locale === 'vi')?.slug || actor.trans?.[0]?.slug || name.toLowerCase().replace(/[^a-z0-9]+/g, "-");
+                        return (
+                          <Link
+                            key={idx}
+                            href={`/${TOPXX_PATH}/dien-vien/${actorSlug}`}
+                            className="group flex flex-col items-center gap-3 text-center"
+                          >
+                            <div className="w-14 h-14 md:w-20 md:h-20 rounded-[24px] overflow-hidden bg-yellow-500/5 border border-yellow-500/10 group-hover:border-yellow-500 transition-all shadow-xl group-hover:shadow-yellow-500/10 scale-90 group-hover:scale-105 duration-500">
+                              <ActorAvatar 
+                                name={name} 
+                                initialThumbnail={actor.thumbnail || actor.avatar} 
+                                className="group-hover:scale-110" 
+                              />
+                            </div>
+                            <span className="text-[8px] md:text-[10px] font-black text-foreground/40 group-hover:text-yellow-500 transition-colors uppercase italic tracking-tighter leading-none line-clamp-1">
+                              {name}
+                            </span>
+                          </Link>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
-       </div>
-     );
+        </div>
+      </div>
+    );
   } catch (error) {
     console.error("XXWatchPage Error:", error);
     return (
