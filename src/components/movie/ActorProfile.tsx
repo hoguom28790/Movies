@@ -123,6 +123,7 @@ export function ActorProfile({ actorName, slug, isXX = false }: ActorProfileProp
                 src={profileImageUrl}
                 className="w-full h-full object-cover transition-transform duration-[3s] group-hover:scale-110"
                 alt={actorName}
+                referrerPolicy="no-referrer"
               />
             ) : (
               <div className={cn("w-full h-full flex flex-col items-center justify-center font-black transition-all", isXX ? "bg-yellow-500/10 text-yellow-500/50" : "bg-primary/10 text-primary/50")}>
@@ -310,7 +311,8 @@ export function ActorProfile({ actorName, slug, isXX = false }: ActorProfileProp
                     <img
                       src={img}
                       className="w-full h-full object-cover transition-all duration-700 group-hover:scale-125 group-hover:brightness-50"
-                      alt={`gallery-${i}`}
+                      alt={`${actorName} ${i}`}
+                      referrerPolicy="no-referrer"
                     />
                     <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                       <PlayCircle className="w-8 h-8 text-white" />

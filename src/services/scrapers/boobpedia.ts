@@ -64,13 +64,20 @@ function extractProfileImage(html: string, actressSlug: string): string {
 
 /** Resolve a boobpedia file page link to the actual image URL */
 async function resolveBoobpediaImage(filePath: string): Promise<string> {
-  if (!filePath.startsWith("/boobs/File:")) return filePath;
+  if (!filePath) return "";
+  if (filePath.startsWith("http")) return filePath;
+  if (filePath.startsWith("//")) return `https:${filePath}`;
+  
+  if (!filePath.startsWith("/boobs/File:")) return `${BOOBPEDIA_BASE}${filePath}`;
+  
   const filePageUrl = `${BOOBPEDIA_BASE}${filePath}`;
   const html = await fetchHtml(filePageUrl);
   if (!html) return "";
+  
   // Look for the full image href: href="/wiki/images/f/f6/Yua_Mikami.jpg"
   const fullImageMatch = html.match(/fullImageLink[^>]*>[\s\S]*?href="(\/wiki\/images\/[^"]+\.(jpg|jpeg|png|webp))"/i);
   if (fullImageMatch) return `${BOOBPEDIA_BASE}${fullImageMatch[1]}`;
+  
   // Fallback: look for thumb src
   const thumbMatch = html.match(/src="(\/wiki\/images\/thumb\/[^"]+\.(jpg|jpeg|png|webp)[^"]*)"/i);
   if (thumbMatch) {

@@ -310,16 +310,17 @@ export default function TopXXLibraryPage() {
                         className="group flex flex-col items-center"
                       >
                         <div className="relative w-40 h-40 md:w-64 md:h-64 rounded-[56px] overflow-hidden border-4 border-foreground/5 shadow-2xl transition-all duration-700 bg-surface group-hover:border-yellow-500/30 group-hover:shadow-yellow-500/20 group-hover:-translate-y-3">
-                          <img 
-                            src={
-                              (actor.profilePath || actor.profile_path)?.startsWith('http') 
-                                ? (actor.profilePath || actor.profile_path)
-                                : (actor.profilePath || actor.profile_path ? `https://image.tmdb.org/t/p/w500${actor.profilePath || actor.profile_path}` : "https://placehold.co/500x500/0f1115/efb11d?text=Actor")
-                            } 
-                            alt={actor.name}
-                            className="w-full h-full object-cover transition-transform duration-[3s] group-hover:scale-110"
-                            onError={(e) => { e.currentTarget.src = "https://placehold.co/500x500/0f1115/efb11d?text=Actor" }}
-                          />
+                            <img 
+                              src={
+                                (actor.profilePath || actor.profile_path || actor.profileImageUrl)?.startsWith('http') 
+                                  ? (actor.profilePath || actor.profile_path || actor.profileImageUrl)
+                                  : (actor.profilePath || actor.profile_path ? `https://image.tmdb.org/t/p/w500${actor.profilePath || actor.profile_path}` : "https://placehold.co/500x500/0f1115/efb11d?text=Actor")
+                              } 
+                              alt={actor.name}
+                              className="w-full h-full object-cover transition-transform duration-[3s] group-hover:scale-110"
+                              referrerPolicy="no-referrer"
+                              onError={(e) => { e.currentTarget.src = "https://placehold.co/500x500/0f1115/efb11d?text=Actor" }}
+                            />
                           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-end p-8 gap-4">
                               <span className="bg-yellow-500 text-black text-[10px] font-black uppercase tracking-[0.2em] px-6 py-3 rounded-2xl border-2 border-yellow-400 shadow-2xl text-center backdrop-blur-md">XEM HỒ SƠ</span>
                           </div>
