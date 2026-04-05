@@ -108,6 +108,7 @@ export function FavoriteActorsRow({ isXX = false }: FavoriteActorsRowProps) {
 
       {selectedActor && (
         <ActorModal 
+          isOpen={true}
           actor={selectedActor}
           onClose={() => setSelectedActor(null)}
           isXX={isXX}
