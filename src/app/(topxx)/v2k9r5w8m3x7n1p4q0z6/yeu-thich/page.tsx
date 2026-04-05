@@ -16,11 +16,12 @@ import {
   deleteTopXXFirestorePlaylist,
   toggleTopXXFirestoreFavorite
 } from "@/services/topxxFirestore";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import { MovieCard } from "@/components/movie/MovieCard";
 import { TOPXX_PATH } from "@/lib/constants";
 import { cn } from "@/lib/utils";
+import { Suspense } from "react";
 
 const EmptyState = ({ icon: Icon, title, desc, button }: { icon: any, title: string, desc: string, button?: React.ReactNode }) => (
   <div className="py-24 md:py-48 flex flex-col items-center justify-center text-center bg-foreground/[0.01] rounded-[48px] border border-dashed border-foreground/5 animate-in fade-in duration-1000">
@@ -33,13 +34,14 @@ const EmptyState = ({ icon: Icon, title, desc, button }: { icon: any, title: str
   </div>
 );
 
-export default function TopXXLibraryPage() {
+function LibraryContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { user } = useAuth();
   const [playlists, setPlaylists] = useState<TopXXPlaylist[]>([]);
   const [favorites, setFavorites] = useState<TopXXFavoriteEntry[]>([]);
   const [favoriteActors, setFavoriteActors] = useState<any[]>([]);
-  const [activeTab, setActiveTab] = useState<string>("favorites");
+  const [activeTab, setActiveTab] = useState<string>(searchParams.get("tab") || "favorites");
   const [activePlaylistId, setActivePlaylistId] = useState<string | null>(null);
   const [isCreating, setIsCreating] = useState(false);
   const [newName, setNewName] = useState("");
@@ -47,6 +49,14 @@ export default function TopXXLibraryPage() {
   const [isEditingName, setIsEditingName] = useState(false);
   const [editNameValue, setEditNameValue] = useState("");
   const [loading, setLoading] = useState(true);
+
+  // Sync tab with URL search params
+  useEffect(() => {
+    const tab = searchParams.get("tab");
+    if (tab && (tab === "favorites" || tab === "actors" || tab === "playlists")) {
+      setActiveTab(tab);
+    }
+  }, [searchParams]);
 
   const fetchData = async () => {
     setLoading(true);
@@ -497,5 +507,17 @@ export default function TopXXLibraryPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function TopXXLibraryPage() {
+  return (
+    <Suspense fallback={
+       <div className="min-h-screen flex items-center justify-center bg-background">
+          <div className="w-12 h-12 border-4 border-yellow-500/10 border-t-yellow-500 rounded-full animate-spin" />
+       </div>
+    }>
+      <LibraryContent />
+    </Suspense>
   );
 }
