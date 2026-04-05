@@ -18,8 +18,12 @@ function stripHtml(html: string): string {
 }
 
 function nameToWikiTitle(name: string): string {
-  // Convert "Yua Mikami" -> "Yua_Mikami"
-  return name.trim().replace(/\s+/g, "_");
+  // Convert "yua-mikami" or "yua mikami" -> "Yua_Mikami"
+  return name.trim()
+    .replace(/[-_]+/g, " ")
+    .split(/\s+/)
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join("_");
 }
 
 async function fetchHtml(url: string): Promise<string | null> {
@@ -247,6 +251,16 @@ export async function getBoobpediaProfile(name: string): Promise<BoobpediaProfil
     const fileRef = extractProfileImage(html, wikiTitle);
     if (fileRef) {
       profile.profileImage = await resolveBoobpediaImage(fileRef);
+    }
+
+    // Extract gallery images
+    // Pattern: <a href="/boobs/File:..." class="image">
+    const galleryMatches = html.match(/class="image"[^>]*href="(\/boobs\/File:[^"]+\.(jpg|jpeg|png|webp))"/gi);
+    if (galleryMatches) {
+        const uniqueRefs = Array.from(new Set(galleryMatches.map(m => m.match(/href="([^"]+)"/)?.[1]).filter(Boolean)));
+        const galleryPromises = uniqueRefs.slice(0, 15).map(ref => resolveBoobpediaImage(ref as string));
+        const resolvedImages = await Promise.all(galleryPromises);
+        profile.gallery = resolvedImages.filter(img => img && img !== profile.profileImage);
     }
 
     // Measurements badge: merge bust/waist/hips if we got separate

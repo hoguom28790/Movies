@@ -33,7 +33,8 @@ export async function GET(
     
     // Exact filter on the frontend since wd= search can be fuzzy
     const avdbMovies = allAvdbMovies.filter((m: any) => {
-      const act = m.actor?.toLowerCase() || "";
+      const actorStr = Array.isArray(m.actor) ? m.actor.join(", ") : String(m.actor || "");
+      const act = actorStr.toLowerCase();
       const n = decodedName.toLowerCase();
       // Handle "Yua Mikami" OR reverse "Mikami Yua" OR just parts if it matches
       return act.includes(n) || act.includes(n.split(" ").reverse().join(" ")) || m.name?.toLowerCase().includes(n);
@@ -52,9 +53,9 @@ export async function GET(
       if (code) {
         filmMap.set(code, {
           code: code,
-          title: m.name || "No Title",
-          poster: m.poster_url || m.thumb_url || "",
-          year: m.year || m.created_at?.split("-")[0] || "N/A",
+          title: m.name || m.vod_name || "No Title",
+          poster: m.vod_pic || m.poster_url || m.thumb_url || "",
+          year: m.year || m.vod_year || m.created_at?.split("-")[0] || "N/A",
           rating: "N/A",
           slug: `av-${m.id}`,
           source: "avdb",
@@ -102,7 +103,7 @@ export async function GET(
       
       // Media
       profileImage: bioData?.profileImage || firstMovie.vod_pic || "",
-      gallery: bioData?.gallery?.length ? bioData.gallery : avdbMovies.slice(0, 12).map((m: any) => m.poster_url || m.thumb_url).filter(Boolean),
+      gallery: bioData?.gallery?.length ? bioData.gallery : avdbMovies.slice(0, 12).map((m: any) => m.vod_pic).filter(Boolean),
       
       // Filmography primarily from AVDB
       filmography: Array.from(filmMap.values()),
