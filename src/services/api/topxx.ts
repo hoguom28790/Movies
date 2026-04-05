@@ -127,7 +127,7 @@ async function scrapeTopXXDetails(slugOrId: string) {
        const scripts = $("script").text();
        const embedMatch = scripts.match(/https?:\/\/embed\.streamxx\.net\/player\/[a-zA-Z0-9]+/g);
        if (embedMatch) {
-          [...new Set(embedMatch)].forEach((link, idx) => {
+          (Array.from(new Set(embedMatch)) as string[]).forEach((link, idx) => {
              const id = link.split('/player/')[1]?.split('?')[0];
              if (id) {
                 sources.push({ 
@@ -443,7 +443,7 @@ export async function getTopXXDetails(slug: string) {
         title: viTrans?.title || movie.title || "No Title",
         posterUrl: movie.thumbnail,
         thumb_url: movie.thumbnail,
-        content: viTrans?.description || movie.description || viTrans?.content || movie.content,
+        content: viTrans?.description || movie.description || movie.content,
         sources: finalSources,
         source: 'topxx' as const,
         trans: movie.trans || []
