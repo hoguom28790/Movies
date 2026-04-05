@@ -222,9 +222,7 @@ export function ActorModal({ isOpen, onClose, actor, isXX = false }: ActorModalP
                                </div>
                                <div className="flex flex-wrap gap-5 items-center">
                                   <span className="px-6 py-3 rounded-2xl bg-primary text-white text-[11px] font-black tracking-widest uppercase italic border border-primary/20 shadow-lg">PRIMARY ARTIST</span>
-                                  {details?.source?.includes('jav') && (
-                                    <span className="px-6 py-3 rounded-2xl bg-yellow-500/10 text-yellow-500 text-[11px] font-black tracking-widest uppercase italic border border-yellow-500/20">{details.source.toUpperCase()} SYNC</span>
-                                  )}
+                                  
                                   <button onClick={() => { onClose(); router.push(`/${TOPXX_PATH}/dien-vien/${actor?.name.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`); }} className="flex items-center gap-2 px-6 py-3 rounded-2xl bg-foreground/5 border border-foreground/10 text-foreground/60 hover:text-primary hover:bg-foreground/10 transition-all font-black uppercase italic tracking-widest text-[11px]"><Search className="w-4 h-4" /> TẤT CẢ PHIM</button>
                                   <button onClick={handleToggleFav} className={`p-4 rounded-2xl border transition-all active-depth ${isFav ? 'bg-[#ef4444] border-[#ef4444] text-white shadow-lg' : 'bg-foreground/5 border-foreground/10 text-foreground/40 hover:text-foreground hover:bg-foreground/10'}`}><Heart className={`w-7 h-7 ${isFav ? 'fill-current' : ''}`} /></button>
                                </div>
@@ -316,7 +314,6 @@ export function ActorModal({ isOpen, onClose, actor, isXX = false }: ActorModalP
                                                      <a href={`https://www.javlibrary.com/en/vl_searchbyid.php?keyword=${m.code.replace(/[-\s]/g, "").toLowerCase()}`} target="_blank" className="w-full py-4 glass-pro border border-foreground/10 text-[10px] font-black text-foreground/50 hover:text-foreground uppercase italic rounded-2xl flex items-center justify-center gap-3 hover:bg-foreground/10 transition-all"><ExternalLink className="w-4 h-4" /> ON JAVLIBRARY</a>
                                                   </div>
                                                   <div className="absolute top-6 left-6 glass-pro px-5 py-2 rounded-2xl border border-foreground/10 shadow-2xl"><span className="text-[12px] font-black text-primary italic uppercase tracking-widest">{m.code}</span></div>
-                                                  {m.rating !== "N/A" && <div className="absolute top-6 right-6 bg-yellow-500/10 backdrop-blur-2xl px-3 py-1.5 rounded-2xl border border-yellow-500/20 shadow-2xl flex items-center gap-2"><Star className="w-4 h-4 text-yellow-500 fill-current" /><span className="text-[12px] font-black text-yellow-500">{m.rating}</span></div>}
                                                </div>
                                                <div className="px-3 space-y-2.5">
                                                   <h5 className="text-[15px] font-black text-foreground line-clamp-2 italic uppercase font-headline tracking-tight group-hover:text-primary transition-colors leading-tight h-12">{m.title}</h5>

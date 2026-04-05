@@ -164,15 +164,6 @@ export function ActorProfile({ actorName, slug, isXX = false }: ActorProfileProp
           <div className="flex-1 text-center lg:text-left space-y-8">
             <div className="space-y-4">
               <div className="flex flex-wrap items-center justify-center lg:justify-start gap-4">
-
-                {details?.source && (
-                  <span className="px-3 py-1 rounded-xl text-[9px] font-black uppercase tracking-widest bg-foreground/5 border border-foreground/10 text-foreground/30 italic">
-                    {details.source.toUpperCase()} SYNC
-                  </span>
-                )}
-                <div className="flex items-center gap-1 text-yellow-500">
-                  {[1, 2, 3, 4, 5].map((i) => <Star key={i} className="w-4 h-4 fill-current" />)}
-                </div>
               </div>
 
               <h1 className="text-4xl md:text-7xl lg:text-8xl font-black text-foreground uppercase italic tracking-tighter leading-none select-none drop-shadow-2xl">
@@ -190,7 +181,7 @@ export function ActorProfile({ actorName, slug, isXX = false }: ActorProfileProp
                 {details?.measurements && details.measurements !== "N/A" && (
                   <div className="flex flex-col items-center lg:items-start border-l border-foreground/10 pl-8">
                     <span className="text-[9px] font-black uppercase text-yellow-500/50 tracking-widest italic">SỐ ĐO</span>
-                    <span className="text-lg font-black text-foreground italic tracking-tight">{details.measurements}</span>
+                    <span className="text-lg font-black text-foreground italic tracking-tight">{details.measurements.replace(/cm/gi, '').trim()}</span>
                   </div>
                 )}
                 {details?.height && details.height !== "N/A" && (
@@ -203,7 +194,7 @@ export function ActorProfile({ actorName, slug, isXX = false }: ActorProfileProp
                   <div className="flex flex-col items-center lg:items-start border-l border-foreground/10 pl-8">
                     <span className="text-[9px] font-black uppercase text-yellow-500/50 tracking-widest italic">MODEL STYLES</span>
                     <Link 
-                      href={`/${TOPXX_PATH}/search?q=${encodeURIComponent(details.bodyType)}`}
+                      href={`/${TOPXX_PATH}/dien-vien/style/${encodeURIComponent(details.bodyType)}`}
                       className="text-lg font-black text-yellow-500 italic tracking-tight hover:underline underline-offset-4"
                     >
                       {details.bodyType}

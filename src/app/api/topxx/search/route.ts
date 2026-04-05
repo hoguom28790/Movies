@@ -2,17 +2,44 @@ import { NextResponse } from "next/server";
 import { searchTopXXMovies } from "@/services/api/topxx";
 import { getAVDBMovies } from "@/services/api/avdb";
 
+const BASE_URL = "https://topxx.vip/api/v1";
+
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const keyword = searchParams.get("keyword") || "";
   const page = parseInt(searchParams.get("page") || "1", 10);
+  const type = searchParams.get("type") || "movies";
 
   if (!keyword) {
     return NextResponse.json({ items: [], pagination: { totalItems: 0, totalPages: 0, currentPage: 1 } });
   }
 
   try {
-    // Search from both sources in parallel
+    if (type === "actors") {
+      // Specialized Actor Search
+      const actorUrl = `${BASE_URL}/actors?search=${encodeURIComponent(keyword)}&page=${page}`;
+      const res = await fetch(actorUrl, { headers: { 'User-Agent': 'Mozilla/5.0' } });
+      if (!res.ok) return NextResponse.json({ items: [] });
+      const data = await res.json();
+      
+      const actors = (data.data || []).map((a: any) => ({
+        id: a.trans?.[0]?.slug || a.id,
+        name: a.name || a.trans?.[0]?.name,
+        profilePath: a.thumbnail || a.avatar || (a.trans?.[0]?.thumbnail),
+        type: 'topxx'
+      }));
+
+      return NextResponse.json({
+        items: actors,
+        pagination: {
+          totalItems: data.meta?.total || actors.length,
+          totalPages: data.meta?.last_page || 1,
+          currentPage: page
+        }
+      });
+    }
+
+    // Search from both sources in parallel (Movies)
     const [topxxResults, avdbResults] = await Promise.allSettled([
       searchTopXXMovies(keyword, page),
       getAVDBMovies(page, undefined, keyword),

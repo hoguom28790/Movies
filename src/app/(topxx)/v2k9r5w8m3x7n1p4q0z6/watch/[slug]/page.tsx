@@ -12,6 +12,7 @@ import { getTraktRating } from "@/services/trakt";
 import { searchTMDBMovie } from "@/services/tmdb";
 import { Suspense } from "react";
 import { ActorAvatar } from "@/components/movie/ActorAvatar";
+import { translateToVietnamese } from "@/lib/translate";
 
 async function RatingsSection({ title, year }: { title: string; year?: number }) {
   let tmdbData: any = null;
@@ -95,6 +96,15 @@ export default async function XXWatchPage({
     }
 
     if (!item) return notFound();
+
+    // Auto-translate if not Vietnamese
+    const originalDesc = item.content || item.description || "";
+    if (originalDesc && !/[àáạảãâầấậẩẫăằắặẳẵèéẹẻẽêềếệểễìíịỉĩòóọỏõôồốộổỗơờớợởỡùúụủũưừứựửữỳýỵỷỹđ]/i.test(originalDesc)) {
+       const translated = await translateToVietnamese(originalDesc);
+       if (isAVDB || item.source === 'avdb') item.content = translated;
+       else if (item.trans?.[0]) item.trans[0].content = translated;
+       else if (item.description) item.description = translated;
+    }
 
     // Normalize AVDB data
     if (isAVDB || item.source === 'avdb') {
