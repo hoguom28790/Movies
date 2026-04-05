@@ -3,7 +3,8 @@
 import React, { useState, useEffect } from "react";
 import {
   Star, Heart, Check, Play, User, Calendar, Smile, Ruler,
-  MapPin, Tv, TrendingUp, Image as ImageIcon, PlayCircle, Loader2, Film
+  MapPin, Tv, TrendingUp, Image as ImageIcon, PlayCircle, Loader2, Film,
+  ChevronLeft, ChevronRight
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useQuery } from "@tanstack/react-query";
@@ -24,6 +25,15 @@ export function ActorProfile({ actorName, slug, isXX = false }: ActorProfileProp
   const { user } = useAuth();
   const [isFav, setIsFav] = useState(false);
   const [lightboxImage, setLightboxImage] = useState<string | null>(null);
+  const scrollRef = React.useRef<HTMLDivElement>(null);
+
+  const scroll = (direction: 'left' | 'right') => {
+    if (scrollRef.current) {
+      const { scrollLeft, clientWidth } = scrollRef.current;
+      const scrollTo = direction === 'left' ? scrollLeft - clientWidth : scrollLeft + clientWidth;
+      scrollRef.current.scrollTo({ left: scrollTo, behavior: 'smooth' });
+    }
+  };
 
   const { data: details, isLoading, error } = useQuery({
     queryKey: [isXX ? "actress-topxx" : "actor-details-profile", actorName.toLowerCase()],
@@ -124,6 +134,22 @@ export function ActorProfile({ actorName, slug, isXX = false }: ActorProfileProp
                 className="w-full h-full object-cover transition-transform duration-[3s] group-hover:scale-110"
                 alt={actorName}
                 referrerPolicy="no-referrer"
+                onError={(e) => {
+                  const target = e.currentTarget;
+                  // Try smart fallback for TopXX actors
+                  if (isXX) {
+                    const parts = slug.split('-');
+                    if (parts.length === 2 && !target.src.includes(`${parts[1]}_${parts[0]}`)) {
+                       target.src = `https://javmodel.com/javdata/uploads/${parts[1]}_${parts[0]}150.jpg`;
+                       return;
+                    }
+                    if (!target.src.includes(`${slug.replace(/-/g, '_')}150.jpg`)) {
+                       target.src = `https://javmodel.com/javdata/uploads/${slug.replace(/-/g, '_')}150.jpg`;
+                       return;
+                    }
+                  }
+                  target.style.display = 'none';
+                }}
               />
             ) : (
               <div className={cn("w-full h-full flex flex-col items-center justify-center font-black transition-all", isXX ? "bg-yellow-500/10 text-yellow-500/50" : "bg-primary/10 text-primary/50")}>
@@ -293,25 +319,44 @@ export function ActorProfile({ actorName, slug, isXX = false }: ActorProfileProp
               </div>
 
               {details.gallery?.length > 0 ? (
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-6">
-                  {details.gallery.slice(0, 15).map((imgUrl: string, i: number) => (
-                    <button
-                      key={i}
-                      onClick={() => setLightboxImage(imgUrl)}
-                      className="group relative aspect-[4/5] rounded-[32px] overflow-hidden bg-foreground/5 border border-foreground/5 transition-all duration-500 hover:scale-[1.02] hover:shadow-2xl hover:shadow-yellow-500/10"
-                    >
-                      <img
-                        src={imgUrl}
-                        className="w-full h-full object-cover transition-all duration-700 group-hover:scale-110"
-                        alt={`${actorName} Gallery ${i}`}
-                        referrerPolicy="no-referrer"
-                        onError={(e) => { e.currentTarget.style.display = 'none'; }}
-                      />
-                      <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                         <span className="text-[10px] font-black text-white uppercase tracking-[0.2em] translate-y-4 group-hover:translate-y-0 transition-transform">XEM ẢNH</span>
-                      </div>
-                    </button>
-                  ))}
+                <div className="relative group/gallery">
+                  <div 
+                    ref={scrollRef}
+                    className="flex gap-6 overflow-x-auto pb-4 hide-scrollbar snap-x no-scrollbar"
+                  >
+                    {details.gallery.map((imgUrl: string, i: number) => (
+                      <button
+                        key={i}
+                        onClick={() => setLightboxImage(imgUrl)}
+                        className="flex-none w-48 sm:w-64 aspect-[4/5] rounded-[32px] overflow-hidden bg-foreground/5 border border-foreground/5 transition-all duration-500 hover:scale-[1.02] hover:shadow-2xl hover:shadow-yellow-500/10 snap-start"
+                      >
+                        <img
+                          src={imgUrl}
+                          className="w-full h-full object-cover transition-all duration-700 group-hover:scale-110"
+                          alt={`${actorName} Gallery ${i}`}
+                          referrerPolicy="no-referrer"
+                          onError={(e) => { e.currentTarget.parentElement?.remove(); }}
+                        />
+                        <div className="absolute inset-0 bg-black/40 opacity-0 hover:opacity-100 transition-opacity flex items-center justify-center">
+                           <span className="text-[10px] font-black text-white uppercase tracking-[0.2em] translate-y-4 hover:translate-y-0 transition-transform">XEM ẢNH</span>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+
+                  {/* Navigation Buttons */}
+                  <button 
+                    onClick={() => scroll('left')}
+                    className="absolute left-4 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-black/60 backdrop-blur-xl border border-white/10 text-white flex items-center justify-center opacity-0 group-hover/gallery:opacity-100 transition-all hover:bg-yellow-500 hover:text-black z-10"
+                  >
+                    <ChevronLeft className="w-6 h-6" />
+                  </button>
+                  <button 
+                    onClick={() => scroll('right')}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-black/60 backdrop-blur-xl border border-white/10 text-white flex items-center justify-center opacity-0 group-hover/gallery:opacity-100 transition-all hover:bg-yellow-500 hover:text-black z-10"
+                  >
+                    <ChevronRight className="w-6 h-6" />
+                  </button>
                 </div>
               ) : (
                 <div className="h-full min-h-[300px] flex flex-col items-center justify-center text-foreground/10 border-2 border-dashed border-foreground/5 rounded-[40px]">

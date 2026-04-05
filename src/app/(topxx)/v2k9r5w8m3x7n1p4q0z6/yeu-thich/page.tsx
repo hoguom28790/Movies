@@ -322,9 +322,17 @@ export default function TopXXLibraryPage() {
                               className="w-full h-full object-cover transition-transform duration-[3s] group-hover:scale-110"
                               referrerPolicy="no-referrer"
                               onError={(e) => { 
-                                // Last resort fallback
-                                if (!e.currentTarget.src.includes('placehold.co')) {
-                                  e.currentTarget.src = `https://placehold.co/500x500/0f1115/efb11d?text=${encodeURIComponent(actor.name)}`;
+                                const target = e.currentTarget;
+                                // Strategy 1: Try swapping name order (e.g. misono_waka -> waka_misono)
+                                const parts = String(actor.id).split('-');
+                                if (parts.length === 2 && !target.src.includes(`${parts[1]}_${parts[0]}`)) {
+                                  target.src = `https://javmodel.com/javdata/uploads/${parts[1]}_${parts[0]}150.jpg`;
+                                  return;
+                                }
+                                
+                                // Strategy 2: Last resort fallback
+                                if (!target.src.includes('placehold.co')) {
+                                  target.src = `https://placehold.co/500x500/0f1115/efb11d?text=${encodeURIComponent(actor.name)}`;
                                 }
                               }}
                             />
