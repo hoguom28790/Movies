@@ -4,7 +4,7 @@ import React, { useRef } from "react";
 import Link from "next/link";
 import { ChevronLeft, ChevronRight, User2 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
-import { useSession } from "next-auth/react";
+import { useAuth } from "@/contexts/AuthContext";
 import { getUserFavoriteActors } from "@/services/db";
 import { TOPXX_PATH } from "@/lib/constants";
 import { ActorModal } from "./ActorModal";
@@ -14,16 +14,18 @@ interface FavoriteActorsRowProps {
 }
 
 export function FavoriteActorsRow({ isXX = false }: FavoriteActorsRowProps) {
-  const { data: session } = useSession();
-  const userId = session?.user?.id;
+  const { user, loading: authLoading } = useAuth();
+  const userId = user?.uid;
   const rowRef = useRef<HTMLDivElement>(null);
   const [selectedActor, setSelectedActor] = React.useState<any>(null);
 
-  const { data: actors = [], isLoading } = useQuery({
+  const { data: actors = [], isLoading: actorsLoading } = useQuery({
     queryKey: ['favorite-actors', userId, isXX ? 'topxx' : 'movie'],
     queryFn: () => userId ? getUserFavoriteActors(userId, isXX ? 'topxx' : 'movie') : Promise.resolve([]),
     enabled: !!userId,
   });
+
+  const isLoading = authLoading || actorsLoading;
 
   const scroll = (dir: "left" | "right") => {
     if (!rowRef.current) return;
