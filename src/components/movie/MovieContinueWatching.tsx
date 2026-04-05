@@ -7,12 +7,13 @@ import { getTopXXFirestoreHistory, deleteTopXXFirestoreHistoryItem } from "@/ser
 import { getTopXXHistory, removeTopXXHistoryItem } from "@/services/topxxDb";
 import { HistoryEntry } from "@/types/database";
 import { MovieCard } from "./MovieCard";
-import { History, ChevronRight, PlayCircle, Zap } from "lucide-react";
+import { History, ChevronLeft, ChevronRight, PlayCircle, Zap } from "lucide-react";
 import Link from "next/link";
 import { Swiper, SwiperSlide } from "swiper/react";
-import { FreeMode } from "swiper/modules";
+import { Navigation, FreeMode } from "swiper/modules";
 import "swiper/css";
 import "swiper/css/free-mode";
+import "swiper/css/navigation";
 import { collection, query, where, onSnapshot } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { cn } from "@/lib/utils";
@@ -113,7 +114,7 @@ export function MovieContinueWatching({ isXX = false }: MovieContinueWatchingPro
           )} />
           <div>
             <h3 className="text-2xl font-black italic tracking-tighter text-foreground uppercase leading-none">
-              {isXX ? "Tiếp tục xem" : "Tiếp tục xem"}
+              Tiếp tục xem
             </h3>
             <p className="text-[10px] font-black text-foreground/20 uppercase tracking-[0.4em] italic mt-2">
               {isXX ? "Lịch sử xem phim 18+" : "Dựa trên lịch sử của bạn"}
@@ -131,6 +132,14 @@ export function MovieContinueWatching({ isXX = false }: MovieContinueWatchingPro
           >
             Xem tất cả <ChevronRight size={14} />
           </Link>
+          <div className="hidden sm:flex items-center gap-2 border-l border-white/10 pl-6">
+            <button className="history-prev w-10 h-10 rounded-full glass-pro text-foreground/50 hover:text-foreground hover:bg-foreground/10 transition-all flex items-center justify-center border border-foreground/5">
+              <ChevronLeft size={20} />
+            </button>
+            <button className="history-next w-10 h-10 rounded-full glass-pro text-foreground/50 hover:text-foreground hover:bg-foreground/10 transition-all flex items-center justify-center border border-foreground/5">
+              <ChevronRight size={20} />
+            </button>
+          </div>
         </div>
       </div>
 

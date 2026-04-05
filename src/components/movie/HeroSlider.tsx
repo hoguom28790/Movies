@@ -119,26 +119,40 @@ export function HeroSlider({ movies, isXX = false }: HeroSliderProps) {
         </AnimatePresence>
       </div>
 
-      {/* Navigation Controls */}
-      <div className="absolute right-8 bottom-8 z-30 flex flex-col gap-6 items-end">
-        {/* Small Vertical Poster for TopXX */}
-        {isXX && (
-          <motion.div
-            key={`poster-${currentIndex}`}
-            initial={{ opacity: 0, x: 20, scale: 0.9 }}
-            animate={{ opacity: 1, x: 0, scale: 1 }}
-            exit={{ opacity: 0, x: 20, scale: 0.9 }}
-            className="w-24 md:w-36 aspect-[2/3] rounded-2xl overflow-hidden shadow-2xl border-4 border-white/20 transition-all bg-black/40"
-          >
-            <img 
-              src={currentMovie.posterUrl} 
-              alt="Poster" 
-              className="w-full h-full object-contain"
-            />
-          </motion.div>
-        )}
-        
-        <div className="flex gap-2">
+      {/* Navigation Thumbnails for TopXX */}
+      {isXX && (
+        <div className="absolute right-6 md:right-12 bottom-12 z-30 flex flex-nowrap md:flex-wrap items-end justify-end gap-3 max-w-[80vw] md:max-w-md overflow-x-auto no-scrollbar pb-4 md:pb-0">
+          {movies.slice(0, 10).map((movie, idx) => (
+            <button
+              key={movie.slug}
+              onClick={() => {
+                setDirection(idx > currentIndex ? 1 : -1);
+                setCurrentIndex(idx);
+              }}
+              className={cn(
+                "relative flex-shrink-0 w-12 md:w-16 aspect-[2/3] rounded-lg md:rounded-xl overflow-hidden transition-all duration-500 border-2 shadow-2xl group/thumb",
+                currentIndex === idx 
+                  ? "border-yellow-500 scale-110 z-10 shadow-yellow-500/20" 
+                  : "border-white/10 opacity-40 hover:opacity-100 hover:border-white/30"
+              )}
+            >
+              <img 
+                src={movie.posterUrl} 
+                alt={movie.title} 
+                className="w-full h-full object-cover"
+              />
+              <div className={cn(
+                "absolute inset-0 bg-yellow-500/10 transition-opacity duration-500",
+                currentIndex === idx ? "opacity-100" : "opacity-0"
+              )} />
+            </button>
+          ))}
+        </div>
+      )}
+
+      {/* Default Navigation Controls (only if not XX) */}
+      {!isXX && (
+        <div className="absolute right-8 bottom-8 z-30 flex gap-2">
           <button 
             onClick={prevSlide}
             className="w-10 h-10 rounded-full bg-white/10 text-white flex items-center justify-center hover:bg-white/20 transition-all border border-white/10 group-hover:border-white/30"
@@ -152,7 +166,7 @@ export function HeroSlider({ movies, isXX = false }: HeroSliderProps) {
             <ChevronRight size={20} />
           </button>
         </div>
-      </div>
+      )}
 
       <PlaylistModal 
         isOpen={isPlaylistModalOpen}
