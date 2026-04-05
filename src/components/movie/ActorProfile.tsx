@@ -123,7 +123,7 @@ export function ActorProfile({ actorName, slug, isXX = false }: ActorProfileProp
             animate={{ scale: 1, opacity: 1 }}
             transition={{ duration: 0.6 }}
             className={cn(
-              "w-48 h-48 md:w-72 md:h-72 rounded-[56px] overflow-hidden border-4 shadow-2xl relative group flex-shrink-0 cursor-pointer",
+              "w-48 h-48 md:w-72 md:h-72 rounded-full overflow-hidden border-4 shadow-2xl relative group flex-shrink-0 cursor-pointer",
               isXX ? "bg-yellow-500/5 border-yellow-500/20" : "bg-primary/5 border-primary/20"
             )}
             onClick={() => profileImageUrl && setLightboxImage(profileImageUrl)}
@@ -164,14 +164,7 @@ export function ActorProfile({ actorName, slug, isXX = false }: ActorProfileProp
           <div className="flex-1 text-center lg:text-left space-y-8">
             <div className="space-y-4">
               <div className="flex flex-wrap items-center justify-center lg:justify-start gap-4">
-                <span className={cn(
-                  "px-4 py-1.5 rounded-2xl text-[10px] font-black uppercase tracking-widest border shadow-xl",
-                  isXX
-                    ? "bg-yellow-500 text-black border-yellow-500 shadow-yellow-500/20"
-                    : "bg-primary text-white border-primary shadow-primary/20"
-                )}>
-                  PREMIUM ARTIST
-                </span>
+
                 {details?.source && (
                   <span className="px-3 py-1 rounded-xl text-[9px] font-black uppercase tracking-widest bg-foreground/5 border border-foreground/10 text-foreground/30 italic">
                     {details.source.toUpperCase()} SYNC
@@ -186,62 +179,43 @@ export function ActorProfile({ actorName, slug, isXX = false }: ActorProfileProp
                 {actorName}
               </h1>
 
+              {/* Enhanced Stats Row */}
+              <div className="flex flex-wrap items-center justify-center lg:justify-start gap-x-8 gap-y-4 pt-2">
+                {details?.birthDate && details.birthDate !== "N/A" && (
+                  <div className="flex flex-col items-center lg:items-start">
+                    <span className="text-[9px] font-black uppercase text-yellow-500/50 tracking-widest italic">NGÀY SINH</span>
+                    <span className="text-lg font-black text-foreground italic tracking-tight">{details.birthDate}</span>
+                  </div>
+                )}
+                {details?.measurements && details.measurements !== "N/A" && (
+                  <div className="flex flex-col items-center lg:items-start border-l border-foreground/10 pl-8">
+                    <span className="text-[9px] font-black uppercase text-yellow-500/50 tracking-widest italic">SỐ ĐO</span>
+                    <span className="text-lg font-black text-foreground italic tracking-tight">{details.measurements}</span>
+                  </div>
+                )}
+                {details?.height && details.height !== "N/A" && (
+                  <div className="flex flex-col items-center lg:items-start border-l border-foreground/10 pl-8">
+                    <span className="text-[9px] font-black uppercase text-yellow-500/50 tracking-widest italic">CHIỀU CAO</span>
+                    <span className="text-lg font-black text-foreground italic tracking-tight">{details.height}</span>
+                  </div>
+                )}
+                {details?.bodyType && details.bodyType !== "N/A" && (
+                  <div className="flex flex-col items-center lg:items-start border-l border-foreground/10 pl-8">
+                    <span className="text-[9px] font-black uppercase text-yellow-500/50 tracking-widest italic">MODEL STYLES</span>
+                    <Link 
+                      href={`/${TOPXX_PATH}/search?q=${encodeURIComponent(details.bodyType)}`}
+                      className="text-lg font-black text-yellow-500 italic tracking-tight hover:underline underline-offset-4"
+                    >
+                      {details.bodyType}
+                    </Link>
+                  </div>
+                )}
+              </div>
+
               {details?.studio && details.studio !== "N/A" && (
                 <p className="text-foreground/40 font-bold uppercase tracking-[0.3em] text-[10px] md:text-[11px] italic">
                   {details.studio} EXCLUSIVE
                 </p>
-              )}
-            </div>
-
-            {/* Quick stats */}
-            <div className="flex flex-wrap items-center justify-center lg:justify-start gap-3">
-              {details?.birthDate && details.birthDate !== "N/A" && (
-                <div className="flex flex-col items-center px-4 py-2 rounded-2xl bg-foreground/5 border border-foreground/10">
-                  <span className="text-[8px] font-black uppercase text-foreground/20 italic tracking-widest">Born</span>
-                  <span className="text-xs font-black text-foreground italic">{details.birthDate}</span>
-                </div>
-              )}
-              {details?.measurements && details.measurements !== "N/A" && (
-                <div className="flex flex-col items-center px-4 py-2 rounded-2xl bg-foreground/5 border border-foreground/10">
-                  <span className="text-[8px] font-black uppercase text-foreground/20 italic tracking-widest">B / W / H</span>
-                  <span className="text-xs font-black text-foreground italic">{details.measurements}</span>
-                </div>
-              )}
-              {details?.cupSize && details.cupSize !== "N/A" && (
-                <div className="flex flex-col items-center px-4 py-2 rounded-2xl bg-yellow-500/5 border border-yellow-500/10">
-                  <span className="text-[8px] font-black uppercase text-yellow-500/40 italic tracking-widest">Cup</span>
-                  <span className="text-xs font-black text-yellow-500 italic">{details.cupSize}</span>
-                </div>
-              )}
-              {details?.height && details.height !== "N/A" && (
-                <div className="flex flex-col items-center px-4 py-2 rounded-2xl bg-foreground/5 border border-foreground/10">
-                  <span className="text-[8px] font-black uppercase text-foreground/20 italic tracking-widest">Height</span>
-                  <span className="text-xs font-black text-foreground italic">{details.height}</span>
-                </div>
-              )}
-              {details?.weight && details.weight !== "N/A" && (
-                <div className="flex flex-col items-center px-4 py-2 rounded-2xl bg-foreground/5 border border-foreground/10">
-                  <span className="text-[8px] font-black uppercase text-foreground/20 italic tracking-widest">Weight</span>
-                  <span className="text-xs font-black text-foreground italic">{details.weight}</span>
-                </div>
-              )}
-              {details?.bloodType && details.bloodType !== "N/A" && (
-                <div className="flex flex-col items-center px-4 py-2 rounded-2xl bg-red-500/5 border border-red-500/10">
-                  <span className="text-[8px] font-black uppercase text-red-400/40 italic tracking-widest">Blood</span>
-                  <span className="text-xs font-black text-red-400 italic">{details.bloodType}</span>
-                </div>
-              )}
-              {(details?.yearsActive && details.yearsActive !== "N/A" || details?.debutYear && details.debutYear !== "N/A") && (
-                <div className="flex flex-col items-center px-4 py-2 rounded-2xl bg-foreground/5 border border-foreground/10">
-                  <span className="text-[8px] font-black uppercase text-foreground/20 italic tracking-widest">Active</span>
-                  <span className="text-xs font-black text-foreground italic">{details.yearsActive !== "N/A" ? details.yearsActive : details.debutYear + "~"}</span>
-                </div>
-              )}
-              {filmography.length > 0 && (
-                <div className="flex flex-col items-center px-4 py-2 rounded-2xl bg-yellow-500/10 border border-yellow-500/20">
-                  <span className="text-[8px] font-black uppercase text-yellow-500/60 italic tracking-widest">Titles</span>
-                  <span className="text-xs font-black text-yellow-500 italic">{filmography.length}+</span>
-                </div>
               )}
             </div>
 
@@ -265,109 +239,7 @@ export function ActorProfile({ actorName, slug, isXX = false }: ActorProfileProp
         </div>
       </div>
 
-      {/* ─── BIOGRAPHICAL INFO + GALLERY ───────────────────────────── */}
-      {isXX && details && (
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 animate-in slide-in-from-bottom duration-1000">
-          {/* Detailed Stats (Left - 4 columns) */}
-          <div className="lg:col-span-4 space-y-8">
-            <div className="bg-surface rounded-[40px] p-8 md:p-10 border border-foreground/5 shadow-2xl space-y-10">
-              <div className="flex items-center gap-4 border-b border-foreground/5 pb-6">
-                <Smile className="w-6 h-6 text-yellow-500" />
-                <h3 className="text-2xl font-black italic uppercase tracking-tighter text-foreground">Thông tin</h3>
-              </div>
 
-              <div className="grid grid-cols-1 gap-y-7">
-                {[
-                  { label: "Tên thật", value: details.realName !== details.stageName ? details.realName : null, icon: User },
-                  { label: "Ngày sinh", value: details.birthDate, icon: Calendar },
-                  { label: "Quốc tịch", value: details.nationality, icon: MapPin },
-                  { label: "Số đo", value: details.measurements, icon: Ruler },
-                  { label: "Cúp ngực", value: details.cupSize, icon: Heart },
-                  { label: "Vóc dáng / Style", value: details.bodyType, icon: User },
-                  { label: "Chiều cao", value: details.height, icon: Ruler },
-                  { label: "Trọng lượng", value: details.weight, icon: TrendingUp },
-                  { label: "Nhóm máu", value: details.bloodType, icon: Heart },
-                  { label: "Instagram", value: details.instagram, icon: User },
-                  { label: "Studio", value: details.studio, icon: Tv },
-                ].filter(s => s.value && s.value !== "N/A" && s.value !== "Đang cập nhật" && s.value !== details.stageName).map((stat, i) => (
-                  <div key={i} className="space-y-1 group">
-                    <p className="text-[9px] font-black uppercase text-foreground/20 tracking-widest italic">{stat.label}</p>
-                    {stat.label === "Instagram" && stat.value?.startsWith("@") ? (
-                      <a href={`https://instagram.com/${stat.value.replace("@", "")}`} target="_blank" rel="noreferrer" className="text-base md:text-lg font-black text-foreground/80 italic tracking-tight hover:text-yellow-500 transition-colors block">
-                        {stat.value}
-                      </a>
-                    ) : (
-                      <p className="text-base md:text-lg font-black text-foreground/80 italic tracking-tight group-hover:text-yellow-500 transition-colors">{stat.value}</p>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          {/* Gallery (Right - 8 columns) */}
-          <div className="lg:col-span-8">
-            <div className="bg-surface rounded-[40px] p-8 md:p-10 border border-foreground/5 shadow-2xl space-y-10 h-full">
-              <div className="flex items-center justify-between border-b border-foreground/5 pb-6">
-                <div className="flex items-center gap-4">
-                  <ImageIcon className="w-6 h-6 text-yellow-500" />
-                  <h3 className="text-2xl font-black italic uppercase tracking-tighter text-foreground">Gallery</h3>
-                </div>
-                {details.gallery?.length > 0 && (
-                  <span className="text-[10px] font-black text-foreground/20 tracking-widest uppercase">{details.gallery.length} ẢNH</span>
-                )}
-              </div>
-
-              {details.gallery?.length > 0 ? (
-                <div className="relative group/gallery">
-                  <div 
-                    ref={scrollRef}
-                    className="flex gap-6 overflow-x-auto pb-4 hide-scrollbar snap-x no-scrollbar"
-                  >
-                    {details.gallery.map((imgUrl: string, i: number) => (
-                      <button
-                        key={i}
-                        onClick={() => setLightboxImage(imgUrl)}
-                        className="flex-none w-48 sm:w-64 aspect-[4/5] rounded-[32px] overflow-hidden bg-foreground/5 border border-foreground/5 transition-all duration-500 hover:scale-[1.02] hover:shadow-2xl hover:shadow-yellow-500/10 snap-start"
-                      >
-                        <img
-                          src={imgUrl}
-                          className="w-full h-full object-cover transition-all duration-700 group-hover:scale-110"
-                          alt={`${actorName} Gallery ${i}`}
-                          referrerPolicy="no-referrer"
-                          onError={(e) => { e.currentTarget.parentElement?.remove(); }}
-                        />
-                        <div className="absolute inset-0 bg-black/40 opacity-0 hover:opacity-100 transition-opacity flex items-center justify-center">
-                           <span className="text-[10px] font-black text-white uppercase tracking-[0.2em] translate-y-4 hover:translate-y-0 transition-transform">XEM ẢNH</span>
-                        </div>
-                      </button>
-                    ))}
-                  </div>
-
-                  {/* Navigation Buttons */}
-                  <button 
-                    onClick={() => scroll('left')}
-                    className="absolute left-4 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-black/60 backdrop-blur-xl border border-white/10 text-white flex items-center justify-center opacity-0 group-hover/gallery:opacity-100 transition-all hover:bg-yellow-500 hover:text-black z-10"
-                  >
-                    <ChevronLeft className="w-6 h-6" />
-                  </button>
-                  <button 
-                    onClick={() => scroll('right')}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-black/60 backdrop-blur-xl border border-white/10 text-white flex items-center justify-center opacity-0 group-hover/gallery:opacity-100 transition-all hover:bg-yellow-500 hover:text-black z-10"
-                  >
-                    <ChevronRight className="w-6 h-6" />
-                  </button>
-                </div>
-              ) : (
-                <div className="h-full min-h-[300px] flex flex-col items-center justify-center text-foreground/10 border-2 border-dashed border-foreground/5 rounded-[40px]">
-                  <ImageIcon className="w-20 h-20 mb-4 opacity-20" />
-                  <p className="text-sm font-black uppercase tracking-widest italic tracking-tight">No gallery available</p>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* ─── FILMOGRAPHY (Bottom Full Width) ──────────────────────── */}
       {isXX && filmography.length > 0 && (
