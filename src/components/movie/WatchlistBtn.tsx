@@ -97,8 +97,16 @@ export function WatchlistBtn({ movieSlug, movieCode, movieTitle, posterUrl, vari
         >
           {isSaved ? <BookmarkCheck size={20} fill="currentColor" strokeWidth={0} /> : <Bookmark size={20} />}
         </button>
-        <AuthModal isOpen={showAuth} onClose={() => setShowAuth(false)} />
-        <PlaylistModal isOpen={showPlaylistModal} onClose={handleCloseModal} movieSlug={movieSlug} movieTitle={movieTitle} posterUrl={posterUrl} isXX={isXX} />
+      <AuthModal isOpen={showAuth} onClose={() => setShowAuth(false)} />
+        <PlaylistModal 
+          isOpen={showPlaylistModal} 
+          onClose={handleCloseModal} 
+          movieSlug={movieSlug} 
+          movieCode={movieCode}
+          movieTitle={movieTitle} 
+          posterUrl={posterUrl} 
+          isXX={isXX} 
+        />
       </>
     );
   }
@@ -126,7 +134,15 @@ export function WatchlistBtn({ movieSlug, movieCode, movieTitle, posterUrl, vari
         {loading ? "Đang tải..." : (isSaved ? "Đã Thêm" : "Lưu Phim")}
       </Button>
       <AuthModal isOpen={showAuth} onClose={() => setShowAuth(false)} />
-      <PlaylistModal isOpen={showPlaylistModal} onClose={handleCloseModal} movieSlug={movieSlug} movieTitle={movieTitle} posterUrl={posterUrl} isXX={isXX} />
+      <PlaylistModal 
+        isOpen={showPlaylistModal} 
+        onClose={handleCloseModal} 
+        movieSlug={movieSlug} 
+        movieCode={movieCode}
+        movieTitle={movieTitle} 
+        posterUrl={posterUrl} 
+        isXX={isXX} 
+      />
     </>
   );
 }
