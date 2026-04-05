@@ -6,6 +6,7 @@ import { MovieRow } from "@/components/movie/MovieRow";
 import { MovieGrid } from "@/components/movie/MovieGrid";
 import { BentoGrid } from "@/components/movie/BentoGrid";
 import { HomeSearchBar } from "@/components/movie/HomeSearchBar";
+import { FavoriteActorsRow } from "@/components/movie/FavoriteActorsRow";
 import { TOPXX_PATH } from "@/lib/constants";
 
 import { Suspense } from "react";
@@ -126,6 +127,9 @@ export default async function XXHomePage() {
         <div className="flex flex-col gap-20 px-4 md:px-8 mt-16">
           {/* Xem Tiếp */}
           <MovieContinueWatching isXX />
+
+          {/* Diễn viên yêu thích */}
+          <FavoriteActorsRow isXX />
 
           {/* Phim mới cập nhật (10 merged phim) */}
           <MovieRow

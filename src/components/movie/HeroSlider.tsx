@@ -125,19 +125,38 @@ export function HeroSlider({ movies, isXX = false }: HeroSliderProps) {
       </div>
 
       {/* Navigation Controls */}
-      <div className="absolute right-8 bottom-8 z-30 flex gap-2">
-        <button 
-          onClick={prevSlide}
-          className="w-10 h-10 rounded-full backdrop-blur-xl bg-white/10 text-white flex items-center justify-center hover:bg-white/20 transition-all border border-white/10"
-        >
-          <ChevronLeft size={20} />
-        </button>
-        <button 
-          onClick={nextSlide}
-          className="w-10 h-10 rounded-full backdrop-blur-xl bg-white/10 text-white flex items-center justify-center hover:bg-white/20 transition-all border border-white/10"
-        >
-          <ChevronRight size={20} />
-        </button>
+      <div className="absolute right-8 bottom-8 z-30 flex flex-col gap-6 items-end">
+        {/* Small Vertical Poster for TopXX */}
+        {isXX && (
+          <motion.div
+            key={`poster-${currentIndex}`}
+            initial={{ opacity: 0, x: 20, scale: 0.9 }}
+            animate={{ opacity: 1, x: 0, scale: 1 }}
+            exit={{ opacity: 0, x: 20, scale: 0.9 }}
+            className="w-24 md:w-32 aspect-[2/3] rounded-2xl overflow-hidden shadow-2xl border-4 border-white/10 backdrop-blur-xl group-hover:border-yellow-500/50 transition-colors"
+          >
+            <img 
+              src={currentMovie.posterUrl} 
+              alt="Poster" 
+              className="w-full h-full object-cover"
+            />
+          </motion.div>
+        )}
+        
+        <div className="flex gap-2">
+          <button 
+            onClick={prevSlide}
+            className="w-10 h-10 rounded-full backdrop-blur-xl bg-white/10 text-white flex items-center justify-center hover:bg-white/20 transition-all border border-white/10 group-hover:border-white/30"
+          >
+            <ChevronLeft size={20} />
+          </button>
+          <button 
+            onClick={nextSlide}
+            className="w-10 h-10 rounded-full backdrop-blur-xl bg-white/10 text-white flex items-center justify-center hover:bg-white/20 transition-all border border-white/10 group-hover:border-white/30"
+          >
+            <ChevronRight size={20} />
+          </button>
+        </div>
       </div>
 
       <PlaylistModal 
