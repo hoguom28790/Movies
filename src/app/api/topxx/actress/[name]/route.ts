@@ -1,9 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getJavDBActressProfile } from "@/services/scrapers/javdb";
+import { getBoobpediaProfile } from "@/services/scrapers/boobpedia";
 
 /**
- * TOPXX ACTRESS AGGREGATE API - Optimized to prevent internal timeout loops
- * Priority: AVDB API (fastest) + JAVDB scraper (biography)
+ * TOPXX ACTRESS AGGREGATE API
+ * Priority: AVDB API (filmography) + Boobpedia (bio, measurements, profile image)
+ * 
+ * Boobpedia is used because JavDB mirrors are blocked from Vercel servers.
+ * Boobpedia has detailed bio data: measurements, cup size, height, weight, blood type.
  */
 
 export async function GET(
@@ -16,25 +19,25 @@ export async function GET(
   const decodedName = decodeURIComponent(name).trim();
   console.log(`[TOPXX-ACTRESS] Aggregating data for: ${decodedName}`);
 
-  // Fetch both sources in parallel for speed
+  // Fetch AVDB for filmography and Boobpedia for bio in parallel
   const avdbUrl = `https://avdbapi.com/api.php/provide/vod?ac=detail&at=json&vod_actor=${encodeURIComponent(decodedName)}&pg=1`;
   
   try {
-    const [avdbRes, javdbData] = await Promise.all([
-      fetch(avdbUrl, { next: { revalidate: 3600 } }).then(r => r.ok ? r.json() : null).catch(() => null),
-      getJavDBActressProfile(decodedName).catch(() => null)
+    const [avdbRes, bioData] = await Promise.all([
+      fetch(avdbUrl, { cache: "force-cache" }).then(r => r.ok ? r.json() : null).catch(() => null),
+      getBoobpediaProfile(decodedName).catch(() => null)
     ]);
 
     const avdbMovies = avdbRes?.list || [];
     
-    if (avdbMovies.length === 0 && !javdbData) {
+    if (avdbMovies.length === 0 && !bioData) {
         throw new Error("No data found from any source");
     }
 
     const firstMovie = avdbMovies[0] || {};
     const filmMap = new Map<string, any>();
 
-    // 1. Add AVDB movies to map
+    // Build filmography map from AVDB
     avdbMovies.forEach((m: any) => {
       const code = m.movie_code || m.slug || m.id?.toString();
       if (code) {
@@ -42,7 +45,7 @@ export async function GET(
           code: code,
           title: m.name || "No Title",
           poster: m.poster_url || m.thumb_url || "",
-          year: m.year || "N/A",
+          year: m.year || m.created_at?.split("-")[0] || "N/A",
           rating: "N/A",
           slug: `av-${m.id}`,
           source: "avdb",
@@ -50,30 +53,39 @@ export async function GET(
       }
     });
 
-    // 2. Add JAVDB movies to map (deduplicate by code)
-    if (javdbData?.filmography) {
-      javdbData.filmography.forEach((f: any) => {
-        if (!filmMap.has(f.code)) {
-          filmMap.set(f.code, { ...f, source: "topxx" }); // Internal routing
-        }
-      });
-    }
-
     const responseData = {
-      source: (avdbMovies.length > 0 ? "AVDB" : "") + (javdbData ? (avdbMovies.length > 0 ? " + " : "") + "JAVDB" : ""),
-      stageName: javdbData?.stageName || decodedName,
-      realName: javdbData?.realName || firstMovie.vod_actor || decodedName,
-      birthDate: javdbData?.birthDate || "N/A",
-      measurements: javdbData?.measurements || "N/A",
-      cupSize: javdbData?.cupSize || "N/A",
-      height: javdbData?.height || "N/A",
-      weight: javdbData?.weight || "N/A",
-      birthPlace: javdbData?.birthPlace || "N/A",
-      studio: firstMovie.vod_area || javdbData?.studio || "N/A",
-      debutYear: javdbData?.debutYear || "N/A",
-      status: javdbData?.status || "Active",
-      profileImage: javdbData?.profileImage || firstMovie.vod_pic || "",
-      gallery: javdbData?.gallery || (firstMovie.vod_pic ? [firstMovie.vod_pic] : []),
+      source: [
+        avdbMovies.length > 0 ? "AVDB" : "",
+        bioData ? "Boobpedia" : ""
+      ].filter(Boolean).join(" + "),
+      
+      // Name info
+      stageName: bioData?.stageName || decodedName,
+      realName: bioData?.realName || firstMovie.vod_actor || decodedName,
+      
+      // Bio from Boobpedia
+      birthDate: bioData?.birthDate || "N/A",
+      measurements: bioData?.measurements || "N/A",
+      bust: bioData?.bust || "N/A",
+      waist: bioData?.waist || "N/A",
+      hips: bioData?.hips || "N/A",
+      cupSize: bioData?.cupSize || "N/A",
+      height: bioData?.height || "N/A",
+      weight: bioData?.weight || "N/A",
+      bloodType: bioData?.bloodType || "N/A",
+      birthPlace: bioData?.birthPlace || firstMovie.vod_area || "N/A",
+      nationality: bioData?.nationality || "N/A",
+      ethnicity: bioData?.ethnicity || "N/A",
+      yearsActive: bioData?.yearsActive || "N/A",
+      studio: firstMovie.vod_area || bioData?.studio || "N/A",
+      debutYear: bioData?.debutYear || "N/A",
+      status: bioData?.status || "Active",
+      
+      // Media
+      profileImage: bioData?.profileImage || firstMovie.vod_pic || "",
+      gallery: bioData?.gallery || (firstMovie.vod_pic ? [firstMovie.vod_pic] : []),
+      
+      // Filmography primarily from AVDB
       filmography: Array.from(filmMap.values()),
     };
 
@@ -84,15 +96,24 @@ export async function GET(
     return NextResponse.json({
       source: "fallback",
       stageName: decodedName,
-      realName: "Đang cập nhật",
+      realName: "N/A",
       birthDate: "N/A",
       measurements: "N/A",
+      bust: "N/A",
+      waist: "N/A",
+      hips: "N/A",
+      cupSize: "N/A",
       height: "N/A",
+      weight: "N/A",
+      bloodType: "N/A",
       birthPlace: "N/A",
+      nationality: "N/A",
+      ethnicity: "N/A",
+      yearsActive: "N/A",
       studio: "N/A",
       debutYear: "N/A",
       status: "Active",
-      profileImage: `https://placehold.co/300x450/0f1115/ffffff?text=${encodeURIComponent(decodedName)}`,
+      profileImage: `https://placehold.co/300x450/0f1115/eab308?text=${encodeURIComponent(decodedName.charAt(0))}`,
       gallery: [],
       filmography: [],
       toast: "Không thể lấy dữ liệu diễn viên lúc này.",

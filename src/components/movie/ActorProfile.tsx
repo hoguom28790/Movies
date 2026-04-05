@@ -167,7 +167,7 @@ export function ActorProfile({ actorName, slug, isXX = false }: ActorProfileProp
             </div>
 
             {/* Quick stats */}
-            <div className="flex flex-wrap items-center justify-center lg:justify-start gap-4">
+            <div className="flex flex-wrap items-center justify-center lg:justify-start gap-3">
               {details?.birthDate && details.birthDate !== "N/A" && (
                 <div className="flex flex-col items-center px-4 py-2 rounded-2xl bg-foreground/5 border border-foreground/10">
                   <span className="text-[8px] font-black uppercase text-foreground/20 italic tracking-widest">Born</span>
@@ -176,7 +176,7 @@ export function ActorProfile({ actorName, slug, isXX = false }: ActorProfileProp
               )}
               {details?.measurements && details.measurements !== "N/A" && (
                 <div className="flex flex-col items-center px-4 py-2 rounded-2xl bg-foreground/5 border border-foreground/10">
-                  <span className="text-[8px] font-black uppercase text-foreground/20 italic tracking-widest">Stats</span>
+                  <span className="text-[8px] font-black uppercase text-foreground/20 italic tracking-widest">B / W / H</span>
                   <span className="text-xs font-black text-foreground italic">{details.measurements}</span>
                 </div>
               )}
@@ -198,10 +198,16 @@ export function ActorProfile({ actorName, slug, isXX = false }: ActorProfileProp
                   <span className="text-xs font-black text-foreground italic">{details.weight}</span>
                 </div>
               )}
-              {details?.debutYear && details.debutYear !== "N/A" && (
+              {details?.bloodType && details.bloodType !== "N/A" && (
+                <div className="flex flex-col items-center px-4 py-2 rounded-2xl bg-red-500/5 border border-red-500/10">
+                  <span className="text-[8px] font-black uppercase text-red-400/40 italic tracking-widest">Blood</span>
+                  <span className="text-xs font-black text-red-400 italic">{details.bloodType}</span>
+                </div>
+              )}
+              {(details?.yearsActive && details.yearsActive !== "N/A" || details?.debutYear && details.debutYear !== "N/A") && (
                 <div className="flex flex-col items-center px-4 py-2 rounded-2xl bg-foreground/5 border border-foreground/10">
-                  <span className="text-[8px] font-black uppercase text-foreground/20 italic tracking-widest">Debut</span>
-                  <span className="text-xs font-black text-foreground italic">{details.debutYear}</span>
+                  <span className="text-[8px] font-black uppercase text-foreground/20 italic tracking-widest">Active</span>
+                  <span className="text-xs font-black text-foreground italic">{details.yearsActive !== "N/A" ? details.yearsActive : details.debutYear + "~"}</span>
                 </div>
               )}
               {filmography.length > 0 && (
@@ -244,19 +250,19 @@ export function ActorProfile({ actorName, slug, isXX = false }: ActorProfileProp
 
             <div className="grid grid-cols-2 gap-x-8 gap-y-10">
               {[
-                { label: "Nghệ danh", value: details.stageName, icon: User },
-                { label: "Tên thật", value: details.realName, icon: Smile },
+                { label: "Tên thật", value: details.realName !== details.stageName ? details.realName : null, icon: User },
                 { label: "Ngày sinh", value: details.birthDate, icon: Calendar },
+                { label: "Quốc tịch", value: details.nationality, icon: MapPin },
+                { label: "Quê quán", value: details.birthPlace !== details.nationality ? details.birthPlace : null, icon: MapPin },
                 { label: "Số đo 3 vòng", value: details.measurements, icon: Ruler },
+                { label: "Cúp ngực", value: details.cupSize, icon: Heart },
                 { label: "Chiều cao", value: details.height, icon: Ruler },
                 { label: "Cân nặng", value: details.weight, icon: TrendingUp },
-                { label: "Cúp ngực", value: details.cupSize, icon: Heart },
-                { label: "Nhóm máu", value: details.bloodType, icon: User },
-                { label: "Quê quán", value: details.birthPlace, icon: MapPin },
+                { label: "Nhóm máu", value: details.bloodType, icon: Heart },
+                { label: "Dân tộc", value: details.ethnicity, icon: User },
+                { label: "Thời gian hoạt động", value: details.yearsActive, icon: TrendingUp },
                 { label: "Studio / Hãng", value: details.studio, icon: Tv },
-                { label: "Năm debut", value: details.debutYear, icon: Play },
-                { label: "Trạng thái", value: details.status, icon: TrendingUp },
-              ].filter(s => s.value && s.value !== "N/A" && s.value !== "Đang cập nhật").map((stat, i) => (
+              ].filter(s => s.value && s.value !== "N/A" && s.value !== "Đang cập nhật" && s.value !== details.stageName).map((stat, i) => (
                 <div key={i} className="space-y-1 group">
                   <p className="text-[9px] font-black uppercase text-foreground/20 tracking-widest italic">{stat.label}</p>
                   <p className="text-lg md:text-xl font-black text-foreground/80 italic tracking-tight group-hover:text-yellow-500 transition-colors">{stat.value}</p>
