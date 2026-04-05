@@ -247,10 +247,12 @@ export default async function XXWatchPage({
                             const genreName = typeof g === 'string' ? g : 
                               (g.name || g.trans?.find((t: any) => t.locale === 'vi')?.name || g.trans?.[0]?.name || '');
                             if (!genreName) return null;
+                            const genreSlug = typeof g === 'string' ? g.toLowerCase().replace(/[^a-z0-9]+/g, '-') :
+                              (g.slug || g.code || g.trans?.find((t: any) => t.locale === 'vi')?.slug || g.trans?.[0]?.slug || genreName.toLowerCase().replace(/[^a-z0-9]+/g, '-'));
                             return (
-                              <span key={i} className="text-[10px] font-black text-foreground/30 uppercase italic tracking-wider hover:text-yellow-500 transition-colors cursor-default">
+                              <Link key={i} href={`/${TOPXX_PATH}/the-loai/${genreSlug}`} className="text-[10px] font-black text-foreground/30 uppercase italic tracking-wider hover:text-yellow-500 transition-colors">
                                 #{genreName}
-                              </span>
+                              </Link>
                             );
                           })}
                         </div>
@@ -269,10 +271,12 @@ export default async function XXWatchPage({
                         const genreName = typeof g === 'string' ? g :
                           (g.name || g.trans?.find((t: any) => t.locale === 'vi')?.name || g.trans?.[0]?.name || '');
                         if (!genreName) return null;
+                        const genreSlug = typeof g === 'string' ? g.toLowerCase().replace(/[^a-z0-9]+/g, '-') :
+                          (g.slug || g.code || g.trans?.find((t: any) => t.locale === 'vi')?.slug || g.trans?.[0]?.slug || genreName.toLowerCase().replace(/[^a-z0-9]+/g, '-'));
                         return (
-                          <span key={g.slug || g.code || i} className="px-3 py-1 rounded-full bg-foreground/5 border border-foreground/10 text-foreground/40 text-[10px] font-black uppercase tracking-widest italic hover:bg-yellow-500/10 hover:border-yellow-500/20 hover:text-yellow-500 transition-all cursor-default">
+                          <Link key={g.slug || g.code || i} href={`/${TOPXX_PATH}/the-loai/${genreSlug}`} className="px-3 py-1 rounded-full bg-foreground/5 border border-foreground/10 text-foreground/40 text-[10px] font-black uppercase tracking-widest italic hover:bg-yellow-500/10 hover:border-yellow-500/20 hover:text-yellow-500 transition-all">
                             {genreName}
-                          </span>
+                          </Link>
                         );
                       })}
                     </div>

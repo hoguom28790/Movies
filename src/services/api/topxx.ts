@@ -254,6 +254,19 @@ export async function getTopXXMovies(
     
     if (!res.ok) {
        console.log(`[TopXX] API failed for ${type}/${slug}, status: ${res.status}`);
+       if (type === "the-loai" && slug) {
+         try {
+           const { getAVDBMovies } = await import("./avdb");
+           // For AVDB categories, transform slug (english-subtitle -> English subtitle)
+           const query = slug.replace(/-/g, ' ');
+           const avdbRes = await getAVDBMovies(page, undefined, query);
+           if (avdbRes && avdbRes.items && avdbRes.items.length > 0) {
+             return avdbRes;
+           }
+         } catch (avdbErr) {
+           console.error("[TopXX] Fallback to AVDB failed:", avdbErr);
+         }
+       }
        return searchTopXXMovies(slug, page, true);
     }
 
