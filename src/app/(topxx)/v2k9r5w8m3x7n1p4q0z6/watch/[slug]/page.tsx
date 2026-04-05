@@ -278,8 +278,8 @@ export default async function XXWatchPage({
                   {(Array.isArray((item as any).actors) ? (item as any).actors : 
                     (typeof (item as any).actor === 'string' ? (item as any).actor.split(',').map((n: string) => ({ name: n.trim() })) : [])
                    ).map((actor: any, idx: number) => {
-                    const name = actor.name || (typeof actor === 'string' ? actor : "N/A");
-                    const actorSlug = actor.slug || name.toLowerCase().replace(/[^a-z0-9]+/g, "-");
+                    const name = typeof actor === 'string' ? actor : (actor.name || actor.trans?.find((t: any) => t.locale === 'vi')?.name || actor.trans?.[0]?.name || "N/A");
+                    const actorSlug = actor.slug || actor.trans?.find((t: any) => t.locale === 'vi')?.slug || actor.trans?.[0]?.slug || name.toLowerCase().replace(/[^a-z0-9]+/g, "-");
                     
                     return (
                       <Link
