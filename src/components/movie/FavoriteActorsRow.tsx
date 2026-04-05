@@ -41,13 +41,19 @@ export function FavoriteActorsRow({ isXX = false }: FavoriteActorsRowProps) {
       {/* Header */}
       <div className="flex items-center justify-between px-6 lg:px-12 mb-8">
         <div className="flex items-center gap-4">
-          <div className={`w-1.5 h-8 ${isXX ? 'bg-yellow-500' : 'bg-primary'} rounded-full`} />
+          <div className={`w-1.5 h-8 ${isXX ? 'bg-yellow-500 shadow-[0_0_15px_rgba(234,179,8,0.4)]' : 'bg-primary'} rounded-full`} />
           <h3 className="text-2xl font-black italic tracking-tighter text-foreground uppercase">
             DIỄN VIÊN YÊU THÍCH
           </h3>
         </div>
-        <div className="flex items-center gap-4">
-          <div className="hidden sm:flex items-center gap-2">
+        <div className="flex items-center gap-6">
+          <Link 
+            href={`/${TOPXX_PATH}/yeu-thich?tab=actors`}
+            className="text-sm font-black text-yellow-500 hover:opacity-80 transition-all flex items-center gap-2 uppercase tracking-widest italic"
+          >
+            Xem tất cả <ChevronRight size={14} />
+          </Link>
+          <div className="hidden sm:flex items-center gap-2 border-l border-white/10 pl-6">
             <button
               onClick={() => scroll("left")}
               className="w-10 h-10 rounded-full glass-pro text-foreground/50 hover:text-foreground hover:bg-foreground/10 transition-all flex items-center justify-center border border-foreground/5"
@@ -85,22 +91,29 @@ export function FavoriteActorsRow({ isXX = false }: FavoriteActorsRowProps) {
                 className="flex-shrink-0 flex flex-col items-center gap-4 group/actor focus:outline-none transition-transform hover:scale-105 active:scale-95"
               >
                 <div className="relative w-24 h-24 md:w-32 md:h-32 rounded-full overflow-hidden border-4 border-foreground/5 p-1 group-hover/actor:border-yellow-500/30 transition-all shadow-xl bg-surface">
-                   {/* Enhanced Multi-field Fallback for TopXX Avatars */}
-                   {(actor.profilePath || actor.avatar || actor.thumbnail || actor.profile_path) ? (
-                     <img 
-                       src={actor.profilePath || actor.avatar || actor.thumbnail || actor.profile_path} 
-                       alt={actor.name} 
-                       className="w-full h-full object-cover rounded-full group-hover/actor:scale-110 transition-transform duration-700" 
-                       onError={(e) => {
-                         // Final fallback if link is broken
-                         (e.target as HTMLImageElement).src = `https://unavatar.io/twitter/${actor.name.replace(/\s+/g, '')}?fallback=https://res.cloudinary.com/dcb9v7pbm/image/upload/v1711718105/topxx_placeholder.png`;
-                       }}
-                     />
-                   ) : (
-                     <div className="w-full h-full flex items-center justify-center bg-foreground/5 rounded-full">
-                       <User2 className="w-10 h-10 text-foreground/20" />
-                     </div>
-                   )}
+                   <img 
+                      src={
+                        (actor.profilePath || actor.profile_path || actor.profileImageUrl || actor.profileImage || actor.avatar || actor.thumbnail)?.startsWith('http') 
+                          ? (actor.profilePath || actor.profile_path || actor.profileImageUrl || actor.profileImage || actor.avatar || actor.thumbnail)
+                          : (actor.profilePath || actor.profile_path 
+                              ? `https://image.tmdb.org/t/p/w500${actor.profilePath || actor.profile_path}` 
+                              : `https://javmodel.com/javdata/uploads/${String(actor.id).replace(/-/g, '_')}150.jpg`)
+                      } 
+                      alt={actor.name}
+                      className="w-full h-full object-cover rounded-full group-hover/actor:scale-110 transition-transform duration-700"
+                      referrerPolicy="no-referrer"
+                      onError={(e) => { 
+                        const target = e.currentTarget;
+                        const parts = String(actor.id).split('-');
+                        if (parts.length === 2 && !target.src.includes(`${parts[1]}_${parts[0]}`)) {
+                          target.src = `https://javmodel.com/javdata/uploads/${parts[1]}_${parts[0]}150.jpg`;
+                          return;
+                        }
+                        if (!target.src.includes('placehold.co')) {
+                          target.src = `https://placehold.co/500x500/0f1115/efb11d?text=${encodeURIComponent(actor.name)}`;
+                        }
+                      }}
+                    />
                 </div>
                 <span className="text-[11px] md:text-sm font-black uppercase italic tracking-tight text-foreground/60 group-hover/actor:text-yellow-500 transition-colors text-center w-24 md:w-32 line-clamp-1">
                   {actor.name}

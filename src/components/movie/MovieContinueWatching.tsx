@@ -36,12 +36,12 @@ export function MovieContinueWatching({ isXX = false }: MovieContinueWatchingPro
         try {
           if (user) {
             const cloudHistory = await getTopXXFirestoreHistory(user.uid);
-            setItems(cloudHistory.slice(0, 20));
+            setItems(cloudHistory.slice(0, 10));
           } else {
-            setItems(getTopXXHistory().slice(0, 20));
+            setItems(getTopXXHistory().slice(0, 10));
           }
         } catch (err) {
-          setItems(getTopXXHistory().slice(0, 20));
+          setItems(getTopXXHistory().slice(0, 10));
         } finally {
           setLoading(false);
         }
@@ -68,7 +68,7 @@ export function MovieContinueWatching({ isXX = false }: MovieContinueWatchingPro
       })) as HistoryEntry[];
       
       const sorted = historyItems.sort((a,b) => (b.updatedAt || 0) - (a.updatedAt || 0));
-      setItems(sorted.slice(0, 40));
+      setItems(sorted.slice(0, 10));
       setLoading(false);
     }, (error) => {
       console.error("Continue Watching Sync Error:", error);
@@ -103,32 +103,35 @@ export function MovieContinueWatching({ isXX = false }: MovieContinueWatchingPro
   if (loading || items.length === 0) return null;
 
   return (
-    <section className="container mx-auto px-6 lg:px-12 py-8">
-      <div className="flex items-center justify-between mb-8 group">
+    <section className="relative w-full">
+      {/* Header Section */}
+      <div className="flex items-center justify-between px-6 lg:px-12 mb-8 group">
         <div className="flex items-center gap-4">
           <div className={cn(
-            "w-12 h-12 rounded-full flex items-center justify-center shadow-sm",
-            isXX ? "bg-red-500/10 text-red-500" : "bg-primary/10 text-primary"
-          )}>
-            {isXX ? <Zap size={22} fill="currentColor" /> : <History size={22} />}
-          </div>
+            "w-1.5 h-8 rounded-full",
+            isXX ? "bg-red-500 shadow-[0_0_15px_rgba(239,68,68,0.4)]" : "bg-primary"
+          )} />
           <div>
-            <h3 className="text-2xl font-bold tracking-tight text-foreground flex items-center gap-2">
-              {isXX ? "Tiếp tục xem (18+)" : "Tiếp tục xem"}
-              <PlayCircle size={20} fill="currentColor" strokeWidth={0} className="text-primary hidden md:inline" />
+            <h3 className="text-2xl font-black italic tracking-tighter text-foreground uppercase leading-none">
+              {isXX ? "Tiếp tục xem" : "Tiếp tục xem"}
             </h3>
-            <p className="text-[10px] font-bold text-foreground-secondary uppercase tracking-widest">
-              {isXX ? "Lịch sử xem phim người lớn" : "Dựa trên lịch sử của bạn"}
+            <p className="text-[10px] font-black text-foreground/20 uppercase tracking-[0.4em] italic mt-2">
+              {isXX ? "Lịch sử xem phim 18+" : "Dựa trên lịch sử của bạn"}
             </p>
           </div>
         </div>
         
-        <Link 
-          href={isXX ? `/${TOPXX_PATH}/lich-su` : "/lich-su"} 
-          className="text-sm font-bold text-primary hover:opacity-80 transition-all flex items-center gap-1"
-        >
-          Xem tất cả <ChevronRight size={14} />
-        </Link>
+        <div className="flex items-center gap-6">
+          <Link 
+            href={isXX ? `/${TOPXX_PATH}/lich-su` : "/lich-su"} 
+            className={cn(
+              "text-sm font-black hover:opacity-80 transition-all flex items-center gap-2 uppercase tracking-widest italic",
+              isXX ? "text-red-500" : "text-primary"
+            )}
+          >
+            Xem tất cả <ChevronRight size={14} />
+          </Link>
+        </div>
       </div>
 
       <div className="relative group/swiper">

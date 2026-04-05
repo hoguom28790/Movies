@@ -77,12 +77,7 @@ export function HeroSlider({ movies, isXX = false }: HeroSliderProps) {
             transition={{ duration: 0.5 }}
             className="flex flex-col items-start gap-4 max-w-4xl"
           >
-            <div className="flex items-center gap-2 px-3 py-1 backdrop-blur-xl bg-white/20 rounded-full shadow-sm">
-               <Sparkles size={12} className={isXX ? "text-yellow-500" : "text-primary"} />
-               <span className="text-[10px] font-bold uppercase tracking-wider text-white">{isXX ? "TOPXX PREMIUM" : "Nổi bật"}</span>
-            </div>
-
-            <div className="space-y-2">
+            <div className="space-y-4">
                <h1 className="text-4xl md:text-7xl font-bold tracking-tight text-white leading-tight">
                  {currentMovie.title}
                </h1>
@@ -95,7 +90,7 @@ export function HeroSlider({ movies, isXX = false }: HeroSliderProps) {
                </div>
             </div>
 
-            <p className="hidden md:block text-base text-white/70 max-w-2xl font-medium leading-relaxed line-clamp-2">
+            <p className="text-base text-white/70 max-w-2xl font-medium leading-relaxed line-clamp-2">
               {currentMovie.overview || "Trải nghiệm điện ảnh đỉnh cao với chất lượng 4K HDR tuyệt mỹ duy nhất tại Hồ Phim."}
             </p>
 
