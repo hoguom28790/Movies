@@ -16,8 +16,9 @@ export async function GET(
   const { name } = await params;
   if (!name) return NextResponse.json({ error: "Missing name" }, { status: 400 });
 
-  const decodedName = decodeURIComponent(name).trim();
-  console.log(`[TOPXX-ACTRESS] Aggregating data for: ${decodedName}`);
+  const rawName = decodeURIComponent(name).trim();
+  const decodedName = rawName.replace(/[-_]+/g, " ");
+  console.log(`[TOPXX-ACTRESS] Aggregating data for: ${decodedName} (Original: ${rawName})`);
 
   // Fetch AVDB for filmography and Boobpedia for bio in parallel
   // Use `wd` since `vod_actor` behaves weirdly on avdbapi.com
