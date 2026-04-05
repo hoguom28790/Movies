@@ -1,11 +1,6 @@
 import { Suspense } from "react";
-import { Loader2, User2 } from "lucide-react";
-import { TOPXX_PATH } from "@/lib/constants";
-import Link from "next/link";
-import { ActorModal } from "@/components/movie/ActorModal";
-
-// Client component handled within the same file for simplicity since it's a specific listing
-import { ActorsStyleListing } from "./listing";
+import { Loader2 } from "lucide-react";
+import { ActorsStyleClient } from "./client";
 
 export const dynamic = "force-dynamic";
 
@@ -39,15 +34,8 @@ export default async function ActorsStylePage({
           <p className="text-foreground/10 text-[10px] font-black uppercase tracking-[0.8em] italic">Synchronizing Elite Talent...</p>
         </div>
       }>
-        <ActorsStyleListing style={decodedStyle} />
+        <ActorsStyleClient style={decodedStyle} />
       </Suspense>
     </div>
   );
 }
-
-function ActorsStyleListing({ style }: { style: string }) {
-  // This is a placeholder for the client component that will fetch and display
-  return <ActorsStyleClient style={style} />;
-}
-
-import { ActorsStyleClient } from "./client";
