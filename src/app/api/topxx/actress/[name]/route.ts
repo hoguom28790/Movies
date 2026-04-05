@@ -18,17 +18,53 @@ export async function GET(
 
   const rawName = decodeURIComponent(name).trim();
   const decodedName = rawName.replace(/[-_]+/g, " ");
+  const lowerName = decodedName.toLowerCase();
   console.log(`[TOPXX-ACTRESS] Aggregating data for: ${decodedName} (Original: ${rawName})`);
+
+  // Special Fallback for Momo Sakura (Sakura Momo) - she is missing on Boobpedia
+  const MOMO_SAKURA_FALLBACK = {
+    name: "Sakura Momo (樱空桃)",
+    profileImage: "https://c0.jdbstatic.com/avatars/bv/bvWB.jpg",
+    gallery: [
+        "https://c0.jdbstatic.com/avatars/bv/bvWB.jpg",
+    ],
+    birthday: "December 3, 1996",
+    age: "28", // Approx for 2025
+    measurements: "90-55-86 cm (35-22-34 in)",
+    cup: "G Cup",
+    boobs: "Natural",
+    height: "1.60 m (5 ft 3 in)",
+    bodyType: "Slim / Busty",
+    ethnicity: "Asian",
+    nationality: "Japanese",
+    hair: "Brown",
+    eyes: "Brown",
+    bloodGroup: "A",
+    performances: "Topless, Bush, Full frontal",
+    instagram: "@sakuramomo_official"
+  };
 
   // Fetch AVDB for filmography and Boobpedia for bio in parallel
   // Use `wd` since `vod_actor` behaves weirdly on avdbapi.com
   const avdbUrl = `https://avdbapi.com/api.php/provide/vod?ac=detail&at=json&wd=${encodeURIComponent(decodedName)}&pg=1`;
   
   try {
-    const [avdbRes, bioData] = await Promise.all([
+    const [avdbRes, boobpediaBio] = await Promise.all([
       fetch(avdbUrl, { cache: "force-cache" }).then(r => r.ok ? r.json() : null).catch(() => null),
       getBoobpediaProfile(decodedName).catch(() => null)
     ]);
+
+    let bioData = boobpediaBio;
+    
+    // Priority Fallback Logic
+    if (!bioData) {
+        if (lowerName.includes("momo sakura") || lowerName.includes("sakura momo") || lowerName === "momo" || lowerName === "sakura") {
+            // Confirm it's the correct Momo Sakura if only part match
+            if (lowerName.includes("momo") && lowerName.includes("sakura")) {
+                bioData = MOMO_SAKURA_FALLBACK as any;
+            }
+        }
+    }
 
     const allAvdbMovies = avdbRes?.list || [];
     

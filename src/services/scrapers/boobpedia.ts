@@ -115,13 +115,42 @@ export interface BoobpediaProfile {
   instagram: string;
 }
 
+async function searchBoobpedia(query: string): Promise<string | null> {
+  try {
+    const url = `${BOOBPEDIA_BASE}/wiki/api.php?action=query&list=search&srsearch=${encodeURIComponent(query)}&format=json`;
+    const res = await fetch(url, { headers: HEADERS });
+    if (!res.ok) return null;
+    const data = await res.json();
+    const result = data?.query?.search?.[0];
+    if (result && result.title) {
+        return result.title.replace(/\s+/g, "_");
+    }
+    return null;
+  } catch {
+    return null;
+  }
+}
+
 export async function getBoobpediaProfile(name: string): Promise<BoobpediaProfile | null> {
   try {
-    const wikiTitle = nameToWikiTitle(name);
-    const url = `${BOOBPEDIA_BASE}/boobs/${encodeURIComponent(wikiTitle)}`;
+    let wikiTitle = nameToWikiTitle(name);
+    let url = `${BOOBPEDIA_BASE}/boobs/${encodeURIComponent(wikiTitle)}`;
     console.log(`[BOOBPEDIA] Fetching: ${url}`);
 
-    const html = await fetchHtml(url);
+    let html = await fetchHtml(url);
+    
+    // Fallback: If direct fetch fails or is invalid, try searching
+    if (!html || (!html.includes("infobox") && !html.includes("Measurements"))) {
+        console.log(`[BOOBPEDIA] Direct fetch failed for ${name}, trying search...`);
+        const searchTitle = await searchBoobpedia(name);
+        if (searchTitle && searchTitle !== wikiTitle) {
+            wikiTitle = searchTitle;
+            url = `${BOOBPEDIA_BASE}/boobs/${encodeURIComponent(wikiTitle)}`;
+            console.log(`[BOOBPEDIA] Found search result: ${wikiTitle}. Fetching: ${url}`);
+            html = await fetchHtml(url);
+        }
+    }
+
     if (!html) {
       console.log(`[BOOBPEDIA] Failed to fetch for: ${name}`);
       return null;

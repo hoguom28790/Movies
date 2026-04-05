@@ -307,26 +307,24 @@ export default function TopXXLibraryPage() {
                       <Link 
                         key={actor.id} 
                         href={`/${TOPXX_PATH}/dien-vien/${actor.id || actor.name.toLowerCase().replace(/\s+/g, '-')}`}
-                        className="group relative"
+                        className="group flex flex-col items-center"
                       >
-                        <div className="relative aspect-[1/1] rounded-[32px] overflow-hidden bg-foreground/5 border border-foreground/10 group-hover:border-yellow-500/50 transition-all shadow-xl group-hover:shadow-2xl group-hover:-translate-y-2">
+                        <div className="relative w-40 h-40 md:w-56 md:h-56 rounded-[56px] overflow-hidden border-2 border-foreground/5 shadow-2xl transition-all duration-700 bg-surface group-hover:border-yellow-500/30 group-hover:shadow-yellow-500/10 group-hover:-translate-y-2">
                           <img 
                             src={
                               (actor.profilePath || actor.profile_path)?.startsWith('http') 
                                 ? (actor.profilePath || actor.profile_path)
-                                : (actor.profilePath || actor.profile_path ? `https://image.tmdb.org/t/p/w300${actor.profilePath || actor.profile_path}` : "https://placehold.co/300x300/0f1115/eab308?text=Actor")
+                                : (actor.profilePath || actor.profile_path ? `https://image.tmdb.org/t/p/w300${actor.profilePath || actor.profile_path}` : "https://placehold.co/400x400/0f1115/efb11d?text=Actor")
                             } 
                             alt={actor.name}
-                            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                            onError={(e) => { e.currentTarget.src = "https://placehold.co/300x300/0f1115/eab308?text=Actor" }}
+                            className="w-full h-full object-cover transition-transform duration-[2s] group-hover:scale-110"
+                            onError={(e) => { e.currentTarget.src = "https://placehold.co/400x400/0f1115/efb11d?text=Actor" }}
                           />
-                          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity p-4 flex flex-col justify-end">
-                              <div className="flex items-center gap-2">
-                                 <span className="px-3 py-1.5 rounded-xl bg-yellow-500 text-black text-[10px] font-black uppercase tracking-widest border border-yellow-500 shadow-xl">HỒ SƠ</span>
-                              </div>
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-end p-6">
+                              <span className="bg-yellow-500 text-black text-[9px] font-black uppercase tracking-[0.2em] px-4 py-2 rounded-xl border border-yellow-400 shadow-2xl text-center">XEM HỒ SƠ</span>
                           </div>
                           
-                          {/* Remove Button for Actors */}
+                          {/* Remove Button */}
                           <button 
                             onClick={async (e) => {
                               e.preventDefault();
@@ -336,16 +334,16 @@ export default function TopXXLibraryPage() {
                               await toggleFavoriteActor(user!.uid, { ...actor, type: 'topxx' });
                               fetchData();
                             }}
-                            className="absolute top-3 right-3 w-10 h-10 rounded-2xl bg-background/60 backdrop-blur-xl border border-foreground/10 text-foreground flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all scale-75 group-hover:scale-100 hover:bg-red-500 hover:text-white hover:border-red-400 shadow-2xl z-20"
+                            className="absolute top-4 right-4 w-10 h-10 rounded-2xl bg-black/60 backdrop-blur-xl border border-white/10 text-white flex items-center justify-center translate-x-12 opacity-0 group-hover:translate-x-0 group-hover:opacity-100 transition-all duration-500 hover:bg-red-500 shadow-2xl z-20"
                           >
-                             <X className="w-4 h-4" />
+                             <Trash2 className="w-4 h-4" />
                           </button>
                         </div>
-                        <div className="mt-4 text-center px-2">
-                          <h4 className="text-[14px] font-black uppercase tracking-tight text-foreground group-hover:text-yellow-500 transition-colors line-clamp-1 italic">
+                        <div className="mt-6 text-center space-y-2 animate-in slide-in-from-bottom-2">
+                          <h4 className="text-sm md:text-base font-black uppercase tracking-tighter text-foreground group-hover:text-yellow-500 transition-colors italic">
                              {actor.name}
                           </h4>
-                          <p className="text-[10px] font-bold text-foreground/30 uppercase tracking-[0.2em] mt-1 text-yellow-500/50">DIỄN VIÊN ELITE</p>
+                          <span className="px-3 py-1 rounded-full text-[8px] font-black uppercase tracking-[0.3em] bg-foreground/5 text-foreground/20 border border-foreground/10">PREMIUM ARTIST</span>
                         </div>
                       </Link>
                     ))}
