@@ -256,16 +256,32 @@ export function ActorProfile({ actorName, slug, isXX = false }: ActorProfileProp
                 { label: "Quê quán", value: details.birthPlace !== details.nationality ? details.birthPlace : null, icon: MapPin },
                 { label: "Số đo 3 vòng", value: details.measurements, icon: Ruler },
                 { label: "Cúp ngực", value: details.cupSize, icon: Heart },
+                { label: "Ngực tự nhiên", value: details.boobsType, icon: Heart },
+                { label: "Vóc dáng", value: details.bodyType, icon: User },
                 { label: "Chiều cao", value: details.height, icon: Ruler },
                 { label: "Cân nặng", value: details.weight, icon: TrendingUp },
                 { label: "Nhóm máu", value: details.bloodType, icon: Heart },
+                { label: "Màu mắt", value: details.eyeColor, icon: Smile },
+                { label: "Màu tóc", value: details.hairColor, icon: User },
+                { label: "Lông nách", value: details.underarmHair, icon: User },
+                { label: "Lông vùng kín", value: details.pubicHair, icon: User },
                 { label: "Dân tộc", value: details.ethnicity, icon: User },
+                { label: "Phong cách diễn (Shown)", value: details.performanceShown, icon: Play },
+                { label: "Thể loại Solo", value: details.performanceSolo, icon: Play },
+                { label: "Thể loại Nam/Nữ", value: details.performanceBoyGirl, icon: Play },
                 { label: "Thời gian hoạt động", value: details.yearsActive, icon: TrendingUp },
+                { label: "Instagram", value: details.instagram, icon: User },
                 { label: "Studio / Hãng", value: details.studio, icon: Tv },
               ].filter(s => s.value && s.value !== "N/A" && s.value !== "Đang cập nhật" && s.value !== details.stageName).map((stat, i) => (
                 <div key={i} className="space-y-1 group">
                   <p className="text-[9px] font-black uppercase text-foreground/20 tracking-widest italic">{stat.label}</p>
-                  <p className="text-lg md:text-xl font-black text-foreground/80 italic tracking-tight group-hover:text-yellow-500 transition-colors">{stat.value}</p>
+                  {stat.label === "Instagram" && stat.value?.startsWith("@") ? (
+                    <a href={`https://instagram.com/${stat.value.replace("@", "")}`} target="_blank" rel="noreferrer" className="text-lg md:text-xl font-black text-foreground/80 italic tracking-tight hover:text-yellow-500 transition-colors block">
+                      {stat.value}
+                    </a>
+                  ) : (
+                    <p className="text-lg md:text-xl font-black text-foreground/80 italic tracking-tight group-hover:text-yellow-500 transition-colors">{stat.value}</p>
+                  )}
                 </div>
               ))}
             </div>

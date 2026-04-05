@@ -20,7 +20,8 @@ export async function GET(
   console.log(`[TOPXX-ACTRESS] Aggregating data for: ${decodedName}`);
 
   // Fetch AVDB for filmography and Boobpedia for bio in parallel
-  const avdbUrl = `https://avdbapi.com/api.php/provide/vod?ac=detail&at=json&vod_actor=${encodeURIComponent(decodedName)}&pg=1`;
+  // Use `wd` since `vod_actor` behaves weirdly on avdbapi.com
+  const avdbUrl = `https://avdbapi.com/api.php/provide/vod?ac=detail&at=json&wd=${encodeURIComponent(decodedName)}&pg=1`;
   
   try {
     const [avdbRes, bioData] = await Promise.all([
@@ -28,7 +29,15 @@ export async function GET(
       getBoobpediaProfile(decodedName).catch(() => null)
     ]);
 
-    const avdbMovies = avdbRes?.list || [];
+    const allAvdbMovies = avdbRes?.list || [];
+    
+    // Exact filter on the frontend since wd= search can be fuzzy
+    const avdbMovies = allAvdbMovies.filter((m: any) => {
+      const act = m.actor?.toLowerCase() || "";
+      const n = decodedName.toLowerCase();
+      // Handle "Yua Mikami" OR reverse "Mikami Yua" OR just parts if it matches
+      return act.includes(n) || act.includes(n.split(" ").reverse().join(" ")) || m.name?.toLowerCase().includes(n);
+    });
     
     if (avdbMovies.length === 0 && !bioData) {
         throw new Error("No data found from any source");
@@ -80,10 +89,20 @@ export async function GET(
       studio: firstMovie.vod_area || bioData?.studio || "N/A",
       debutYear: bioData?.debutYear || "N/A",
       status: bioData?.status || "Active",
+      bodyType: bioData?.bodyType || "N/A",
+      eyeColor: bioData?.eyeColor || "N/A",
+      hairColor: bioData?.hairColor || "N/A",
+      underarmHair: bioData?.underarmHair || "N/A",
+      pubicHair: bioData?.pubicHair || "N/A",
+      boobsType: bioData?.boobsType || "N/A",
+      performanceShown: bioData?.performanceShown || "N/A",
+      performanceSolo: bioData?.performanceSolo || "N/A",
+      performanceBoyGirl: bioData?.performanceBoyGirl || "N/A",
+      instagram: bioData?.instagram || "N/A",
       
       // Media
       profileImage: bioData?.profileImage || firstMovie.vod_pic || "",
-      gallery: bioData?.gallery || (firstMovie.vod_pic ? [firstMovie.vod_pic] : []),
+      gallery: bioData?.gallery?.length ? bioData.gallery : avdbMovies.slice(0, 12).map((m: any) => m.poster_url || m.thumb_url).filter(Boolean),
       
       // Filmography primarily from AVDB
       filmography: Array.from(filmMap.values()),
@@ -113,6 +132,16 @@ export async function GET(
       studio: "N/A",
       debutYear: "N/A",
       status: "Active",
+      bodyType: "N/A",
+      eyeColor: "N/A",
+      hairColor: "N/A",
+      underarmHair: "N/A",
+      pubicHair: "N/A",
+      boobsType: "N/A",
+      performanceShown: "N/A",
+      performanceSolo: "N/A",
+      performanceBoyGirl: "N/A",
+      instagram: "N/A",
       profileImage: `https://placehold.co/300x450/0f1115/eab308?text=${encodeURIComponent(decodedName.charAt(0))}`,
       gallery: [],
       filmography: [],

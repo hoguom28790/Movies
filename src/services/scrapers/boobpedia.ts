@@ -99,6 +99,16 @@ export interface BoobpediaProfile {
   status: string;
   profileImage: string;
   gallery: string[];
+  bodyType: string;
+  eyeColor: string;
+  hairColor: string;
+  underarmHair: string;
+  pubicHair: string;
+  boobsType: string;
+  performanceShown: string;
+  performanceSolo: string;
+  performanceBoyGirl: string;
+  instagram: string;
 }
 
 export async function getBoobpediaProfile(name: string): Promise<BoobpediaProfile | null> {
@@ -141,6 +151,16 @@ export async function getBoobpediaProfile(name: string): Promise<BoobpediaProfil
       status: "Active",
       profileImage: "",
       gallery: [],
+      bodyType: "N/A",
+      eyeColor: "N/A",
+      hairColor: "N/A",
+      underarmHair: "N/A",
+      pubicHair: "N/A",
+      boobsType: "N/A",
+      performanceShown: "N/A",
+      performanceSolo: "N/A",
+      performanceBoyGirl: "N/A",
+      instagram: "N/A",
     };
 
     // Extract all table rows from infobox
@@ -200,6 +220,26 @@ export async function getBoobpediaProfile(name: string): Promise<BoobpediaProfil
         profile.bloodType = value.replace(/\s*type/i, "").trim();
       } else if (label.includes("real name") || label.includes("birth name")) {
         profile.realName = value;
+      } else if (label.includes("body type")) {
+        profile.bodyType = value;
+      } else if (label.includes("eye color")) {
+        profile.eyeColor = value;
+      } else if (label === "hair") {
+        profile.hairColor = value;
+      } else if (label.includes("underarm hair")) {
+        profile.underarmHair = value;
+      } else if (label.includes("pubic hair")) {
+        profile.pubicHair = value;
+      } else if (label === "boobs") {
+        profile.boobsType = value;
+      } else if (label === "shown") {
+        profile.performanceShown = value;
+      } else if (label === "solo") {
+        profile.performanceSolo = value;
+      } else if (label === "boy/girl") {
+        profile.performanceBoyGirl = value;
+      } else if (label.includes("instagram")) {
+        profile.instagram = value;
       }
     }
 
