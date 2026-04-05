@@ -204,11 +204,17 @@ export default async function XXWatchPage({
                       {/* Genres */}
                       {((item as any).genres?.length > 0 || (item as any).category?.length > 0) && (
                         <div className="flex flex-wrap gap-2">
-                          {((item as any).genres || (item as any).category || []).map((g: any, i: number) => (
-                            <span key={i} className="text-[10px] font-black text-foreground/30 uppercase italic tracking-wider hover:text-yellow-500 transition-colors cursor-default">
-                              #{g.name || g}
-                            </span>
-                          ))}
+                          {((item as any).genres || (item as any).category || []).map((g: any, i: number) => {
+                            // TopXX genres have {code, trans:[{name}]} structure, AVDB genres have {name, slug}
+                            const genreName = typeof g === 'string' ? g : 
+                              (g.name || g.trans?.find((t: any) => t.locale === 'vi')?.name || g.trans?.[0]?.name || '');
+                            if (!genreName) return null;
+                            return (
+                              <span key={i} className="text-[10px] font-black text-foreground/30 uppercase italic tracking-wider hover:text-yellow-500 transition-colors cursor-default">
+                                #{genreName}
+                              </span>
+                            );
+                          })}
                         </div>
                       )}
                   </div>
@@ -221,11 +227,16 @@ export default async function XXWatchPage({
                   {/* Genres */}
                   {(item as any).genres?.length > 0 && (
                     <div className="flex flex-wrap gap-2">
-                      {(item as any).genres.map((g: any) => (
-                        <span key={g.slug || g.name} className="px-3 py-1 rounded-full bg-foreground/5 border border-foreground/10 text-foreground/40 text-[10px] font-black uppercase tracking-widest italic hover:bg-yellow-500/10 hover:border-yellow-500/20 hover:text-yellow-500 transition-all cursor-default">
-                          {g.name}
-                        </span>
-                      ))}
+                      {(item as any).genres.map((g: any, i: number) => {
+                        const genreName = typeof g === 'string' ? g :
+                          (g.name || g.trans?.find((t: any) => t.locale === 'vi')?.name || g.trans?.[0]?.name || '');
+                        if (!genreName) return null;
+                        return (
+                          <span key={g.slug || g.code || i} className="px-3 py-1 rounded-full bg-foreground/5 border border-foreground/10 text-foreground/40 text-[10px] font-black uppercase tracking-widest italic hover:bg-yellow-500/10 hover:border-yellow-500/20 hover:text-yellow-500 transition-all cursor-default">
+                            {genreName}
+                          </span>
+                        );
+                      })}
                     </div>
                   )}
 
