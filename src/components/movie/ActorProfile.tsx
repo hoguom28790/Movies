@@ -180,6 +180,24 @@ export function ActorProfile({ actorName, slug, isXX = false }: ActorProfileProp
                   <span className="text-xs font-black text-foreground italic">{details.measurements}</span>
                 </div>
               )}
+              {details?.cupSize && details.cupSize !== "N/A" && (
+                <div className="flex flex-col items-center px-4 py-2 rounded-2xl bg-yellow-500/5 border border-yellow-500/10">
+                  <span className="text-[8px] font-black uppercase text-yellow-500/40 italic tracking-widest">Cup</span>
+                  <span className="text-xs font-black text-yellow-500 italic">{details.cupSize}</span>
+                </div>
+              )}
+              {details?.height && details.height !== "N/A" && (
+                <div className="flex flex-col items-center px-4 py-2 rounded-2xl bg-foreground/5 border border-foreground/10">
+                  <span className="text-[8px] font-black uppercase text-foreground/20 italic tracking-widest">Height</span>
+                  <span className="text-xs font-black text-foreground italic">{details.height}</span>
+                </div>
+              )}
+              {details?.weight && details.weight !== "N/A" && (
+                <div className="flex flex-col items-center px-4 py-2 rounded-2xl bg-foreground/5 border border-foreground/10">
+                  <span className="text-[8px] font-black uppercase text-foreground/20 italic tracking-widest">Weight</span>
+                  <span className="text-xs font-black text-foreground italic">{details.weight}</span>
+                </div>
+              )}
               {details?.debutYear && details.debutYear !== "N/A" && (
                 <div className="flex flex-col items-center px-4 py-2 rounded-2xl bg-foreground/5 border border-foreground/10">
                   <span className="text-[8px] font-black uppercase text-foreground/20 italic tracking-widest">Debut</span>
@@ -231,6 +249,9 @@ export function ActorProfile({ actorName, slug, isXX = false }: ActorProfileProp
                 { label: "Ngày sinh", value: details.birthDate, icon: Calendar },
                 { label: "Số đo 3 vòng", value: details.measurements, icon: Ruler },
                 { label: "Chiều cao", value: details.height, icon: Ruler },
+                { label: "Cân nặng", value: details.weight, icon: TrendingUp },
+                { label: "Cúp ngực", value: details.cupSize, icon: Heart },
+                { label: "Nhóm máu", value: details.bloodType, icon: User },
                 { label: "Quê quán", value: details.birthPlace, icon: MapPin },
                 { label: "Studio / Hãng", value: details.studio, icon: Tv },
                 { label: "Năm debut", value: details.debutYear, icon: Play },
@@ -258,7 +279,7 @@ export function ActorProfile({ actorName, slug, isXX = false }: ActorProfileProp
 
             {details.gallery?.length > 0 ? (
               <div className="grid grid-cols-3 gap-4">
-                {details.gallery.slice(0, 6).map((img: string, i: number) => (
+                {details.gallery.slice(0, 12).map((img: string, i: number) => (
                   <button
                     key={i}
                     onClick={() => setLightboxImage(img)}

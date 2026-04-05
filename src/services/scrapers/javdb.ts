@@ -69,9 +69,11 @@ export async function getJavDBActressProfile(name: string) {
       id: slug,
       stageName: $("h1.title, .title.is-4").first().text().trim() || name,
       realName: "N/A",
-      birthDate: "N/A",
       measurements: "N/A",
+      cupSize: "N/A",
       height: "N/A",
+      weight: "N/A",
+      bloodType: "N/A",
       birthPlace: "N/A",
       profileImage: $(".avatar img, .profile img").first().attr("src") || "",
       gallery: [],
@@ -90,8 +92,11 @@ export async function getJavDBActressProfile(name: string) {
         
         if (text.includes("Real Name") || text.includes("本名")) parsedData.realName = val;
         if (text.includes("Birthday") || text.includes("生年月日")) parsedData.birthDate = val;
-        if (text.includes("Measurements") || text.includes("スリーサイズ")) parsedData.measurements = val;
+        if (text.includes("Measurements") || text.includes("スリーサイズ") || text.includes("三圍")) parsedData.measurements = val;
+        if (text.includes("Cup") || text.includes("罩杯")) parsedData.cupSize = val;
         if (text.includes("Height") || text.includes("身長")) parsedData.height = val;
+        if (text.includes("Weight") || text.includes("体重")) parsedData.weight = val;
+        if (text.includes("Blood Type") || text.includes("血型")) parsedData.bloodType = val;
         if (text.includes("Birthplace") || text.includes("出身地")) parsedData.birthPlace = val;
         if (text.includes("Debut") || text.includes("デビュー")) parsedData.debutYear = val;
         if (text.includes("Studio") || text.includes("メーカー")) parsedData.studio = val;
