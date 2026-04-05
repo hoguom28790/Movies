@@ -11,6 +11,7 @@ import { getRTRating } from "@/services/rottenTomatoes";
 import { getTraktRating } from "@/services/trakt";
 import { searchTMDBMovie } from "@/services/tmdb";
 import { Suspense } from "react";
+import { ActorAvatar } from "@/components/movie/ActorAvatar";
 
 async function RatingsSection({ title, year }: { title: string; year?: number }) {
   let tmdbData: any = null;
@@ -330,13 +331,11 @@ export default async function XXWatchPage({
                         className="group flex flex-col items-center gap-2 w-20 text-center"
                       >
                         <div className="w-16 h-16 rounded-[20px] overflow-hidden bg-yellow-500/5 border border-yellow-500/10 group-hover:border-yellow-500/40 transition-all shadow-lg">
-                          {actor.thumbnail || actor.avatar ? (
-                            <img src={actor.thumbnail || actor.avatar} alt={name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
-                          ) : (
-                            <div className="w-full h-full flex items-center justify-center text-yellow-500/20">
-                              <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/></svg>
-                            </div>
-                          )}
+                          <ActorAvatar 
+                            name={name} 
+                            initialThumbnail={actor.thumbnail || actor.avatar} 
+                            className="group-hover:scale-110" 
+                          />
                         </div>
                         <span className="text-[10px] font-black text-foreground/40 group-hover:text-yellow-500 transition-colors uppercase italic tracking-tight leading-tight line-clamp-2">
                           {name}
