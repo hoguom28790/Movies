@@ -85,11 +85,16 @@ export function FavoriteActorsRow({ isXX = false }: FavoriteActorsRowProps) {
                 className="flex-shrink-0 flex flex-col items-center gap-4 group/actor focus:outline-none transition-transform hover:scale-105 active:scale-95"
               >
                 <div className="relative w-24 h-24 md:w-32 md:h-32 rounded-full overflow-hidden border-4 border-foreground/5 p-1 group-hover/actor:border-yellow-500/30 transition-all shadow-xl bg-surface">
-                   {actor.profilePath ? (
+                   {/* Enhanced Multi-field Fallback for TopXX Avatars */}
+                   {(actor.profilePath || actor.avatar || actor.thumbnail || actor.profile_path) ? (
                      <img 
-                       src={actor.profilePath} 
+                       src={actor.profilePath || actor.avatar || actor.thumbnail || actor.profile_path} 
                        alt={actor.name} 
                        className="w-full h-full object-cover rounded-full group-hover/actor:scale-110 transition-transform duration-700" 
+                       onError={(e) => {
+                         // Final fallback if link is broken
+                         (e.target as HTMLImageElement).src = `https://unavatar.io/twitter/${actor.name.replace(/\s+/g, '')}?fallback=https://res.cloudinary.com/dcb9v7pbm/image/upload/v1711718105/topxx_placeholder.png`;
+                       }}
                      />
                    ) : (
                      <div className="w-full h-full flex items-center justify-center bg-foreground/5 rounded-full">
