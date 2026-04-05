@@ -304,31 +304,25 @@ export default function TopXXLibraryPage() {
                 ) : (
                   <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-5 gap-8">
                     {favoriteActors.map(actor => (
-                      <div key={actor.id} className="group relative">
-                        <div className="relative aspect-[1/1] rounded-[32px] overflow-hidden bg-foreground/5 border border-foreground/10 group-hover:border-primary/50 transition-all shadow-xl group-hover:shadow-2xl group-hover:-translate-y-2">
+                      <Link 
+                        key={actor.id} 
+                        href={`/${TOPXX_PATH}/dien-vien/${actor.id || actor.name.toLowerCase().replace(/\s+/g, '-')}`}
+                        className="group relative"
+                      >
+                        <div className="relative aspect-[1/1] rounded-[32px] overflow-hidden bg-foreground/5 border border-foreground/10 group-hover:border-yellow-500/50 transition-all shadow-xl group-hover:shadow-2xl group-hover:-translate-y-2">
                           <img 
                             src={
                               (actor.profilePath || actor.profile_path)?.startsWith('http') 
                                 ? (actor.profilePath || actor.profile_path)
-                                : (actor.profilePath || actor.profile_path ? `https://image.tmdb.org/t/p/w300${actor.profilePath || actor.profile_path}` : "/placeholder-actor.png")
+                                : (actor.profilePath || actor.profile_path ? `https://image.tmdb.org/t/p/w300${actor.profilePath || actor.profile_path}` : "https://placehold.co/300x300/0f1115/eab308?text=Actor")
                             } 
                             alt={actor.name}
                             className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                            onError={(e) => { e.currentTarget.src = "/placeholder-actor.png" }}
+                            onError={(e) => { e.currentTarget.src = "https://placehold.co/300x300/0f1115/eab308?text=Actor" }}
                           />
                           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity p-4 flex flex-col justify-end">
                               <div className="flex items-center gap-2">
-                                 <button 
-                                   onClick={(e) => {
-                                      e.preventDefault();
-                                      e.stopPropagation();
-                                      router.push(`/${TOPXX_PATH}/search?q=${encodeURIComponent(actor.name)}`);
-                                   }}
-                                   className="px-4 py-2 rounded-xl bg-primary text-black text-[10px] font-black uppercase tracking-widest flex items-center gap-2 hover:scale-105 transition-transform"
-                                 >
-                                    <Search className="w-3 h-3" /> Tìm Phim
-                                 </button>
-                                 <span className="px-2 py-1 rounded bg-foreground/10 text-foreground text-[8px] font-black uppercase tracking-widest border border-foreground/10">Yêu Thích</span>
+                                 <span className="px-3 py-1.5 rounded-xl bg-yellow-500 text-black text-[10px] font-black uppercase tracking-widest border border-yellow-500 shadow-xl">HỒ SƠ</span>
                               </div>
                           </div>
                           
@@ -336,6 +330,7 @@ export default function TopXXLibraryPage() {
                           <button 
                             onClick={async (e) => {
                               e.preventDefault();
+                              e.stopPropagation();
                               if (!window.confirm(`Gỡ ${actor.name} khỏi yêu thích?`)) return;
                               const { toggleFavoriteActor } = await import("@/services/db");
                               await toggleFavoriteActor(user!.uid, { ...actor, type: 'topxx' });
@@ -347,12 +342,12 @@ export default function TopXXLibraryPage() {
                           </button>
                         </div>
                         <div className="mt-4 text-center px-2">
-                          <h4 className="text-[14px] font-black uppercase tracking-tight text-foreground group-hover:text-primary transition-colors line-clamp-1 italic">
+                          <h4 className="text-[14px] font-black uppercase tracking-tight text-foreground group-hover:text-yellow-500 transition-colors line-clamp-1 italic">
                              {actor.name}
                           </h4>
                           <p className="text-[10px] font-bold text-foreground/30 uppercase tracking-[0.2em] mt-1 text-yellow-500/50">DIỄN VIÊN ELITE</p>
                         </div>
-                      </div>
+                      </Link>
                     ))}
                   </div>
                 )}
