@@ -90,9 +90,11 @@ export function HeroSlider({ movies, isXX = false }: HeroSliderProps) {
                </div>
             </div>
 
-            <p className="text-base text-white/70 max-w-2xl font-medium leading-relaxed line-clamp-2">
-              {currentMovie.overview || "Trải nghiệm điện ảnh đỉnh cao với chất lượng 4K HDR tuyệt mỹ duy nhất tại Hồ Phim."}
-            </p>
+            {currentMovie.overview && (
+              <p className="text-base text-white/70 max-w-2xl font-medium leading-relaxed line-clamp-2">
+                {currentMovie.overview}
+              </p>
+            )}
 
             <div className="flex items-center gap-4 mt-6">
               <Link href={isXX ? `/${TOPXX_PATH}/watch/${currentMovie.slug}` : `/xem/${currentMovie.slug}`}>

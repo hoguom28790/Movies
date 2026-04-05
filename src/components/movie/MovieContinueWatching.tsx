@@ -145,7 +145,11 @@ export function MovieContinueWatching({ isXX = false }: MovieContinueWatchingPro
 
       <div className="relative group/swiper">
         <Swiper
-          modules={[FreeMode]}
+          modules={[Navigation, FreeMode]}
+          navigation={{
+            prevEl: ".history-prev",
+            nextEl: ".history-next",
+          }}
           freeMode={true}
           spaceBetween={16}
           slidesPerView="auto"
