@@ -76,7 +76,7 @@ export async function getJavModelProfile(name: string): Promise<Partial<ActressP
 
     const extractStat = (label: string) => {
         // More robust pattern for different table layouts
-        const regex = new RegExp(`<td[^>]*>[\\s\\S]*?${label}[\\s\\S]*?<\\/td>\\s*<td[^>]*>(?:<p>)?([^<\\/]+)`, "i");
+        const regex = new RegExp(`<td[^>]*>[\\s\\S]*?${label}[\\s\\S]*?<\\/td>\\s*<td[^>]*>(?:<p>)?([^<]+)`, "i");
         const match = html.match(regex);
         if (match) return match[1].trim();
         
