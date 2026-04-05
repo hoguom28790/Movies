@@ -56,8 +56,9 @@ export function HeroSlider({ movies, isXX = false }: HeroSliderProps) {
           <img
             src={currentMovie.thumbUrl || currentMovie.posterUrl}
             alt={currentMovie.title}
-            className="absolute inset-0 w-full h-full object-cover"
+            className="absolute inset-0 w-full h-full object-cover transform-gpu will-change-transform"
             loading="eager"
+            decoding="async"
           />
           {/* Overlays */}
           <div className="absolute inset-0 bg-gradient-to-t from-background via-background/40 to-black/30" />
@@ -67,7 +68,7 @@ export function HeroSlider({ movies, isXX = false }: HeroSliderProps) {
       </AnimatePresence>
 
       {/* Content */}
-      <div className="container relative z-20 mx-auto px-6 lg:px-12 pb-16 w-full">
+      <div className="container relative z-20 mx-auto px-6 lg:px-12 pb-32 md:pb-16 w-full transform-gpu">
         <AnimatePresence mode="wait">
           <motion.div 
             key={currentIndex} 
@@ -112,7 +113,7 @@ export function HeroSlider({ movies, isXX = false }: HeroSliderProps) {
               
               <button 
                 onClick={() => setIsPlaylistModalOpen(true)}
-                className="w-12 h-12 rounded-full backdrop-blur-xl bg-white/10 flex items-center justify-center text-white hover:bg-white/20 transition-all shadow-md"
+                className="w-12 h-12 rounded-full backdrop-blur-sm md:backdrop-blur-xl bg-white/10 flex items-center justify-center text-white hover:bg-white/20 transition-all shadow-md"
               >
                 <Plus size={24} />
               </button>
@@ -123,7 +124,7 @@ export function HeroSlider({ movies, isXX = false }: HeroSliderProps) {
 
       {/* Navigation Thumbnails for TopXX */}
       {isXX && (
-        <div className="absolute right-6 md:right-12 bottom-12 z-30 flex flex-nowrap items-center justify-end gap-3 max-w-[90vw] overflow-x-auto no-scrollbar pb-4 md:pb-0">
+        <div className="absolute right-6 md:right-12 bottom-6 md:bottom-12 z-30 flex flex-nowrap items-center justify-end gap-3 max-w-[90vw] overflow-x-auto no-scrollbar pb-4 md:pb-0">
           {movies.slice(0, 10).map((movie, idx) => (
             <button
               key={movie.slug}
@@ -142,6 +143,8 @@ export function HeroSlider({ movies, isXX = false }: HeroSliderProps) {
                 src={movie.posterUrl} 
                 alt={movie.title} 
                 className="w-full h-full object-cover scale-110 group-hover/thumb:scale-125 transition-transform duration-500"
+                loading="lazy"
+                decoding="async"
               />
               <div className={cn(
                 "absolute inset-0 bg-yellow-500/20 transition-opacity duration-500",
