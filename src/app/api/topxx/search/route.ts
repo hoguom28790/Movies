@@ -40,7 +40,15 @@ export async function GET(request: Request) {
       }
     });
 
-    const mergedItems = Array.from(mergedMap.values());
+    const mergedItems = Array.from(mergedMap.values())
+      .sort((a, b) => {
+        const yearA = parseInt(a.year || a.vod_year || "0");
+        const yearB = parseInt(b.year || b.vod_year || "0");
+        if (yearB !== yearA) return yearB - yearA;
+        // Secondary sort by ID if years are same
+        return (parseInt(b.id) || 0) - (parseInt(a.id) || 0);
+      });
+
     const totalItems = (topxxPagination?.totalItems || 0) + (avdbPagination?.totalItems || 0);
     const totalPages = Math.max(topxxPagination?.totalPages || 1, avdbPagination?.totalPages || 1);
 

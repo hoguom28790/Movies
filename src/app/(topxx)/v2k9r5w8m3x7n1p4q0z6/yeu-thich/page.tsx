@@ -312,8 +312,8 @@ export default function TopXXLibraryPage() {
                         <div className="relative w-40 h-40 md:w-64 md:h-64 rounded-[56px] overflow-hidden border-4 border-foreground/5 shadow-2xl transition-all duration-700 bg-surface group-hover:border-yellow-500/30 group-hover:shadow-yellow-500/20 group-hover:-translate-y-3">
                             <img 
                               src={
-                                (actor.profilePath || actor.profile_path || actor.profileImageUrl)?.startsWith('http') 
-                                  ? (actor.profilePath || actor.profile_path || actor.profileImageUrl)
+                                (actor.profilePath || actor.profile_path || actor.profileImageUrl || actor.profileImage)?.startsWith('http') 
+                                  ? (actor.profilePath || actor.profile_path || actor.profileImageUrl || actor.profileImage)
                                   : (actor.profilePath || actor.profile_path ? `https://image.tmdb.org/t/p/w500${actor.profilePath || actor.profile_path}` : "https://placehold.co/500x500/0f1115/efb11d?text=Actor")
                               } 
                               alt={actor.name}

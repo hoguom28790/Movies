@@ -75,16 +75,14 @@ export async function getJavModelProfile(name: string): Promise<Partial<ActressP
     }
 
     const extractStat = (label: string) => {
-        // Find label followed by content
-        // Example: <strong>Birthday:</strong> 08/16/1993
-        const regex = new RegExp(`(?:<strong>|<b>)${label}:?<\\/(?:strong|b)>\\s*([^<]*)`, "i");
+        // More robust pattern for different table layouts
+        const regex = new RegExp(`<td[^>]*>[\\s\\S]*?${label}[\\s\\S]*?<\\/td>\\s*<td[^>]*>(?:<p>)?([^<\\/]+)`, "i");
         const match = html.match(regex);
         if (match) return match[1].trim();
         
-        // Alternative: Label on one line, value on next (markdown-like)
-        const altRegex = new RegExp(`${label}\\s*\\n\\s*([^\\n]+)`, "i");
-        const altMatch = html.match(altRegex);
-        return altMatch ? altMatch[1].trim() : "";
+        const simpleRegex = new RegExp(`(?:<strong>|<b>|<span>)${label}:?<\\/(?:strong|b|span)>\\s*([^<]*)`, "i");
+        const simpleMatch = html.match(simpleRegex);
+        return simpleMatch ? simpleMatch[1].trim() : "";
     };
 
     const birthDate = extractStat("Birthday");
@@ -94,15 +92,33 @@ export async function getJavModelProfile(name: string): Promise<Partial<ActressP
     const hips = extractStat("Hips");
     const height = extractStat("Height");
     
+    // Extract Model's Style tags
+    // <td class="flq-color-meta"><p>Model's Style</p></td>\s*<td><a ...>Cute</a> ...
+    const styleMatch = html.match(/Model's Style<\/p><\/td>\s*<td>([\s\S]*?)<\/td>/i);
+    const styles: string[] = [];
+    if (styleMatch) {
+        const styleHtml = styleMatch[1];
+        const styleTags = Array.from(styleHtml.matchAll(/<a[^>]*>([^<]+)<\/a>/gi));
+        styleTags.forEach(m => styles.push(m[1].trim()));
+    }
+
     // Extract real/stage names from title or h1
-    // Example: <title>Yua Mikami ...</title>
     const titleMatch = html.match(/<title>([^|<-]+)/i);
     const stageName = titleMatch ? titleMatch[1].trim() : name;
 
     // Extract large profile image
-    // Typically: <img class="img-fluid" src="https://javmodel.com/javdata/uploads/yua_mikami150.jpg" ...>
-    const imgMatch = html.match(/class=\"img-fluid\" src=\"([^\"]+\.(jpg|png|webp))/i);
-    let profileImage = imgMatch ? imgMatch[1] : "";
+    // Extract large profile image from meta og:image (most reliable)
+    const ogImgMatch = html.match(/property=\"og:image\" content=\"([^\"]+\.(jpg|png|webp))/i);
+    let profileImage = ogImgMatch ? ogImgMatch[1] : "";
+    
+    if (!profileImage) {
+        // Fallback: search for any images in the uploads directory
+        const imgMatches = Array.from(html.matchAll(/src=\"([^\"]+javdata\/uploads\/[^\"]+\.(jpg|png|webp))/gi));
+        if (imgMatches.length > 0) {
+            const mainImg = imgMatches.find(m => !m[1].includes('/thumb/')) || imgMatches[0];
+            profileImage = mainImg[1];
+        }
+    }
     
     // Ensure absolute URL
     if (profileImage && !profileImage.startsWith("http")) {
@@ -112,11 +128,11 @@ export async function getJavModelProfile(name: string): Promise<Partial<ActressP
     const measurements = (bust && waist && hips) ? `${bust}-${waist}-${hips} cm` : "";
     
     // Gallery can be extracted from thumbnails below
-    // <a href="https://javmodel.com/hd/ssis834/"><img ... src="https://..." ></a>
-    const galleryMatches = Array.from(html.matchAll(/src=\"(https?:\/\/[^\"]+\.(jpg|png|webp))/gi));
+    const galleryMatches = Array.from(html.matchAll(/src=\"([^\"]+javdata\/uploads\/[^\"]+\.(jpg|png|webp))/gi));
     const gallery = galleryMatches
         .map(m => m[1])
-        .filter(url => url.includes('/thumbs/') || url.includes('/uploads/'))
+        .filter(url => url.includes('/thumb/'))
+        .map(url => url.startsWith('http') ? url : `${JAVMODEL_BASE}${url.startsWith('/') ? '' : '/'}${url}`)
         .slice(0, 15);
 
     return {
@@ -131,7 +147,8 @@ export async function getJavModelProfile(name: string): Promise<Partial<ActressP
       bloodType: bloodType,
       ethnicity: "Asian",
       nationality: "Japanese",
-      boobsType: "Natural", 
+      boobsType: styles.includes("Beautiful Breasts") ? "Beautiful" : "Natural", 
+      bodyType: styles.join(", "), // Use styles as body type/style tags
       gallery: gallery.length > 0 ? gallery : (profileImage ? [profileImage] : []),
     };
   } catch (error) {

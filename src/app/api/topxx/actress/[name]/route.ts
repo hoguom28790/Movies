@@ -21,7 +21,6 @@ export async function GET(
       getJavModelProfile(decodedName).catch(() => null)
     ]);
 
-    // Merge strategy: JavModel (Primary source for bio and identity)
     const bioData = javModelBio;
     const allAvdbMovies = avdbRes?.list || [];
     
@@ -48,9 +47,13 @@ export async function GET(
           rating: "N/A",
           slug: `av-${m.id}`,
           source: "avdb",
+          originalYear: parseInt(m.vod_year || m.year || (m.created_at?.split("-")[0])) || 0
         });
       }
     });
+
+    const sortedFilmography = Array.from(filmMap.values())
+      .sort((a, b) => b.originalYear - a.originalYear);
 
     const responseData = {
       source: [
@@ -94,8 +97,8 @@ export async function GET(
       profileImage: bioData?.profileImage || firstMovie.vod_pic || "",
       gallery: bioData?.gallery?.length ? bioData.gallery : avdbMovies.slice(0, 12).map((m: any) => m.vod_pic).filter(Boolean),
       
-      // Filmography primarily from AVDB
-      filmography: Array.from(filmMap.values()),
+      // Sorted Filmography
+      filmography: sortedFilmography,
     };
 
     return NextResponse.json(responseData);
