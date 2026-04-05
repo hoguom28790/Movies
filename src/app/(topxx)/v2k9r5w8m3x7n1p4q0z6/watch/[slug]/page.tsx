@@ -227,10 +227,33 @@ export default async function XXWatchPage({
                             <span className="text-[10px] font-black text-foreground/80">{(item as any).duration}</span>
                           </div>
                         )}
+                        {item.publish_at && (
+                          <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/5 border border-white/10">
+                            <span className="text-[10px] font-black text-foreground/40 uppercase tracking-widest italic">Release</span>
+                            <span className="text-[10px] font-black text-foreground/80">{String(item.publish_at).split(' ')[0]}</span>
+                          </div>
+                        )}
                         {(item as any).code && (
                           <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/10 border border-primary/20">
                             <span className="text-[10px] font-black text-primary/60 uppercase tracking-widest italic">Code</span>
                             <span className="text-[10px] font-black text-primary uppercase">{(item as any).code}</span>
+                          </div>
+                        )}
+                        {/* Director / Writer injected to badges for full visibility */}
+                        {(item as any).directors?.length > 0 && (
+                          <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/5 border border-white/10 hidden sm:flex">
+                            <span className="text-[10px] font-black text-foreground/40 uppercase tracking-widest italic">Director</span>
+                            <span className="text-[10px] font-black text-foreground/80 truncate max-w-[150px]">
+                              {(item as any).directors.map((d: any) => d.name).join(', ')}
+                            </span>
+                          </div>
+                        )}
+                        {(item as any).writers?.length > 0 && (
+                          <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/5 border border-white/10 hidden sm:flex">
+                            <span className="text-[10px] font-black text-foreground/40 uppercase tracking-widest italic">Writer</span>
+                            <span className="text-[10px] font-black text-foreground/80 truncate max-w-[150px]">
+                              {(item as any).writers.map((d: any) => d.name).join(', ')}
+                            </span>
                           </div>
                         )}
                         {(item as any).quality && (
@@ -240,24 +263,7 @@ export default async function XXWatchPage({
                         )}
                       </div>
 
-                      {/* Genres */}
-                      {((item as any).genres?.length > 0 || (item as any).category?.length > 0) && (
-                        <div className="flex flex-wrap gap-2">
-                          {((item as any).genres || (item as any).category || []).map((g: any, i: number) => {
-                            // TopXX genres have {code, trans:[{name}]} structure, AVDB genres have {name, slug}
-                            const genreName = typeof g === 'string' ? g : 
-                              (g.name || g.trans?.find((t: any) => t.locale === 'vi')?.name || g.trans?.[0]?.name || '');
-                            if (!genreName) return null;
-                            const genreSlug = typeof g === 'string' ? g.toLowerCase().replace(/[^a-z0-9]+/g, '-') :
-                              (g.slug || g.code || g.trans?.find((t: any) => t.locale === 'vi')?.slug || g.trans?.[0]?.slug || genreName.toLowerCase().replace(/[^a-z0-9]+/g, '-'));
-                            return (
-                              <Link key={i} href={`/${TOPXX_PATH}/the-loai/${genreSlug}`} className="text-[10px] font-black text-foreground/30 uppercase italic tracking-wider hover:text-yellow-500 transition-colors">
-                                #{genreName}
-                              </Link>
-                            );
-                          })}
-                        </div>
-                      )}
+                      {/* Genres have been moved beneath the title */}
                   </div>
 
                   <h1 className="text-3xl md:text-5xl font-black text-foreground uppercase italic tracking-tighter leading-tight">
@@ -265,17 +271,18 @@ export default async function XXWatchPage({
                      <span className="text-yellow-500 ml-4 block sm:inline text-2xl md:text-3xl">#SV{currentIdx + 1}</span>
                   </h1>
 
-                  {/* Genres */}
-                  {(item as any).genres?.length > 0 && (
+                  {/* Categories / Genres (Consolidated) */}
+                  {((item as any).genres?.length > 0 || (item as any).category?.length > 0) && (
                     <div className="flex flex-wrap gap-2">
-                      {(item as any).genres.map((g: any, i: number) => {
+                      {((item as any).genres || (item as any).category || []).map((g: any, i: number) => {
                         const genreName = typeof g === 'string' ? g :
                           (g.name || g.trans?.find((t: any) => t.locale === 'vi')?.name || g.trans?.[0]?.name || '');
                         if (!genreName) return null;
                         const genreSlug = typeof g === 'string' ? g.toLowerCase().replace(/[^a-z0-9]+/g, '-') :
                           (g.slug || g.code || g.trans?.find((t: any) => t.locale === 'vi')?.slug || g.trans?.[0]?.slug || genreName.toLowerCase().replace(/[^a-z0-9]+/g, '-'));
                         return (
-                          <Link key={g.slug || g.code || i} href={`/${TOPXX_PATH}/the-loai/${genreSlug}`} className="px-3 py-1 rounded-full bg-foreground/5 border border-foreground/10 text-foreground/40 text-[10px] font-black uppercase tracking-widest italic hover:bg-yellow-500/10 hover:border-yellow-500/20 hover:text-yellow-500 transition-all">
+                          <Link key={`${genreSlug}-${i}`} href={`/${TOPXX_PATH}/the-loai/${genreSlug}`} className="px-3 py-1 rounded-full bg-foreground/5 border border-foreground/10 text-foreground/50 text-[11px] font-black uppercase tracking-widest italic hover:bg-yellow-500/10 hover:border-yellow-500/20 hover:text-yellow-500 transition-all shadow-sm group">
+                            <span className="text-yellow-500/40 group-hover:text-yellow-500 mr-1.5 transition-colors">#</span>
                             {genreName}
                           </Link>
                         );
