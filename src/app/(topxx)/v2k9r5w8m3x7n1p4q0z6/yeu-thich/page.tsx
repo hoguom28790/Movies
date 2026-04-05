@@ -314,16 +314,20 @@ export default function TopXXLibraryPage() {
                               src={
                                 (actor.profilePath || actor.profile_path || actor.profileImageUrl || actor.profileImage)?.startsWith('http') 
                                   ? (actor.profilePath || actor.profile_path || actor.profileImageUrl || actor.profileImage)
-                                  : (actor.profilePath || actor.profile_path ? `https://image.tmdb.org/t/p/w500${actor.profilePath || actor.profile_path}` : "https://placehold.co/500x500/0f1115/efb11d?text=Actor")
+                                  : (actor.profilePath || actor.profile_path 
+                                      ? `https://image.tmdb.org/t/p/w500${actor.profilePath || actor.profile_path}` 
+                                      : `https://javmodel.com/javdata/uploads/${String(actor.id).replace(/-/g, '_')}150.jpg`)
                               } 
                               alt={actor.name}
                               className="w-full h-full object-cover transition-transform duration-[3s] group-hover:scale-110"
                               referrerPolicy="no-referrer"
-                              onError={(e) => { e.currentTarget.src = "https://placehold.co/500x500/0f1115/efb11d?text=Actor" }}
+                              onError={(e) => { 
+                                // Last resort fallback
+                                if (!e.currentTarget.src.includes('placehold.co')) {
+                                  e.currentTarget.src = `https://placehold.co/500x500/0f1115/efb11d?text=${encodeURIComponent(actor.name)}`;
+                                }
+                              }}
                             />
-                          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-end p-8 gap-4">
-                              <span className="bg-yellow-500 text-black text-[10px] font-black uppercase tracking-[0.2em] px-6 py-3 rounded-2xl border-2 border-yellow-400 shadow-2xl text-center backdrop-blur-md">XEM HỒ SƠ</span>
-                          </div>
                           <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/5 to-transparent pointer-events-none" />
                           
                           {/* Remove Button */}
@@ -345,9 +349,6 @@ export default function TopXXLibraryPage() {
                           <h4 className="text-base md:text-xl font-black uppercase tracking-tighter text-foreground group-hover:text-yellow-500 transition-colors italic leading-none">
                              {actor.name}
                           </h4>
-                          <div className="flex items-center justify-center">
-                            <span className="px-4 py-1.5 rounded-full text-[9px] font-black uppercase tracking-[0.3em] bg-yellow-500/5 text-yellow-500/60 border border-yellow-500/20">PREMIUM ARTIST</span>
-                          </div>
                         </div>
                       </Link>
                     ))}

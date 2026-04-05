@@ -241,132 +241,125 @@ export function ActorProfile({ actorName, slug, isXX = false }: ActorProfileProp
 
       {/* ─── BIOGRAPHICAL INFO + GALLERY ───────────────────────────── */}
       {isXX && details && (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-12 animate-in slide-in-from-bottom duration-1000">
-          {/* Detailed Stats */}
-          <div className="bg-surface rounded-[40px] p-8 md:p-12 border border-foreground/5 shadow-xl space-y-10">
-            <div className="flex items-center gap-4 border-b border-foreground/5 pb-6">
-              <Smile className="w-6 h-6 text-yellow-500" />
-              <h3 className="text-2xl font-black italic uppercase tracking-tighter">Thông tin cá nhân</h3>
-            </div>
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 animate-in slide-in-from-bottom duration-1000">
+          {/* Detailed Stats (Left - 4 columns) */}
+          <div className="lg:col-span-4 space-y-8">
+            <div className="bg-surface rounded-[40px] p-8 md:p-10 border border-foreground/5 shadow-2xl space-y-10">
+              <div className="flex items-center gap-4 border-b border-foreground/5 pb-6">
+                <Smile className="w-6 h-6 text-yellow-500" />
+                <h3 className="text-2xl font-black italic uppercase tracking-tighter text-foreground">Thông tin</h3>
+              </div>
 
-            <div className="grid grid-cols-2 gap-x-8 gap-y-10">
-              {[
-                { label: "Tên thật", value: details.realName !== details.stageName ? details.realName : null, icon: User },
-                { label: "Ngày sinh", value: details.birthDate, icon: Calendar },
-                { label: "Quốc tịch", value: details.nationality, icon: MapPin },
-                { label: "Quê quán", value: details.birthPlace !== details.nationality ? details.birthPlace : null, icon: MapPin },
-                { label: "Số đo 3 vòng", value: details.measurements, icon: Ruler },
-                { label: "Cúp ngực", value: details.cupSize, icon: Heart },
-                { label: "Ngực tự nhiên", value: details.boobsType, icon: Heart },
-                { label: "Vóc dáng", value: details.bodyType, icon: User },
-                { label: "Chiều cao", value: details.height, icon: Ruler },
-                { label: "Cân nặng", value: details.weight, icon: TrendingUp },
-                { label: "Nhóm máu", value: details.bloodType, icon: Heart },
-                { label: "Màu mắt", value: details.eyeColor, icon: Smile },
-                { label: "Màu tóc", value: details.hairColor, icon: User },
-                { label: "Lông nách", value: details.underarmHair, icon: User },
-                { label: "Lông vùng kín", value: details.pubicHair, icon: User },
-                { label: "Dân tộc", value: details.ethnicity, icon: User },
-                { label: "Phong cách diễn (Shown)", value: details.performanceShown, icon: Play },
-                { label: "Thể loại Solo", value: details.performanceSolo, icon: Play },
-                { label: "Thể loại Nam/Nữ", value: details.performanceBoyGirl, icon: Play },
-                { label: "Thời gian hoạt động", value: details.yearsActive, icon: TrendingUp },
-                { label: "Instagram", value: details.instagram, icon: User },
-                { label: "Studio / Hãng", value: details.studio, icon: Tv },
-              ].filter(s => s.value && s.value !== "N/A" && s.value !== "Đang cập nhật" && s.value !== details.stageName).map((stat, i) => (
-                <div key={i} className="space-y-1 group">
-                  <p className="text-[9px] font-black uppercase text-foreground/20 tracking-widest italic">{stat.label}</p>
-                  {stat.label === "Instagram" && stat.value?.startsWith("@") ? (
-                    <a href={`https://instagram.com/${stat.value.replace("@", "")}`} target="_blank" rel="noreferrer" className="text-lg md:text-xl font-black text-foreground/80 italic tracking-tight hover:text-yellow-500 transition-colors block">
-                      {stat.value}
-                    </a>
-                  ) : (
-                    <p className="text-lg md:text-xl font-black text-foreground/80 italic tracking-tight group-hover:text-yellow-500 transition-colors">{stat.value}</p>
-                  )}
-                </div>
-              ))}
+              <div className="grid grid-cols-1 gap-y-7">
+                {[
+                  { label: "Tên thật", value: details.realName !== details.stageName ? details.realName : null, icon: User },
+                  { label: "Ngày sinh", value: details.birthDate, icon: Calendar },
+                  { label: "Quốc tịch", value: details.nationality, icon: MapPin },
+                  { label: "Số đo", value: details.measurements, icon: Ruler },
+                  { label: "Cúp ngực", value: details.cupSize, icon: Heart },
+                  { label: "Vóc dáng / Style", value: details.bodyType, icon: User },
+                  { label: "Chiều cao", value: details.height, icon: Ruler },
+                  { label: "Trọng lượng", value: details.weight, icon: TrendingUp },
+                  { label: "Nhóm máu", value: details.bloodType, icon: Heart },
+                  { label: "Instagram", value: details.instagram, icon: User },
+                  { label: "Studio", value: details.studio, icon: Tv },
+                ].filter(s => s.value && s.value !== "N/A" && s.value !== "Đang cập nhật" && s.value !== details.stageName).map((stat, i) => (
+                  <div key={i} className="space-y-1 group">
+                    <p className="text-[9px] font-black uppercase text-foreground/20 tracking-widest italic">{stat.label}</p>
+                    {stat.label === "Instagram" && stat.value?.startsWith("@") ? (
+                      <a href={`https://instagram.com/${stat.value.replace("@", "")}`} target="_blank" rel="noreferrer" className="text-base md:text-lg font-black text-foreground/80 italic tracking-tight hover:text-yellow-500 transition-colors block">
+                        {stat.value}
+                      </a>
+                    ) : (
+                      <p className="text-base md:text-lg font-black text-foreground/80 italic tracking-tight group-hover:text-yellow-500 transition-colors">{stat.value}</p>
+                    )}
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
 
-          {/* Gallery */}
-          <div className="bg-surface rounded-[40px] p-8 md:p-12 border border-foreground/5 shadow-xl space-y-10">
-            <div className="flex items-center justify-between border-b border-foreground/5 pb-6">
-              <div className="flex items-center gap-4">
-                <ImageIcon className="w-6 h-6 text-yellow-500" />
-                <h3 className="text-2xl font-black italic uppercase tracking-tighter">Gallery</h3>
+          {/* Gallery (Right - 8 columns) */}
+          <div className="lg:col-span-8">
+            <div className="bg-surface rounded-[40px] p-8 md:p-10 border border-foreground/5 shadow-2xl space-y-10 h-full">
+              <div className="flex items-center justify-between border-b border-foreground/5 pb-6">
+                <div className="flex items-center gap-4">
+                  <ImageIcon className="w-6 h-6 text-yellow-500" />
+                  <h3 className="text-2xl font-black italic uppercase tracking-tighter text-foreground">Gallery</h3>
+                </div>
+                {details.gallery?.length > 0 && (
+                  <span className="text-[10px] font-black text-foreground/20 tracking-widest uppercase">{details.gallery.length} ẢNH</span>
+                )}
               </div>
-              {details.gallery?.length > 0 && (
-                <span className="text-[10px] font-black text-foreground/20">{details.gallery.length} ẢNH</span>
+
+              {details.gallery?.length > 0 ? (
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-6">
+                  {details.gallery.slice(0, 15).map((imgUrl: string, i: number) => (
+                    <button
+                      key={i}
+                      onClick={() => setLightboxImage(imgUrl)}
+                      className="group relative aspect-[4/5] rounded-[32px] overflow-hidden bg-foreground/5 border border-foreground/5 transition-all duration-500 hover:scale-[1.02] hover:shadow-2xl hover:shadow-yellow-500/10"
+                    >
+                      <img
+                        src={imgUrl}
+                        className="w-full h-full object-cover transition-all duration-700 group-hover:scale-110"
+                        alt={`${actorName} Gallery ${i}`}
+                        referrerPolicy="no-referrer"
+                        onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                      />
+                      <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                         <span className="text-[10px] font-black text-white uppercase tracking-[0.2em] translate-y-4 group-hover:translate-y-0 transition-transform">XEM ẢNH</span>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              ) : (
+                <div className="h-full min-h-[300px] flex flex-col items-center justify-center text-foreground/10 border-2 border-dashed border-foreground/5 rounded-[40px]">
+                  <ImageIcon className="w-20 h-20 mb-4 opacity-20" />
+                  <p className="text-sm font-black uppercase tracking-widest italic tracking-tight">No gallery available</p>
+                </div>
               )}
             </div>
-
-            {details.gallery?.length > 0 ? (
-              <div className="grid grid-cols-3 gap-4">
-                {details.gallery.slice(0, 12).map((img: string, i: number) => (
-                  <button
-                    key={i}
-                    onClick={() => setLightboxImage(img)}
-                    className="relative aspect-square rounded-3xl overflow-hidden bg-foreground/5 border border-foreground/5 group"
-                  >
-                    <img
-                      src={img}
-                      className="w-full h-full object-cover transition-all duration-700 group-hover:scale-125 group-hover:brightness-50"
-                      alt={`${actorName} ${i}`}
-                      referrerPolicy="no-referrer"
-                    />
-                    <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                      <PlayCircle className="w-8 h-8 text-white" />
-                    </div>
-                  </button>
-                ))}
-              </div>
-            ) : (
-              <div className="h-48 flex flex-col items-center justify-center text-foreground/10 border-2 border-dashed border-foreground/5 rounded-3xl">
-                <ImageIcon className="w-12 h-12 mb-4" />
-                <p className="text-[10px] font-black uppercase tracking-widest italic">No gallery available</p>
-              </div>
-            )}
           </div>
         </div>
       )}
 
-      {/* ─── FILMOGRAPHY GRID ──────────────────────────────────────── */}
+      {/* ─── FILMOGRAPHY (Bottom Full Width) ──────────────────────── */}
       {isXX && filmography.length > 0 && (
-        <div className="animate-in slide-in-from-bottom duration-1000 delay-200">
-          <div className="flex items-center gap-4 mb-10">
-            <div className="w-2 h-8 bg-yellow-500 rounded-full shadow-lg shadow-yellow-500/40" />
-            <div>
-              <h2 className="text-2xl md:text-3xl font-black uppercase italic tracking-tighter text-foreground">
+        <div className="animate-in slide-in-from-bottom duration-1000 delay-300">
+          <div className="flex items-center justify-between mb-12">
+            <div className="flex items-center gap-6">
+              <div className="w-1.5 h-10 bg-yellow-500 rounded-full shadow-[0_0_20px_rgba(234,179,8,0.5)]" />
+              <h2 className="text-3xl md:text-4xl font-black uppercase italic tracking-tighter text-foreground">
                 FILMOGRAPHY
               </h2>
-              <p className="text-[10px] font-black text-foreground/20 uppercase tracking-widest italic">
-                {filmography.length} tác phẩm đã đóng
-              </p>
+            </div>
+            <div className="text-right">
+              <span className="text-[10px] font-black text-yellow-500 uppercase tracking-[0.3em] block mb-1">AVAILABLE TITLES</span>
+              <span className="text-2xl font-black text-foreground italic">{filmography.length}+</span>
             </div>
           </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 md:gap-6">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-8">
             {filmography.map((film: any, idx: number) => {
-              // Determine watch route - prioritize standard code routing for JAV
+              // Determine watch route
               let watchHref = "#";
               if (film.source === "avdb" || film.slug?.startsWith("av-")) {
                  watchHref = `/${TOPXX_PATH}/watch/av-${(film.slug || film.id)?.replace("av-", "") || idx}`;
               } else if (film.code) {
-                 // Standard JAV codes (ABC-123) route through topxx with our new AVDB fallback
                  watchHref = `/${TOPXX_PATH}/watch/${film.code.toLowerCase().replace(/\s+/g, "-")}`;
               }
 
               return (
                 <motion.div
-                  key={`${film.code}-${idx}`}
+                  key={`${film.code || idx}-${idx}`}
                   initial={{ opacity: 0, y: 20 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true, margin: "-50px" }}
                   transition={{ duration: 0.5, delay: Math.min(idx * 0.03, 0.3) }}
-                  className="group flex flex-col gap-3"
                 >
-                  <Link href={watchHref} className="block">
-                    <div className="relative aspect-[2/3] rounded-[24px] overflow-hidden bg-surface border border-foreground/5 shadow-xl group-hover:shadow-yellow-500/20 transition-all duration-500">
+                  <Link href={watchHref} className="group block space-y-4">
+                    <div className="relative aspect-[2/3] rounded-[32px] overflow-hidden bg-surface border border-foreground/5 shadow-xl group-hover:shadow-yellow-500/20 transition-all duration-500">
                       {film.poster ? (
                         <img
                           src={film.poster}
@@ -376,39 +369,32 @@ export function ActorProfile({ actorName, slug, isXX = false }: ActorProfileProp
                         />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center bg-foreground/5">
-                          <Film className="w-8 h-8 text-foreground/10" />
+                          <Film className="w-10 h-10 text-foreground/10" />
                         </div>
                       )}
-                      {/* Hover overlay */}
+                      
                       <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-500">
-                        <div className="w-12 h-12 rounded-full bg-yellow-500 flex items-center justify-center shadow-2xl scale-75 group-hover:scale-100 transition-transform duration-300">
-                          <Play className="w-5 h-5 text-black fill-current ml-0.5" />
+                        <div className="w-14 h-14 rounded-full bg-yellow-500 flex items-center justify-center shadow-2xl scale-75 group-hover:scale-100 transition-transform duration-300">
+                          <Play className="w-6 h-6 text-black fill-current ml-0.5" />
                         </div>
                       </div>
-                      {/* Code badge */}
+
                       {film.code && (
-                        <div className="absolute top-2 left-2 bg-black/60 backdrop-blur-md px-2.5 py-1 rounded-lg border border-white/10">
-                          <span className="text-[9px] font-black text-yellow-500 uppercase tracking-widest">{film.code}</span>
-                        </div>
-                      )}
-                      {/* Rating badge */}
-                      {film.rating && film.rating !== "N/A" && (
-                        <div className="absolute top-2 right-2 bg-yellow-500/20 backdrop-blur-md px-2 py-1 rounded-lg border border-yellow-500/30 flex items-center gap-1">
-                          <Star className="w-2.5 h-2.5 text-yellow-500 fill-current" />
-                          <span className="text-[9px] font-black text-yellow-500">{film.rating}</span>
+                        <div className="absolute top-4 left-4 bg-black/60 backdrop-blur-md px-3 py-1.5 rounded-xl border border-white/10">
+                          <span className="text-[10px] font-black text-yellow-500 uppercase tracking-widest">{film.code}</span>
                         </div>
                       )}
                     </div>
 
-                    <div className="px-1 space-y-1 mt-2">
-                      <h4 className="text-[12px] font-black text-foreground line-clamp-2 italic uppercase tracking-tight group-hover:text-yellow-500 transition-colors leading-tight">
+                    <div className="px-1 space-y-1.5">
+                      <h4 className="text-sm font-black text-foreground line-clamp-2 italic uppercase tracking-tight group-hover:text-yellow-500 transition-colors leading-tight">
                         {film.title || film.code || "No Title"}
                       </h4>
                       {film.year && film.year !== "N/A" && (
-                        <p className="text-[9px] font-black text-foreground/20 uppercase italic flex items-center gap-1">
-                          <Calendar className="w-2.5 h-2.5" />
-                          {film.year}
-                        </p>
+                        <div className="flex items-center gap-2 text-foreground/20 italic">
+                          <Calendar className="w-3 h-3" />
+                          <span className="text-[10px] font-black uppercase tracking-widest">{film.year}</span>
+                        </div>
                       )}
                     </div>
                   </Link>
