@@ -8,19 +8,31 @@ const HEADERS = {
 
 export async function getJavCubeProfile(name: string): Promise<Partial<BoobpediaProfile> | null> {
   try {
-    const slug = name.toLowerCase().trim().replace(/[\s\-_]+/g, "-");
-    const url = `${JAVCUBE_BASE}/jav/${slug}/`;
-    console.log(`[JAVCUBE] Fetching: ${url}`);
+    const parts = name.toLowerCase().trim().split(/[\s\-_]+/);
+    const slug1 = parts.join("-");
+    const slug2 = [...parts].reverse().join("-");
+    
+    const slugs = [slug1];
+    if (slug2 !== slug1) slugs.push(slug2);
 
-    const res = await fetch(url, { headers: HEADERS });
-    if (!res.ok) {
-        console.log(`[JAVCUBE] Failed to fetch for: ${name} (Status: ${res.status})`);
-        return null;
+    let html = "";
+    let finalSlug = slug1;
+
+    for (const slug of slugs) {
+      const url = `${JAVCUBE_BASE}/jav/${slug}/`;
+      console.log(`[JAVCUBE] Fetching: ${url}`);
+      const res = await fetch(url, { headers: HEADERS });
+      if (res.ok) {
+        html = await res.text();
+        if (html.includes("BIOGRAPHY")) {
+          finalSlug = slug;
+          break;
+        }
+      }
     }
 
-    const html = await res.text();
-    if (!html.includes("BIOGRAPHY")) {
-        console.log(`[JAVCUBE] No biography found for: ${name}`);
+    if (!html || !html.includes("BIOGRAPHY")) {
+        console.log(`[JAVCUBE] No profile found for: ${name} (tried ${slugs.join(", ")})`);
         return null;
     }
 

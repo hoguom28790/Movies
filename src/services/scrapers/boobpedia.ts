@@ -133,19 +133,37 @@ async function searchBoobpedia(query: string): Promise<string | null> {
 
 export async function getBoobpediaProfile(name: string): Promise<BoobpediaProfile | null> {
   try {
-    let wikiTitle = nameToWikiTitle(name);
-    let url = `${BOOBPEDIA_BASE}/boobs/${encodeURIComponent(wikiTitle)}`;
-    console.log(`[BOOBPEDIA] Fetching: ${url}`);
-
-    let html = await fetchHtml(url);
+    const mainTitle = nameToWikiTitle(name);
+    const reversedTitle = name.trim().split(/\s+/).reverse()
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+      .join("_");
     
-    // Fallback: If direct fetch fails or is invalid, try searching
-    if (!html || (!html.includes("infobox") && !html.includes("Measurements"))) {
-        console.log(`[BOOBPEDIA] Direct fetch failed for ${name}, trying search...`);
+    const titlesToTry = [mainTitle];
+    if (reversedTitle !== mainTitle) {
+        titlesToTry.push(reversedTitle);
+    }
+
+    let html: string | null = null;
+    let wikiTitle = mainTitle;
+
+    for (const title of titlesToTry) {
+        const url = `${BOOBPEDIA_BASE}/boobs/${encodeURIComponent(title)}`;
+        console.log(`[BOOBPEDIA] Fetching: ${url}`);
+        const attempt = await fetchHtml(url);
+        if (attempt && (attempt.includes("infobox") || attempt.includes("Measurements"))) {
+            html = attempt;
+            wikiTitle = title;
+            break;
+        }
+    }
+    
+    // Fallback: If direct fetch for both orders fails, try searching
+    if (!html) {
+        console.log(`[BOOBPEDIA] Direct fetch failed for ${name} (Main & Reversed), trying search...`);
         const searchTitle = await searchBoobpedia(name);
-        if (searchTitle && searchTitle !== wikiTitle) {
+        if (searchTitle) {
             wikiTitle = searchTitle;
-            url = `${BOOBPEDIA_BASE}/boobs/${encodeURIComponent(wikiTitle)}`;
+            const url = `${BOOBPEDIA_BASE}/boobs/${encodeURIComponent(wikiTitle)}`;
             console.log(`[BOOBPEDIA] Found search result: ${wikiTitle}. Fetching: ${url}`);
             html = await fetchHtml(url);
         }

@@ -309,20 +309,21 @@ export default function TopXXLibraryPage() {
                         href={`/${TOPXX_PATH}/dien-vien/${actor.id || actor.name.toLowerCase().replace(/\s+/g, '-')}`}
                         className="group flex flex-col items-center"
                       >
-                        <div className="relative w-40 h-40 md:w-56 md:h-56 rounded-[56px] overflow-hidden border-2 border-foreground/5 shadow-2xl transition-all duration-700 bg-surface group-hover:border-yellow-500/30 group-hover:shadow-yellow-500/10 group-hover:-translate-y-2">
+                        <div className="relative w-40 h-40 md:w-64 md:h-64 rounded-[56px] overflow-hidden border-4 border-foreground/5 shadow-2xl transition-all duration-700 bg-surface group-hover:border-yellow-500/30 group-hover:shadow-yellow-500/20 group-hover:-translate-y-3">
                           <img 
                             src={
                               (actor.profilePath || actor.profile_path)?.startsWith('http') 
                                 ? (actor.profilePath || actor.profile_path)
-                                : (actor.profilePath || actor.profile_path ? `https://image.tmdb.org/t/p/w300${actor.profilePath || actor.profile_path}` : "https://placehold.co/400x400/0f1115/efb11d?text=Actor")
+                                : (actor.profilePath || actor.profile_path ? `https://image.tmdb.org/t/p/w500${actor.profilePath || actor.profile_path}` : "https://placehold.co/500x500/0f1115/efb11d?text=Actor")
                             } 
                             alt={actor.name}
-                            className="w-full h-full object-cover transition-transform duration-[2s] group-hover:scale-110"
-                            onError={(e) => { e.currentTarget.src = "https://placehold.co/400x400/0f1115/efb11d?text=Actor" }}
+                            className="w-full h-full object-cover transition-transform duration-[3s] group-hover:scale-110"
+                            onError={(e) => { e.currentTarget.src = "https://placehold.co/500x500/0f1115/efb11d?text=Actor" }}
                           />
-                          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-end p-6">
-                              <span className="bg-yellow-500 text-black text-[9px] font-black uppercase tracking-[0.2em] px-4 py-2 rounded-xl border border-yellow-400 shadow-2xl text-center">XEM HỒ SƠ</span>
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-end p-8 gap-4">
+                              <span className="bg-yellow-500 text-black text-[10px] font-black uppercase tracking-[0.2em] px-6 py-3 rounded-2xl border-2 border-yellow-400 shadow-2xl text-center backdrop-blur-md">XEM HỒ SƠ</span>
                           </div>
+                          <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/5 to-transparent pointer-events-none" />
                           
                           {/* Remove Button */}
                           <button 
@@ -334,16 +335,18 @@ export default function TopXXLibraryPage() {
                               await toggleFavoriteActor(user!.uid, { ...actor, type: 'topxx' });
                               fetchData();
                             }}
-                            className="absolute top-4 right-4 w-10 h-10 rounded-2xl bg-black/60 backdrop-blur-xl border border-white/10 text-white flex items-center justify-center translate-x-12 opacity-0 group-hover:translate-x-0 group-hover:opacity-100 transition-all duration-500 hover:bg-red-500 shadow-2xl z-20"
+                            className="absolute top-4 right-4 w-12 h-12 rounded-[22px] bg-black/60 backdrop-blur-xl border border-white/10 text-white flex items-center justify-center translate-x-16 opacity-0 group-hover:translate-x-0 group-hover:opacity-100 transition-all duration-500 hover:bg-red-500 shadow-2xl z-20"
                           >
-                             <Trash2 className="w-4 h-4" />
+                             <Trash2 className="w-5 h-5" />
                           </button>
                         </div>
-                        <div className="mt-6 text-center space-y-2 animate-in slide-in-from-bottom-2">
-                          <h4 className="text-sm md:text-base font-black uppercase tracking-tighter text-foreground group-hover:text-yellow-500 transition-colors italic">
+                        <div className="mt-8 text-center space-y-3 animate-in fade-in slide-in-from-bottom-2 duration-700">
+                          <h4 className="text-base md:text-xl font-black uppercase tracking-tighter text-foreground group-hover:text-yellow-500 transition-colors italic leading-none">
                              {actor.name}
                           </h4>
-                          <span className="px-3 py-1 rounded-full text-[8px] font-black uppercase tracking-[0.3em] bg-foreground/5 text-foreground/20 border border-foreground/10">PREMIUM ARTIST</span>
+                          <div className="flex items-center justify-center">
+                            <span className="px-4 py-1.5 rounded-full text-[9px] font-black uppercase tracking-[0.3em] bg-yellow-500/5 text-yellow-500/60 border border-yellow-500/20">PREMIUM ARTIST</span>
+                          </div>
                         </div>
                       </Link>
                     ))}
