@@ -97,21 +97,45 @@ export default async function XXWatchPage({
 
     // Normalize AVDB data to match TopXX structure
     if (isAVDB || item.source === 'avdb') {
-      item.trans = [{ locale: "vi", title: item.name, content: item.content }];
+      item.trans = [{ locale: "vi", title: item.name, content: item.content || item.description }];
       item.quality = item.quality || "HD";
       item.views = item.views || 0;
       item.posterUrl = item.poster_url || item.posterUrl;
-      // Handle actors string to array
-      if (typeof item.actor === 'string' && item.actor) {
+      item.duration = item.duration || "N/A";
+      item.publish_at = item.created_at || item.release || item.year;
+      item.year = item.year || (item.created_at ? item.created_at.split('-')[0] : undefined);
+      
+      // Handle actors array or string to array
+      if (Array.isArray(item.actor)) {
+         item.actors = item.actor.map((name: string) => ({ name: name.trim(), slug: name.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-') }));
+      } else if (typeof item.actor === 'string' && item.actor) {
         item.actors = item.actor.split(',').map((name: string) => ({
           name: name.trim(),
           slug: name.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-')
         }));
       }
-      // Handle genres
-      if (item.class_name) {
+
+      // Handle genres/category
+      if (Array.isArray(item.category)) {
+         item.genres = item.category.map((c: string) => ({ name: c, slug: c.toLowerCase().replace(/[^a-z0-9]+/g, '-') }));
+      } else if (item.class_name) {
         item.genres = [{ name: item.class_name, slug: 'avdb' }];
       }
+
+      // Handle country
+      if (Array.isArray(item.country)) {
+         item.countries = item.country.map((c: string) => ({ name: c, slug: c.toLowerCase().replace(/[^a-z0-9]+/g, '-') }));
+      }
+
+      // Handle director/writer
+      if (Array.isArray(item.director)) {
+         item.directors = item.director.map((c: string) => ({ name: c, slug: c.toLowerCase().replace(/[^a-z0-9]+/g, '-') }));
+      }
+      
+      if (Array.isArray(item.writer)) {
+         item.writers = item.writer.map((c: string) => ({ name: c, slug: c.toLowerCase().replace(/[^a-z0-9]+/g, '-') }));
+      }
+
       item.code = item.movie_code || item.id;
     }
 
@@ -186,6 +210,20 @@ export default async function XXWatchPage({
                           <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/5 border border-white/10">
                             <span className="text-[10px] font-black text-foreground/40 uppercase tracking-widest italic">Year</span>
                             <span className="text-[10px] font-black text-foreground/80">{item.year}</span>
+                          </div>
+                        )}
+                        {(item as any).countries?.length > 0 && (
+                          <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/5 border border-white/10">
+                            <span className="text-[10px] font-black text-foreground/40 uppercase tracking-widest italic">Country</span>
+                            <span className="text-[10px] font-black text-foreground/80">
+                              {(item as any).countries.map((c: any) => c.name).join(', ')}
+                            </span>
+                          </div>
+                        )}
+                        {(item as any).duration && (item as any).duration !== 'N/A' && (
+                          <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/5 border border-white/10">
+                            <span className="text-[10px] font-black text-foreground/40 uppercase tracking-widest italic">Length</span>
+                            <span className="text-[10px] font-black text-foreground/80">{(item as any).duration}</span>
                           </div>
                         )}
                         {(item as any).code && (
@@ -341,6 +379,18 @@ export default async function XXWatchPage({
             <div className="relative group">
                <div className="absolute inset-0 bg-yellow-500 opacity-0 group-hover:opacity-[0.02] transition-opacity blur-3xl -z-10" />
                 <div className="bg-surface border border-foreground/5 rounded-[40px] p-8 md:p-12 transition-all hover:border-yellow-500/20">
+                   {((item as any).directors?.length > 0 || (item as any).writers?.length > 0) && (
+                      <div className="mb-6 flex flex-col sm:flex-row flex-wrap gap-6 text-[11px] font-medium text-foreground/60 italic pb-6 border-b border-foreground/5">
+                         {(item as any).directors?.length > 0 && (
+                            <div><span className="text-foreground/20 uppercase tracking-widest font-black mr-2">Director:</span> 
+                                 {(item as any).directors.map((d: any) => d.name).join(', ')}</div>
+                         )}
+                         {(item as any).writers?.length > 0 && (
+                            <div><span className="text-foreground/20 uppercase tracking-widest font-black mr-2">Writer:</span> 
+                                 {(item as any).writers.map((w: any) => w.name).join(', ')}</div>
+                         )}
+                      </div>
+                   )}
                    <h3 className="text-[10px] font-black text-foreground/20 uppercase tracking-[0.4em] mb-6 flex items-center gap-3">
                       <span className="w-8 h-px bg-foreground/10" /> Nội dung phim
                    </h3>
