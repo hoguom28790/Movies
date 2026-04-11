@@ -73,12 +73,16 @@ export function MovieCard({
       >
         <div className="relative w-full h-full">
           <Image 
-            src={imgError || !posterUrl ? "https://placehold.co/600x900/F2F2F7/007AFF?text=No+Poster" : posterUrl} 
+            src={imgError || !posterUrl ? "https://images.unsplash.com/photo-1594909122845-11baa439b7bf?q=80&w=600&auto=format&fit=crop" : posterUrl} 
             alt={title} 
             fill
             sizes="(max-width: 640px) 50vw, (max-width: 1024px) 25vw, 15vw"
-            className="object-cover transition-transform duration-700"
-            unoptimized={posterUrl?.match(/amazon\.com|fanart\.tv|unsplash\.com|tmdb\.org/i) ? false : true}
+            className={cn(
+               "object-cover transition-transform duration-700 group-hover:scale-110",
+               imgError && "opacity-50 grayscale"
+            )}
+            unoptimized={false}
+            priority={index < 4}
             onError={() => setImgError(true)}
           />
         </div>

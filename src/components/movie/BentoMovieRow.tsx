@@ -59,7 +59,8 @@ export function BentoMovieRow({ title, movies, viewAllHref }: BentoMovieRowProps
               alt={featured.title} 
               fill
               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" 
-              unoptimized={!featured.posterUrl?.match(/amazon\.com|fanart\.tv|unsplash\.com|tmdb\.org/i)}
+              unoptimized={false}
+              sizes="(max-width: 768px) 320px, 400px"
             />
             
             <div className="absolute top-6 left-6 flex flex-col gap-3 z-20">
@@ -105,7 +106,8 @@ export function BentoMovieRow({ title, movies, viewAllHref }: BentoMovieRowProps
                 alt={movie.title} 
                 fill
                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" 
-                unoptimized={!movie.posterUrl?.match(/amazon\.com|fanart\.tv|unsplash\.com|tmdb\.org/i)}
+                unoptimized={false}
+                sizes="(max-width: 768px) 208px, 240px"
               />
               <div className="absolute top-4 right-4 z-20">
                  <div className="px-2 py-1 backdrop-blur-md bg-foreground/10 rounded-full flex items-center gap-1.5 shadow-sm text-foreground">

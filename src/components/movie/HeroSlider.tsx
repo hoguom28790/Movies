@@ -53,12 +53,14 @@ export function HeroSlider({ movies, isXX = false }: HeroSliderProps) {
           transition={{ duration: 1, ease: "easeInOut" }}
           className="absolute inset-0 z-0 overflow-hidden"
         >
-          <img
+          <Image
             src={currentMovie.thumbUrl || currentMovie.posterUrl}
             alt={currentMovie.title}
+            fill
+            priority
             className="absolute inset-0 w-full h-full object-cover transform-gpu will-change-transform"
-            loading="eager"
-            decoding="async"
+            sizes="100vw"
+            quality={90}
           />
           {/* Overlays */}
           <div className="absolute inset-0 bg-gradient-to-t from-background via-background/40 to-black/30" />
@@ -139,12 +141,12 @@ export function HeroSlider({ movies, isXX = false }: HeroSliderProps) {
                   : "border-white/20 opacity-40 hover:opacity-100 hover:border-white/40"
               )}
             >
-              <img 
+              <Image 
                 src={movie.posterUrl} 
                 alt={movie.title} 
+                fill
                 className="w-full h-full object-cover scale-110 group-hover/thumb:scale-125 transition-transform duration-500"
-                loading="lazy"
-                decoding="async"
+                sizes="56px"
               />
               <div className={cn(
                 "absolute inset-0 bg-yellow-500/20 transition-opacity duration-500",

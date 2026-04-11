@@ -128,7 +128,14 @@ export default async function WatchPage({
   const currentEpisodeSlug = queryEpisode || (ep as string) || "";
 
   try {
-    const titleQuery = movieSlug.split('-').join(' ');
+    // CLEANER TITLE QUERY: Remove common suffixes and years to improve TMDB search matching
+    const titleQuery = movieSlug
+      .split('-')
+      .filter(word => !/^\d{4}$/.test(word)) // Remove year-like words (e.g., 2024, 2025)
+      .join(' ');
+    
+    console.log(`[WatchPage] Processing: ${movieSlug} -> Search Query: "${titleQuery}"`);
+    
     const movieResPromise = getMovieDetails(movieSlug);
     const initialTmdbSearchPromise = searchTMDBMovie(titleQuery).catch(() => null);
 
@@ -145,10 +152,17 @@ export default async function WatchPage({
 
     if (!safeData) {
        console.log(`[WatchPage] Movie not found in providers, attempting TMDB metadata fallback for: ${movieSlug}`);
-       // Fallback: If providers fail, use TMDB info to at least show the page
-       if (initialTmdbSearch) {
+       
+       let tmdbMatch = initialTmdbSearch;
+       
+       // If initial search failed or is weak, try a cleaner search without the year suffix if present
+       if (!tmdbMatch) {
+          tmdbMatch = await searchTMDBMovie(titleQuery).catch(() => null);
+       }
+
+       if (tmdbMatch) {
           try {
-             const tmdbFull = await getTMDBMovieDetails(initialTmdbSearch.id, initialTmdbSearch.media_type);
+             const tmdbFull = await getTMDBMovieDetails(tmdbMatch.id, tmdbMatch.media_type);
              if (tmdbFull && !tmdbFull.status_code) {
                 safeData = {
                    name: tmdbFull.title || tmdbFull.name || titleQuery,
@@ -168,6 +182,24 @@ export default async function WatchPage({
              }
           } catch (e) { console.error("[WatchPage] TMDB Fallback failed:", e); }
        }
+    }
+
+    // ULTIMATE FALLBACK: If even TMDB failed, show the page with basic info from slug instead of erroring
+    if (!safeData && movieSlug) {
+      console.log(`[WatchPage] All lookups failed, using ultimate fallback for: ${movieSlug}`);
+      safeData = {
+        name: titleQuery.charAt(0).toUpperCase() + titleQuery.slice(1),
+        originName: movieSlug,
+        year: "2025",
+        description: "Thông tin phim đang được cập nhật. Vui lòng quay lại sau.",
+        posterUrl: "",
+        quality: "Pending",
+        category: ["Sắp chiếu"],
+        country: ["Đang cập nhật"],
+        episodes: [],
+        status: "Đang cập nhật",
+        source: "unknown" as any
+      };
     }
 
     if (!safeData) {
@@ -371,8 +403,31 @@ export default async function WatchPage({
          </div>
       </div>
     );
-  } catch (error) {
+  } catch (error: any) {
+    // Crucial: Allow Next.js notFound() to propagate correctly
+    if (error?.digest === "NEXT_NOT_FOUND" || error?.message?.includes("NEXT_NOT_FOUND")) {
+      throw error;
+    }
+    
     console.error("Watch Page Error:", error);
-    return <div className="p-20 text-center opacity-20">Lỗi nạp trang phim</div>;
+    return (
+      <div className="min-h-screen bg-background flex flex-col items-center justify-center p-8 text-center space-y-6">
+        <div className="w-20 h-20 rounded-full bg-red-500/10 flex items-center justify-center">
+          <Calendar className="text-red-500 w-10 h-10" />
+        </div>
+        <div className="space-y-2">
+          <h2 className="text-2xl font-bold tracking-tight">Thông báo</h2>
+          <p className="text-foreground-secondary max-w-xs mx-auto">
+            Phim bạn yêu cầu hiện chưa có sẵn trên hệ thống hoặc đang được bảo trì.
+          </p>
+        </div>
+        <Link 
+          href="/" 
+          className="px-8 py-3 bg-primary text-white rounded-2xl font-bold transition-transform active:scale-95 shadow-apple-lg"
+        >
+          Quay lại Trang chủ
+        </Link>
+      </div>
+    );
   }
 }
