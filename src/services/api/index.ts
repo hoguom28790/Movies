@@ -126,8 +126,10 @@ export async function searchMovies(keyword: string, page: number = 1, section: "
   }
 
   const seenSlugs = new Set();
+  const BLOCKED_SLUGS = ["lac-mai-trong-khong-gian", "lost-in-space-forever"];
+
   const mergedItems = allItems.filter(item => {
-    if (!item.slug || seenSlugs.has(item.slug)) return false;
+    if (!item.slug || seenSlugs.has(item.slug) || BLOCKED_SLUGS.includes(item.slug)) return false;
     const t = item.title?.toLowerCase() || "";
     const s = item.status?.toLowerCase() || "";
     const q = item.quality?.toLowerCase() || "";
