@@ -261,7 +261,19 @@ export async function getMovieDetails(slug: string): Promise<{ sources: UnifiedM
     console.log(`[API] Smart Fallback Search for: "${titleQuery}"`);
     
     try {
-      const searchRes = await searchMovies(titleQuery, 1);
+      let searchRes = await searchMovies(titleQuery, 1);
+      
+      // BROAD SEARCH FALLBACK: If specific search fails, try searching with just the first 3 words
+      // This helps with slugs like 'nhan-qua-outcome-2026' where 'nhan qua outcome' fails but 'nhan qua' works.
+      if (searchRes.items.length === 0) {
+        const words = titleQuery.split(' ');
+        if (words.length > 2) {
+          const broadQuery = words.slice(0, 3).join(' ');
+          console.log(`[API] Specific search for "${titleQuery}" failed, trying broad search: "${broadQuery}"`);
+          searchRes = await searchMovies(broadQuery, 1);
+        }
+      }
+
       if (searchRes.items.length > 0) {
         // Find best match (compare slug or title) using normalized comparison
         const targetNormalized = normalizeTitle(titleQuery);
