@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useMemo } from "react";
 import Link from "next/link";
-import { Star } from "lucide-react";
+import { Star, ArrowUpDown } from "lucide-react";
 import { getTMDBImageUrl } from "@/services/tmdb";
 
 interface MovieNode {
@@ -16,26 +16,55 @@ interface MovieNode {
   first_air_date?: string;
 }
 
+type SortField = 'popularity' | 'year' | 'title';
+type SortOrder = 'asc' | 'desc';
+
 export function ActorMovieGrid({ allMovies, actorName }: { allMovies: MovieNode[]; actorName: string }) {
   const [visibleCount, setVisibleCount] = useState(30);
+  const [sortField, setSortField] = useState<SortField>('popularity');
+  const [sortOrder, setSortOrder] = useState<SortOrder>('desc');
+  
   const loadMoreRef = useRef<HTMLDivElement>(null);
+
+  // Reset infinite scroll when sort changes
+  useEffect(() => {
+    setVisibleCount(30);
+  }, [sortField, sortOrder]);
+
+  const sortedMovies = useMemo(() => {
+    return [...allMovies].sort((a, b) => {
+      let comparison = 0;
+      if (sortField === 'popularity') {
+        comparison = (a.vote_count || 0) - (b.vote_count || 0);
+      } else if (sortField === 'year') {
+        const yearA = parseInt((a.release_date || a.first_air_date || '0').split('-')[0]) || 0;
+        const yearB = parseInt((b.release_date || b.first_air_date || '0').split('-')[0]) || 0;
+        comparison = yearA - yearB;
+      } else if (sortField === 'title') {
+        const titleA = a.title || a.name || '';
+        const titleB = b.title || b.name || '';
+        comparison = titleA.localeCompare(titleB);
+      }
+      return sortOrder === 'asc' ? comparison : -comparison;
+    });
+  }, [allMovies, sortField, sortOrder]);
 
   useEffect(() => {
     if (!loadMoreRef.current) return;
     
     const observer = new IntersectionObserver((entries) => {
       const first = entries[0];
-      if (first.isIntersecting && visibleCount < allMovies.length) {
-        setVisibleCount(prev => Math.min(prev + 30, allMovies.length));
+      if (first.isIntersecting && visibleCount < sortedMovies.length) {
+        setVisibleCount(prev => Math.min(prev + 30, sortedMovies.length));
       }
     }, { rootMargin: "400px 0px" });
 
     observer.observe(loadMoreRef.current);
     
     return () => observer.disconnect();
-  }, [visibleCount, allMovies.length]);
+  }, [visibleCount, sortedMovies.length]);
 
-  const displayedMovies = allMovies.slice(0, visibleCount);
+  const displayedMovies = sortedMovies.slice(0, visibleCount);
 
   return (
     <>
@@ -47,9 +76,33 @@ export function ActorMovieGrid({ allMovies, actorName }: { allMovies: MovieNode[
            </h2>
            <p className="text-foreground/30 text-sm font-medium">Kho phim ấn tượng của {actorName.split(' ').pop()}</p>
         </div>
-        <div className="flex items-center gap-4 text-foreground/20 font-bold uppercase tracking-[0.3em] text-[10px]">
-           <span>Tổng số</span>
-           <span className="text-foreground/40 text-[18px] font-black">{allMovies.length}</span>
+        
+        <div className="flex flex-wrap items-center gap-3">
+           <div className="flex items-center gap-2 bg-foreground/5 p-1 rounded-xl">
+              <select 
+                className="bg-transparent border-none outline-none text-sm font-bold text-foreground px-3 py-1.5 cursor-pointer appearance-none transition-all hover:text-primary"
+                value={sortField}
+                onChange={(e) => setSortField(e.target.value as SortField)}
+              >
+                <option className="text-black dark:text-white" value="popularity">🔥 Độ phổ biến</option>
+                <option className="text-black dark:text-white" value="year">📅 Năm phát hành</option>
+                <option className="text-black dark:text-white" value="title">A-Z Tên phim</option>
+              </select>
+
+              <button 
+                onClick={() => setSortOrder(prev => prev === 'asc' ? 'desc' : 'asc')}
+                className="bg-background/50 hover:bg-background/80 shadow-sm px-3 py-1.5 rounded-lg text-sm font-bold transition-all flex items-center gap-2 active:scale-95"
+                title="Đổi chiều sắp xếp"
+              >
+                <ArrowUpDown size={16} className="text-primary" />
+                {sortOrder === 'desc' ? 'Giảm dần' : 'Tăng dần'}
+              </button>
+           </div>
+           
+           <div className="hidden lg:flex items-center gap-3 text-foreground/20 font-bold uppercase tracking-[0.3em] text-[10px] ml-4 pl-4 border-l border-foreground/10">
+             <span>Tìm thấy</span>
+             <span className="text-foreground/40 text-[18px] font-black">{sortedMovies.length}</span>
+           </div>
         </div>
       </div>
 
