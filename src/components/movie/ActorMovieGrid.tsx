@@ -1,9 +1,8 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { Star } from "lucide-react";
-import { useInView } from "react-intersection-observer";
 import { getTMDBImageUrl } from "@/services/tmdb";
 
 interface MovieNode {
@@ -19,16 +18,22 @@ interface MovieNode {
 
 export function ActorMovieGrid({ allMovies, actorName }: { allMovies: MovieNode[]; actorName: string }) {
   const [visibleCount, setVisibleCount] = useState(30);
-  const { ref, inView } = useInView({
-    rootMargin: "400px 0px", // Load slightly before reaching bottom
-    triggerOnce: false,
-  });
+  const loadMoreRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (inView && visibleCount < allMovies.length) {
-      setVisibleCount(prev => Math.min(prev + 30, allMovies.length));
-    }
-  }, [inView, visibleCount, allMovies.length]);
+    if (!loadMoreRef.current) return;
+    
+    const observer = new IntersectionObserver((entries) => {
+      const first = entries[0];
+      if (first.isIntersecting && visibleCount < allMovies.length) {
+        setVisibleCount(prev => Math.min(prev + 30, allMovies.length));
+      }
+    }, { rootMargin: "400px 0px" });
+
+    observer.observe(loadMoreRef.current);
+    
+    return () => observer.disconnect();
+  }, [visibleCount, allMovies.length]);
 
   const displayedMovies = allMovies.slice(0, visibleCount);
 
@@ -85,7 +90,7 @@ export function ActorMovieGrid({ allMovies, actorName }: { allMovies: MovieNode[
       
       {/* Intersection Observer target block */}
       {visibleCount < allMovies.length && (
-         <div ref={ref} className="w-full h-32 flex items-center justify-center">
+         <div ref={loadMoreRef} className="w-full h-32 flex items-center justify-center">
             <div className="w-8 h-8 rounded-full border-4 border-primary/20 border-t-primary animate-spin" />
          </div>
       )}
