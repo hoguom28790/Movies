@@ -120,7 +120,7 @@ export function normalizeMovieData(data: any, source: MovieSource) {
           return {
             ...ep,
             link_embed: ep.link_embed || ep.embed || ep.link || "",
-            link_m3u8: (source === 'nguonc' || rawM3u8.includes("phimmoi.net")) ? "" : rawM3u8
+            link_m3u8: rawM3u8.includes("phimmoi.net") ? "" : rawM3u8
           };
        })
     })),

@@ -269,6 +269,27 @@ export function PlayerContainer({ url, isHls, rawEmbedUrl, nextEpisodeUrl, movie
 
       if (event.data.type === 'PLAYER_READY') {
         setPlayerReady(true);
+        
+        // CRITICAL: For Embed players, we must save an initial history entry 
+        // because they won't send UPDATE_PROGRESS heartbeat.
+        if (isUrlEmbed && user && movieSlug) {
+           const detectedSource = getMovieSource(movieSlug, source);
+           const { saveHistory } = await import("@/services/db");
+           const absolutePoster = getPosterUrl(posterUrl, detectedSource);
+           
+           saveHistory(user.uid, {
+             movieSlug,
+             movieTitle: movieTitle || "",
+             episodeName: episodeName || "Full",
+             episodeSlug: episodeSlug || "full",
+             posterUrl: absolutePoster,
+             progressSeconds: 0,
+             durationSeconds: 0,
+             progress: 0,
+             source: detectedSource
+           }).catch(console.error);
+           console.log(`[Player] Initial history saved for EMBED source: ${movieSlug}`);
+        }
       }
 
       if (event.data.type === 'PLAYER_ERROR') {
