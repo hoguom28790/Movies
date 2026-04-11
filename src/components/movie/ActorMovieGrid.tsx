@@ -62,7 +62,7 @@ export function ActorMovieGrid({ allMovies, actorName }: { allMovies: MovieNode[
           >
             <div className="relative aspect-[2/3] rounded-[32px] overflow-hidden bg-foreground/[0.03] shadow-apple border border-foreground/5 group-hover:shadow-primary/10 group-hover:border-primary/20 transition-all duration-500">
               <img
-                src={getTMDBImageUrl(m.poster_path, 'w342') || "https://dummyimage.com/500x750/111/fff&text=No+Poster"}
+                src={getTMDBImageUrl(m.poster_path || null, 'w342') || "https://dummyimage.com/500x750/111/fff&text=No+Poster"}
                 alt={m.title || m.name || "Movie"}
                 className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-1000"
                 loading="lazy"
