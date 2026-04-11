@@ -59,7 +59,6 @@ export function BentoMovieRow({ title, movies, viewAllHref }: BentoMovieRowProps
               alt={featured.title} 
               fill
               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" 
-              unoptimized={false}
               sizes="(max-width: 768px) 320px, 400px"
             />
             
@@ -106,7 +105,6 @@ export function BentoMovieRow({ title, movies, viewAllHref }: BentoMovieRowProps
                 alt={movie.title} 
                 fill
                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" 
-                unoptimized={false}
                 sizes="(max-width: 768px) 208px, 240px"
               />
               <div className="absolute top-4 right-4 z-20">

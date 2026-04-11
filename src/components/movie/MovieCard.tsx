@@ -81,7 +81,6 @@ export function MovieCard({
                "object-cover transition-transform duration-700 group-hover:scale-110",
                imgError && "opacity-50 grayscale"
             )}
-            unoptimized={false}
             priority={index < 4}
             onError={() => setImgError(true)}
           />

@@ -60,7 +60,6 @@ export function HeroSlider({ movies, isXX = false }: HeroSliderProps) {
             priority
             className="absolute inset-0 w-full h-full object-cover transform-gpu will-change-transform"
             sizes="100vw"
-            unoptimized={false}
             quality={90}
           />
           {/* Ophim Style Overlays */}
@@ -149,7 +148,6 @@ export function HeroSlider({ movies, isXX = false }: HeroSliderProps) {
                 alt={movie.title} 
                 fill
                 className="w-full h-full object-cover transition-transform duration-500"
-                unoptimized={false}
                 sizes="64px"
               />
             </button>
