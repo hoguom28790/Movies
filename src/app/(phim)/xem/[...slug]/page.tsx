@@ -198,6 +198,8 @@ export default async function WatchPage({
         country: ["Đang cập nhật"],
         episodes: [],
         status: "Đang cập nhật",
+        code: movieSlug,
+        tmdb_id: null,
         source: "unknown" as any
       };
     }
