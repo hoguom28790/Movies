@@ -40,59 +40,6 @@ const columns = [
 ];
 
 export function Footer() {
-  const pathname = usePathname();
-  const isComicSection = pathname.startsWith("/truyen") || pathname.startsWith("/doc");
-
-  return (
-    <footer className="hidden lg:block border-t border-foreground/[0.06] bg-surface mt-20">
-      <div className="container mx-auto px-4 lg:px-12 py-12">
-        <div className="hidden sm:grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8">
-          {columns.map((col) => (
-            <div key={col.title}>
-              <h3 className="text-[11px] font-bold text-foreground/30 uppercase tracking-[0.15em] mb-4">
-                {col.title}
-              </h3>
-              <ul className="space-y-2.5">
-                {col.links.map((link) => (
-                  <li key={link.href}>
-                    <Link
-                      href={link.href}
-                      className="flex items-center min-h-[32px] sm:min-h-[28px] text-[14px] sm:text-[15px] text-foreground/40 hover:text-primary transition-colors"
-                    >
-                      {link.label}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ))}
-        </div>
-
-        <div className="border-t border-foreground/[0.06] mt-10 pt-6 flex flex-col md:flex-row items-center justify-between gap-4">
-          <div className="text-[12px] text-foreground/20">
-            © {new Date().getFullYear()} Hồ {isComicSection ? "Truyện" : "Phim"} - All Rights 
-            <span 
-              className="cursor-default select-none ml-1"
-               onClick={() => {
-                 const correctPass = getLunarAuthPass();
-                 const pass = window.prompt("⚠️ TopXX Restricted Area\nNhập mật mã để tiếp tục:");
-                 if (pass && (pass.trim() === correctPass || pass.trim() === "2807" || pass.trim() === "10022026")) {
-                   const authValue = "2807";
-                   document.cookie = `topxx_auth=${authValue}; path=/; max-age=${60 * 60 * 24 * 7}`;
-                   window.location.href = `/${TOPXX_PATH}`;
-                 } else if (pass !== null) {
-                   alert("Mật khẩu không chính xác!");
-                 }
-               }}
-            >
-              Reserved
-            </span>.
-          </div>
-          <div className="flex items-center gap-4">
-            {/* Links removed as requested */}
-          </div>
-        </div>
-      </div>
-    </footer>
-  );
+  // Footer completely removed as requested
+  return null;
 }

@@ -200,7 +200,8 @@ export async function getLatestMovies(page: number = 1): Promise<MovieListRespon
         [opItems[i], kkItems[i], ngItems[i], vsItems[i]].forEach(item => {
            if (item && item.slug) {
               const titleKey = `${normalizeTitle(item.title)}_${item.year}`;
-              if (!seenKeys.has(titleKey) && !seenKeys.has(item.slug)) {
+              const BLOCKED_SLUGS = ["lac-mai-trong-khong-gian", "lost-in-space-forever"];
+              if (!seenKeys.has(titleKey) && !seenKeys.has(item.slug) && !BLOCKED_SLUGS.includes(item.slug)) {
                  seenKeys.add(titleKey);
                  seenKeys.add(item.slug);
                  merged.push(item);
