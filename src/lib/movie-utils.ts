@@ -115,11 +115,14 @@ export function normalizeMovieData(data: any, source: MovieSource) {
     episodeTotal: data.episode_total || "",
     episodes: (data.episodes || []).map((s: any) => ({
        name: s.server_name || s.name || "Default",
-       items: (s.server_data || s.items || []).map((ep: any) => ({
-          ...ep,
-          link_embed: ep.link_embed || ep.embed || ep.link || "",
-          link_m3u8: ep.link_m3u8 || ep.m3u8 || ""
-       }))
+       items: (s.server_data || s.items || []).map((ep: any) => {
+          const rawM3u8 = ep.link_m3u8 || ep.m3u8 || "";
+          return {
+            ...ep,
+            link_embed: ep.link_embed || ep.embed || ep.link || "",
+            link_m3u8: (source === 'nguonc' || rawM3u8.includes("phimmoi.net")) ? "" : rawM3u8
+          };
+       })
     })),
     status: data.status || data.episode_current || "HD"
   };
