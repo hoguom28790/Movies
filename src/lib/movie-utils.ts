@@ -95,8 +95,16 @@ export function normalizeMovieData(data: any, source: MovieSource) {
     description: data.content || data.description || (data.trans?.find?.((t: any) => t.locale === "vi")?.description) || data.summary || "",
     posterUrl: getPosterUrl(data.posterUrl || data.poster_url || data.thumbnail || data.thumb_url || data.thumb_path, source),
     quality: data.quality || data.episode_current || "HD/4K",
-    category: Array.isArray(data.category) ? data.category : (data.categories || []),
-    country: Array.isArray(data.country) ? data.country : (data.countries || []),
+    category: Array.isArray(data.category) 
+      ? data.category 
+      : (typeof data.category === 'object' && data.category !== null) 
+          ? Object.values(data.category).flatMap((c: any) => c.list?.map((i: any) => i.name) || [c.name]).filter(Boolean)
+          : (data.categories || []),
+    country: Array.isArray(data.country) 
+      ? data.country 
+      : (typeof data.country === 'object' && data.country !== null)
+          ? Object.values(data.country).flatMap((c: any) => c.list?.map((i: any) => i.name) || [c.name]).filter(Boolean)
+          : (data.countries || []),
     code: data.movie_code || data.code || "",
     source: source,
     tmdb_id: data.tmdb_id || null,
@@ -107,7 +115,11 @@ export function normalizeMovieData(data: any, source: MovieSource) {
     episodeTotal: data.episode_total || "",
     episodes: (data.episodes || []).map((s: any) => ({
        name: s.server_name || s.name || "Default",
-       items: s.server_data || s.items || []
+       items: (s.server_data || s.items || []).map((ep: any) => ({
+          ...ep,
+          link_embed: ep.link_embed || ep.embed || ep.link || "",
+          link_m3u8: ep.link_m3u8 || ep.m3u8 || ""
+       }))
     })),
     status: data.status || data.episode_current || "HD"
   };
