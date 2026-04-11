@@ -63,15 +63,15 @@ export function HeroSlider({ movies, isXX = false }: HeroSliderProps) {
             unoptimized={false}
             quality={90}
           />
-          {/* Overlays */}
-          <div className="absolute inset-0 bg-gradient-to-t from-background via-background/40 to-black/30" />
-          <div className="absolute inset-0 bg-black/20" />
-          <div className="absolute inset-0 bg-gradient-to-r from-background/40 via-transparent to-transparent hidden lg:block" />
+          {/* Ophim Style Overlays */}
+          <div className="absolute inset-0 bg-[#0d0d0c]/30" />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#0d0d0c] via-[#0d0d0c]/60 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent opacity-80" />
         </motion.div>
       </AnimatePresence>
 
       {/* Content */}
-      <div className="container relative z-20 mx-auto px-6 lg:px-12 pb-32 md:pb-16 w-full transform-gpu">
+      <div className="container relative z-20 mx-auto px-4 pb-20 md:pb-28 w-full transform-gpu flex flex-col items-center justify-end h-full">
         <AnimatePresence mode="wait">
           <motion.div 
             key={currentIndex} 
@@ -79,55 +79,57 @@ export function HeroSlider({ movies, isXX = false }: HeroSliderProps) {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
             transition={{ duration: 0.5 }}
-            className="flex flex-col items-start gap-4 max-w-4xl"
+            className="flex flex-col items-center text-center gap-4 max-w-4xl w-full"
           >
-            <div className="space-y-4">
-               <h1 className="text-4xl md:text-7xl font-bold tracking-tight text-white leading-tight">
+            <div className="flex flex-col items-center gap-3">
+               <h1 className="text-3xl md:text-6xl font-bold tracking-tight text-white leading-tight drop-shadow-[0_4px_8px_rgba(0,0,0,0.8)]">
                  {currentMovie.title}
                </h1>
-               <div className="flex items-center gap-4 text-sm font-bold text-white/60">
-                 <span className="flex items-center gap-1.5"><Star size={16} fill="currentColor" className="text-yellow-400" /> {currentMovie.imdbRating || currentMovie.tmdbRating || "8.5"}</span>
-                 <span className="w-1 h-1 rounded-full bg-white/20" />
-                 <span>{currentMovie.year}</span>
-                 <span className="w-1 h-1 rounded-full bg-white/20" />
-                 <span className="px-2 py-0.5 backdrop-blur-md bg-white/10 rounded-md text-[10px] text-white/80">{currentMovie.quality}</span>
+               
+               {currentMovie.originalTitle && (
+                 <h2 className="text-lg md:text-xl font-medium text-[#fbc02d] drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
+                   {currentMovie.originalTitle}
+                 </h2>
+               )}
+
+               <div className="flex items-center flex-wrap justify-center gap-2 mt-2">
+                 <span className="flex items-center gap-1.5 px-2 py-0.5 border border-white/20 rounded shadow-sm text-xs font-bold text-[#fbc02d]">
+                    <Star size={12} fill="currentColor" /> {currentMovie.imdbRating || currentMovie.tmdbRating || "8.5"}
+                 </span>
+                 <span className="px-2 py-0.5 border border-white/20 rounded shadow-sm text-xs font-bold text-white uppercase">{currentMovie.quality || "HD"}</span>
+                 <span className="px-2 py-0.5 border border-white/20 bg-white/10 rounded shadow-sm text-xs font-bold text-white uppercase">{currentMovie.status || "Hoàn tất"}</span>
+                 {currentMovie.year && (
+                   <span className="px-2 py-0.5 border border-white/20 rounded shadow-sm text-xs font-medium text-white/80">{currentMovie.year}</span>
+                 )}
                </div>
             </div>
 
-            {currentMovie.overview && (
-              <p className="text-base text-white/70 max-w-2xl font-medium leading-relaxed line-clamp-2">
-                {currentMovie.overview}
-              </p>
-            )}
-
-            <div className="flex items-center gap-4 mt-6">
+            <div className="flex items-center gap-3 mt-4">
               <Link href={isXX ? `/${TOPXX_PATH}/watch/${currentMovie.slug}` : `/xem/${currentMovie.slug}`}>
                 <Button
                   size="lg"
-                  className={cn(
-                    "h-12 px-8 rounded-full gap-2 shadow-lg hover:scale-105 transition-transform",
-                    isXX ? "bg-yellow-500 text-black" : "bg-primary text-white"
-                  )}
+                  className="h-11 px-8 rounded bg-[#d32f2f] hover:bg-[#b71c1c] text-white border-0 shadow-[0_4px_6px_rgba(211,47,47,0.4)] transition-all font-bold gap-2 active:scale-95"
                 >
-                  <Play size={20} fill="currentColor" strokeWidth={0} />
-                  Xem Ngay
+                  <Play size={18} fill="currentColor" strokeWidth={0} />
+                  Xem Phim
                 </Button>
               </Link>
               
               <button 
                 onClick={() => setIsPlaylistModalOpen(true)}
-                className="w-12 h-12 rounded-full backdrop-blur-sm md:backdrop-blur-xl bg-white/10 flex items-center justify-center text-white hover:bg-white/20 transition-all shadow-md"
+                className="h-11 px-6 rounded bg-white/10 hover:bg-white/20 backdrop-blur-md text-white border border-white/10 transition-all font-bold flex items-center gap-2 active:scale-95"
               >
-                <Plus size={24} />
+                <Plus size={18} />
+                Lưu
               </button>
             </div>
           </motion.div>
         </AnimatePresence>
       </div>
 
-      {/* Navigation Thumbnails for TopXX */}
-      {isXX && (
-        <div className="absolute right-6 md:right-12 bottom-6 md:bottom-12 z-30 flex flex-nowrap items-center justify-end gap-3 max-w-[90vw] overflow-x-auto no-scrollbar pb-4 md:pb-0">
+      {/* Centered Navigation Thumbnails */}
+      <div className="absolute inset-x-0 bottom-4 md:bottom-8 z-30 flex items-center justify-center w-full">
+        <div className="flex flex-nowrap items-center gap-2 md:gap-3 px-4 max-w-full overflow-x-auto no-scrollbar scroll-smooth">
           {movies.slice(0, 10).map((movie, idx) => (
             <button
               key={movie.slug}
@@ -136,46 +138,42 @@ export function HeroSlider({ movies, isXX = false }: HeroSliderProps) {
                 setCurrentIndex(idx);
               }}
               className={cn(
-                "relative flex-shrink-0 w-12 h-12 md:w-14 md:h-14 aspect-square rounded-full overflow-hidden transition-all duration-500 border-2 shadow-2xl group/thumb",
+                "relative flex-shrink-0 w-12 h-12 md:w-16 md:h-16 aspect-square rounded-full overflow-hidden transition-all duration-300 border-2 group/thumb",
                 currentIndex === idx 
-                  ? "border-yellow-500 scale-110 z-10 shadow-yellow-500/40" 
-                  : "border-white/20 opacity-40 hover:opacity-100 hover:border-white/40"
+                  ? "border-white scale-110 z-10 shadow-[0_0_15px_rgba(255,255,255,0.3)] ring-2 ring-[#d32f2f]/50" 
+                  : "border-transparent opacity-50 hover:opacity-100 hover:border-white/50"
               )}
             >
               <Image 
                 src={movie.posterUrl} 
                 alt={movie.title} 
                 fill
-                className="w-full h-full object-cover scale-110 group-hover/thumb:scale-125 transition-transform duration-500"
+                className="w-full h-full object-cover transition-transform duration-500"
                 unoptimized={false}
-                sizes="56px"
+                sizes="64px"
               />
-              <div className={cn(
-                "absolute inset-0 bg-yellow-500/20 transition-opacity duration-500",
-                currentIndex === idx ? "opacity-100" : "opacity-0"
-              )} />
             </button>
           ))}
         </div>
-      )}
+      </div>
 
-      {/* Default Navigation Controls (only if not XX) */}
-      {!isXX && (
-        <div className="absolute right-8 bottom-8 z-30 flex gap-2">
-          <button 
-            onClick={prevSlide}
-            className="w-10 h-10 rounded-full bg-white/10 text-white flex items-center justify-center hover:bg-white/20 transition-all border border-white/10 group-hover:border-white/30"
-          >
-            <ChevronLeft size={20} />
-          </button>
-          <button 
-            onClick={nextSlide}
-            className="w-10 h-10 rounded-full bg-white/10 text-white flex items-center justify-center hover:bg-white/20 transition-all border border-white/10 group-hover:border-white/30"
-          >
-            <ChevronRight size={20} />
-          </button>
-        </div>
-      )}
+      {/* Navigation Arrows */}
+      <div className="absolute inset-y-0 left-0 z-20 flex items-center pl-2 md:pl-8 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+        <button 
+          onClick={prevSlide}
+          className="w-12 h-12 rounded-full bg-black/40 text-white flex items-center justify-center hover:bg-black/60 transition-all border border-white/10 backdrop-blur-sm"
+        >
+          <ChevronLeft size={24} />
+        </button>
+      </div>
+      <div className="absolute inset-y-0 right-0 z-20 flex items-center pr-2 md:pr-8 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+        <button 
+          onClick={nextSlide}
+          className="w-12 h-12 rounded-full bg-black/40 text-white flex items-center justify-center hover:bg-black/60 transition-all border border-white/10 backdrop-blur-sm"
+        >
+          <ChevronRight size={24} />
+        </button>
+      </div>
 
       <PlaylistModal 
         isOpen={isPlaylistModalOpen}
