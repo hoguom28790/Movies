@@ -230,7 +230,22 @@ export default async function WatchPage({
        return notFound();
     }
 
-    const tmdbId = safeData.tmdb_id || initialTmdbSearch?.id;
+    let tmdbId = safeData.tmdb_id || initialTmdbSearch?.id;
+    let actualTmdbSearch = initialTmdbSearch;
+
+    if (!tmdbId && safeData) {
+      const cleanOriginName = safeData.originName?.replace(/\(.*?\)/gi, '').trim();
+      const cleanName = safeData.name?.replace(/\(.*?\)/gi, '').trim();
+      
+      console.log(`[WatchPage] Missing TMDB ID, retrying search with metadata: ${cleanOriginName} / ${cleanName}`);
+      if (cleanOriginName) actualTmdbSearch = await searchTMDBMovie(cleanOriginName).catch(() => null);
+      if (!actualTmdbSearch && cleanName) actualTmdbSearch = await searchTMDBMovie(cleanName).catch(() => null);
+      
+      if (actualTmdbSearch) {
+         tmdbId = actualTmdbSearch.id;
+      }
+    }
+
     let tmdbData = null;
     let rtData = null;
     let omdbData = null;
@@ -238,7 +253,7 @@ export default async function WatchPage({
 
     try {
        if (tmdbId) {
-          tmdbData = await getTMDBMovieDetails(Number(tmdbId), initialTmdbSearch?.media_type || "movie");
+          tmdbData = await getTMDBMovieDetails(Number(tmdbId), actualTmdbSearch?.media_type || (safeData.type === "Phim Bộ" ? "tv" : "movie"));
           
           if (tmdbData?.status_code || !tmdbData?.id) {
              tmdbData = null;
