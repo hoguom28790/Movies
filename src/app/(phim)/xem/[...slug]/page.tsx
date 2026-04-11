@@ -189,7 +189,12 @@ export default async function WatchPage({
                    status: "Sắp chiếu",
                    tmdb_id: tmdbFull.id,
                    code: tmdbFull.id.toString(),
-                   source: "unknown" as any
+                   source: "unknown" as any,
+                   lang: tmdbFull.original_language || "en",
+                   type: tmdbMatch.media_type === "movie" ? "Phim Lẻ" : "Phim Bộ",
+                   age: tmdbFull.adult ? "18+" : "13+",
+                   episodeCurrent: tmdbFull.number_of_episodes?.toString() || "",
+                   episodeTotal: tmdbFull.number_of_episodes?.toString() || ""
                 };
              }
           } catch (e) { console.error("[WatchPage] TMDB Fallback failed:", e); }
@@ -212,7 +217,12 @@ export default async function WatchPage({
         status: "Đang cập nhật",
         code: movieSlug,
         tmdb_id: null,
-        source: "unknown" as any
+        source: "unknown" as any,
+        lang: "Vietsub",
+        type: "Phim",
+        age: "13+",
+        episodeCurrent: "",
+        episodeTotal: ""
       };
     }
 
