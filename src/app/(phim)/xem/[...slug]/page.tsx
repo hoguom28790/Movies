@@ -221,6 +221,32 @@ export default async function WatchPage({
     let tmdbId = safeData.tmdb_id || initialTmdbSearch?.id;
     let actualTmdbSearch = initialTmdbSearch;
 
+    // FAST RETRY: If initial slug-based TMDB search missed, try with actual movie name (Vietnamese)
+    if (!tmdbId && safeData) {
+      const retrySearch = async () => {
+        const cleanOriginName = safeData.originName?.replace(/\(.*?\)/gi, '').trim();
+        const cleanName = safeData.name?.replace(/\(.*?\)/gi, '').trim();
+        if (cleanOriginName) {
+          const res = await searchTMDBMovie(cleanOriginName).catch(() => null);
+          if (res) return res;
+        }
+        if (cleanName) {
+          return await searchTMDBMovie(cleanName).catch(() => null);
+        }
+        return null;
+      };
+
+      const retryResult = await Promise.race([
+        retrySearch(),
+        new Promise<null>(resolve => setTimeout(() => resolve(null), 1500))
+      ]);
+
+      if (retryResult) {
+        actualTmdbSearch = retryResult;
+        tmdbId = retryResult.id;
+      }
+    }
+
     let tmdbData = null;
     let rtData = null;
     let omdbData = null;

@@ -25,9 +25,15 @@ export async function searchTMDBMovie(query: string, year?: number, typeHint?: "
     
     // Multi-strategy search
     const strategies = [
+      // 1. Specific Search (Movie) with Year
+      year ? `${BASE_URL}/search/movie?api_key=${TMDB_API_KEY}&query=${encodeURIComponent(q)}&year=${year}&language=vi-VN` : null,
+      // 2. Specific Search (TV) with Year
+      year ? `${BASE_URL}/search/tv?api_key=${TMDB_API_KEY}&query=${encodeURIComponent(q)}&first_air_date_year=${year}&language=vi-VN` : null,
+      // 3. Multi Search (Catch-all)
       `${BASE_URL}/search/multi?api_key=${TMDB_API_KEY}&query=${encodeURIComponent(q)}&language=vi-VN`,
+      // 4. Multi Search without language filter
       `${BASE_URL}/search/multi?api_key=${TMDB_API_KEY}&query=${encodeURIComponent(q)}`
-    ];
+    ].filter(Boolean);
 
     for (const url of strategies) {
       const res = await fetch(url!, { 
@@ -93,6 +99,14 @@ export async function getTMDBMovieDetails(tmdbId: number, type: "movie" | "tv" =
       }
     );
     const data = await response.json();
+    
+    // Fast overview fallback: use English text directly if Vietnamese is empty
+    if (!data.overview && data.translations?.translations) {
+      const enTranslation = data.translations.translations.find((t: any) => t.iso_639_1 === 'en');
+      if (enTranslation?.data?.overview) {
+        data.overview = enTranslation.data.overview;
+      }
+    }
     
     return data;
   } catch (error) {
