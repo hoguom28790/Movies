@@ -67,9 +67,15 @@ export function Navbar({ mode: initialMode }: NavbarProps) {
         <div className="mx-auto px-4 md:px-8 lg:px-12 h-16 flex items-center justify-between gap-4">
           {/* Logo - SF style */}
           <Link href={isComicSection ? "/truyen" : "/"} className="flex items-center gap-2 group flex-shrink-0">
-             <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center text-white shadow-md">
-                {isComicSection ? <BookOpen size={20} fill="currentColor" strokeWidth={0} /> : <Film size={20} fill="currentColor" strokeWidth={0} />}
-             </div>
+             {isComicSection ? (
+               <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center text-white shadow-md">
+                 <BookOpen size={20} fill="currentColor" strokeWidth={0} />
+               </div>
+             ) : (
+               <div className="w-10 h-10 flex items-center justify-center">
+                 <img src="/logo.png" alt="Hồ Phim Logo" className="w-full h-full object-contain" />
+               </div>
+             )}
              <span className={cn(
                "text-lg font-bold tracking-tight text-foreground",
                "font-sans" // Use SF Pro
