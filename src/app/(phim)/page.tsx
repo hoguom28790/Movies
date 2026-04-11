@@ -76,17 +76,17 @@ async function resolveTrendingMoviesInternal(trending: any[]) {
           return isExactMatch && isYearMatch;
         });
 
-        if (!match) {
-           match = { slug: candidateSlug } as any; // default fallback slug
-        }
-
-        return match ? match.slug : candidateSlug;
+        return match || null;
       })();
 
-      const finalSlug = await Promise.race([
+      const matchRes = await Promise.race([
          resolutionPromise,
-         new Promise<string>((resolve) => setTimeout(() => resolve(candidateSlug), 500))
+         new Promise<any>((resolve) => setTimeout(() => resolve(null), 800))
       ]);
+
+      const finalSlug = matchRes ? matchRes.slug : candidateSlug;
+      const finalStatus = matchRes ? matchRes.status : "chưa phát sóng";
+      const finalQuality = matchRes ? matchRes.quality : "Trailer";
 
       return {
         id: m.id.toString(),
@@ -96,7 +96,8 @@ async function resolveTrendingMoviesInternal(trending: any[]) {
         posterUrl: getTMDBImageUrl(m.poster_path) || "",
         thumbUrl: getTMDBImageUrl(m.backdrop_path) || "",
         year: year || "2025",
-        quality: "HD",
+        quality: finalQuality,
+        status: finalStatus,
         source: 'ophim' as any,
         tmdbRating: m.vote_average
       };
@@ -110,7 +111,8 @@ async function resolveTrendingMoviesInternal(trending: any[]) {
         posterUrl: getTMDBImageUrl(m.poster_path) || "",
         thumbUrl: getTMDBImageUrl(m.backdrop_path) || "",
         year: year || "2025",
-        quality: "HD",
+        quality: "Trailer",
+        status: "chưa phát sóng",
         source: 'ophim' as any,
         tmdbRating: m.vote_average
       };
@@ -194,7 +196,7 @@ export default async function Home() {
       {trending.length > 0 && (
         <BentoMovieRow 
           title="Phát hành gần đây" 
-          movies={await resolveTrendingMovies(trending.slice(0, 10))} 
+          movies={(await resolveTrendingMovies(trending.slice(0, 15))).filter(m => !isTrailer(m)).slice(0, 10)} 
           viewAllHref="/phim-moi"
         />
       )}
