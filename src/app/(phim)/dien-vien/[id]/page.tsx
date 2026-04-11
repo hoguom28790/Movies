@@ -4,6 +4,7 @@ import { Film, User, Star, MapPin, CalendarDays, TrendingUp, ExternalLink, Venus
 import { getTMDBActorDetails, getTMDBImageUrl } from "@/services/tmdb";
 import { FavoriteActorBtn } from "@/components/movie/FavoriteActorBtn";
 import { ActorBiography } from "@/components/movie/ActorBiography";
+import { ActorMovieGrid } from "@/components/movie/ActorMovieGrid";
 import { BackButton } from "@/components/ui/BackButton";
 import { cn } from "@/lib/utils";
 
@@ -14,9 +15,8 @@ export default async function ActorPage({ params }: { params: Promise<{ id: stri
   if (!actor || actor.success === false) return notFound();
 
   const profileImg = getTMDBImageUrl(actor.profile_path, 'w500');
-  const movies = (actor.combined_credits?.cast || [])
-    .sort((a: any, b: any) => (b.vote_count || 0) - (a.vote_count || 0))
-    .slice(0, 30);
+  const allMovies = (actor.combined_credits?.cast || [])
+    .sort((a: any, b: any) => (b.vote_count || 0) - (a.vote_count || 0));
 
   return (
     <div className="min-h-screen pb-32 bg-background transition-colors duration-500 relative">
@@ -25,9 +25,9 @@ export default async function ActorPage({ params }: { params: Promise<{ id: stri
 
       {/* ── Header Backdrop ── */}
       <div className="relative w-full h-[35vh] sm:h-[45vh] lg:h-[55vh] overflow-hidden">
-        {movies[0]?.backdrop_path && (
+        {allMovies[0]?.backdrop_path && (
           <img 
-            src={getTMDBImageUrl(movies[0].backdrop_path, 'original')!} 
+            src={getTMDBImageUrl(allMovies[0].backdrop_path, 'original')!} 
             className="w-full h-full object-cover opacity-[0.05] dark:opacity-20 blur-3xl scale-110"
             alt="backdrop"
           />
@@ -156,54 +156,7 @@ export default async function ActorPage({ params }: { params: Promise<{ id: stri
             </div>
 
             <section className="space-y-12 animate-in slide-in-from-bottom-8 duration-1000">
-              <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6 border-b border-foreground/5 pb-8">
-                <div className="space-y-2">
-                   <h2 className="text-3xl font-bold text-foreground flex items-center gap-4">
-                     Tác phẩm tiêu biểu
-                     <span className="text-[10px] font-black bg-primary text-white px-3 py-1 rounded-full uppercase tracking-tighter ml-2">HOT</span>
-                   </h2>
-                   <p className="text-foreground/30 text-sm font-medium">Kho phim ấn tượng của {actor.name.split(' ').pop()}</p>
-                </div>
-                <div className="flex items-center gap-4 text-foreground/20 font-bold uppercase tracking-[0.3em] text-[10px]">
-                   <span>Tổng số</span>
-                   <span className="text-foreground/40 text-[18px] font-black">{movies.length}</span>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6 lg:gap-8">
-                {movies.map((m: any, idx: number) => (
-                  <Link 
-                    key={m.id} 
-                    href={`/search?q=${encodeURIComponent(m.title || m.name)}`} 
-                    className="group flex flex-col gap-5 active-depth"
-                  >
-                    <div className="relative aspect-[2/3] rounded-[32px] overflow-hidden bg-foreground/[0.03] shadow-apple border border-foreground/5 group-hover:shadow-primary/10 group-hover:border-primary/20 transition-all duration-500">
-                      <img
-                        src={getTMDBImageUrl(m.poster_path, 'w342') || "https://dummyimage.com/500x750/111/fff&text=No+Poster"}
-                        alt={m.title}
-                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-1000"
-                        loading="lazy"
-                      />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-all duration-500 flex flex-col justify-end p-6">
-                         <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center shadow-2xl scale-50 group-hover:scale-100 transition-transform duration-500 delay-100">
-                            <Star className="w-5 h-5 text-white fill-current" />
-                         </div>
-                      </div>
-                      
-                      <div className="absolute top-4 right-4 apple-glass px-3 py-1 rounded-xl border border-white/10 opacity-0 group-hover:opacity-100 transition-all">
-                         <span className="text-[10px] font-black text-white italic">{(m.release_date || m.first_air_date || "").split('-')[0]}</span>
-                      </div>
-                    </div>
-                    
-                    <div className="px-1 space-y-1.5">
-                      <p className="text-[15px] font-bold text-foreground/90 group-hover:text-primary transition-colors line-clamp-1 tracking-tight">{m.title || m.name}</p>
-                      {m.character && (
-                        <p className="text-[10px] text-foreground/20 uppercase tracking-widest line-clamp-1 font-bold italic">vai {m.character}</p>
-                      )}
-                    </div>
-                  </Link>
-                ))}
-              </div>
+               <ActorMovieGrid allMovies={allMovies} actorName={actor.name} />
             </section>
           </div>
         </div>
