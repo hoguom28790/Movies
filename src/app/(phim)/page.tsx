@@ -145,8 +145,29 @@ export default async function Home() {
     enrichMovies(latest.items.slice(10, 30))
   ]);
  
-  const heroMovies = heroEnriched.slice(0, 6);
-  const displayGrid = gridEnriched;
+  const filterTrailers = (list: any[]) => list.filter(m => {
+    const s = (m.status || m.episodeCurrent || "").toLowerCase();
+    const q = (m.quality || "").toLowerCase();
+    const t = (m.title || "").toLowerCase();
+    const sl = (m.slug || "").toLowerCase();
+    
+    const isTrailer = 
+      s.includes("trailer") || 
+      q.includes("trailer") || 
+      t.includes("trailer") ||
+      sl.includes("trailer") ||
+      s.includes("coming soon") || 
+      s.includes("sắp chiếu") || 
+      s.includes("tập 0") ||
+      s.includes("0/0") ||
+      s.includes("0/1") ||
+      s.includes("chưa phát sóng");
+      
+    return !isTrailer;
+  });
+
+  const heroMovies = filterTrailers(heroEnriched).slice(0, 6);
+  const displayGrid = filterTrailers(gridEnriched);
 
   return (
     <div className="flex flex-col gap-12 pb-20 min-h-screen">

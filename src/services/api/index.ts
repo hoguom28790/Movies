@@ -128,7 +128,7 @@ export async function searchMovies(keyword: string, page: number = 1, section: "
   }
 
   const seenSlugs = new Set();
-  const BLOCKED_SLUGS = ["lac-mai-trong-khong-gian", "lost-in-space-forever", "thoat-khoi-tan-the"];
+  const BLOCKED_SLUGS = ["lac-mai-trong-khong-gian", "lost-in-space-forever"];
 
   const isTrailerMovie = (item: Movie) => {
     const t = item.title?.toLowerCase() || "";
@@ -231,7 +231,7 @@ export async function getLatestMovies(page: number = 1): Promise<MovieListRespon
         [opItems[i], kkItems[i], ngItems[i], vsItems[i]].forEach(item => {
            if (item && item.slug) {
               const titleKey = `${normalizeTitle(item.title)}_${item.year}`;
-              const BLOCKED_SLUGS = ["lac-mai-trong-khong-gian", "lost-in-space-forever", "thoat-khoi-tan-the"];
+              const BLOCKED_SLUGS = ["lac-mai-trong-khong-gian", "lost-in-space-forever"];
               
               if (!seenKeys.has(titleKey) && !seenKeys.has(item.slug) && !BLOCKED_SLUGS.includes(item.slug)) {
                  if (isTrailerMovie(item)) return;
