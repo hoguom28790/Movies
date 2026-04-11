@@ -50,7 +50,7 @@ export function HeroSlider({ movies, isXX = false }: HeroSliderProps) {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          transition={{ duration: 1, ease: "easeInOut" }}
+          transition={{ duration: 0.5, ease: "easeOut" }}
           className="absolute inset-0 z-0 overflow-hidden"
         >
           <Image
@@ -58,14 +58,12 @@ export function HeroSlider({ movies, isXX = false }: HeroSliderProps) {
             alt={currentMovie.title}
             fill
             priority
-            className="absolute inset-0 w-full h-full object-cover transform-gpu will-change-transform"
+            className="absolute inset-0 w-full h-full object-cover"
             sizes="100vw"
-            quality={90}
           />
-          {/* Ophim Style Overlays - Optimized for clarity */}
-          <div className="absolute inset-0 bg-black/10" />
-          <div className="absolute inset-0 bg-gradient-to-t from-[#0d0d0c] via-transparent to-transparent" />
-          <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-[#0d0d0c] to-transparent" />
+          {/* Ophim Style Overlays - Minimal for maximum clarity */}
+          <div className="absolute inset-0 bg-black/5" />
+          <div className="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-[#0d0d0c] via-[#0d0d0c]/40 to-transparent" />
         </motion.div>
       </AnimatePresence>
 
