@@ -62,10 +62,10 @@ export function HeroSlider({ movies, isXX = false }: HeroSliderProps) {
             sizes="100vw"
             quality={90}
           />
-          {/* Ophim Style Overlays */}
-          <div className="absolute inset-0 bg-[#0d0d0c]/30" />
-          <div className="absolute inset-0 bg-gradient-to-t from-[#0d0d0c] via-[#0d0d0c]/60 to-transparent" />
-          <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent opacity-80" />
+          {/* Ophim Style Overlays - Optimized for clarity */}
+          <div className="absolute inset-0 bg-black/10" />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#0d0d0c] via-transparent to-transparent" />
+          <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-[#0d0d0c] to-transparent" />
         </motion.div>
       </AnimatePresence>
 
