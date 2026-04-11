@@ -9,7 +9,8 @@ import {
   getUserPlaylists, 
   deletePlaylist,
   removeMovieFromPlaylist,
-  deleteFromWatchlist
+  deleteFromWatchlist,
+  removeFavoriteActor
 } from "@/services/db";
 import { 
   Heart, 
@@ -92,6 +93,16 @@ export default function LibraryPage() {
       setWatchlist(prev => prev.filter(m => m.movieSlug !== movieSlug));
     } catch (err) {
       alert("Lỗi khi xóa phim khỏi danh sách đã lưu");
+    }
+  };
+
+  const handleRemoveActor = async (actorId: string | number) => {
+    if (!user || !confirm("Xóa diễn viên này khỏi danh sách yêu thích?")) return;
+    try {
+      await removeFavoriteActor(user.uid, actorId);
+      setActors(prev => prev.filter(a => String(a.id) !== String(actorId)));
+    } catch (err) {
+      alert("Lỗi khi xóa diễn viên");
     }
   };
 
@@ -193,27 +204,37 @@ export default function LibraryPage() {
                 ) : (
                   <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-8 gap-8">
                     {actors.map((a) => (
-                      <Link 
-                        key={a.id} 
-                        href={`/dien-vien/${a.id}`} 
-                        className="group flex flex-col items-center gap-6 active-depth"
-                      >
-                        <div className="relative w-full aspect-square rounded-[54px] overflow-hidden shadow-apple-lg border border-foreground/5 ring-1 ring-white/5 transition-transform duration-700 group-hover:scale-105">
-                          {a.profilePath ? (
-                            <img 
-                              src={getTMDBImageUrl(a.profilePath, 'w342')!} 
-                              alt={a.name} 
-                              className="w-full h-full object-cover group-hover:rotate-3 transition-transform duration-1000" 
-                            />
-                          ) : (
-                            <div className="w-full h-full bg-foreground/[0.03] flex items-center justify-center text-foreground/10">
-                              <User className="w-16 h-16" />
-                            </div>
-                          )}
-                          <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                        </div>
-                        <p className="text-[14px] font-black text-foreground/80 text-center uppercase tracking-tighter group-hover:text-primary transition-colors line-clamp-1">{a.name}</p>
-                      </Link>
+                      <div key={a.id} className="relative group flex flex-col items-center gap-6">
+                        <Link 
+                          href={`/dien-vien/${a.id}`} 
+                          className="w-full flex flex-col items-center gap-6 active-depth"
+                        >
+                          <div className="relative w-full aspect-square rounded-[54px] overflow-hidden shadow-apple-lg border border-foreground/5 ring-1 ring-white/5 transition-transform duration-700 group-hover:scale-105">
+                            {a.profilePath ? (
+                              <img 
+                                src={getTMDBImageUrl(a.profilePath, 'w342')!} 
+                                alt={a.name} 
+                                className="w-full h-full object-cover group-hover:rotate-3 transition-transform duration-1000" 
+                              />
+                            ) : (
+                              <div className="w-full h-full bg-foreground/[0.03] flex items-center justify-center text-foreground/10">
+                                <User className="w-16 h-16" />
+                              </div>
+                            )}
+                            <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                          </div>
+                          <p className="text-[14px] font-black text-foreground/80 text-center uppercase tracking-tighter group-hover:text-primary transition-colors line-clamp-1">{a.name}</p>
+                        </Link>
+                        
+                        <button 
+                          onClick={(e) => {
+                            e.preventDefault();
+                            handleRemoveActor(a.id);
+                          }}
+                          className="absolute -top-2 -right-2 w-8 h-8 rounded-full bg-red-500 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-lg z-10 hover:scale-110 active:scale-90"
+                        >
+                          <Trash2 size={14} />
+                      </div>
                     ))}
                   </div>
                 )

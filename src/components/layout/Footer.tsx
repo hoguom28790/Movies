@@ -89,25 +89,7 @@ export function Footer() {
             </span>.
           </div>
           <div className="flex items-center gap-4">
-            <Link href={isComicSection ? "/truyen" : "/"} className="text-[12px] text-foreground/30 hover:text-primary transition-colors">
-              Trang Chủ
-            </Link>
-            <Link href={isComicSection ? "/truyen" : "/the-loai"} className="text-[12px] text-foreground/30 hover:text-primary transition-colors">
-              Duyệt Tìm
-            </Link>
-            <Link href={isComicSection ? "/truyen/lich-su" : "/lich-su"} className="text-[12px] text-foreground/30 hover:text-primary transition-colors">
-              Lịch Sử
-            </Link>
-            <Link href={isComicSection ? "/truyen/yeu-thich" : "/yeu-thich"} className="text-[12px] text-foreground/30 hover:text-primary transition-colors">
-              Yêu Thích
-            </Link>
-            <Link 
-              href={`/${TOPXX_PATH}`}
-              className="w-1 h-1 bg-transparent text-transparent cursor-default select-none opacity-0"
-              aria-hidden="true"
-            >
-              TopXX
-            </Link>
+            {/* Links removed as requested */}
           </div>
         </div>
       </div>

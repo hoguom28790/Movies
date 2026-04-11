@@ -3,7 +3,7 @@
 import React, { useState, Suspense } from "react";
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
-import { Search, Heart, History as HistoryIcon, BookOpen, Film, LogIn, ChevronRight } from "lucide-react";
+import { Search, Heart, History as HistoryIcon, BookOpen, Film, LogIn, ChevronRight, X } from "lucide-react";
 import { motion, useScroll, useMotionValueEvent } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
 import { ThemeToggle } from "@/components/theme-toggle";
@@ -23,6 +23,7 @@ export function Navbar({ mode: initialMode }: NavbarProps) {
   const [isHidden, setIsHidden] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const { user } = useAuth();
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const { scrollY } = useScroll();
@@ -82,8 +83,35 @@ export function Navbar({ mode: initialMode }: NavbarProps) {
             <InstantSearch />
           </div>
 
+          {/* Mobile Search Input Overlay */}
+          {isSearchOpen && (
+            <motion.div 
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              className="absolute inset-0 z-[70] bg-background px-4 flex items-center md:hidden"
+            >
+              <div className="flex-1">
+                <InstantSearch />
+              </div>
+              <button 
+                onClick={() => setIsSearchOpen(false)}
+                className="ml-2 p-2 text-foreground-secondary"
+              >
+                <X size={20} />
+              </button>
+            </motion.div>
+          )}
+
           {/* Right Actions */}
           <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
+            <button
+              onClick={() => setIsSearchOpen(true)}
+              className="p-2 rounded-full text-foreground-secondary hover:bg-surface transition-colors md:hidden"
+            >
+              <Search size={20} />
+            </button>
+
             <Link
               href={isTopXXSection ? `/${TOPXX_PATH}/lich-su` : (isComicSection ? "/truyen/lich-su" : "/lich-su")}
               className="p-2 rounded-full text-foreground-secondary hover:bg-surface transition-colors"

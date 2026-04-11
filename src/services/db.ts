@@ -375,3 +375,14 @@ export async function isFavoriteActor(userId: string, actorId: string | number, 
   
   return false;
 }
+export async function removeFavoriteActor(userId: string, actorId: string | number, type: 'movie' | 'topxx' = 'movie') {
+  const collectionName = type === 'topxx' ? "topxx_favorite_actors" : "favorite_actors";
+  const docId = `${userId}_${actorId}`;
+  await deleteDoc(doc(db, collectionName, docId));
+  if (type === 'topxx') {
+    await Promise.all([
+      deleteDoc(doc(db, "XXfavorite_actors", docId)),
+      deleteDoc(doc(db, "favorite_actors", docId))
+    ]);
+  }
+}
