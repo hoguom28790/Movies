@@ -1,4 +1,4 @@
-export const revalidate = 1800; // Revalidate home page every 30 minutes
+export const revalidate = 60; // Revalidate home page every minute temporarily to clear trailers
 
 import { getLatestMovies } from "@/services/api";
 import { getCategoryMovies } from "@/services/api/category";
