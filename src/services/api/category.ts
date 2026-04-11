@@ -3,6 +3,8 @@ import type { Movie, MovieListResponse } from "@/types/movie";
 const OPHIM = "https://ophim1.com/v1/api";
 const KKPHIM = "https://phimapi.com/v1/api";
 
+const BLOCKED_SLUGS = ["lac-mai-trong-khong-gian", "lost-in-space-forever"];
+
 function normalizeOphim(items: any[], cdnBase: string): Movie[] {
   const base = cdnBase.replace(/\/$/, "") + "/uploads/movies/";
   return items.map((item: any) => ({
@@ -64,6 +66,7 @@ export async function getCategoryMovies(type: string, page = 1): Promise<MovieLi
       const pg = data.data.params?.pagination;
       return {
         items: normalizeOphim(data.data.items, data.data.APP_DOMAIN_CDN_IMAGE || "https://img.ophim.live/uploads/movies/").filter((item: Movie) => 
+          !BLOCKED_SLUGS.includes(item.slug || "") &&
           item.status?.toLowerCase().includes("trailer") === false && 
           item.quality?.toLowerCase().includes("trailer") === false
         ),
@@ -81,6 +84,7 @@ export async function getCategoryMovies(type: string, page = 1): Promise<MovieLi
   const pg2 = data2.data?.params?.pagination;
   return {
     items: normalizeKk(data2.data?.items || []).filter((item: Movie) => 
+      !BLOCKED_SLUGS.includes(item.slug || "") &&
       item.status?.toLowerCase().includes("trailer") === false && 
       item.quality?.toLowerCase().includes("trailer") === false
     ),
@@ -100,6 +104,7 @@ export async function getGenreMovies(genre: string, page = 1): Promise<MovieList
       const pg = data.data.params?.pagination;
       return {
         items: normalizeOphim(data.data.items, data.data.APP_DOMAIN_CDN_IMAGE || "https://img.ophim.live/uploads/movies/").filter((item: Movie) => 
+          !BLOCKED_SLUGS.includes(item.slug || "") &&
           item.status?.toLowerCase().includes("trailer") === false && 
           item.quality?.toLowerCase().includes("trailer") === false
         ),
@@ -116,6 +121,7 @@ export async function getGenreMovies(genre: string, page = 1): Promise<MovieList
   const pg2 = data2.data?.params?.pagination;
   return {
     items: normalizeKk(data2.data?.items || []).filter((item: Movie) => 
+      !BLOCKED_SLUGS.includes(item.slug || "") &&
       item.status?.toLowerCase().includes("trailer") === false && 
       item.quality?.toLowerCase().includes("trailer") === false
     ),
@@ -135,6 +141,7 @@ export async function getCountryMovies(country: string, page = 1): Promise<Movie
       const pg = data.data.params?.pagination;
       return {
         items: normalizeOphim(data.data.items, data.data.APP_DOMAIN_CDN_IMAGE || "https://img.ophim.live/uploads/movies/").filter((item: Movie) => 
+          !BLOCKED_SLUGS.includes(item.slug || "") &&
           item.status?.toLowerCase().includes("trailer") === false && 
           item.quality?.toLowerCase().includes("trailer") === false
         ),
@@ -151,6 +158,7 @@ export async function getCountryMovies(country: string, page = 1): Promise<Movie
   const pg2 = data2.data?.params?.pagination;
   return {
     items: normalizeKk(data2.data?.items || []).filter((item: Movie) => 
+      !BLOCKED_SLUGS.includes(item.slug || "") &&
       item.status?.toLowerCase().includes("trailer") === false && 
       item.quality?.toLowerCase().includes("trailer") === false
     ),
@@ -170,6 +178,7 @@ export async function getYearMovies(year: string, page = 1): Promise<MovieListRe
       const pg = data.data.params?.pagination;
       return {
         items: normalizeOphim(data.data.items, data.data.APP_DOMAIN_CDN_IMAGE || "https://img.ophim.live/uploads/movies/").filter((item: Movie) => 
+          !BLOCKED_SLUGS.includes(item.slug || "") &&
           item.status?.toLowerCase().includes("trailer") === false && 
           item.quality?.toLowerCase().includes("trailer") === false
         ),
@@ -186,6 +195,7 @@ export async function getYearMovies(year: string, page = 1): Promise<MovieListRe
   const pg2 = data2.data?.params?.pagination;
   return {
     items: normalizeKk(data2.data?.items || []).filter((item: Movie) => 
+      !BLOCKED_SLUGS.includes(item.slug || "") &&
       item.status?.toLowerCase().includes("trailer") === false && 
       item.quality?.toLowerCase().includes("trailer") === false
     ),

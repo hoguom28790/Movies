@@ -83,7 +83,7 @@ export function Navbar({ mode: initialMode }: NavbarProps) {
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-foreground/[0.05] hover:bg-foreground/[0.1] text-[11px] font-black uppercase tracking-wider text-foreground/60 transition-all active:scale-95 ml-1"
           >
             {isComicSection ? <Film size={14} /> : <BookOpen size={14} />}
-            <span className="hidden xs:inline">{isComicSection ? "Hồ Phim" : "Hồ Truyện"}</span>
+            <span>{isComicSection ? "Hồ Phim" : "Hồ Truyện"}</span>
           </Link>
 
           {/* Search Pill - iOS Style */}

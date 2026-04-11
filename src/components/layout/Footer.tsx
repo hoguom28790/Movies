@@ -44,7 +44,7 @@ export function Footer() {
   const isComicSection = pathname.startsWith("/truyen") || pathname.startsWith("/doc");
 
   return (
-    <footer className="hidden sm:block border-t border-foreground/[0.06] bg-surface mt-20">
+    <footer className="hidden lg:block border-t border-foreground/[0.06] bg-surface mt-20">
       <div className="container mx-auto px-4 lg:px-12 py-12">
         <div className="hidden sm:grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8">
           {columns.map((col) => (
