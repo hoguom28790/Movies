@@ -65,11 +65,12 @@ export async function getCategoryMovies(type: string, page = 1): Promise<MovieLi
     if (data.status === "success" && data.data?.items?.length) {
       const pg = data.data.params?.pagination;
       return {
-        items: normalizeOphim(data.data.items, data.data.APP_DOMAIN_CDN_IMAGE || "https://img.ophim.live/uploads/movies/").filter((item: Movie) => 
-          !BLOCKED_SLUGS.includes(item.slug || "") &&
-          item.status?.toLowerCase().includes("trailer") === false && 
-          item.quality?.toLowerCase().includes("trailer") === false
-        ),
+        items: normalizeOphim(data.data.items, data.data.APP_DOMAIN_CDN_IMAGE || "https://img.ophim.live/uploads/movies/").filter((item: Movie) => {
+          if (BLOCKED_SLUGS.includes(item.slug || "")) return false;
+          const s = (item.status || "").toLowerCase();
+          const q = (item.quality || "").toLowerCase();
+          return !s.includes("trailer") && !q.includes("trailer") && !s.includes("coming soon") && !s.includes("sắp chiếu") && !s.includes("tập 0");
+        }),
         pagination: { currentPage: pg?.currentPage || page, totalPages: Math.ceil((pg?.totalItems || 1000) / (pg?.totalItemsPerPage || 24)), totalItems: pg?.totalItems || 1000 },
       };
     }
@@ -83,11 +84,12 @@ export async function getCategoryMovies(type: string, page = 1): Promise<MovieLi
   const data2 = await res2.json();
   const pg2 = data2.data?.params?.pagination;
   return {
-    items: normalizeKk(data2.data?.items || []).filter((item: Movie) => 
-      !BLOCKED_SLUGS.includes(item.slug || "") &&
-      item.status?.toLowerCase().includes("trailer") === false && 
-      item.quality?.toLowerCase().includes("trailer") === false
-    ),
+    items: normalizeKk(data2.data?.items || []).filter((item: Movie) => {
+      if (BLOCKED_SLUGS.includes(item.slug || "")) return false;
+      const s = (item.status || "").toLowerCase();
+      const q = (item.quality || "").toLowerCase();
+      return !s.includes("trailer") && !q.includes("trailer") && !s.includes("coming soon") && !s.includes("sắp chiếu") && !s.includes("tập 0");
+    }),
     pagination: { currentPage: pg2?.currentPage || page, totalPages: Math.ceil((pg2?.totalItems || 1000) / (pg2?.totalItemsPerPage || 10)), totalItems: pg2?.totalItems || 1000 },
   };
 }
@@ -103,11 +105,12 @@ export async function getGenreMovies(genre: string, page = 1): Promise<MovieList
     if (data.status === "success" && data.data?.items?.length) {
       const pg = data.data.params?.pagination;
       return {
-        items: normalizeOphim(data.data.items, data.data.APP_DOMAIN_CDN_IMAGE || "https://img.ophim.live/uploads/movies/").filter((item: Movie) => 
-          !BLOCKED_SLUGS.includes(item.slug || "") &&
-          item.status?.toLowerCase().includes("trailer") === false && 
-          item.quality?.toLowerCase().includes("trailer") === false
-        ),
+        items: normalizeOphim(data.data.items, data.data.APP_DOMAIN_CDN_IMAGE || "https://img.ophim.live/uploads/movies/").filter((item: Movie) => {
+          if (BLOCKED_SLUGS.includes(item.slug || "")) return false;
+          const s = (item.status || "").toLowerCase();
+          const q = (item.quality || "").toLowerCase();
+          return !s.includes("trailer") && !q.includes("trailer") && !s.includes("coming soon") && !s.includes("sắp chiếu") && !s.includes("tập 0");
+        }),
         pagination: { currentPage: pg?.currentPage || page, totalPages: Math.ceil((pg?.totalItems || 1000) / (pg?.totalItemsPerPage || 24)), totalItems: pg?.totalItems || 1000 },
       };
     }
@@ -120,11 +123,12 @@ export async function getGenreMovies(genre: string, page = 1): Promise<MovieList
   const data2 = await res2.json();
   const pg2 = data2.data?.params?.pagination;
   return {
-    items: normalizeKk(data2.data?.items || []).filter((item: Movie) => 
-      !BLOCKED_SLUGS.includes(item.slug || "") &&
-      item.status?.toLowerCase().includes("trailer") === false && 
-      item.quality?.toLowerCase().includes("trailer") === false
-    ),
+    items: normalizeKk(data2.data?.items || []).filter((item: Movie) => {
+      if (BLOCKED_SLUGS.includes(item.slug || "")) return false;
+      const s = (item.status || "").toLowerCase();
+      const q = (item.quality || "").toLowerCase();
+      return !s.includes("trailer") && !q.includes("trailer") && !s.includes("coming soon") && !s.includes("sắp chiếu") && !s.includes("tập 0");
+    }),
     pagination: { currentPage: pg2?.currentPage || page, totalPages: Math.ceil((pg2?.totalItems || 1000) / (pg2?.totalItemsPerPage || 10)), totalItems: pg2?.totalItems || 1000 },
   };
 }
@@ -140,11 +144,12 @@ export async function getCountryMovies(country: string, page = 1): Promise<Movie
     if (data.status === "success" && data.data?.items?.length) {
       const pg = data.data.params?.pagination;
       return {
-        items: normalizeOphim(data.data.items, data.data.APP_DOMAIN_CDN_IMAGE || "https://img.ophim.live/uploads/movies/").filter((item: Movie) => 
-          !BLOCKED_SLUGS.includes(item.slug || "") &&
-          item.status?.toLowerCase().includes("trailer") === false && 
-          item.quality?.toLowerCase().includes("trailer") === false
-        ),
+        items: normalizeOphim(data.data.items, data.data.APP_DOMAIN_CDN_IMAGE || "https://img.ophim.live/uploads/movies/").filter((item: Movie) => {
+          if (BLOCKED_SLUGS.includes(item.slug || "")) return false;
+          const s = (item.status || "").toLowerCase();
+          const q = (item.quality || "").toLowerCase();
+          return !s.includes("trailer") && !q.includes("trailer") && !s.includes("coming soon") && !s.includes("sắp chiếu") && !s.includes("tập 0");
+        }),
         pagination: { currentPage: pg?.currentPage || page, totalPages: Math.ceil((pg?.totalItems || 1000) / (pg?.totalItemsPerPage || 24)), totalItems: pg?.totalItems || 1000 },
       };
     }
@@ -157,11 +162,12 @@ export async function getCountryMovies(country: string, page = 1): Promise<Movie
   const data2 = await res2.json();
   const pg2 = data2.data?.params?.pagination;
   return {
-    items: normalizeKk(data2.data?.items || []).filter((item: Movie) => 
-      !BLOCKED_SLUGS.includes(item.slug || "") &&
-      item.status?.toLowerCase().includes("trailer") === false && 
-      item.quality?.toLowerCase().includes("trailer") === false
-    ),
+    items: normalizeKk(data2.data?.items || []).filter((item: Movie) => {
+      if (BLOCKED_SLUGS.includes(item.slug || "")) return false;
+      const s = (item.status || "").toLowerCase();
+      const q = (item.quality || "").toLowerCase();
+      return !s.includes("trailer") && !q.includes("trailer") && !s.includes("coming soon") && !s.includes("sắp chiếu") && !s.includes("tập 0");
+    }),
     pagination: { currentPage: pg2?.currentPage || page, totalPages: Math.ceil((pg2?.totalItems || 1000) / (pg2?.totalItemsPerPage || 10)), totalItems: pg2?.totalItems || 1000 },
   };
 }
@@ -177,11 +183,12 @@ export async function getYearMovies(year: string, page = 1): Promise<MovieListRe
     if (data.status === "success" && data.data?.items?.length) {
       const pg = data.data.params?.pagination;
       return {
-        items: normalizeOphim(data.data.items, data.data.APP_DOMAIN_CDN_IMAGE || "https://img.ophim.live/uploads/movies/").filter((item: Movie) => 
-          !BLOCKED_SLUGS.includes(item.slug || "") &&
-          item.status?.toLowerCase().includes("trailer") === false && 
-          item.quality?.toLowerCase().includes("trailer") === false
-        ),
+        items: normalizeOphim(data.data.items, data.data.APP_DOMAIN_CDN_IMAGE || "https://img.ophim.live/uploads/movies/").filter((item: Movie) => {
+          if (BLOCKED_SLUGS.includes(item.slug || "")) return false;
+          const s = (item.status || "").toLowerCase();
+          const q = (item.quality || "").toLowerCase();
+          return !s.includes("trailer") && !q.includes("trailer") && !s.includes("coming soon") && !s.includes("sắp chiếu") && !s.includes("tập 0");
+        }),
         pagination: { currentPage: pg?.currentPage || page, totalPages: Math.ceil((pg?.totalItems || 1000) / (pg?.totalItemsPerPage || 24)), totalItems: pg?.totalItems || 1000 },
       };
     }
@@ -194,11 +201,12 @@ export async function getYearMovies(year: string, page = 1): Promise<MovieListRe
   const data2 = await res2.json();
   const pg2 = data2.data?.params?.pagination;
   return {
-    items: normalizeKk(data2.data?.items || []).filter((item: Movie) => 
-      !BLOCKED_SLUGS.includes(item.slug || "") &&
-      item.status?.toLowerCase().includes("trailer") === false && 
-      item.quality?.toLowerCase().includes("trailer") === false
-    ),
+    items: normalizeKk(data2.data?.items || []).filter((item: Movie) => {
+      if (BLOCKED_SLUGS.includes(item.slug || "")) return false;
+      const s = (item.status || "").toLowerCase();
+      const q = (item.quality || "").toLowerCase();
+      return !s.includes("trailer") && !q.includes("trailer") && !s.includes("coming soon") && !s.includes("sắp chiếu") && !s.includes("tập 0");
+    }),
     pagination: { currentPage: pg2?.currentPage || page, totalPages: Math.ceil((pg2?.totalItems || 1000) / (pg2?.totalItemsPerPage || 10)), totalItems: pg2?.totalItems || 1000 },
   };
 }

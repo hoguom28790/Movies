@@ -130,22 +130,25 @@ export async function searchMovies(keyword: string, page: number = 1, section: "
   const seenSlugs = new Set();
   const BLOCKED_SLUGS = ["lac-mai-trong-khong-gian", "lost-in-space-forever"];
 
-  const mergedItems = allItems.filter(item => {
-    if (!item.slug || seenSlugs.has(item.slug) || BLOCKED_SLUGS.includes(item.slug)) return false;
+  const isTrailerMovie = (item: Movie) => {
     const t = item.title?.toLowerCase() || "";
     const s = item.status?.toLowerCase() || "";
     const q = item.quality?.toLowerCase() || "";
     
-    const isTrailer = 
+    return (
       t.includes("trailer") || 
       s.includes("trailer") || 
       q.includes("trailer") ||
       s.includes("tập 0") ||
       s.includes("0/0") ||
       s.includes("coming soon") ||
-      s.includes("sắp chiếu");
-      
-    if (isTrailer) return false;
+      s.includes("sắp chiếu")
+    );
+  };
+
+  const mergedItems = allItems.filter(item => {
+    if (!item.slug || seenSlugs.has(item.slug) || BLOCKED_SLUGS.includes(item.slug)) return false;
+    if (isTrailerMovie(item)) return false;
     seenSlugs.add(item.slug);
     return true;
   });
@@ -199,13 +202,32 @@ export async function getLatestMovies(page: number = 1): Promise<MovieListRespon
     const merged: Movie[] = [];
     const seenKeys = new Set<string>();
 
+    const isTrailerMovie = (item: Movie) => {
+      const t = item.title?.toLowerCase() || "";
+      const s = item.status?.toLowerCase() || "";
+      const q = item.quality?.toLowerCase() || "";
+      
+      return (
+        t.includes("trailer") || 
+        s.includes("trailer") || 
+        q.includes("trailer") ||
+        s.includes("tập 0") ||
+        s.includes("0/0") ||
+        s.includes("coming soon") ||
+        s.includes("sắp chiếu")
+      );
+    };
+
     const max = Math.max(opItems.length, kkItems.length, ngItems.length, vsItems.length);
     for (let i = 0; i < max; i++) {
         [opItems[i], kkItems[i], ngItems[i], vsItems[i]].forEach(item => {
            if (item && item.slug) {
               const titleKey = `${normalizeTitle(item.title)}_${item.year}`;
               const BLOCKED_SLUGS = ["lac-mai-trong-khong-gian", "lost-in-space-forever"];
+              
               if (!seenKeys.has(titleKey) && !seenKeys.has(item.slug) && !BLOCKED_SLUGS.includes(item.slug)) {
+                 if (isTrailerMovie(item)) return;
+                 
                  seenKeys.add(titleKey);
                  seenKeys.add(item.slug);
                  merged.push(item);
