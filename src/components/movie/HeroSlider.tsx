@@ -67,66 +67,86 @@ export function HeroSlider({ movies, isXX = false }: HeroSliderProps) {
         </motion.div>
       </AnimatePresence>
 
-      {/* Content */}
-      <div className="container relative z-20 mx-auto px-4 pb-20 md:pb-28 w-full transform-gpu flex flex-col items-center justify-end h-full">
+      {/* Content Container */}
+      <div className="container relative z-20 mx-auto px-4 lg:px-12 h-full flex flex-col justify-end pb-24 md:pb-32">
         <AnimatePresence mode="wait">
           <motion.div 
             key={currentIndex} 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
+            initial={{ opacity: 0, x: -30 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: 30 }}
             transition={{ duration: 0.5 }}
-            className="flex flex-col items-center text-center gap-4 max-w-4xl w-full"
+            className="flex flex-col md:flex-row items-center md:items-end gap-6 md:gap-10 w-full"
           >
-            <div className="flex flex-col items-center gap-3">
-               <h1 className="text-3xl md:text-6xl font-bold tracking-tight text-white leading-tight drop-shadow-[0_4px_8px_rgba(0,0,0,0.8)]">
-                 {currentMovie.title}
-               </h1>
-               
-               {currentMovie.originalTitle && (
-                 <h2 className="text-lg md:text-xl font-medium text-[#fbc02d] drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
-                   {currentMovie.originalTitle}
-                 </h2>
-               )}
-
-               <div className="flex items-center flex-wrap justify-center gap-2 mt-2">
-                 <span className="flex items-center gap-1.5 px-2 py-0.5 border border-white/20 rounded shadow-sm text-xs font-bold text-[#fbc02d]">
-                    <Star size={12} fill="currentColor" /> {currentMovie.imdbRating || currentMovie.tmdbRating || "8.5"}
-                 </span>
-                 <span className="px-2 py-0.5 border border-white/20 rounded shadow-sm text-xs font-bold text-white uppercase">{currentMovie.quality || "HD"}</span>
-                 <span className="px-2 py-0.5 border border-white/20 bg-white/10 rounded shadow-sm text-xs font-bold text-white uppercase">{currentMovie.status || "Hoàn tất"}</span>
-                 {currentMovie.year && (
-                   <span className="px-2 py-0.5 border border-white/20 rounded shadow-sm text-xs font-medium text-white/80">{currentMovie.year}</span>
-                 )}
-               </div>
+            {/* Portrait Poster (Standing Card) */}
+            <div className="relative hidden md:block w-48 lg:w-64 aspect-[2/3] rounded-xl overflow-hidden shadow-[0_10px_30px_rgba(0,0,0,0.8)] border border-white/20 transform-gpu hover:scale-105 transition-transform duration-500 flex-shrink-0">
+               <Image 
+                 src={currentMovie.posterUrl} 
+                 alt={currentMovie.title}
+                 fill
+                 className="object-cover"
+                 unoptimized={false}
+                 sizes="(max-width: 1024px) 192px, 256px"
+               />
             </div>
 
-            <div className="flex items-center gap-3 mt-4">
-              <Link href={isXX ? `/${TOPXX_PATH}/watch/${currentMovie.slug}` : `/xem/${currentMovie.slug}`}>
-                <Button
-                  size="lg"
-                  className="h-11 px-8 rounded bg-[#d32f2f] hover:bg-[#b71c1c] text-white border-0 shadow-[0_4px_6px_rgba(211,47,47,0.4)] transition-all font-bold gap-2 active:scale-95"
-                >
-                  <Play size={18} fill="currentColor" strokeWidth={0} />
-                  Xem Phim
-                </Button>
-              </Link>
-              
-              <button 
-                onClick={() => setIsPlaylistModalOpen(true)}
-                className="h-11 px-6 rounded bg-white/10 hover:bg-white/20 backdrop-blur-md text-white border border-white/10 transition-all font-bold flex items-center gap-2 active:scale-95"
-              >
-                <Plus size={18} />
-                Lưu
-              </button>
+            {/* Movie Info */}
+            <div className="flex flex-col items-center md:items-start text-center md:text-left gap-4 max-w-3xl">
+               <div className="space-y-2">
+                  <h1 className="text-3xl md:text-6xl lg:text-7xl font-bold tracking-tight text-white leading-tight drop-shadow-[0_4px_12px_rgba(0,0,0,0.9)]">
+                    {currentMovie.title}
+                  </h1>
+                  
+                  {currentMovie.originalTitle && (
+                    <h2 className="text-lg md:text-2xl font-semibold text-[#fbc02d] drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)] opacity-90">
+                      {currentMovie.originalTitle}
+                    </h2>
+                  )}
+               </div>
+
+               <div className="flex items-center flex-wrap justify-center md:justify-start gap-2 md:gap-3">
+                 <span className="flex items-center gap-1.5 px-3 py-1 bg-black/40 border border-[#fbc02d]/50 rounded-md backdrop-blur-md text-sm font-bold text-[#fbc02d]">
+                    <Star size={14} fill="currentColor" /> {currentMovie.imdbRating || currentMovie.tmdbRating || "8.5"}
+                 </span>
+                 <span className="px-3 py-1 bg-black/40 border border-white/20 rounded-md backdrop-blur-md text-sm font-bold text-white uppercase">{currentMovie.quality || "HD"}</span>
+                 <span className="px-3 py-1 bg-[#d32f2f]/80 border border-[#d32f2f] rounded-md backdrop-blur-md text-sm font-bold text-white uppercase">{currentMovie.status || "Update"}</span>
+                 {currentMovie.year && (
+                   <span className="px-3 py-1 bg-black/40 border border-white/20 rounded-md backdrop-blur-md text-sm font-medium text-white/90">{currentMovie.year}</span>
+                 )}
+               </div>
+
+               {currentMovie.overview && (
+                 <p className="hidden md:line-clamp-2 text-white/80 text-lg font-medium max-w-2xl drop-shadow-md">
+                   {currentMovie.overview}
+                 </p>
+               )}
+
+               <div className="flex items-center gap-4 mt-2">
+                 <Link href={isXX ? `/${TOPXX_PATH}/watch/${currentMovie.slug}` : `/xem/${currentMovie.slug}`}>
+                   <Button
+                     size="lg"
+                     className="h-12 px-10 rounded-lg bg-[#d32f2f] hover:bg-[#b71c1c] text-white border-0 shadow-[0_4px_15px_rgba(211,47,47,0.5)] transition-all font-bold gap-3 active:scale-95 group"
+                   >
+                     <Play size={20} fill="currentColor" strokeWidth={0} className="group-hover:scale-110 transition-transform" />
+                     XEM PHIM
+                   </Button>
+                 </Link>
+                 
+                 <button 
+                   onClick={() => setIsPlaylistModalOpen(true)}
+                   className="w-12 h-12 rounded-lg bg-white/10 hover:bg-white/20 backdrop-blur-md text-white border border-white/20 transition-all flex items-center justify-center active:scale-95"
+                 >
+                   <Plus size={24} />
+                 </button>
+               </div>
             </div>
           </motion.div>
         </AnimatePresence>
       </div>
 
-      {/* Centered Navigation Thumbnails */}
-      <div className="absolute inset-x-0 bottom-4 md:bottom-8 z-30 flex items-center justify-center w-full">
-        <div className="flex flex-nowrap items-center gap-2 md:gap-3 px-4 max-w-full overflow-x-auto no-scrollbar scroll-smooth">
+      {/* Navigation Thumbnails - Positioned bottom-right to avoid overlap */}
+      <div className="absolute right-4 md:right-12 bottom-6 md:bottom-12 z-30 flex items-center justify-end w-full pointer-events-none">
+        <div className="flex flex-nowrap items-center gap-2 md:gap-3 px-4 max-w-[90vw] overflow-x-auto no-scrollbar scroll-smooth pointer-events-auto">
           {movies.slice(0, 10).map((movie, idx) => (
             <button
               key={movie.slug}
