@@ -1,5 +1,5 @@
 import { Movie, MovieListResponse } from "@/types/movie";
-import { getNguonCMovies } from "./nguonc";
+import { getNguonCMovies, searchMovies as searchNG } from "./nguonc";
 import { getKKPhimMovies, searchMovies as searchKK } from "./kkphim";
 import { getOPhimMovies, searchMovies as searchOP } from "./ophim";
 import { getVsmovMovies, searchMovies as searchVS } from "./vsmov";
@@ -80,10 +80,11 @@ export async function searchMovies(keyword: string, page: number = 1, section: "
     return res;
   };
 
-  const [opResults, kkResults, vsResults] = await Promise.allSettled([
+  const [opResults, kkResults, vsResults, ngResults] = await Promise.allSettled([
     searchOPMirror(keyword, page),
     searchKK(keyword, page),
-    searchVS(keyword, page)
+    searchVS(keyword, page),
+    searchNG(keyword, page)
   ]);
 
   let txResults: MovieListResponse = { items: [], pagination: { currentPage: 1, totalPages: 1, totalItems: 0 } };
@@ -123,6 +124,7 @@ export async function searchMovies(keyword: string, page: number = 1, section: "
     if (opResults.status === "fulfilled") allItems.push(...opResults.value.items);
     if (kkResults.status === "fulfilled") allItems.push(...kkResults.value.items);
     if (vsResults.status === "fulfilled") allItems.push(...vsResults.value.items);
+    if (ngResults.status === "fulfilled") allItems.push(...ngResults.value.items);
   }
 
   const seenSlugs = new Set();
@@ -151,7 +153,9 @@ export async function searchMovies(keyword: string, page: number = 1, section: "
   const totalItems = section === "tx" 
     ? (txResults.pagination?.totalItems || 0) + (avdbResults.pagination?.totalItems || 0)
     : (opResults.status === "fulfilled" ? opResults.value.pagination.totalItems : 0) +
-      (kkResults.status === "fulfilled" ? kkResults.value.pagination.totalItems : 0);
+      (kkResults.status === "fulfilled" ? kkResults.value.pagination.totalItems : 0) +
+      (vsResults.status === "fulfilled" ? vsResults.value.pagination.totalItems : 0) +
+      (ngResults.status === "fulfilled" ? ngResults.value.pagination.totalItems : 0);
 
   return { 
     items: mergedItems, 
