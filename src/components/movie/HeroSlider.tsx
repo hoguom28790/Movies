@@ -61,9 +61,9 @@ export function HeroSlider({ movies, isXX = false }: HeroSliderProps) {
             className="absolute inset-0 w-full h-full object-cover"
             sizes="100vw"
           />
-          {/* Ophim Style Overlays - Minimal for maximum clarity */}
-          <div className="absolute inset-0 bg-black/5" />
-          <div className="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-[#0d0d0c] via-[#0d0d0c]/40 to-transparent" />
+          {/* Universal Overlay: Guarantee high contrast for white text on any background */}
+          <div className="absolute inset-0 bg-black/20" />
+          <div className="absolute inset-x-0 bottom-0 h-[85%] bg-gradient-to-t from-black via-black/60 to-transparent" />
         </motion.div>
       </AnimatePresence>
 
@@ -93,12 +93,13 @@ export function HeroSlider({ movies, isXX = false }: HeroSliderProps) {
             {/* Movie Info */}
             <div className="flex flex-col items-center md:items-start text-center md:text-left gap-3 max-w-3xl">
                <div className="space-y-1">
-                  <h1 className="text-2xl md:text-5xl lg:text-6xl font-extrabold tracking-tight text-white leading-tight drop-shadow-[0_4px_12px_rgba(0,0,0,0.9)]">
+                  {/* FORCED WHITE TEXT: Prevents light theme variables from turning text black over dark posters */}
+                  <h1 className="text-2xl md:text-5xl lg:text-6xl font-extrabold tracking-tight !text-white leading-tight drop-shadow-[0_4px_12px_rgba(0,0,0,0.9)]">
                     {currentMovie.title}
                   </h1>
                   
                   {currentMovie.originalTitle && (
-                    <h2 className="text-base md:text-xl font-semibold text-[#fbc02d]/90 drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]">
+                    <h2 className="text-base md:text-xl font-semibold text-[#fbc02d] drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]">
                       {currentMovie.originalTitle}
                     </h2>
                   )}
@@ -108,21 +109,21 @@ export function HeroSlider({ movies, isXX = false }: HeroSliderProps) {
                  <span className="flex items-center gap-1 px-2 py-0.5 bg-black/40 border border-[#fbc02d]/30 rounded backdrop-blur-md text-[10px] md:text-xs font-bold text-[#fbc02d]">
                     <Star size={10} fill="currentColor" /> {currentMovie.imdbRating || currentMovie.tmdbRating || "8.5"}
                  </span>
-                 <span className="px-2 py-0.5 bg-black/40 border border-white/10 rounded backdrop-blur-md text-[10px] md:text-xs font-bold text-white uppercase">{currentMovie.quality || "HD"}</span>
-                 <span className="px-2 py-0.5 bg-black/40 border border-white/10 rounded backdrop-blur-md text-[10px] md:text-xs font-bold text-white whitespace-nowrap">{(currentMovie as any).type || "Phim"}</span>
-                 <span className="px-2 py-0.5 bg-[#d32f2f]/60 border border-[#d32f2f]/40 rounded backdrop-blur-md text-[10px] md:text-xs font-bold text-white uppercase whitespace-nowrap">
+                 <span className="px-2 py-0.5 bg-black/40 border border-white/10 rounded backdrop-blur-md text-[10px] md:text-xs font-bold !text-white uppercase">{currentMovie.quality || "HD"}</span>
+                 <span className="px-2 py-0.5 bg-black/40 border border-white/10 rounded backdrop-blur-md text-[10px] md:text-xs font-bold !text-white whitespace-nowrap">{(currentMovie as any).type || "Phim"}</span>
+                 <span className="px-2 py-0.5 bg-[#d32f2f]/80 border border-[#d32f2f]/40 rounded backdrop-blur-md text-[10px] md:text-xs font-bold !text-white uppercase whitespace-nowrap">
                     {(currentMovie as any).episodeCurrent && (currentMovie as any).episodeTotal 
                       ? `${(currentMovie as any).episodeCurrent}/${(currentMovie as any).episodeTotal}` 
                       : currentMovie.status || "Full"}
                  </span>
-                 <span className="px-2 py-0.5 bg-white/10 border border-white/10 rounded backdrop-blur-md text-[10px] md:text-xs font-bold text-white/90">{(currentMovie as any).age || "13+"}</span>
+                 <span className="px-2 py-0.5 bg-white/10 border border-white/10 rounded backdrop-blur-md text-[10px] md:text-xs font-bold bg-black/40 !text-white/90">{(currentMovie as any).age || "13+"}</span>
                  {currentMovie.year && (
-                   <span className="px-2 py-0.5 bg-black/40 border border-white/10 rounded backdrop-blur-md text-[10px] md:text-xs font-medium text-white/80">{currentMovie.year}</span>
+                   <span className="px-2 py-0.5 bg-black/40 border border-white/10 rounded backdrop-blur-md text-[10px] md:text-xs font-medium !text-white/80">{currentMovie.year}</span>
                  )}
                </div>
 
                {currentMovie.overview && (
-                 <p className="hidden md:line-clamp-2 text-white/70 text-base font-medium max-w-2xl drop-shadow-md leading-relaxed">
+                 <p className="hidden md:line-clamp-2 !text-white/80 text-base font-medium max-w-2xl drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] leading-relaxed">
                    {currentMovie.overview}
                  </p>
                )}
