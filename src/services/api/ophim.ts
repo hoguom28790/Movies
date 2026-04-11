@@ -25,9 +25,18 @@ export async function getOPhimMovies(page: number = 1, baseUrl: string = "https:
     year: item.year?.toString() || "",
     status: item.episode_current || "",
     source: 'ophim' as const
-  })).filter((item: Movie) => 
-    item.status?.toLowerCase().includes("trailer") === false
-  );
+  })).filter((item: Movie) => {
+    const s = item.status?.toLowerCase() || "";
+    const sl = item.slug?.toLowerCase() || "";
+    const t = item.title?.toLowerCase() || "";
+    
+    return !s.includes("trailer") && 
+           !sl.includes("trailer") && 
+           !t.includes("trailer") &&
+           !s.includes("sắp chiếu") &&
+           !s.includes("coming soon") &&
+           !s.includes("tập 0");
+  });
 
   return {
     items,
@@ -66,9 +75,12 @@ export async function searchMovies(keyword: string, page: number = 1, baseUrl: s
     quality: item.quality || "",
     status: item.episode_current || "",
     source: 'ophim' as const
-  })).filter((item: Movie) => 
-    item.status?.toLowerCase().includes("trailer") === false
-  );
+  })).filter((item: Movie) => {
+    const s = item.status?.toLowerCase() || "";
+    const sl = item.slug?.toLowerCase() || "";
+    const t = item.title?.toLowerCase() || "";
+    return !s.includes("trailer") && !sl.includes("trailer") && !t.includes("trailer");
+  });
 
   const pg = data.data?.params.pagination;
   return {

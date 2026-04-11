@@ -27,9 +27,18 @@ export async function getVsmovMovies(page: number = 1): Promise<MovieListRespons
         status: item.status || item.episode_current || "",
         source: 'vsmov' as const
       };
-    }).filter((item: Movie) => 
-      item.status?.toLowerCase().includes("trailer") === false
-    );
+    }).filter((item: Movie) => {
+      const s = (item.status || "").toLowerCase();
+      const sl = (item.slug || "").toLowerCase();
+      const t = (item.title || "").toLowerCase();
+      
+      return !s.includes("trailer") && 
+             !sl.includes("trailer") && 
+             !t.includes("trailer") &&
+             !s.includes("sắp chiếu") &&
+             !s.includes("coming soon") &&
+             !s.includes("tập 0");
+    });
 
     return {
       items,
@@ -71,9 +80,18 @@ export async function searchMovies(keyword: string, page: number = 1): Promise<M
         status: item.status || item.episode_current || "",
         source: 'vsmov' as const
       };
-    }).filter((item: Movie) => 
-      item.status?.toLowerCase().includes("trailer") === false
-    );
+    }).filter((item: Movie) => {
+      const s = (item.status || "").toLowerCase();
+      const sl = (item.slug || "").toLowerCase();
+      const t = (item.title || "").toLowerCase();
+      
+      return !s.includes("trailer") && 
+             !sl.includes("trailer") && 
+             !t.includes("trailer") &&
+             !s.includes("sắp chiếu") &&
+             !s.includes("coming soon") &&
+             !s.includes("tập 0");
+    });
 
     const pg = data.pagination;
     return {

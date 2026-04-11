@@ -128,10 +128,18 @@ export async function searchMovies(keyword: string, page: number = 1, section: "
   const seenSlugs = new Set();
   const mergedItems = allItems.filter(item => {
     if (!item.slug || seenSlugs.has(item.slug)) return false;
+    const t = item.title?.toLowerCase() || "";
+    const s = item.status?.toLowerCase() || "";
+    const q = item.quality?.toLowerCase() || "";
+    
     const isTrailer = 
-      (item.status?.toLowerCase().includes("trailer")) || 
-      (item.quality?.toLowerCase().includes("trailer")) ||
-      (item.title?.toLowerCase().includes("trailer"));
+      t.includes("trailer") || 
+      s.includes("trailer") || 
+      q.includes("trailer") ||
+      s.includes("tập 0") ||
+      s.includes("0/0") ||
+      s.includes("coming soon") ||
+      s.includes("sắp chiếu");
       
     if (isTrailer) return false;
     seenSlugs.add(item.slug);
@@ -268,13 +276,14 @@ export async function getMovieDetails(slug: string): Promise<{ sources: UnifiedM
     try {
       let searchRes = await searchMovies(titleQuery, 1);
       
-      // BROAD SEARCH FALLBACK: If specific search fails, try searching with just the first 3 words
-      // This helps with slugs like 'nhan-qua-outcome-2026' where 'nhan qua outcome' fails but 'nhan qua' works.
+      // ITERATIVE BROAD SEARCH: If specific search fails, try progressively shorter queries
+      // This handles movies like 'nhan-qua-outcome-2026' where the provider API only has 'nhan-qua'
       if (searchRes.items.length === 0) {
-        const words = titleQuery.split(' ');
-        if (words.length > 2) {
-          const broadQuery = words.slice(0, 3).join(' ');
-          console.log(`[API] Specific search for "${titleQuery}" failed, trying broad search: "${broadQuery}"`);
+        let words = titleQuery.split(' ');
+        while (searchRes.items.length === 0 && words.length > 1) {
+          words.pop();
+          const broadQuery = words.join(' ');
+          console.log(`[API] Specific search failed, trying broader search: "${broadQuery}"`);
           searchRes = await searchMovies(broadQuery, 1);
         }
       }

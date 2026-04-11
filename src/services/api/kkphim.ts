@@ -22,9 +22,18 @@ export async function getKKPhimMovies(page: number = 1): Promise<MovieListRespon
     year: item.year?.toString() || "",
     status: item.status || "",
     source: 'kkphim' as const
-  })).filter((item: Movie) => 
-    item.status?.toLowerCase().includes("trailer") === false
-  );
+  })).filter((item: Movie) => {
+    const s = (item.status || "").toLowerCase();
+    const sl = (item.slug || "").toLowerCase();
+    const t = (item.title || "").toLowerCase();
+    
+    return !s.includes("trailer") && 
+           !sl.includes("trailer") && 
+           !t.includes("trailer") &&
+           !s.includes("sắp chiếu") &&
+           !s.includes("coming soon") &&
+           !s.includes("tập 0");
+  });
 
   return {
     items,
@@ -58,9 +67,18 @@ export async function searchMovies(keyword: string, page: number = 1): Promise<M
     quality: item.quality || "",
     status: item.episode_current || "",
     source: 'kkphim' as const
-  })).filter((item: Movie) => 
-    item.status?.toLowerCase().includes("trailer") === false
-  );
+  })).filter((item: Movie) => {
+    const s = (item.status || "").toLowerCase();
+    const sl = (item.slug || "").toLowerCase();
+    const t = (item.title || "").toLowerCase();
+    
+    return !s.includes("trailer") && 
+           !sl.includes("trailer") && 
+           !t.includes("trailer") &&
+           !s.includes("sắp chiếu") &&
+           !s.includes("coming soon") &&
+           !s.includes("tập 0");
+  });
 
   const pg = data.data?.params.pagination || { currentPage: page, totalItems: 0, totalItemsPerPage: 20 };
   return {
