@@ -128,6 +128,7 @@ export async function searchMovies(keyword: string, page: number = 1, section: "
   const seenSlugs = new Set();
   const mergedItems = allItems.filter(item => {
     if (!item.slug || seenSlugs.has(item.slug)) return false;
+    if (item.status?.toLowerCase().includes("trailer")) return false;
     seenSlugs.add(item.slug);
     return true;
   });

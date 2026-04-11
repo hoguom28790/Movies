@@ -23,7 +23,7 @@ export async function getKKPhimMovies(page: number = 1): Promise<MovieListRespon
     status: item.status || "",
     source: 'kkphim' as const
   })).filter((item: Movie) => 
-    item.status?.toLowerCase() !== "trailer"
+    item.status?.toLowerCase().includes("trailer") === false
   );
 
   return {
@@ -59,7 +59,7 @@ export async function searchMovies(keyword: string, page: number = 1): Promise<M
     status: item.episode_current || "",
     source: 'kkphim' as const
   })).filter((item: Movie) => 
-    item.status?.toLowerCase() !== "trailer"
+    item.status?.toLowerCase().includes("trailer") === false
   );
 
   const pg = data.data?.params.pagination || { currentPage: page, totalItems: 0, totalItemsPerPage: 20 };

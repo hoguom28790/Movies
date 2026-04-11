@@ -28,7 +28,7 @@ export async function getVsmovMovies(page: number = 1): Promise<MovieListRespons
         source: 'vsmov' as const
       };
     }).filter((item: Movie) => 
-      item.status?.toLowerCase() !== "trailer"
+      item.status?.toLowerCase().includes("trailer") === false
     );
 
     return {
@@ -72,7 +72,7 @@ export async function searchMovies(keyword: string, page: number = 1): Promise<M
         source: 'vsmov' as const
       };
     }).filter((item: Movie) => 
-      item.status?.toLowerCase() !== "trailer"
+      item.status?.toLowerCase().includes("trailer") === false
     );
 
     const pg = data.pagination;

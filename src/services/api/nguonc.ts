@@ -23,8 +23,8 @@ export async function getNguonCMovies(page: number = 1): Promise<MovieListRespon
     status: item.status || item.episode_current || "",
     source: 'nguonc' as const
   })).filter((item: Movie) => 
-    item.status?.toLowerCase() !== "trailer" && 
-    item.quality?.toLowerCase() !== "trailer"
+    item.status?.toLowerCase().includes("trailer") === false && 
+    item.quality?.toLowerCase().includes("trailer") === false
   );
 
   return {

@@ -23,10 +23,10 @@ export async function getOPhimMovies(page: number = 1, baseUrl: string = "https:
     posterUrl: item.poster_url?.startsWith('http') ? item.poster_url : `${imagePrefix}${item.poster_url}`,
     thumbUrl: item.thumb_url?.startsWith('http') ? item.thumb_url : `${imagePrefix}${item.thumb_url}`,
     year: item.year?.toString() || "",
-    status: "",
+    status: item.episode_current || "",
     source: 'ophim' as const
   })).filter((item: Movie) => 
-    item.status?.toLowerCase() !== "trailer"
+    item.status?.toLowerCase().includes("trailer") === false
   );
 
   return {
@@ -67,7 +67,7 @@ export async function searchMovies(keyword: string, page: number = 1, baseUrl: s
     status: item.episode_current || "",
     source: 'ophim' as const
   })).filter((item: Movie) => 
-    item.status?.toLowerCase() !== "trailer"
+    item.status?.toLowerCase().includes("trailer") === false
   );
 
   const pg = data.data?.params.pagination;
