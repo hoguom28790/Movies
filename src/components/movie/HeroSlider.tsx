@@ -60,7 +60,7 @@ export function HeroSlider({ movies, isXX = false }: HeroSliderProps) {
             priority
             className="absolute inset-0 w-full h-full object-cover transform-gpu will-change-transform"
             sizes="100vw"
-            unoptimized={!(currentMovie.thumbUrl || currentMovie.posterUrl)?.includes('tmdb.org')}
+            unoptimized={false}
             quality={90}
           />
           {/* Overlays */}
@@ -147,7 +147,7 @@ export function HeroSlider({ movies, isXX = false }: HeroSliderProps) {
                 alt={movie.title} 
                 fill
                 className="w-full h-full object-cover scale-110 group-hover/thumb:scale-125 transition-transform duration-500"
-                unoptimized={!movie.posterUrl?.includes('tmdb.org')}
+                unoptimized={false}
                 sizes="56px"
               />
               <div className={cn(

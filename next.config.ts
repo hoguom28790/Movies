@@ -5,6 +5,11 @@ const nextConfig: NextConfig = {
     remotePatterns: [
       { protocol: "https", hostname: "**" },
       { protocol: "http", hostname: "**" },
+      { protocol: "https", hostname: "img.ophim1.com" },
+      { protocol: "https", hostname: "phimimg.com" },
+      { protocol: "https", hostname: "phim.nguonc.com" },
+      { protocol: "https", hostname: "image.tmdb.org" },
+      { protocol: "https", hostname: "vsmov.com" },
     ],
     unoptimized: false,
     formats: ["image/avif", "image/webp"],

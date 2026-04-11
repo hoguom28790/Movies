@@ -73,7 +73,7 @@ export function MovieCard({
       >
         <div className="relative w-full h-full">
           <Image 
-            src={imgError || !posterUrl ? "https://images.unsplash.com/photo-1594909122845-11baa439b7bf?q=80&w=600&auto=format&fit=crop" : posterUrl} 
+            src={imgError || !posterUrl ? "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='600' height='900' viewBox='0 0 600 900'><rect width='100%25' height='100%25' fill='%231a1a1a'/><text x='50%25' y='50%25' font-family='sans-serif' font-weight='bold' font-size='32' fill='%23333' text-anchor='middle' dy='.3em'>Loading...</text></svg>" : posterUrl} 
             alt={title} 
             fill
             sizes="(max-width: 640px) 50vw, (max-width: 1024px) 25vw, 15vw"
@@ -81,7 +81,7 @@ export function MovieCard({
                "object-cover transition-transform duration-700 group-hover:scale-110",
                imgError && "opacity-50 grayscale"
             )}
-            unoptimized={!posterUrl?.includes('tmdb.org')}
+            unoptimized={false}
             priority={index < 4}
             onError={() => setImgError(true)}
           />
