@@ -18,6 +18,7 @@ export async function getRTRating(imdbId: string): Promise<RTRating | null> {
     // This API is a community project from GitHub: SilverCrocus/rotten-tomatoes-api
     const response = await fetch(`${BASE_URL}/movie/${imdbId}`, {
       next: { revalidate: 86400 }, // Cache 24h
+      signal: AbortSignal.timeout(2000),
       headers: {
         // If an API key is eventually required, it should be added here
         // For now, many community-run Render instances allow basic usage

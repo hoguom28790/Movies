@@ -136,22 +136,10 @@ export default async function WatchPage({
     
     console.log(`[WatchPage] Processing: ${movieSlug} -> Search Query: "${titleQuery}"`);
     
-    const movieResPromise = getMovieDetails(movieSlug);
-    const initialTmdbSearchPromise = searchTMDBMovie(titleQuery).catch(() => null);
-
-    let [movieRes, initialTmdbSearch] = await Promise.all([movieResPromise, initialTmdbSearchPromise]);
-
-    // SMART SLUG FALLBACK: If direct slug failed, try the cleaned slug (minus year) before giving up
-    if (!movieRes?.sources?.length) {
-      const cleanSlug = movieSlug.split('-').filter(word => !/^\d{4}$/.test(word)).join('-');
-      if (cleanSlug !== movieSlug) {
-        console.log(`[WatchPage] Direct slug failed, trying cleaned slug: ${cleanSlug}`);
-        const cleanMovieRes = await getMovieDetails(cleanSlug);
-        if (cleanMovieRes?.sources?.length) {
-          movieRes = cleanMovieRes;
-        }
-      }
-    }
+    const [movieRes, initialTmdbSearch] = await Promise.all([
+      getMovieDetails(movieSlug),
+      searchTMDBMovie(titleQuery).catch(() => null)
+    ]);
 
     let sources = movieRes?.sources || [];
     let currentSource = sources.find((s: any) => s.id === (querySource || src)) || sources[0];
@@ -233,19 +221,6 @@ export default async function WatchPage({
     let tmdbId = safeData.tmdb_id || initialTmdbSearch?.id;
     let actualTmdbSearch = initialTmdbSearch;
 
-    if (!tmdbId && safeData) {
-      const cleanOriginName = safeData.originName?.replace(/\(.*?\)/gi, '').trim();
-      const cleanName = safeData.name?.replace(/\(.*?\)/gi, '').trim();
-      
-      console.log(`[WatchPage] Missing TMDB ID, retrying search with metadata: ${cleanOriginName} / ${cleanName}`);
-      if (cleanOriginName) actualTmdbSearch = await searchTMDBMovie(cleanOriginName).catch(() => null);
-      if (!actualTmdbSearch && cleanName) actualTmdbSearch = await searchTMDBMovie(cleanName).catch(() => null);
-      
-      if (actualTmdbSearch) {
-         tmdbId = actualTmdbSearch.id;
-      }
-    }
-
     let tmdbData = null;
     let rtData = null;
     let omdbData = null;
@@ -253,31 +228,30 @@ export default async function WatchPage({
 
     try {
        if (tmdbId) {
-          tmdbData = await getTMDBMovieDetails(Number(tmdbId), actualTmdbSearch?.media_type || (safeData.type === "Phim Bộ" ? "tv" : "movie"));
+          const tmdbType = actualTmdbSearch?.media_type || (safeData.type === "Phim Bộ" ? "tv" : "movie");
           
-          if (tmdbData?.status_code || !tmdbData?.id) {
-             tmdbData = null;
-          } else {
-             // Parallel fetch external ratings
-             const promises = [];
+          // PHASE 1: TMDB Details (Required for RT/IMDB search)
+          tmdbData = await getTMDBMovieDetails(Number(tmdbId), tmdbType).catch(() => null);
+          
+          if (tmdbData && !tmdbData.status_code) {
              const imdbId = tmdbData.external_ids?.imdb_id;
+             const { getOMDbRatingById, searchOMDbMovie } = await import("@/services/omdb");
              
-             if (imdbId) {
-                promises.push(getRTRating(imdbId).then(res => rtData = res).catch(() => null));
-                const { getOMDbRatingById } = await import("@/services/omdb");
-                promises.push(getOMDbRatingById(imdbId).then(res => omdbData = res).catch(() => null));
-                promises.push(getTraktRating(safeData.name, parseInt(safeData.year) || undefined).then(res => traktData = res).catch(() => null));
-             } else {
-                const { searchOMDbMovie } = await import("@/services/omdb");
-                promises.push(searchOMDbMovie(safeData.name, parseInt(safeData.year) || undefined).then(res => omdbData = res).catch(() => null));
-                promises.push(getTraktRating(safeData.name, parseInt(safeData.year) || undefined).then(res => traktData = res).catch(() => null));
-             }
-             
-             await Promise.all(promises);
+             // PHASE 2: External Ratings Parallel (with 2s Timeout)
+             await Promise.race([
+                Promise.all([
+                   getRTRating(imdbId || "").then(res => rtData = res).catch(() => null),
+                   (imdbId ? getOMDbRatingById(imdbId) : searchOMDbMovie(safeData.name, parseInt(safeData.year)))
+                     .then(res => omdbData = res).catch(() => null),
+                   getTraktRating(safeData.name, parseInt(safeData.year) || undefined)
+                     .then(res => traktData = res).catch(() => null)
+                ]),
+                new Promise(resolve => setTimeout(resolve, 2000))
+             ]);
           }
        }
     } catch (e) {
-       console.error("[WatchPage] External metadata fetch failed:", e);
+       console.error("[WatchPage] Metadata optimization skip:", e);
     }
     
     const allServers = safeData.episodes || [];

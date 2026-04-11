@@ -10,20 +10,15 @@ import { OPhimMovie, KKPhimMovie, NguonCMovie, VsmovMovie, ProviderMovie } from 
 export * from "./category";
 
 const OPHIM_MIRRORS = [
-  "https://ophim18.cc",
   "https://phimapi.com",
   "https://ophim17.com",
-  "https://ophim17.cc",
-  "https://ophim10.com",
-  "https://ophim8.cc",
-  "https://ophim10.cc",
-  "https://vsmov.com"
+  "https://ophim10.com"
 ];
 
 const fetchSafe = async <T = any>(url: string, headers: Record<string, string> = {}, sourceId?: string): Promise<T | null> => {
   const tryFetch = async (targetUrl: string): Promise<T | null> => {
     const controller = new AbortController();
-    const timeoutMs = (headers as any)._timeout || 5000;
+    const timeoutMs = (headers as any)._timeout || 3000;
     const timeoutId = setTimeout(() => controller.abort(), timeoutMs); 
     try {
       const res = await fetch(targetUrl, { 
@@ -313,34 +308,38 @@ export async function getMovieDetails(slug: string): Promise<{ sources: UnifiedM
     try {
       let searchRes = await searchMovies(titleQuery, 1);
       
-      // ITERATIVE BROAD SEARCH: If specific search fails, try progressively shorter queries
-      // This handles movies like 'nhan-qua-outcome-2026' where the provider API only has 'nhan-qua'
+      // Limited broad search: Only try one step broader if specific fails
       if (searchRes.items.length === 0) {
-        let words = titleQuery.split(' ');
-        while (searchRes.items.length === 0 && words.length > 1) {
-          words.pop();
-          const broadQuery = words.join(' ');
-          console.log(`[API] Specific search failed, trying broader search: "${broadQuery}"`);
-          searchRes = await searchMovies(broadQuery, 1);
+        const words = titleQuery.split(' ');
+        if (words.length > 2) {
+          const broaderQuery = words.slice(0, Math.ceil(words.length / 2)).join(' ');
+          console.log(`[API] Specific search failed, trying single broader search: "${broaderQuery}"`);
+          searchRes = await searchMovies(broaderQuery, 1);
         }
       }
 
       if (searchRes.items.length > 0) {
-        // Find best match (compare slug or title) using normalized comparison
         const targetNormalized = normalizeTitle(titleQuery);
         const bestMatch = searchRes.items.find((item: any) => {
           const itemTitleNorm = normalizeTitle(item.title || "");
           const itemOriginNorm = normalizeTitle(item.originalTitle || "");
-          
           return itemTitleNorm.includes(targetNormalized) || targetNormalized.includes(itemTitleNorm) || 
                  itemOriginNorm.includes(targetNormalized) || targetNormalized.includes(itemOriginNorm);
         }) || searchRes.items[0];
 
         if (bestMatch && bestMatch.slug !== slug) {
           console.log(`[API] Found alternative slug for "${slug}": ${bestMatch.slug} (Match: ${bestMatch.title})`);
-          // Pass a timeout hint to prevent deep recursion hangs
-          const altRes = await getMovieDetails(bestMatch.slug);
-          if (altRes) return altRes;
+          // Note: Recursion removed for safety/speed. We only support 1 level of jump.
+          const [kkRes, ophimRes, ngRes, vsRes] = await Promise.allSettled([
+            fetchSafe(`https://phimapi.com/phim/${bestMatch.slug}`, {}, 'kkphim'),
+            fetchSafe(`https://ophim1.com/v1/api/phim/${bestMatch.slug}`, { Referer: "https://ophim1.com/" }, 'ophim'),
+            fetchSafe(`https://phim.nguonc.com/api/film/${bestMatch.slug}`, {}, 'nguonc'),
+            fetchSafe(`https://vsmov.com/api/phim/${bestMatch.slug}`, { Referer: "https://vsmov.com/" }, 'vsmov')
+          ]);
+          processSource(kkRes, "kkphim", "KKPhim");
+          processSource(ophimRes, "ophim", "OPhim");
+          processSource(ngRes, "nguonc", "Nguồn C");
+          processSource(vsRes, "vsmov", "VS-MOV");
         }
       }
     } catch (e) {

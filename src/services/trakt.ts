@@ -61,7 +61,8 @@ export async function getTraktRating(title: string, year?: number) {
         "Content-Type": "application/json",
         "trakt-api-version": "2",
         "trakt-api-key": CLIENT_ID
-      }
+      },
+      signal: AbortSignal.timeout(2000)
     });
 
     if (!searchRes.ok) return null;
@@ -74,7 +75,8 @@ export async function getTraktRating(title: string, year?: number) {
         "Content-Type": "application/json",
         "trakt-api-version": "2",
         "trakt-api-key": CLIENT_ID
-      }
+      },
+      signal: AbortSignal.timeout(1500)
     });
 
     if (!ratingRes.ok) return null;
