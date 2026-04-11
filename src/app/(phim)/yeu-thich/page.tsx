@@ -231,7 +231,7 @@ export default function LibraryPage() {
                             e.preventDefault();
                             handleRemoveActor(a.id);
                           }}
-                          className="absolute -top-2 -right-2 w-8 h-8 rounded-full bg-red-500 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-lg z-10 hover:scale-110 active:scale-90"
+                          className="absolute -top-2 -right-2 w-8 h-8 rounded-full bg-red-500 text-white flex items-center justify-center opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity shadow-lg z-10 hover:scale-110 active:scale-90"
                         >
                           <Trash2 size={14} />
                         </button>

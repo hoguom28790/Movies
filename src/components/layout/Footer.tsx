@@ -46,7 +46,7 @@ export function Footer() {
   return (
     <footer className="border-t border-foreground/[0.06] bg-surface mt-20">
       <div className="container mx-auto px-4 lg:px-12 py-12">
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8">
+        <div className="hidden sm:grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8">
           {columns.map((col) => (
             <div key={col.title}>
               <h3 className="text-[11px] font-bold text-foreground/30 uppercase tracking-[0.15em] mb-4">
