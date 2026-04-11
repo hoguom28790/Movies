@@ -100,6 +100,11 @@ export function normalizeMovieData(data: any, source: MovieSource) {
     code: data.movie_code || data.code || "",
     source: source,
     tmdb_id: data.tmdb_id || null,
+    lang: data.lang || data.language || "Vietsub",
+    type: data.type === "series" || data.type === "hoathinh" ? "Phim Bộ" : "Phim Lẻ",
+    age: data.age || "13+",
+    episodeCurrent: data.episode_current || "",
+    episodeTotal: data.episode_total || "",
     episodes: (data.episodes || []).map((s: any) => ({
        name: s.server_name || s.name || "Default",
        items: s.server_data || s.items || []

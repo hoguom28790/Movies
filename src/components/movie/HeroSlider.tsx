@@ -91,32 +91,38 @@ export function HeroSlider({ movies, isXX = false }: HeroSliderProps) {
             </div>
 
             {/* Movie Info */}
-            <div className="flex flex-col items-center md:items-start text-center md:text-left gap-4 max-w-3xl">
-               <div className="space-y-2">
-                  <h1 className="text-3xl md:text-6xl lg:text-7xl font-bold tracking-tight text-white leading-tight drop-shadow-[0_4px_12px_rgba(0,0,0,0.9)]">
+            <div className="flex flex-col items-center md:items-start text-center md:text-left gap-3 max-w-3xl">
+               <div className="space-y-1">
+                  <h1 className="text-2xl md:text-5xl lg:text-6xl font-extrabold tracking-tight text-white leading-tight drop-shadow-[0_4px_12px_rgba(0,0,0,0.9)]">
                     {currentMovie.title}
                   </h1>
                   
                   {currentMovie.originalTitle && (
-                    <h2 className="text-lg md:text-2xl font-semibold text-[#fbc02d] drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)] opacity-90">
+                    <h2 className="text-base md:text-xl font-semibold text-[#fbc02d]/90 drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]">
                       {currentMovie.originalTitle}
                     </h2>
                   )}
                </div>
 
-               <div className="flex items-center flex-wrap justify-center md:justify-start gap-2 md:gap-3">
-                 <span className="flex items-center gap-1.5 px-3 py-1 bg-black/40 border border-[#fbc02d]/50 rounded-md backdrop-blur-md text-sm font-bold text-[#fbc02d]">
-                    <Star size={14} fill="currentColor" /> {currentMovie.imdbRating || currentMovie.tmdbRating || "8.5"}
+               <div className="flex items-center flex-wrap justify-center md:justify-start gap-1.5 md:gap-2">
+                 <span className="flex items-center gap-1 px-2 py-0.5 bg-black/40 border border-[#fbc02d]/30 rounded backdrop-blur-md text-[10px] md:text-xs font-bold text-[#fbc02d]">
+                    <Star size={10} fill="currentColor" /> {currentMovie.imdbRating || currentMovie.tmdbRating || "8.5"}
                  </span>
-                 <span className="px-3 py-1 bg-black/40 border border-white/20 rounded-md backdrop-blur-md text-sm font-bold text-white uppercase">{currentMovie.quality || "HD"}</span>
-                 <span className="px-3 py-1 bg-[#d32f2f]/80 border border-[#d32f2f] rounded-md backdrop-blur-md text-sm font-bold text-white uppercase">{currentMovie.status || "Update"}</span>
+                 <span className="px-2 py-0.5 bg-black/40 border border-white/10 rounded backdrop-blur-md text-[10px] md:text-xs font-bold text-white uppercase">{currentMovie.quality || "HD"}</span>
+                 <span className="px-2 py-0.5 bg-black/40 border border-white/10 rounded backdrop-blur-md text-[10px] md:text-xs font-bold text-white whitespace-nowrap">{(currentMovie as any).type || "Phim"}</span>
+                 <span className="px-2 py-0.5 bg-[#d32f2f]/60 border border-[#d32f2f]/40 rounded backdrop-blur-md text-[10px] md:text-xs font-bold text-white uppercase whitespace-nowrap">
+                    {(currentMovie as any).episodeCurrent && (currentMovie as any).episodeTotal 
+                      ? `${(currentMovie as any).episodeCurrent}/${(currentMovie as any).episodeTotal}` 
+                      : currentMovie.status || "Full"}
+                 </span>
+                 <span className="px-2 py-0.5 bg-white/10 border border-white/10 rounded backdrop-blur-md text-[10px] md:text-xs font-bold text-white/90">{(currentMovie as any).age || "13+"}</span>
                  {currentMovie.year && (
-                   <span className="px-3 py-1 bg-black/40 border border-white/20 rounded-md backdrop-blur-md text-sm font-medium text-white/90">{currentMovie.year}</span>
+                   <span className="px-2 py-0.5 bg-black/40 border border-white/10 rounded backdrop-blur-md text-[10px] md:text-xs font-medium text-white/80">{currentMovie.year}</span>
                  )}
                </div>
 
                {currentMovie.overview && (
-                 <p className="hidden md:line-clamp-2 text-white/80 text-lg font-medium max-w-2xl drop-shadow-md">
+                 <p className="hidden md:line-clamp-2 text-white/70 text-base font-medium max-w-2xl drop-shadow-md leading-relaxed">
                    {currentMovie.overview}
                  </p>
                )}

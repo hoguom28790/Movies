@@ -19,6 +19,11 @@ export interface Movie {
   content?: string;
   category?: { name: string; slug: string }[];
   country?: { name: string; slug: string }[];
+  lang?: string;
+  type?: string;
+  age?: string;
+  episodeCurrent?: string;
+  episodeTotal?: string;
   source: 'nguonc' | 'kkphim' | 'ophim' | 'topxx' | 'avdb' | 'vsmov';
 }
 
