@@ -140,34 +140,38 @@ export default async function Home() {
   const trending = trendingData.status === "fulfilled" ? trendingData.value?.results || [] : [];
 
   const { enrichMovies } = await import("@/services/movieEnricher");
-  const [heroEnriched, gridEnriched] = await Promise.all([
-    enrichMovies(latest.items.slice(0, 10)),
-    enrichMovies(latest.items.slice(10, 30))
-  ]);
- 
-  const filterTrailers = (list: any[]) => list.filter(m => {
-    const s = (m.status || m.episodeCurrent || "").toLowerCase();
+
+  const isTrailer = (m: any) => {
+    const s = (m.status || m.episode_current || m.episodeCurrent || "").toLowerCase();
     const q = (m.quality || "").toLowerCase();
     const t = (m.title || "").toLowerCase();
     const sl = (m.slug || "").toLowerCase();
+    const o = (m.overview || "").toLowerCase();
     
-    const isTrailer = 
+    return (
       s.includes("trailer") || 
       q.includes("trailer") || 
       t.includes("trailer") ||
       sl.includes("trailer") ||
+      o.includes("xem trailer") ||
+      s.startsWith("0/") ||
+      s === "0" ||
+      s.includes("tập 0") ||
       s.includes("coming soon") || 
       s.includes("sắp chiếu") || 
-      s.includes("tập 0") ||
-      s.includes("0/0") ||
-      s.includes("0/1") ||
-      s.includes("chưa phát sóng");
-      
-    return !isTrailer;
-  });
+      s.includes("chưa phát sóng")
+    );
+  };
 
-  const heroMovies = filterTrailers(heroEnriched).slice(0, 6);
-  const displayGrid = filterTrailers(gridEnriched);
+  const validLatestItems = latest.items.filter(m => !isTrailer(m));
+
+  const [heroEnriched, gridEnriched] = await Promise.all([
+    enrichMovies(validLatestItems.slice(0, 10)),
+    enrichMovies(validLatestItems.slice(10, 30))
+  ]);
+ 
+  const heroMovies = heroEnriched.slice(0, 6);
+  const displayGrid = gridEnriched;
 
   return (
     <div className="flex flex-col gap-12 pb-20 min-h-screen">
