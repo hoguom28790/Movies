@@ -57,7 +57,7 @@ export async function searchMovies(keyword: string, page: number = 1): Promise<M
     if (!res.ok) return { items: [], pagination: { currentPage: 1, totalPages: 1, totalItems: 0 } };
     const data: NguonCListResponse = await res.json();
     
-    if (data.status !== "success" || !data.items) {
+    if (!data.items) {
       return { items: [], pagination: { currentPage: 1, totalPages: 1, totalItems: 0 } };
     }
 
