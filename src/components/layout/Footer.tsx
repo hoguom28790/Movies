@@ -2,7 +2,7 @@
 
 import React from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { TOPXX_PATH } from "@/lib/constants";
 import { getLunarAuthPass } from "@/lib/lunar";
 
@@ -41,7 +41,20 @@ const columns = [
 
 export function Footer() {
   const pathname = usePathname();
+  const router = useRouter();
   const isXX = pathname.startsWith(`/${TOPXX_PATH}`);
+
+  const handleSecretEntry = (e: React.MouseEvent) => {
+    e.preventDefault();
+    const pass = getLunarAuthPass();
+    const input = prompt("Nhập mã xác thực rạp phim (DDMMYYYY):");
+    
+    if (input === pass) {
+      router.push(`/${TOPXX_PATH}`);
+    } else if (input !== null) {
+      alert("Mã xác thực không chính xác.");
+    }
+  };
 
   return (
     <footer className="w-full bg-background/80 backdrop-blur-3xl border-t border-foreground/5 py-12 md:py-20 mt-12 sm:mt-24 no-theme-transition">
@@ -87,12 +100,12 @@ export function Footer() {
         <div className="flex flex-col md:flex-row items-center justify-between gap-8 border-t border-foreground/5 pt-10">
           <div className="text-[10px] font-bold text-foreground/20 uppercase tracking-[0.3em] flex items-center gap-2">
             <span>© 2026 HỒ PHIM.</span>
-            <Link 
-              href={`/${TOPXX_PATH}`} 
+            <span 
+              onClick={handleSecretEntry}
               className="hover:text-primary transition-colors cursor-pointer select-none"
             >
               ALL RIGHTS RESERVED.
-            </Link>
+            </span>
           </div>
           
           <div className="flex items-center gap-6">
