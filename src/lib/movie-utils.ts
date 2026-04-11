@@ -36,17 +36,16 @@ export function getPosterUrl(path: string | null | undefined, source?: MovieSour
     case 'ophim':
       return `https://img.ophim1.com/uploads/movies/${cleanPath}`;
     case 'kkphim':
-      return `https://phimapi.com/uploads/movies/${cleanPath}`;
+      return `https://phimimg.com/uploads/movies/${cleanPath}`;
     case 'nguonc':
       return `https://phim.nguonc.com/uploads/movies/${cleanPath}`;
     case 'vsmov':
       return `https://vsmov.com/uploads/movies/${cleanPath}`;
     case 'topxx':
     case 'avdb':
-      // TopXX/AVDB usually provide absolute URLs, but if they don't:
       return path; 
     default:
-      return `https://img.ophim1.com/uploads/movies/${cleanPath}`;
+      return path.startsWith('http') ? path : `https://img.ophim1.com/uploads/movies/${cleanPath}`;
   }
 }
 

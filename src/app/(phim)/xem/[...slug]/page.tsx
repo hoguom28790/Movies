@@ -141,6 +141,18 @@ export default async function WatchPage({
 
     let [movieRes, initialTmdbSearch] = await Promise.all([movieResPromise, initialTmdbSearchPromise]);
 
+    // SMART SLUG FALLBACK: If direct slug failed, try the cleaned slug (minus year) before giving up
+    if (!movieRes?.sources?.length) {
+      const cleanSlug = movieSlug.split('-').filter(word => !/^\d{4}$/.test(word)).join('-');
+      if (cleanSlug !== movieSlug) {
+        console.log(`[WatchPage] Direct slug failed, trying cleaned slug: ${cleanSlug}`);
+        const cleanMovieRes = await getMovieDetails(cleanSlug);
+        if (cleanMovieRes?.sources?.length) {
+          movieRes = cleanMovieRes;
+        }
+      }
+    }
+
     let sources = movieRes?.sources || [];
     let currentSource = sources.find((s: any) => s.id === (querySource || src)) || sources[0];
     let data = currentSource?.data;

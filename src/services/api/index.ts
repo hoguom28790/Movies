@@ -23,7 +23,7 @@ const OPHIM_MIRRORS = [
 const fetchSafe = async <T = any>(url: string, headers: Record<string, string> = {}, sourceId?: string): Promise<T | null> => {
   const tryFetch = async (targetUrl: string): Promise<T | null> => {
     const controller = new AbortController();
-    const timeoutMs = (headers as any)._timeout || 3500;
+    const timeoutMs = (headers as any)._timeout || 5000;
     const timeoutId = setTimeout(() => controller.abort(), timeoutMs); 
     try {
       const res = await fetch(targetUrl, { 
@@ -252,23 +252,28 @@ export async function getMovieDetails(slug: string): Promise<{ sources: UnifiedM
 
   // SMART SEARCH FALLBACK: If NO sources found by direct slug, try searching by title (extracted from slug)
   if (availableSources.length === 0 && !isPossiblyTopXX) {
-    const titleQuery = slug.split('-').join(' ');
+    const titleQuery = slug
+      .split('-')
+      .filter(word => !/^\d{4}$/.test(word)) // Remove year from search query for better matching
+      .join(' ');
+      
     console.log(`[API] Smart Fallback Search for: "${titleQuery}"`);
     
     try {
       const searchRes = await searchMovies(titleQuery, 1);
       if (searchRes.items.length > 0) {
-        // Find best match (compare slug or title)
+        // Find best match (compare slug or title) using normalized comparison
+        const targetNormalized = normalizeTitle(titleQuery);
         const bestMatch = searchRes.items.find((item: any) => {
-          const itemTitle = (item.title || "").toLowerCase();
-          const itemOrigin = (item.originalTitle || "").toLowerCase();
-          const target = titleQuery.toLowerCase();
-          return itemTitle.includes(target) || target.includes(itemTitle) || 
-                 itemOrigin.includes(target) || target.includes(itemOrigin);
+          const itemTitleNorm = normalizeTitle(item.title || "");
+          const itemOriginNorm = normalizeTitle(item.originalTitle || "");
+          
+          return itemTitleNorm.includes(targetNormalized) || targetNormalized.includes(itemTitleNorm) || 
+                 itemOriginNorm.includes(targetNormalized) || targetNormalized.includes(itemOriginNorm);
         }) || searchRes.items[0];
 
         if (bestMatch && bestMatch.slug !== slug) {
-          console.log(`[API] Found alternative slug for "${slug}": ${bestMatch.slug}`);
+          console.log(`[API] Found alternative slug for "${slug}": ${bestMatch.slug} (Match: ${bestMatch.title})`);
           // Pass a timeout hint to prevent deep recursion hangs
           const altRes = await getMovieDetails(bestMatch.slug);
           if (altRes) return altRes;
