@@ -7,6 +7,7 @@ import { usePathname, useSearchParams } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
 import { getLunarAuthPass } from "@/lib/lunar";
 import { TOPXX_PATH } from "@/lib/constants";
+import { ThemeToggle } from "@/components/theme-toggle";
  
 const GENRES: { name: string; slug?: string; href?: string }[] = [
   { name: "Hành Động", slug: "hanh-dong" },
@@ -311,6 +312,12 @@ export function MobileMenu({ mode }: MobileMenuProps) {
  
           {/* Footer Info */}
           <div className="pt-8 pb-12 border-t border-white/[0.06] space-y-3">
+            {/* Theme Toggle */}
+            <div className="flex items-center justify-between p-4 rounded-xl bg-white/5 border border-white/[0.06]">
+              <span className="font-bold text-[14px] text-white/80">Giao diện</span>
+              <ThemeToggle />
+            </div>
+
             <Link 
               href={isComicSection ? "/truyen/yeu-thich" : "/yeu-thich"}
               className="flex items-center gap-3 p-4 rounded-xl bg-primary/10 border border-primary/20 text-primary"

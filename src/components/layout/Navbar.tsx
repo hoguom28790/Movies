@@ -59,9 +59,10 @@ export function Navbar({ mode: initialMode }: NavbarProps) {
         animate={isHidden ? "hidden" : "visible"}
         transition={{ duration: 0.4, ease: "easeInOut" }}
         className={cn(
-          "fixed top-0 z-[60] w-full apple-transition",
-          "backdrop-blur-2xl bg-background/80",
-          isScrolled ? "apple-nav-separator shadow-sm" : ""
+          "fixed top-0 z-[60] w-full transition-all duration-500",
+          isScrolled
+            ? "backdrop-blur-2xl bg-background/90 border-b border-foreground/[0.06] shadow-sm"
+            : "bg-gradient-to-b from-black/40 via-black/10 to-transparent backdrop-blur-none border-b border-transparent"
         )}
       >
         <div className="mx-auto px-4 md:px-8 lg:px-12 h-16 flex items-center justify-between gap-4">
@@ -77,8 +78,9 @@ export function Navbar({ mode: initialMode }: NavbarProps) {
                </div>
              )}
              <span className={cn(
-               "text-lg font-bold tracking-tight text-foreground",
-               "font-sans" // Use SF Pro
+               "text-lg font-bold tracking-tight",
+               "font-sans",
+               isScrolled ? "text-foreground" : "text-white"
              )}>
                 {isComicSection ? "Hồ Truyện" : "Hồ Phim"}
              </span>
@@ -121,21 +123,21 @@ export function Navbar({ mode: initialMode }: NavbarProps) {
           <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
             <button
               onClick={() => setIsSearchOpen(true)}
-              className="p-2 rounded-full text-foreground-secondary hover:bg-surface transition-colors md:hidden"
+              className={cn("p-2 rounded-full transition-colors md:hidden", isScrolled ? "text-foreground-secondary hover:bg-surface" : "text-white/80 hover:text-white hover:bg-white/10")}
             >
               <Search size={20} />
             </button>
 
             <Link
               href={isTopXXSection ? `/${TOPXX_PATH}/lich-su` : (isComicSection ? "/truyen/lich-su" : "/lich-su")}
-              className="p-2 rounded-full text-foreground-secondary hover:bg-surface transition-colors"
+              className={cn("p-2 rounded-full transition-colors", isScrolled ? "text-foreground-secondary hover:bg-surface" : "text-white/80 hover:text-white hover:bg-white/10")}
             >
               <HistoryIcon size={20} />
             </Link>
 
             <Link
               href={isTopXXSection ? `/${TOPXX_PATH}/yeu-thich` : (isComicSection ? "/truyen/yeu-thich" : "/yeu-thich")}
-              className="p-2 rounded-full text-foreground-secondary hover:bg-surface transition-colors"
+              className={cn("p-2 rounded-full transition-colors", isScrolled ? "text-foreground-secondary hover:bg-surface" : "text-white/80 hover:text-white hover:bg-white/10")}
             >
               <Heart 
                 size={20} 
