@@ -11,7 +11,7 @@ import { TOPXX_PATH } from "@/lib/constants";
 
 import { Suspense } from "react";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 1800; // 30 minutes ISR cache
 
 export const metadata = {
   title: "TopXX - Kho Phim Cao Cấp",

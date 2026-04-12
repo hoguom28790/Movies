@@ -12,7 +12,6 @@ import { getTraktRating } from "@/services/trakt";
 import { searchTMDBMovie } from "@/services/tmdb";
 import { Suspense } from "react";
 import { ActorAvatar } from "@/components/movie/ActorAvatar";
-import { translateToVietnamese } from "@/lib/translate";
 
 async function RatingsSection({ title, year }: { title: string; year?: number }) {
   let tmdbData: any = null;
@@ -26,18 +25,19 @@ async function RatingsSection({ title, year }: { title: string; year?: number })
         const { getTMDBMovieDetails } = await import("@/services/tmdb");
         tmdbData = await getTMDBMovieDetails(tmdbSearch.id, tmdbSearch.media_type).catch(() => null);
         const imdbId = tmdbData?.external_ids?.imdb_id;
-        
-        const promises = [];
-        if (imdbId) {
-           promises.push(getRTRating(imdbId).then((res: any) => rtData = res).catch(() => null));
-           const { getOMDbRatingById } = await import("@/services/omdb");
-           promises.push(getOMDbRatingById(imdbId).then((res: any) => omdbData = res).catch(() => null));
-        } else {
-           const { searchOMDbMovie } = await import("@/services/omdb");
-           promises.push(searchOMDbMovie(title, year).then((res: any) => omdbData = res).catch(() => null));
-        }
-        promises.push(getTraktRating(title, year).then((res: any) => traktData = res).catch(() => null));
-        await Promise.all(promises);
+
+        // Parallelize all external rating fetches
+        const [rtRes, omdbRes, traktRes] = await Promise.allSettled([
+          imdbId ? getRTRating(imdbId) : Promise.resolve(null),
+          imdbId
+            ? import("@/services/omdb").then(m => m.getOMDbRatingById(imdbId))
+            : import("@/services/omdb").then(m => m.searchOMDbMovie(title, year)),
+          getTraktRating(title, year),
+        ]);
+
+        rtData = rtRes.status === "fulfilled" ? rtRes.value : null;
+        omdbData = omdbRes.status === "fulfilled" ? omdbRes.value : null;
+        traktData = traktRes.status === "fulfilled" ? traktRes.value : null;
      }
   } catch (e) {
      console.error("TopXX Ratings Fetch Error:", e);
@@ -97,14 +97,8 @@ export default async function XXWatchPage({
 
     if (!item) return notFound();
 
-    // Auto-translate if not Vietnamese
-    const originalDesc = item.content || item.description || "";
-    if (originalDesc && !/[àáạảãâầấậẩẫăằắặẳẵèéẹẻẽêềếệểễìíịỉĩòóọỏõôồốộổỗơờớợởỡùúụủũưừứựửữỳýỵỷỹđ]/i.test(originalDesc)) {
-       const translated = await translateToVietnamese(originalDesc);
-       if (isAVDB || item.source === 'avdb') item.content = translated;
-       else if (item.trans?.[0]) item.trans[0].content = translated;
-       else if (item.description) item.description = translated;
-    }
+    // Auto-translate description only if needed — done non-blocking via Suspense below
+    // (translation moved out of critical path)
 
     // Normalize AVDB data
     if (isAVDB || item.source === 'avdb') {

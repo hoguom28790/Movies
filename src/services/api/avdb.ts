@@ -4,7 +4,7 @@ import { Movie, MovieListResponse } from "@/types/movie";
 const BASE_URL = "https://avdbapi.com/api.php/provide/vod?ac=detail&at=json";
 
 // Helper for timeout-safe fetch
-async function fetchWithTimeout(url: string, options: RequestInit = {}, timeout = 10000) {
+async function fetchWithTimeout(url: string, options: RequestInit = {}, timeout = 4000) {
   const controller = new AbortController();
   const id = setTimeout(() => controller.abort(), timeout);
   try {
@@ -21,7 +21,7 @@ async function fetchWithTimeout(url: string, options: RequestInit = {}, timeout 
 }
 
 // Helper for retry logic
-async function fetchWithRetry(url: string, options: RequestInit = {}, timeout = 10000, retries = 2, delay = 800) {
+async function fetchWithRetry(url: string, options: RequestInit = {}, timeout = 4000, retries = 1, delay = 500) {
   let lastError: Error | null = null;
   for (let i = 0; i < retries + 1; i++) {
     try {
@@ -65,7 +65,7 @@ export async function getAVDBMovies(page = 1, typeId?: number, keyword?: string,
   if (actor) url += `&vod_actor=${encodeURIComponent(actor)}`; // Help says vod_actor
 
   try {
-    const res = await fetchWithRetry(url, { next: { revalidate: 300 } } as any, 10000, 2, 800);
+    const res = await fetchWithRetry(url, { next: { revalidate: 300 } } as any, 4000, 1, 500);
     if (!res.ok) return { items: [], pagination: { totalItems: 0, totalPages: 1, currentPage: 1 } };
     
     let data: AVDBResponse;
@@ -110,7 +110,7 @@ export async function getAVDBMovies(page = 1, typeId?: number, keyword?: string,
 export async function getAVDBDetails(id: string) {
   const url = `${BASE_URL}&ids=${id}`;
   try {
-    const res = await fetchWithTimeout(url, { next: { revalidate: 300 } }, 10000);
+    const res = await fetchWithTimeout(url, { next: { revalidate: 300 } }, 4000);
     if (!res.ok) return null;
     
     const data: AVDBResponse = await res.json();

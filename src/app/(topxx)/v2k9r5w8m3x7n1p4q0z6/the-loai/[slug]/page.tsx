@@ -2,7 +2,7 @@ import { getTopXXMovies } from "@/services/api/topxx";
 import { MovieGrid } from "@/components/movie/MovieGrid";
 import { notFound } from "next/navigation";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 1800; // 30 minutes ISR cache
 
 export default async function XXCategoryPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;

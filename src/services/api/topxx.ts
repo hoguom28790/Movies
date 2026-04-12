@@ -161,7 +161,7 @@ async function scrapeTopXXDetails(slugOrId: string) {
 }
 
 // Helper for timeout-safe fetch
-async function fetchWithTimeout(url: string, options: RequestInit = {}, timeout = 10000) {
+async function fetchWithTimeout(url: string, options: RequestInit = {}, timeout = 4000) {
   const controller = new AbortController();
   const id = setTimeout(() => controller.abort(), timeout);
   try {
@@ -178,7 +178,7 @@ async function fetchWithTimeout(url: string, options: RequestInit = {}, timeout 
 }
 
 // Retry wrapper
-async function fetchWithRetry(url: string, options: RequestInit = {}, timeout = 10000, retries = 2, delay = 800) {
+async function fetchWithRetry(url: string, options: RequestInit = {}, timeout = 4000, retries = 1, delay = 500) {
   for (let i = 0; i < retries; i++) {
     try {
       const res = await fetchWithTimeout(url, options, timeout);
@@ -481,7 +481,7 @@ export async function searchTopXXMovies(keyword: string, page: number = 1, isCat
   try {
     console.log(`[TopXX Search] Initiating parallel search for: "${normalizedQuery}" (CategoryMode: ${isCategorySearch})`);
 
-    const [topxxRes, topxxActorRes, topxxScrapedRes] = await Promise.allSettled([
+    const [topxxRes, topxxActorRes] = await Promise.allSettled([
       fetchWithRetry(`${BASE_URL}/movies/latest?page=${page}`, { headers: DEFAULT_HEADERS, next: { revalidate: 300 } } as any, SEARCH_TIMEOUT, 0)
         .then(async r => {
           if (!r.ok) return null;
@@ -512,8 +512,7 @@ export async function searchTopXXMovies(keyword: string, page: number = 1, isCat
             return { ...json, extraMovies };
           }
           return json;
-        }),
-      scrapeTopXXSearch(normalizedQuery)
+        })
     ]);
 
     const movieMap = new Map<string, Movie>();
@@ -567,16 +566,17 @@ export async function searchTopXXMovies(keyword: string, page: number = 1, isCat
       });
     }
 
-    if (topxxScrapedRes.status === "fulfilled" && Array.isArray(topxxScrapedRes.value)) {
-      topxxScrapedRes.value.forEach((item: ScrapedTopXX) => {
-        const m = mapTopXXToMovie(item);
-        if (!movieMap.has(m.id)) {
-          movieMap.set(m.id, m);
-        }
-      });
-      if (totalItems === 0) {
-        totalItems = Math.max(totalItems, topxxScrapedRes.value.length);
-      }
+    if (movieMap.size === 0 && !isCategorySearch) {
+       const topxxScrapedRes = await scrapeTopXXSearch(normalizedQuery).catch(() => []);
+       if (topxxScrapedRes.length > 0) {
+         topxxScrapedRes.forEach((item: ScrapedTopXX) => {
+           const m = mapTopXXToMovie(item);
+           if (!movieMap.has(m.id)) {
+             movieMap.set(m.id, m);
+           }
+         });
+         if (totalItems === 0) totalItems = topxxScrapedRes.length;
+       }
     }
 
     const finalItems = Array.from(movieMap.values());
