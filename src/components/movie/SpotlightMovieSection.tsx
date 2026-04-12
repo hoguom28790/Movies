@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useCallback, useRef } from "react";
+import React, { useState, useCallback, useRef, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { Play, ChevronRight, Star } from "lucide-react";
@@ -21,7 +21,6 @@ export function SpotlightMovieSection({
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [isAnimating, setIsAnimating] = useState(false);
   const [imgError, setImgError] = useState(false);
-  const intervalRef = useRef<NodeJS.Timeout | null>(null);
   const thumbnailRef = useRef<HTMLDivElement>(null);
 
   const currentMovie = movies[selectedIndex];
@@ -39,30 +38,7 @@ export function SpotlightMovieSection({
     [selectedIndex]
   );
 
-  const advance = useCallback(() => {
-    setIsAnimating(true);
-    setImgError(false);
-    setTimeout(() => {
-      setSelectedIndex((prev) => (prev + 1) % movies.length);
-      setIsAnimating(false);
-    }, 250);
-  }, [movies.length]);
-
-  // Auto-advance every 5 seconds
-  const resetInterval = useCallback(() => {
-    if (intervalRef.current) clearInterval(intervalRef.current);
-    intervalRef.current = setInterval(advance, 5000);
-  }, [advance]);
-
-  useEffect(() => {
-    if (movies.length <= 1) return;
-    resetInterval();
-    return () => {
-      if (intervalRef.current) clearInterval(intervalRef.current);
-    };
-  }, [resetInterval, movies.length]);
-
-  // Scroll thumbnail into view
+  // Scroll active thumbnail into view
   useEffect(() => {
     if (!thumbnailRef.current) return;
     const thumb = thumbnailRef.current.children[selectedIndex] as HTMLElement;
@@ -151,7 +127,7 @@ export function SpotlightMovieSection({
             {/* Title */}
             <h3
               className={cn(
-                "text-2xl md:text-3xl lg:text-4xl font-bold text-white mb-1 line-clamp-2 tracking-tight leading-tight",
+                "text-2xl md:text-3xl lg:text-4xl font-bold text-white mb-1 line-clamp-2 tracking-tight leading-tight transition-opacity duration-300",
                 isAnimating ? "opacity-0" : "opacity-100"
               )}
             >
@@ -197,19 +173,10 @@ export function SpotlightMovieSection({
               </Link>
             </div>
           </div>
-
-          {/* Progress bar */}
-          <div className="absolute bottom-0 left-0 right-0 h-[3px] bg-white/10 z-20">
-            <div
-              key={`progress-${selectedIndex}`}
-              className="h-full bg-primary origin-left"
-              style={{ animation: "progressBar 5s linear forwards" }}
-            />
-          </div>
         </div>
       </div>
 
-      {/* Thumbnail Strip */}
+      {/* Thumbnail Strip — manual selection only */}
       <div
         ref={thumbnailRef}
         className="flex gap-3 overflow-x-auto no-scrollbar pb-2 px-6 lg:px-12 scroll-smooth"
@@ -217,10 +184,7 @@ export function SpotlightMovieSection({
         {movies.map((movie, idx) => (
           <button
             key={movie.slug}
-            onClick={() => {
-              selectMovie(idx);
-              resetInterval();
-            }}
+            onClick={() => selectMovie(idx)}
             className={cn(
               "flex-shrink-0 relative rounded-xl overflow-hidden transition-all duration-300 focus:outline-none",
               "w-[80px] md:w-[100px] aspect-[2/3]",
@@ -242,13 +206,6 @@ export function SpotlightMovieSection({
           </button>
         ))}
       </div>
-
-      <style jsx global>{`
-        @keyframes progressBar {
-          from { width: 0%; }
-          to { width: 100%; }
-        }
-      `}</style>
     </section>
   );
 }

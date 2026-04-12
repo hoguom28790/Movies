@@ -48,10 +48,10 @@ export default async function Home() {
 
   const validLatestItems = latest.items.filter((m) => !isTrailer(m));
 
-  // Hero uses items 0-5, spotlight uses items 6-15 (skip first 6)
+  // Hero uses items 0-5, spotlight uses items 6-25 (skip first 6, show 20)
   const [heroEnriched, spotlightEnriched, phimLeEnriched, phimBoEnriched] = await Promise.all([
     enrichMovies(validLatestItems.slice(0, 6)),
-    enrichMovies(validLatestItems.slice(6, 16)),
+    enrichMovies(validLatestItems.slice(6, 26)),
     enrichMovies(phimLe.items.slice(0, 10)),
     enrichMovies(phimBo.items.slice(0, 10)),
   ]);
