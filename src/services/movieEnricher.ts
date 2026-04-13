@@ -1,55 +1,51 @@
 import { Movie } from "@/types/movie";
 import { searchTMDBMovie, getTMDBImageUrl } from "./tmdb";
 
+// Request-level cache to prevent duplicate enrichment in the same tree
+const enrichmentCache = new Map<string, Movie>();
+
 export async function enrichMovies(movies: Movie[]): Promise<Movie[]> {
-  const enriched = await Promise.all(
-    movies.map(async (movie) => {
-      let currentMovie = { ...movie };
-      try {
-        // High-Quality TMDB Poster/Backdrop Overrider for Homepage optimization
-        
-        let tmdbSearch = null;
+  const enrichSingle = async (movie: Movie): Promise<Movie> => {
+    const cacheKey = `${movie.slug}_${movie.year || 'unknown'}`;
+    if (enrichmentCache.has(cacheKey)) return enrichmentCache.get(cacheKey)!;
 
-        const yearMatch = currentMovie.year ? parseInt(currentMovie.year) : undefined;
-        const searchName = currentMovie.title;
-        const searchOrigin = currentMovie.originalTitle || "";
-
-        // Strategy 1: Search with Year
-        if (yearMatch) {
-          tmdbSearch = await searchTMDBMovie(searchName, yearMatch);
-          if (!tmdbSearch && searchOrigin) {
-            tmdbSearch = await searchTMDBMovie(searchOrigin, yearMatch);
-          }
-        }
-          
-        // Strategy 2: Search without Year (Fuzzy fallback)
-        if (!tmdbSearch) {
-          tmdbSearch = await searchTMDBMovie(searchName);
-        }
-        if (!tmdbSearch && searchOrigin) {
-          tmdbSearch = await searchTMDBMovie(searchOrigin);
-        }
-          
-        if (tmdbSearch) {
-          const tmdbPoster = getTMDBImageUrl(tmdbSearch.poster_path || null, 'w500');
-          const tmdbBackdrop = getTMDBImageUrl(tmdbSearch.backdrop_path || null, 'w1280');
-
-          return {
-            ...currentMovie,
-            imdbRating: tmdbSearch?.vote_average || currentMovie.imdbRating || 0,
-            posterUrl: tmdbPoster || currentMovie.posterUrl || "",
-            thumbUrl: tmdbBackdrop || tmdbPoster || currentMovie.thumbUrl || "",
-            overview: tmdbSearch?.overview || currentMovie.overview || "",
-          };
-        }
-
-        return currentMovie;
-      } catch (error) {
-        console.error(`Error enriching movie ${movie.slug}:`, error);
-        return movie;
+    try {
+      const yearMatch = movie.year ? parseInt(movie.year) : undefined;
+      const searchTasks = [
+        searchTMDBMovie(movie.title, yearMatch)
+      ];
+      
+      if (movie.originalTitle && movie.originalTitle !== movie.title) {
+        searchTasks.push(searchTMDBMovie(movie.originalTitle, yearMatch));
       }
-    })
-  );
 
-  return enriched;
+      // Try title matches first, then origin matches in parallel
+      const results = await Promise.all(searchTasks);
+      const tmdbSearch = results[0] || results[1];
+          
+      if (tmdbSearch) {
+        const tmdbPoster = getTMDBImageUrl(tmdbSearch.poster_path || null, 'w500');
+        const tmdbBackdrop = getTMDBImageUrl(tmdbSearch.backdrop_path || null, 'w1280');
+
+        const enrichedMovie = {
+          ...movie,
+          imdbRating: tmdbSearch?.vote_average || movie.imdbRating || 0,
+          posterUrl: tmdbPoster || movie.posterUrl || "",
+          thumbUrl: tmdbBackdrop || tmdbPoster || movie.thumbUrl || "",
+          overview: tmdbSearch?.overview || movie.overview || "",
+        };
+        
+        enrichmentCache.set(cacheKey, enrichedMovie);
+        return enrichedMovie;
+      }
+
+      enrichmentCache.set(cacheKey, movie);
+      return movie;
+    } catch (error) {
+      console.error(`Error enriching movie ${movie.slug}:`, error);
+      return movie;
+    }
+  };
+
+  return Promise.all(movies.map(enrichSingle));
 }

@@ -4,6 +4,7 @@ import React, { useState, useCallback, useRef, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { Play, ChevronRight, Star } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import type { Movie } from "@/types/movie";
 import { cn } from "@/lib/utils";
 
@@ -19,24 +20,16 @@ export function SpotlightMovieSection({
   viewAllHref = "/phim-moi",
 }: SpotlightMovieSectionProps) {
   const [selectedIndex, setSelectedIndex] = useState(0);
-  const [isAnimating, setIsAnimating] = useState(false);
   const [imgError, setImgError] = useState(false);
   const thumbnailRef = useRef<HTMLDivElement>(null);
 
   const currentMovie = movies[selectedIndex];
 
-  const selectMovie = useCallback(
-    (index: number) => {
-      if (index === selectedIndex) return;
-      setIsAnimating(true);
-      setImgError(false);
-      setTimeout(() => {
-        setSelectedIndex(index);
-        setIsAnimating(false);
-      }, 250);
-    },
-    [selectedIndex]
-  );
+  const selectMovie = useCallback((index: number) => {
+    if (index === selectedIndex) return;
+    setImgError(false);
+    setSelectedIndex(index);
+  }, [selectedIndex]);
 
   // Scroll active thumbnail into view
   useEffect(() => {
@@ -71,112 +64,107 @@ export function SpotlightMovieSection({
 
       {/* Main Spotlight Card */}
       <div className="px-6 lg:px-12">
-        <div className="relative rounded-2xl overflow-hidden bg-surface border border-foreground/[0.05] shadow-2xl">
-          {/* Backdrop */}
-          <div className="absolute inset-0 z-0">
-            <Image
+        <div className="relative rounded-2xl overflow-hidden bg-surface border border-foreground/[0.05] shadow-2xl min-h-[260px] md:min-h-[380px] lg:min-h-[420px]">
+          <AnimatePresence mode="wait">
+            <motion.div
               key={currentMovie.slug}
-              src={thumbSrc || ""}
-              alt={currentMovie.title}
-              fill
-              sizes="100vw"
-              className={cn(
-                "object-cover transition-all duration-500",
-                isAnimating ? "opacity-0 scale-[1.03]" : "opacity-100 scale-100"
-              )}
-              priority
-              onError={() => setImgError(true)}
-            />
-            {/* Gradient overlays */}
-            <div className="absolute inset-0 bg-gradient-to-r from-black/95 via-black/70 to-black/20" />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-          </div>
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.5, ease: "easeInOut" }}
+              className="absolute inset-0 z-0"
+            >
+              <Image
+                src={thumbSrc || ""}
+                alt={currentMovie.title}
+                fill
+                sizes="100vw"
+                className="object-cover"
+                priority
+                onError={() => setImgError(true)}
+              />
+              <div className="absolute inset-0 bg-gradient-to-r from-black/95 via-black/70 to-black/20" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+            </motion.div>
+          </AnimatePresence>
 
           {/* Content Panel */}
-          <div
-            className={cn(
-              "relative z-10 p-6 md:p-10 lg:p-12 flex flex-col justify-center min-h-[260px] md:min-h-[380px] lg:min-h-[420px] max-w-xl transition-all duration-300",
-              isAnimating ? "opacity-0 translate-y-3" : "opacity-100 translate-y-0"
-            )}
-          >
-            {/* Badges */}
-            <div className="flex flex-wrap gap-1.5 mb-4">
-              {rating && (
-                <span className="flex items-center gap-1 px-2.5 py-1 bg-yellow-500/20 text-yellow-400 text-[10px] font-black rounded-full border border-yellow-500/20">
-                  <Star className="w-2.5 h-2.5 fill-current" />
-                  {typeof rating === "number" ? rating.toFixed(1) : rating}
-                </span>
-              )}
-              {currentMovie.quality && (
-                <span className="px-2.5 py-1 bg-primary/20 text-primary text-[10px] font-black uppercase tracking-wider rounded-full border border-primary/20">
-                  {currentMovie.quality}
-                </span>
-              )}
-              {currentMovie.year && (
-                <span className="px-2.5 py-1 bg-white/10 text-white/70 text-[10px] font-bold rounded-full">
-                  {currentMovie.year}
-                </span>
-              )}
-              {currentMovie.status && !currentMovie.status.toLowerCase().includes("full") && (
-                <span className="px-2.5 py-1 bg-white/10 text-white/70 text-[10px] font-bold rounded-full">
-                  {currentMovie.status}
-                </span>
-              )}
-            </div>
+          <div className="relative z-10 p-6 md:p-10 lg:p-12 flex flex-col justify-center h-full max-w-xl">
+             <AnimatePresence mode="wait">
+               <motion.div
+                 key={currentMovie.slug}
+                 initial={{ opacity: 0, y: 10 }}
+                 animate={{ opacity: 1, y: 0 }}
+                 exit={{ opacity: 0, y: -10 }}
+                 transition={{ duration: 0.4, delay: 0.1 }}
+               >
+                {/* Badges */}
+                <div className="flex flex-wrap gap-1.5 mb-4">
+                  {rating && (
+                    <span className="flex items-center gap-1 px-2.5 py-1 bg-yellow-500/20 text-yellow-400 text-[10px] font-black rounded-full border border-yellow-500/20">
+                      <Star className="w-2.5 h-2.5 fill-current" />
+                      {typeof rating === "number" ? rating.toFixed(1) : rating}
+                    </span>
+                  )}
+                  {currentMovie.quality && (
+                    <span className="px-2.5 py-1 bg-primary/20 text-primary text-[10px] font-black uppercase tracking-wider rounded-full border border-primary/20">
+                      {currentMovie.quality}
+                    </span>
+                  )}
+                  {currentMovie.year && (
+                    <span className="px-2.5 py-1 bg-white/10 text-white/70 text-[10px] font-bold rounded-full">
+                      {currentMovie.year}
+                    </span>
+                  )}
+                </div>
 
-            {/* Title */}
-            <h3
-              className={cn(
-                "text-2xl md:text-3xl lg:text-4xl font-bold text-white mb-1 line-clamp-2 tracking-tight leading-tight transition-opacity duration-300",
-                isAnimating ? "opacity-0" : "opacity-100"
-              )}
-            >
-              {currentMovie.title}
-            </h3>
+                {/* Title */}
+                <h3 className="text-2xl md:text-3xl lg:text-4xl font-bold text-white mb-1 line-clamp-2 tracking-tight leading-tight">
+                  {currentMovie.title}
+                </h3>
 
-            {/* Original title */}
-            {currentMovie.originalTitle && currentMovie.originalTitle !== currentMovie.title && (
-              <p className="text-sm text-primary/80 font-medium mb-3 italic">
-                {currentMovie.originalTitle}
-              </p>
-            )}
+                {/* Original title */}
+                {currentMovie.originalTitle && currentMovie.originalTitle !== currentMovie.title && (
+                  <p className="text-sm text-primary/80 font-medium mb-3 italic">
+                    {currentMovie.originalTitle}
+                  </p>
+                )}
 
-            {/* Genres */}
-            {genres.length > 0 && (
-              <div className="flex gap-2 mb-4 flex-wrap">
-                {genres.map((g: string) => (
-                  <span
-                    key={g}
-                    className="px-2 py-0.5 rounded-full text-[10px] font-bold text-white/50 border border-white/10"
+                {/* Genres */}
+                {genres.length > 0 && (
+                  <div className="flex gap-2 mb-4 flex-wrap">
+                    {genres.map((g: string) => (
+                      <span key={g} className="px-2 py-0.5 rounded-full text-[10px] font-bold text-white/50 border border-white/10">
+                        {g}
+                      </span>
+                    ))}
+                  </div>
+                )}
+
+                {/* Overview */}
+                {currentMovie.overview && (
+                  <p className="text-sm text-white/55 line-clamp-2 mb-6 max-w-sm leading-relaxed">
+                    {currentMovie.overview}
+                  </p>
+                )}
+
+                {/* Play button */}
+                <div>
+                  <Link
+                    href={`/xem/${currentMovie.slug}`}
+                    className="inline-flex items-center gap-2.5 px-6 py-3 bg-primary text-white rounded-xl text-sm font-bold transition-all hover:bg-primary/90 active:scale-95 shadow-lg shadow-primary/30"
                   >
-                    {g}
-                  </span>
-                ))}
-              </div>
-            )}
-
-            {/* Overview */}
-            {currentMovie.overview && (
-              <p className="text-sm text-white/55 line-clamp-2 mb-6 max-w-sm leading-relaxed">
-                {currentMovie.overview}
-              </p>
-            )}
-
-            {/* Play button */}
-            <div>
-              <Link
-                href={`/xem/${currentMovie.slug}`}
-                className="inline-flex items-center gap-2.5 px-6 py-3 bg-primary text-white rounded-xl text-sm font-bold transition-all hover:bg-primary/90 active:scale-95 shadow-lg shadow-primary/30"
-              >
-                <Play size={16} fill="currentColor" strokeWidth={0} />
-                Xem ngay
-              </Link>
-            </div>
+                    <Play size={16} fill="currentColor" strokeWidth={0} />
+                    Xem ngay
+                  </Link>
+                </div>
+              </motion.div>
+            </AnimatePresence>
           </div>
         </div>
       </div>
 
-      {/* Thumbnail Strip — manual selection only */}
+      {/* Thumbnail Strip */}
       <div
         ref={thumbnailRef}
         className="flex gap-3 overflow-x-auto no-scrollbar pb-2 px-6 lg:px-12 scroll-smooth"
@@ -200,9 +188,6 @@ export function SpotlightMovieSection({
               sizes="100px"
               className="object-cover"
             />
-            {selectedIndex === idx && (
-              <div className="absolute inset-0 bg-primary/10 border-2 border-primary rounded-xl" />
-            )}
           </button>
         ))}
       </div>

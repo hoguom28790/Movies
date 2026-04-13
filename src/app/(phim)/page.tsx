@@ -9,6 +9,8 @@ import { CategoryShortcuts } from "@/components/movie/CategoryShortcuts";
 import { SpotlightMovieSection } from "@/components/movie/SpotlightMovieSection";
 import { Top10MovieRow } from "@/components/movie/Top10MovieRow";
 
+import { isTrailer } from "@/utils/movie";
+
 export default async function Home() {
   const [latestData, phimBoData, phimLeData, hoatHinhData] = await Promise.allSettled([
     getLatestMovies(1),
@@ -23,28 +25,6 @@ export default async function Home() {
   const hoatHinh = hoatHinhData.status === "fulfilled" ? hoatHinhData.value : { items: [] };
 
   const { enrichMovies } = await import("@/services/movieEnricher");
-
-  const isTrailer = (m: any) => {
-    const s = (m.status || m.episode_current || m.episodeCurrent || "").toLowerCase();
-    const q = (m.quality || "").toLowerCase();
-    const t = (m.title || "").toLowerCase();
-    const sl = (m.slug || "").toLowerCase();
-    const o = (m.overview || "").toLowerCase();
-
-    return (
-      s.includes("trailer") ||
-      q.includes("trailer") ||
-      t.includes("trailer") ||
-      sl.includes("trailer") ||
-      o.includes("xem trailer") ||
-      s.startsWith("0/") ||
-      s === "0" ||
-      s.includes("tập 0") ||
-      s.includes("coming soon") ||
-      s.includes("sắp chiếu") ||
-      s.includes("chưa phát sóng")
-    );
-  };
 
   const validLatestItems = latest.items.filter((m) => !isTrailer(m));
 

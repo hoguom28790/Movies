@@ -18,8 +18,39 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Hồ Phim - Xem Phim Miễn Phí",
-  description: "Trang web xem phim trực tuyến chất lượng cao, cập nhật liên tục. Phim bộ, phim lẻ, hoạt hình, TV Shows từ nhiều quốc gia.",
+  title: {
+    default: "Hồ Phim - Thế Giới Phim Trong Tầm Tay",
+    template: "%s | Hồ Phim"
+  },
+  description: "Cập nhật phim bộ, phim lẻ, hoạt hình và TV Shows mới nhất. Trải nghiệm xem phim mượt mà, chất lượng cao, hoàn toàn miễn phí.",
+  keywords: ["xem phim", "phim moi", "phim hay", "hophim", "streaming", "phim bo", "phim le"],
+  authors: [{ name: "Hồ Phim Team" }],
+  openGraph: {
+    type: "website",
+    locale: "vi_VN",
+    url: "https://hophim.com",
+    siteName: "Hồ Phim",
+    title: "Hồ Phim - Thế Giới Phim Trong Tầm Tay",
+    description: "Trải nghiệm rạp phim tại gia với hàng ngàn đầu phim hấp dẫn, cập nhật mỗi ngày.",
+    images: [
+      {
+        url: "/og-image.jpg",
+        width: 1200,
+        height: 630,
+        alt: "Hồ Phim",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Hồ Phim - Thế Giới Phim Trong Tầm Tay",
+    description: "Xem phim bộ, phim lẻ mới nhất miễn phí.",
+    images: ["/og-image.jpg"],
+  },
+  icons: {
+    icon: "/icon.png",
+    apple: "/icon.png",
+  },
 };
 
 export const viewport: Viewport = {

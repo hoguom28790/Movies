@@ -1,4 +1,5 @@
 import type { Movie, MovieListResponse } from "@/types/movie";
+import { isTrailer } from "@/utils/movie";
 
 const OPHIM = "https://ophim1.com/v1/api";
 const KKPHIM = "https://phimapi.com/v1/api";
@@ -67,9 +68,7 @@ export async function getCategoryMovies(type: string, page = 1): Promise<MovieLi
       return {
         items: normalizeOphim(data.data.items, data.data.APP_DOMAIN_CDN_IMAGE || "https://img.ophim.live/uploads/movies/").filter((item: Movie) => {
           if (BLOCKED_SLUGS.includes(item.slug || "")) return false;
-          const s = (item.status || "").toLowerCase();
-          const q = (item.quality || "").toLowerCase();
-          return !s.includes("trailer") && !q.includes("trailer") && !s.includes("coming soon") && !s.includes("sắp chiếu") && !s.includes("tập 0");
+          return !isTrailer(item);
         }),
         pagination: { currentPage: pg?.currentPage || page, totalPages: Math.ceil((pg?.totalItems || 1000) / (pg?.totalItemsPerPage || 24)), totalItems: pg?.totalItems || 1000 },
       };
@@ -86,9 +85,7 @@ export async function getCategoryMovies(type: string, page = 1): Promise<MovieLi
   return {
     items: normalizeKk(data2.data?.items || []).filter((item: Movie) => {
       if (BLOCKED_SLUGS.includes(item.slug || "")) return false;
-      const s = (item.status || "").toLowerCase();
-      const q = (item.quality || "").toLowerCase();
-      return !s.includes("trailer") && !q.includes("trailer") && !s.includes("coming soon") && !s.includes("sắp chiếu") && !s.includes("tập 0");
+      return !isTrailer(item);
     }),
     pagination: { currentPage: pg2?.currentPage || page, totalPages: Math.ceil((pg2?.totalItems || 1000) / (pg2?.totalItemsPerPage || 10)), totalItems: pg2?.totalItems || 1000 },
   };
@@ -107,9 +104,7 @@ export async function getGenreMovies(genre: string, page = 1): Promise<MovieList
       return {
         items: normalizeOphim(data.data.items, data.data.APP_DOMAIN_CDN_IMAGE || "https://img.ophim.live/uploads/movies/").filter((item: Movie) => {
           if (BLOCKED_SLUGS.includes(item.slug || "")) return false;
-          const s = (item.status || "").toLowerCase();
-          const q = (item.quality || "").toLowerCase();
-          return !s.includes("trailer") && !q.includes("trailer") && !s.includes("coming soon") && !s.includes("sắp chiếu") && !s.includes("tập 0");
+          return !isTrailer(item);
         }),
         pagination: { currentPage: pg?.currentPage || page, totalPages: Math.ceil((pg?.totalItems || 1000) / (pg?.totalItemsPerPage || 24)), totalItems: pg?.totalItems || 1000 },
       };
@@ -125,9 +120,7 @@ export async function getGenreMovies(genre: string, page = 1): Promise<MovieList
   return {
     items: normalizeKk(data2.data?.items || []).filter((item: Movie) => {
       if (BLOCKED_SLUGS.includes(item.slug || "")) return false;
-      const s = (item.status || "").toLowerCase();
-      const q = (item.quality || "").toLowerCase();
-      return !s.includes("trailer") && !q.includes("trailer") && !s.includes("coming soon") && !s.includes("sắp chiếu") && !s.includes("tập 0");
+      return !isTrailer(item);
     }),
     pagination: { currentPage: pg2?.currentPage || page, totalPages: Math.ceil((pg2?.totalItems || 1000) / (pg2?.totalItemsPerPage || 10)), totalItems: pg2?.totalItems || 1000 },
   };
@@ -146,9 +139,7 @@ export async function getCountryMovies(country: string, page = 1): Promise<Movie
       return {
         items: normalizeOphim(data.data.items, data.data.APP_DOMAIN_CDN_IMAGE || "https://img.ophim.live/uploads/movies/").filter((item: Movie) => {
           if (BLOCKED_SLUGS.includes(item.slug || "")) return false;
-          const s = (item.status || "").toLowerCase();
-          const q = (item.quality || "").toLowerCase();
-          return !s.includes("trailer") && !q.includes("trailer") && !s.includes("coming soon") && !s.includes("sắp chiếu") && !s.includes("tập 0");
+          return !isTrailer(item);
         }),
         pagination: { currentPage: pg?.currentPage || page, totalPages: Math.ceil((pg?.totalItems || 1000) / (pg?.totalItemsPerPage || 24)), totalItems: pg?.totalItems || 1000 },
       };
@@ -164,9 +155,7 @@ export async function getCountryMovies(country: string, page = 1): Promise<Movie
   return {
     items: normalizeKk(data2.data?.items || []).filter((item: Movie) => {
       if (BLOCKED_SLUGS.includes(item.slug || "")) return false;
-      const s = (item.status || "").toLowerCase();
-      const q = (item.quality || "").toLowerCase();
-      return !s.includes("trailer") && !q.includes("trailer") && !s.includes("coming soon") && !s.includes("sắp chiếu") && !s.includes("tập 0");
+      return !isTrailer(item);
     }),
     pagination: { currentPage: pg2?.currentPage || page, totalPages: Math.ceil((pg2?.totalItems || 1000) / (pg2?.totalItemsPerPage || 10)), totalItems: pg2?.totalItems || 1000 },
   };
@@ -185,9 +174,7 @@ export async function getYearMovies(year: string, page = 1): Promise<MovieListRe
       return {
         items: normalizeOphim(data.data.items, data.data.APP_DOMAIN_CDN_IMAGE || "https://img.ophim.live/uploads/movies/").filter((item: Movie) => {
           if (BLOCKED_SLUGS.includes(item.slug || "")) return false;
-          const s = (item.status || "").toLowerCase();
-          const q = (item.quality || "").toLowerCase();
-          return !s.includes("trailer") && !q.includes("trailer") && !s.includes("coming soon") && !s.includes("sắp chiếu") && !s.includes("tập 0");
+          return !isTrailer(item);
         }),
         pagination: { currentPage: pg?.currentPage || page, totalPages: Math.ceil((pg?.totalItems || 1000) / (pg?.totalItemsPerPage || 24)), totalItems: pg?.totalItems || 1000 },
       };
@@ -203,9 +190,7 @@ export async function getYearMovies(year: string, page = 1): Promise<MovieListRe
   return {
     items: normalizeKk(data2.data?.items || []).filter((item: Movie) => {
       if (BLOCKED_SLUGS.includes(item.slug || "")) return false;
-      const s = (item.status || "").toLowerCase();
-      const q = (item.quality || "").toLowerCase();
-      return !s.includes("trailer") && !q.includes("trailer") && !s.includes("coming soon") && !s.includes("sắp chiếu") && !s.includes("tập 0");
+      return !isTrailer(item);
     }),
     pagination: { currentPage: pg2?.currentPage || page, totalPages: Math.ceil((pg2?.totalItems || 1000) / (pg2?.totalItemsPerPage || 10)), totalItems: pg2?.totalItems || 1000 },
   };

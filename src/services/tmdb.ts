@@ -1,3 +1,5 @@
+import { cache } from "react";
+
 const TMDB_API_KEY = process.env.NEXT_PUBLIC_TMDB_API_KEY || "04c35731a5ee918f014970082a0088b1";
 const BASE_URL = "https://api.themoviedb.org/3";
 const IMAGE_BASE_URL = "https://image.tmdb.org/t/p/w500";
@@ -18,7 +20,7 @@ export interface TMDBActor {
   character?: string;
 }
 
-export async function searchTMDBMovie(query: string, year?: number, typeHint?: "movie" | "tv"): Promise<{ id: number; media_type: "movie" | "tv"; poster_path?: string; backdrop_path?: string; vote_average?: number; overview?: string } | null> {
+export const searchTMDBMovie = cache(async function(query: string, year?: number, typeHint?: "movie" | "tv"): Promise<{ id: number; media_type: "movie" | "tv"; poster_path?: string; backdrop_path?: string; vote_average?: number; overview?: string } | null> {
   try {
     const cleanQuery = (q: string) => q.replace(/\(Phần\s+\d+\)/gi, "").replace(/\(Season\s+\d+\)/gi, "").replace(/Part\s+\d+/gi, "").trim();
     const q = cleanQuery(query);
@@ -67,7 +69,7 @@ export async function searchTMDBMovie(query: string, year?: number, typeHint?: "
     console.error("TMDB Search Error:", error);
     return null;
   }
-}
+});
 
 export async function searchTMDBPerson(name: string): Promise<{ profile_path: string | null; id: number } | null> {
   try {
@@ -88,7 +90,7 @@ export async function searchTMDBPerson(name: string): Promise<{ profile_path: st
   }
 }
 
-export async function getTMDBMovieDetails(tmdbId: number, type: "movie" | "tv" = "movie") {
+export const getTMDBMovieDetails = cache(async function(tmdbId: number, type: "movie" | "tv" = "movie") {
   try {
     const appendToResponse = "credits,images,external_ids,recommendations,translations," + (type === "movie" ? "release_dates" : "content_ratings");
     const response = await fetch(
@@ -113,7 +115,7 @@ export async function getTMDBMovieDetails(tmdbId: number, type: "movie" | "tv" =
     console.error("TMDB Details Error:", error);
     return null;
   }
-}
+});
 
 async function translateToVietnamese(text: string): Promise<string> {
   if (!text) return "";
