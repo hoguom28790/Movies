@@ -1,36 +1,65 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🎬 Hồ Phim - Trải Nghiệm Điện Ảnh Đỉnh Cao
 
-## Getting Started
+**Hồ Phim** là nền tảng xem phim trực tuyến thế hệ mới, được thiết kế với triết lý tối giản nhưng đầy quyền năng. Không chỉ là một ứng dụng xem phim, Hồ Phim là một "rạp chiếu phim thông minh" ngay trong túi của bạn, mang đến trải nghiệm mượt mà, đẳng cấp như đang sử dụng các sản phẩm từ Apple.
 
-First, run the development server:
+---
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## ✨ Điểm Nét Nổi Bật (Key Features)
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### 🚀 1. Siêu Tìm Kiếm & Đa Nguồn Phát (Ultimate Multi-Source)
+*   **Hợp nhất 5+ Nguồn API**: Kết nối trực tiếp với các kho phim khổng lồ như OPhim, KKPhim, NguonC, VS-MOV, TopXX... đảm bảo bạn luôn tìm thấy bộ phim mình yêu thích.
+*   **Thông minh & Luôn sẵn sàng**: Tự động chuyển đổi máy chủ (Mirrors) nếu một nguồn gặp sự cố, mang đến khả năng phát trực tuyến không gián đoạn.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### 💎 2. Thiết Kế Apple HIG & Glassmorphism
+*   **Giao diện "Ánh gương"**: Áp dụng phong cách thiết kế Glassmorphism hiện đại với các hiệu ứng mờ nhòe (backdrop-blur) tinh tế.
+*   **Trải nghiệm chuẩn Apple**: Các chuyển động mượt mà, logic điều hướng trực quan theo chuẩn Apple Human Interface Guidelines (HIG).
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### 🧠 3. Hệ Thống Metadata Thông Minh (TMDB Enrichment)
+*   **Tự động nâng cấp dữ liệu**: Tích hợp sâu với TMDB để tự động lấy poster chất lượng cao (4K/HD), trailer, và điểm số đánh giá từ IMDb, Rotten Tomatoes.
+*   **Thông tin diễn viên chi tiết**: Khám phá tiểu sử, bộ sưu tập hình ảnh và danh sách phim của các ngôi sao yêu thích ngay trên ứng dụng.
 
-## Learn More
+### 📱 4. Tối Ưu Hóa Đa Thiết Bị (Omnichannel Optimized)
+*   **Responsive Tuyệt Đối**: Hiển thị hoàn hảo từ điện thoại iPhone, máy tính bảng iPad cho đến trình duyệt Desktop.
+*   **TV Mode**: Chế độ tối ưu riêng cho Smart TV (LG WebOS, Samsung Tizen) với khả năng điều hướng bằng Remote và giao diện phóng đại dễ nhìn.
 
-To learn more about Next.js, take a look at the following resources:
+### 🕒 5. Tính Năng Cá Nhân Hóa (Personalization)
+*   **Lịch sử xem phim**: Tự động lưu lại tiến trình xem (Resume Playback) để bạn có thể xem tiếp bất cứ lúc nào.
+*   **Danh sách yêu thích**: Lưu trữ những bộ phim mong muốn vào Watchlist cá nhân.
+*   **Lịch sử tách biệt**: Chế độ TopXX với lịch sử xem độc lập, đảm bảo sự riêng tư và cá nhân hóa tối đa.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+---
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## 🛠 Công Nghệ Sử Dụng (Tech Stack)
 
-## Deploy on Vercel
+*   **Framework**: Next.js 15 (App Router)
+*   **UI/UX**: Tailwind CSS 4, Framer Motion (Animations), Lucide Icons
+*   **Data Handling**: React Query, TMDB API, Firebase Integration
+*   **Performance**: Caching request-level, SEO Metadata thông minh, Image Optimization
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+---
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## 🚀 Bắt Đầu (Setup)
+
+1.  **Clone dự án**:
+    ```bash
+    git clone https://github.com/hoguom28790/Movies.git
+    ```
+
+2.  **Cài đặt dependencies**:
+    ```bash
+    npm install
+    ```
+
+3.  **Chạy môi trường phát triển**:
+    ```bash
+    npm run dev
+    ```
+
+---
+
+## 📄 Giấy Phép (License)
+
+Dự án này được phát triển với mục đích học tập và nghiên cứu. Nội dung phim được lấy từ các API công khai của bên thứ ba.
+
+---
+*Phát triển bởi Hồ Phim Team với ❤️.*
