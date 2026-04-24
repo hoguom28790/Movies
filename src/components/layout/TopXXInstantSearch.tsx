@@ -123,8 +123,8 @@ export function TopXXInstantSearch() {
                         src={item.posterUrl || "https://fakeimg.pl/200x300?text=No+Poster"}
                         alt={item.title || "No Title"}
                         fill
-                        unoptimized
-                        className="object-cover group-hover:scale-110 transition-transform duration-700"
+                        sizes="40px"
+                        className="object-cover group-hover:scale-105 transition-transform duration-200"
                       />
                       <div className="absolute inset-0 bg-yellow-500/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                          <Play className="h-4 w-4 text-black fill-current" />

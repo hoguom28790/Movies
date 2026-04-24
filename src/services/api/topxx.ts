@@ -23,7 +23,7 @@ interface ScrapedTopXX {
 async function scrapeTopXXSearch(keyword: string): Promise<ScrapedTopXX[]> {
   const url = `https://topxx.vip/search?keyword=${encodeURIComponent(keyword)}`;
   try {
-    const res = await fetchWithRetry(url, { headers: DEFAULT_HEADERS, next: { revalidate: 300 } } as any, 10000, 1, 500);
+    const res = await fetchWithRetry(url, { headers: DEFAULT_HEADERS, next: { revalidate: 300 } } as any, 5000, 1, 500);
     if (!res.ok) return [];
 
     const html = await res.text();
@@ -83,7 +83,7 @@ async function scrapeTopXXSearch(keyword: string): Promise<ScrapedTopXX[]> {
 async function scrapeTopXXDetails(slugOrId: string) {
   const url = `https://topxx.vip/video/${slugOrId}`;
   try {
-    const res = await fetchWithRetry(url, { headers: DEFAULT_HEADERS, next: { revalidate: 300 } } as any, 10000, 2, 800);
+    const res = await fetchWithRetry(url, { headers: DEFAULT_HEADERS, next: { revalidate: 300 } } as any, 5000, 2, 800);
     if (!res.ok) return null;
 
     const html = await res.text();
@@ -250,7 +250,7 @@ export async function getTopXXMovies(
   }
 
   try {
-    const res = await fetchWithRetry(url, { headers: DEFAULT_HEADERS, next: { revalidate: 300 } } as any, 10000, 2, 800);
+    const res = await fetchWithRetry(url, { headers: DEFAULT_HEADERS, next: { revalidate: 300 } } as any, 5000, 2, 800);
     
     if (!res.ok) {
        console.log(`[TopXX] API failed for ${type}/${slug}, status: ${res.status}`);
@@ -339,7 +339,7 @@ export async function getTopXXDetails(slug: string) {
 
   const url = `${BASE_URL}/movies/${finalId}`;
   try {
-    const res = await fetchWithRetry(url, { headers: DEFAULT_HEADERS, next: { revalidate: 300 } } as any, 10000, 2, 800);
+    const res = await fetchWithRetry(url, { headers: DEFAULT_HEADERS, next: { revalidate: 300 } } as any, 5000, 2, 800);
     
     if (!res.ok || res.status === 404) {
        console.log(`[TopXX] Detail not found for ${finalId}. Attempting search fallback...`);
@@ -472,7 +472,7 @@ export async function searchTopXXMovies(keyword: string, page: number = 1, isCat
     return { items: [], pagination: { currentPage: 1, totalPages: 1, totalItems: 0 } };
   }
 
-  const SEARCH_TIMEOUT = 8000;
+  const SEARCH_TIMEOUT = 4000;
   const SEARCH_RETRIES = 1;
 
   const topxxUrl = `${BASE_URL}/movies/search?keyword=${encodeURIComponent(normalizedQuery)}&page=${page}`;

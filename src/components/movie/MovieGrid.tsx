@@ -71,7 +71,7 @@ export function MovieGrid({
           loadMore();
         }
       },
-      { threshold: 0.1, rootMargin: '400px' }
+      { threshold: 0.1, rootMargin: '100px' }
     );
 
     if (observerTarget.current) {

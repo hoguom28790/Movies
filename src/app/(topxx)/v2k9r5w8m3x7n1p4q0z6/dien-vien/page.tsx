@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
+import Image from "next/image";
 import { Search, User2, Loader2 } from "lucide-react";
 import { ActorModal } from "@/components/movie/ActorModal";
 
@@ -28,8 +29,9 @@ export default function XXActorsPage() {
         fetchActors();
     }, []);
 
-    const filteredActors = actors.filter(a => 
-      a.name.toLowerCase().includes(searchQuery.toLowerCase())
+    const filteredActors = useMemo(
+      () => actors.filter(a => a.name.toLowerCase().includes(searchQuery.toLowerCase())),
+      [actors, searchQuery]
     );
 
     const handleActorClick = (actor: any) => {
@@ -74,20 +76,23 @@ export default function XXActorsPage() {
                         onClick={() => handleActorClick(actor)}
                         className="group flex flex-col items-center gap-5 text-center active-depth"
                     >
-                        <div className="relative w-full aspect-square rounded-[50px] overflow-hidden border-2 border-foreground/10 shadow-2xl transition-all duration-700 group-hover:border-yellow-500/30 group-hover:-translate-y-4 group-hover:rotate-3">
+                        <div className="relative w-full aspect-square rounded-[50px] overflow-hidden border-2 border-foreground/10 shadow-2xl transition-all duration-300 will-change-transform group-hover:border-yellow-500/30 group-hover:-translate-y-2">
                            {actor.avatar ? (
-                               <img 
-                                 src={actor.avatar} 
-                                 alt={actor.name} 
-                                 className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700 scale-105 group-hover:scale-110"
+                               <Image
+                                 src={actor.avatar}
+                                 alt={actor.name}
+                                 fill
+                                 sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, (max-width: 1024px) 25vw, 16vw"
+                                 loading="lazy"
+                                 className="object-cover grayscale group-hover:grayscale-0 transition-all duration-300 group-hover:scale-105"
                                />
                            ) : (
                                <div className="w-full h-full bg-foreground/5 flex items-center justify-center">
                                   <User2 className="w-12 h-12 text-foreground/10" />
                                 </div>
                            )}
-                           <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-                           <div className="absolute bottom-4 left-0 right-0 opacity-0 group-hover:opacity-100 translate-y-2 group-hover:translate-y-0 transition-all duration-500">
+                           <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
+                           <div className="absolute bottom-4 left-0 right-0 opacity-0 group-hover:opacity-100 translate-y-2 group-hover:translate-y-0 transition-all duration-200">
                               <span className="text-[9px] font-black text-white/60 uppercase tracking-widest text-shadow-lg">View Profile</span>
                            </div>
                         </div>

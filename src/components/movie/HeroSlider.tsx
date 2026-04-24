@@ -48,7 +48,7 @@ export function HeroSlider({ movies, isXX = false }: HeroSliderProps) {
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.5, ease: "easeOut" }}
-          className="absolute inset-0 z-0 overflow-hidden"
+          className="absolute inset-0 z-0 overflow-hidden will-change-opacity"
         >
           <Image
             src={currentMovie.thumbUrl || currentMovie.posterUrl}
@@ -73,7 +73,7 @@ export function HeroSlider({ movies, isXX = false }: HeroSliderProps) {
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: 30 }}
             transition={{ duration: 0.5 }}
-            className="flex flex-col md:flex-row items-center md:items-end gap-6 md:gap-10 w-full"
+            className="flex flex-col md:flex-row items-center md:items-end gap-6 md:gap-10 w-full will-change-transform"
           >
             {/* Portrait Poster (Standing Card) */}
             <div className="relative hidden md:block w-48 lg:w-64 aspect-[2/3] rounded-xl overflow-hidden shadow-[0_10px_30px_rgba(0,0,0,0.8)] border border-white/20 transform-gpu hover:scale-105 transition-transform duration-500 flex-shrink-0">

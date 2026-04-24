@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useRef, useState } from 'react';
+import React, { memo, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Play, X, Star } from 'lucide-react';
@@ -26,7 +26,7 @@ interface MovieCardProps {
   isXX?: boolean;
 }
 
-export function MovieCard({ 
+function MovieCardBase({
   title, slug, posterUrl, year, quality, episodeText, subText, originalTitle, progress, progressText, customHref, score, onDelete, index = 0, isXX = false
 }: MovieCardProps) {
   const [imgError, setImgError] = useState(false);
@@ -67,7 +67,7 @@ export function MovieCard({
       <Link 
         href={linkHref} 
         className={cn(
-          "movie-card relative w-full overflow-hidden rounded-[16px] bg-surface transition-all duration-500 shadow-md group-hover:shadow-xl group-hover:scale-[1.02] active:scale-[0.98]",
+          "movie-card relative w-full overflow-hidden rounded-[16px] bg-surface transition-all duration-300 shadow-md group-hover:shadow-xl group-hover:scale-[1.02] active:scale-[0.98]",
           isXX ? "aspect-[7/10]" : "aspect-[2/3]"
         )}
       >
@@ -78,7 +78,7 @@ export function MovieCard({
             fill
             sizes="(max-width: 640px) 50vw, (max-width: 1024px) 25vw, 15vw"
             className={cn(
-               "object-cover transition-transform duration-700 group-hover:scale-110",
+               "object-cover transition-transform duration-300 group-hover:scale-105",
                imgError && "opacity-50 grayscale"
             )}
             priority={index < 4}
@@ -87,7 +87,7 @@ export function MovieCard({
         </div>
         
         {/* Apple HIG Overlays */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
         
         {/* Superior Badges System */}
         <div className="absolute top-3 left-3 right-3 flex justify-between items-start z-20 pointer-events-none">
@@ -117,7 +117,7 @@ export function MovieCard({
         </div>
 
         {/* Play Icon - Apple SF Symbol style */}
-        <div className="absolute inset-0 flex items-center justify-center opacity-0 scale-90 transition-all duration-500 group-hover:opacity-100 group-hover:scale-100 pointer-events-none">
+        <div className="absolute inset-0 flex items-center justify-center opacity-0 scale-90 transition-all duration-200 group-hover:opacity-100 group-hover:scale-100 pointer-events-none">
           <div className="p-4 rounded-full backdrop-blur-xl bg-white/20 text-white shadow-lg">
             <Play size={24} fill="currentColor" strokeWidth={0} />
           </div>
@@ -177,3 +177,5 @@ export function MovieCard({
     </div>
   );
 }
+
+export const MovieCard = memo(MovieCardBase);
