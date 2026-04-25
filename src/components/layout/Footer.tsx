@@ -47,7 +47,7 @@ export function Footer() {
   const handleSecretEntry = (e: React.MouseEvent) => {
     e.preventDefault();
     const pass = getLunarAuthPass();
-    const input = prompt("Nhập mã xác thực rạp phim (DDMMYYYY):");
+    const input = prompt("Nhập mã xác thực rạp phim:");
     
     if (input === pass) {
       router.push(`/${TOPXX_PATH}`);

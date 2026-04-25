@@ -69,26 +69,33 @@ export function convertSolarToLunar(dd: number, mm: number, yy: number) {
   let nm = getNewMoonDay(k);
   if (nm > jd) nm = getNewMoonDay(k - 1);
   
-  // 2026 Lunar Calendar Specific Data
-  // New Year: Feb 17, 2026 (JD: 2461089)
-  // Month 1 has 30 days.
-  const lny2026 = getJulianDay(17, 2, 2026);
-  const daysSinceLNY = jd - lny2026 + 1;
+  // Lunar Day
+  const lunarDay = jd - nm + 1;
 
-  if (yy === 2026 && daysSinceLNY >= 1) {
-    if (daysSinceLNY <= 30) {
-      return { d: daysSinceLNY, m: 1, y: 2026 };
-    } else if (daysSinceLNY <= 30 + 29) {
-      return { d: daysSinceLNY - 30, m: 2, y: 2026 };
-    }
+  // Find Lunar New Year for the current year
+  // 2026: Feb 17 (JD: 2461089, k: 323)
+  // 2025: Jan 29 (JD: 2460705, k: 310)
+  let lny_jd = 0;
+  let lny_k = 0;
+
+  if (yy === 2026) {
+    lny_jd = 2461089;
+    lny_k = 323;
+  } else if (yy === 2025) {
+    lny_jd = 2460705;
+    lny_k = 310;
+  } else {
+    // Default fallback
+    const daysSinceNewYear = jd - getJulianDay(29, 1, 2025) + 1; 
+    let approxMonth = Math.floor(daysSinceNewYear / 29.5) + 1;
+    return { d: lunarDay, m: approxMonth % 12 || 12, y: yy };
   }
 
-  // Fallback for other dates/years using simple approximation
-  const lunarDay = jd - nm + 1;
-  const daysSinceNewYear = jd - getJulianDay(29, 1, 2025) + 1; 
-  let approxMonth = Math.floor(daysSinceNewYear / 29.5) + 1;
-  
-  return { d: lunarDay, m: approxMonth % 12 || 12, y: yy };
+  // Calculate month based on new moons passed since LNY
+  const k_current = Math.floor((nm - 2451550.1) / 29.530588853 + 0.5);
+  const month = k_current - lny_k + 1;
+
+  return { d: lunarDay, m: month, y: yy };
 }
 
 /**
