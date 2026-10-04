@@ -63,3 +63,18 @@ Dự án này được phát triển với mục đích học tập và nghiên 
 
 ---
 *Phát triển bởi Hồ Phim Team với ❤️.*
+
+---
+
+## ☁️ Deploy lên Cloudflare Workers
+
+Dùng `@opennextjs/cloudflare` (cấu hình: `wrangler.jsonc`, `open-next.config.ts`).
+
+```bash
+npm run preview:cf   # build + chạy thử cục bộ bằng workerd
+npm run deploy:cf    # build + deploy
+```
+
+*   Đặt biến môi trường: `NEXT_PUBLIC_*` (build time, đặt trong `.env.production` hoặc CI) và secret server (`ANILIST_CLIENT_SECRET`, `TRAKT_CLIENT_SECRET`, `TOPXX_PASSWORD`) bằng `npx wrangler secret put <TÊN>`.
+*   Gắn tên miền: Cloudflare dashboard → Workers → `ho-phim` → Settings → Domains & Routes (miền cần dùng nameserver Cloudflare).
+*   Nên dùng gói Workers Paid ($5/tháng): gói Free chỉ 100k request/ngày và 10ms CPU/request.
