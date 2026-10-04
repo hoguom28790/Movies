@@ -77,4 +77,5 @@ npm run deploy:cf    # build + deploy
 
 *   Đặt biến môi trường: `NEXT_PUBLIC_*` (build time, đặt trong `.env.production` hoặc CI) và secret server (`ANILIST_CLIENT_SECRET`, `TRAKT_CLIENT_SECRET`, `TOPXX_PASSWORD`) bằng `npx wrangler secret put <TÊN>`.
 *   Gắn tên miền: Cloudflare dashboard → Workers → `ho-phim` → Settings → Domains & Routes (miền cần dùng nameserver Cloudflare).
-*   Nên dùng gói Workers Paid ($5/tháng): gói Free chỉ 100k request/ngày và 10ms CPU/request.
+*   Bundle ~2,45 MiB (nén) nên vừa gói Workers Free (giới hạn 3 MiB). Gói Free giới hạn 100k request động/ngày (file tĩnh không tính) và 10ms CPU/request; nếu bị lỗi 1102 (vượt CPU) hoặc hết request thì mới cần gói Paid ($5/tháng).
+*   Dùng `cheerio/slim` thay vì `cheerio` để tránh kéo `undici` vào bundle (tiết kiệm ~1 MiB nén).

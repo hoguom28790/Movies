@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import * as cheerio from "cheerio";
+import * as cheerio from "cheerio/slim";
 
 // ELITE JAVLIBRARY SCRAPER - Pro-grade mirroring + Bot evasion
 const JAVL_MIRRORS = [

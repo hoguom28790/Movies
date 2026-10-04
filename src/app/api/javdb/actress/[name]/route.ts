@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import * as cheerio from "cheerio";
+import * as cheerio from "cheerio/slim";
 
 // FINAL FIX JAVDB actress scraper: search first → get slug → parse detail with real selectors + full debug logs
 const JAVDB_MIRRORS = [
