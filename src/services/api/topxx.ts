@@ -1,6 +1,6 @@
 import { Movie, MovieListResponse } from "@/types/movie";
 import { TopXXMovie, TopXXResponse } from "@/types/api-providers";
-import * as cheerio from "cheerio";
+import * as cheerio from "cheerio/slim";
 import { getPosterUrl } from "@/lib/movie-utils";
 
 const BASE_URL = "https://topxx.vip/api/v1";
