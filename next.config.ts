@@ -24,6 +24,13 @@ const nextConfig: NextConfig = {
       fullUrl: true,
     },
   },
+  // Firestore's Node build uses protobufjs, which generates code with `new Function`.
+  // Cloudflare Workers forbids that (EvalError -> HTTP 500), so use the browser build.
+  turbopack: {
+    resolveAlias: {
+      "@firebase/firestore": "./node_modules/@firebase/firestore/dist/index.esm.js",
+    },
+  },
   experimental: {
     optimizePackageImports: ['lucide-react', 'framer-motion']
   }
